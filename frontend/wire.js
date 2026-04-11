@@ -11,6 +11,10 @@
  * Design principle: we OVERRIDE existing global functions so the HTML
  * doesn't need any changes. Same element IDs, same function names,
  * different implementation.
+ *
+ * DEMO MODE: when the API is unreachable (e.g. GitHub Pages with no backend),
+ * all overrides silently fall back to the original prototype functions so
+ * demo accounts and local data still work.
  */
 
 (function () {
@@ -18,11 +22,39 @@
   var A = window.HansMedAPI;
   if (!A) { console.error('wire.js: api.js not loaded'); return; }
 
+  // ── Demo mode detection ─────────────────────────────────────────
+  // Ping the API once. If unreachable, don't override anything.
+  var _apiReachable = null; // null = unknown, true/false after check
+
+  function checkApi() {
+    return fetch(window.HANSMED_API_BASE + '/auth/me', { method: 'GET', headers: { 'Accept': 'application/json' } })
+      .then(function () { _apiReachable = true; })
+      .catch(function () { _apiReachable = false; });
+  }
+
+  // Run check on load — if API is down, skip all overrides
+  checkApi();
+
+  /** Wrap an override so it falls back to the original when API is down */
+  function wrapWithFallback(fnName, apiFn) {
+    var original = window[fnName];
+    window[fnName] = function () {
+      if (_apiReachable === false) {
+        // API unreachable — use original demo logic
+        if (typeof original === 'function') return original.apply(this, arguments);
+        return;
+      }
+      // API reachable (or still checking) — use real API
+      return apiFn.apply(this, arguments);
+    };
+    return original;
+  }
+
   // ================================================================
   // 1. AUTH — override handleLogin / handleRegister / handleLogout
   // ================================================================
 
-  window.handleLogin = async function () {
+  wrapWithFallback('handleLogin', async function () {
     var email = (document.getElementById('login-email').value || '').trim().toLowerCase();
     var password = document.getElementById('login-password').value || '';
     var errEl = document.getElementById('login-error');
@@ -41,9 +73,9 @@
       errEl.textContent = (e.data && e.data.errors && e.data.errors.email && e.data.errors.email[0])
         || e.message || 'Login failed · 登入失敗';
     }
-  };
+  });
 
-  window.handleDoctorLogin = async function () {
+  wrapWithFallback('handleDoctorLogin', async function () {
     var email = (document.getElementById('doc-email').value || '').trim().toLowerCase();
     var password = document.getElementById('doc-password').value || '';
     var errEl = document.getElementById('doc-error');
@@ -61,9 +93,9 @@
       errEl.textContent = (e.data && e.data.errors && e.data.errors.email && e.data.errors.email[0])
         || e.message || 'Login failed · 登入失敗';
     }
-  };
+  });
 
-  window.handleRegister = async function () {
+  wrapWithFallback('handleRegister', async function () {
     var name = (document.getElementById('reg-name').value || '').trim();
     var email = (document.getElementById('reg-email').value || '').trim().toLowerCase();
     var password = document.getElementById('reg-password').value || '';
@@ -88,9 +120,9 @@
       }
       errEl.textContent = msg || e.message || 'Registration failed · 註冊失敗';
     }
-  };
+  });
 
-  window.handleLogout = async function () {
+  wrapWithFallback('handleLogout', async function () {
     await A.authLogout();
     window.currentUser = null;
     var badge = document.getElementById('nav-user-badge');
@@ -103,7 +135,7 @@
     A.stopNotifPolling();
     showPage('home');
     showToast('Signed out · 已登出');
-  };
+  });
 
   // Override loginSuccess to store on API user shape
   var _origLoginSuccess = window.loginSuccess;
@@ -148,7 +180,7 @@
   // 2. TONGUE DIAGNOSIS — override handleTongue
   // ================================================================
 
-  window.handleTongue = async function (input) {
+  wrapWithFallback('handleTongue', async function (input) {
     if (!input.files || !input.files[0]) return;
     var file = input.files[0];
 
@@ -180,7 +212,7 @@
     } catch (e) {
       if (resultEl) resultEl.innerHTML = '<p style="color:var(--red-seal)">' + (e.message || 'Upload failed') + '</p>';
     }
-  };
+  });
 
   function pollTongueDiagnosis(id, el) {
     var attempts = 0;
@@ -255,7 +287,7 @@
   // ================================================================
 
   var _origConfirmBooking = window.confirmBooking;
-  window.confirmBooking = async function () {
+  wrapWithFallback('confirmBooking', async function () {
     if (!window.currentUser || !A.getToken()) {
       requireLogin('patient');
       return;
@@ -302,7 +334,7 @@
       }
       showToast(msg || e.message || 'Booking failed · 預約失敗');
     }
-  };
+  });
 
   // ================================================================
   // 4. SHOP — load products from API (pharmacy products)
