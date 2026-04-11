@@ -1,0 +1,265 @@
+### HansMed API — full endpoint catalog
+### Use with VSCode REST Client or JetBrains HTTP Client.
+### After login, copy the token into @token below.
+
+@base  = http://127.0.0.1:8000/api
+@token = PASTE_TOKEN_HERE
+
+### ============================================================
+### AUTH
+### ============================================================
+
+### register patient
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{"email":"alice@test.com","password":"password123","role":"patient","nickname":"Alice"}
+
+### register doctor (will be pending)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{"email":"drchen@test.com","password":"password123","role":"doctor","full_name":"Dr Chen"}
+
+### register pharmacy (will be pending)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{"email":"harmony@test.com","password":"password123","role":"pharmacy","name":"Harmony Pharmacy"}
+
+### login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{"email":"patient@hansmed.test","password":"password"}
+
+### me
+GET {{base}}/auth/me
+Authorization: Bearer {{token}}
+
+### logout
+POST {{base}}/auth/logout
+Authorization: Bearer {{token}}
+
+### ============================================================
+### NOTIFICATIONS (all roles)
+### ============================================================
+GET {{base}}/notifications
+Authorization: Bearer {{token}}
+
+###
+GET {{base}}/notifications/unread-count
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/notifications/read-all
+Authorization: Bearer {{token}}
+
+### ============================================================
+### PATIENT
+### ============================================================
+
+### profile
+GET {{base}}/patient/profile
+Authorization: Bearer {{token}}
+
+###
+PUT {{base}}/patient/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"gender":"female","birth_date":"1992-05-14","height_cm":165,"weight_kg":58}
+
+### addresses
+GET {{base}}/patient/addresses
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/patient/addresses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"recipient":"Alice","phone":"+61400000001","country":"Australia","state":"VIC","city":"Melbourne","line1":"12 Test St","postal_code":"3000","is_default":true}
+
+### tongue diagnoses
+GET {{base}}/patient/tongue-diagnoses
+Authorization: Bearer {{token}}
+
+### doctors
+GET {{base}}/patient/doctors?sort=rating
+Authorization: Bearer {{token}}
+
+### pharmacies (with geo sort)
+GET {{base}}/patient/pharmacies?lat=-37.81&lng=144.96
+Authorization: Bearer {{token}}
+
+### book appointment
+POST {{base}}/patient/appointments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"doctor_id":3,"scheduled_start":"2026-04-15T10:00:00+10:00","scheduled_end":"2026-04-15T10:30:00+10:00"}
+
+### my prescriptions
+GET {{base}}/patient/prescriptions
+Authorization: Bearer {{token}}
+
+### place order from prescription
+POST {{base}}/patient/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"prescription_id":1,"pharmacy_id":4,"address_id":1}
+
+### my orders
+GET {{base}}/patient/orders
+Authorization: Bearer {{token}}
+
+### ============================================================
+### CONSULTATION VIDEO (patient OR doctor)
+### ============================================================
+GET {{base}}/consultations/1/join
+Authorization: Bearer {{token}}
+
+### ============================================================
+### PAYPAL (alternative to Stripe)
+### ============================================================
+POST {{base}}/payments/paypal/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"payable_type":"order","payable_id":1}
+
+###
+POST {{base}}/payments/paypal/capture
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"paypal_order_id":"PAYPAL_ORDER_ID_HERE"}
+
+### ============================================================
+### DOCTOR
+### ============================================================
+GET {{base}}/doctor/appointments
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/doctor/appointments/1/start
+Authorization: Bearer {{token}}
+
+### issue prescription
+POST {{base}}/doctor/prescriptions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "appointment_id": 1,
+  "diagnosis": "Qi deficiency, spleen-stomach weakness",
+  "instructions": "Decoct in water, one dose daily, morning and evening",
+  "duration_days": 7,
+  "items": [
+    {"drug_name": "黄芪 (Astragalus)", "quantity": 30, "unit": "g"},
+    {"drug_name": "当归 (Angelica)", "quantity": 15, "unit": "g"}
+  ]
+}
+
+### revise prescription
+POST {{base}}/doctor/prescriptions/1/revise
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"items":[{"drug_name":"黄芪 (Astragalus)","quantity":40,"unit":"g"}]}
+
+### earnings
+GET {{base}}/doctor/earnings/summary
+Authorization: Bearer {{token}}
+
+### request withdrawal
+POST {{base}}/doctor/withdrawals
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"amount":500,"bank_info":{"bank":"ANZ","account":"123-456"}}
+
+### ============================================================
+### PHARMACY
+### ============================================================
+GET {{base}}/pharmacy/products
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/pharmacy/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"name":"Licorice root","unit":"g","unit_price":0.5,"initial_stock":1000}
+
+### stock adjustment
+POST {{base}}/pharmacy/products/1/stock
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"change_qty":500,"reason":"purchase"}
+
+### orders
+GET {{base}}/pharmacy/orders
+Authorization: Bearer {{token}}
+
+### dispense
+POST {{base}}/pharmacy/orders/1/dispense/start
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/pharmacy/orders/1/dispense/finish
+Authorization: Bearer {{token}}
+
+### ship
+POST {{base}}/pharmacy/orders/1/ship
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"carrier":"AusPost","tracking_no":"AP1234567890"}
+
+### reconciliation
+GET {{base}}/pharmacy/reconciliation/summary?period=month
+Authorization: Bearer {{token}}
+
+### ============================================================
+### ADMIN
+### ============================================================
+GET {{base}}/admin/doctors/pending
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/admin/doctors/3/review
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"decision":"approve"}
+
+### finance
+GET {{base}}/admin/finance/overview
+Authorization: Bearer {{token}}
+
+### prescriptions oversight
+GET {{base}}/admin/prescriptions?status=issued
+Authorization: Bearer {{token}}
+
+### system config
+GET {{base}}/admin/configs
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/admin/configs
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"configs":{"platform_fee_doctor":"0.15","platform_fee_pharmacy":"0.08","support_email":"support@hansmed.test"}}
+
+### reports
+GET {{base}}/admin/reports/dashboard
+Authorization: Bearer {{token}}
+
+### CSV export
+GET {{base}}/admin/reports/export/orders
+Authorization: Bearer {{token}}

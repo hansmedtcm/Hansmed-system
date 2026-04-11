@@ -1,0 +1,358 @@
+openapi: 3.0.3
+info:
+  title: HansMed TCM Platform API
+  version: 1.0.0
+  description: |
+    Backend API for the HansMed TCM platform. Covers patient, doctor,
+    pharmacy, and admin flows including tongue diagnosis, appointments,
+    video consultations, prescriptions, orders, payments (Stripe + PayPal),
+    and platform administration.
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local dev
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum PAT
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string, format: email }
+        role: { type: string, enum: [patient, doctor, pharmacy, admin] }
+        status: { type: string, enum: [pending, active, suspended, deleted] }
+    TokenResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        token: { type: string }
+    Appointment:
+      type: object
+      properties:
+        id: { type: integer }
+        patient_id: { type: integer }
+        doctor_id: { type: integer }
+        scheduled_start: { type: string, format: date-time }
+        scheduled_end:   { type: string, format: date-time }
+        status:
+          type: string
+          enum: [pending_payment, confirmed, in_progress, completed, cancelled, no_show]
+        fee: { type: number }
+    Prescription:
+      type: object
+      properties:
+        id: { type: integer }
+        appointment_id: { type: integer }
+        doctor_id: { type: integer }
+        patient_id: { type: integer }
+        status:
+          type: string
+          enum: [draft, issued, revised, revoked, dispensed]
+        diagnosis: { type: string }
+        instructions: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/PrescriptionItem' }
+    PrescriptionItem:
+      type: object
+      properties:
+        drug_name: { type: string }
+        specification: { type: string }
+        dosage: { type: string }
+        frequency: { type: string }
+        quantity: { type: number }
+        unit: { type: string }
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        order_no: { type: string }
+        status:
+          type: string
+          enum: [pending_payment, paid, dispensing, dispensed, shipped, delivered, completed, cancelled, refunded, after_sale]
+        subtotal: { type: number }
+        total: { type: number }
+
+paths:
+  /auth/register:
+    post:
+      security: []
+      summary: Register a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, role]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                role: { type: string, enum: [patient, doctor, pharmacy] }
+                nickname:  { type: string }
+                full_name: { type: string }
+                name:      { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+
+  /auth/login:
+    post:
+      security: []
+      summary: Log in with email/password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+        '422':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/me:
+    get:
+      summary: Current user
+      responses:
+        '200': { description: OK }
+
+  /auth/logout:
+    post:
+      summary: Revoke current token
+      responses:
+        '200': { description: OK }
+
+  /notifications:
+    get:
+      summary: List notifications
+      parameters:
+        - in: query
+          name: unread_only
+          schema: { type: boolean }
+      responses:
+        '200': { description: OK }
+
+  /patient/profile:
+    get: { summary: Get patient profile, responses: { '200': { description: OK } } }
+    put:
+      summary: Update patient profile
+      responses: { '200': { description: OK } }
+
+  /patient/tongue-diagnoses:
+    get:  { summary: List tongue diagnoses,   responses: { '200': { description: OK } } }
+    post:
+      summary: Upload tongue image (async analysis)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image: { type: string, format: binary }
+      responses:
+        '202': { description: Accepted, processing }
+
+  /patient/doctors:
+    get:
+      summary: List approved doctors
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema: { type: string, enum: [rating, consultations] }
+      responses: { '200': { description: OK } }
+
+  /patient/appointments:
+    get:  { summary: List own appointments, responses: { '200': { description: OK } } }
+    post:
+      summary: Book appointment (creates Stripe PaymentIntent)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [doctor_id, scheduled_start, scheduled_end]
+              properties:
+                doctor_id: { type: integer }
+                scheduled_start: { type: string, format: date-time }
+                scheduled_end:   { type: string, format: date-time }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment: { $ref: '#/components/schemas/Appointment' }
+                  stripe_client_secret: { type: string }
+
+  /patient/orders:
+    get:  { summary: List orders, responses: { '200': { description: OK } } }
+    post:
+      summary: Place order from a prescription at a pharmacy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prescription_id, pharmacy_id, address_id]
+              properties:
+                prescription_id: { type: integer }
+                pharmacy_id:     { type: integer }
+                address_id:      { type: integer }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order: { $ref: '#/components/schemas/Order' }
+                  stripe_client_secret: { type: string }
+
+  /consultations/{appointmentId}/join:
+    get:
+      summary: Get Agora RTC token for a confirmed appointment
+      parameters:
+        - in: path
+          name: appointmentId
+          required: true
+          schema: { type: integer }
+      responses: { '200': { description: OK } }
+
+  /payments/paypal/create:
+    post:
+      summary: Create a PayPal order for appointment or order
+      responses: { '201': { description: Created } }
+
+  /payments/paypal/capture:
+    post:
+      summary: Capture an approved PayPal order
+      responses: { '200': { description: OK } }
+
+  /doctor/prescriptions:
+    get:  { summary: List prescriptions issued, responses: { '200': { description: OK } } }
+    post:
+      summary: Issue new prescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [appointment_id, items]
+              properties:
+                appointment_id: { type: integer }
+                diagnosis: { type: string }
+                instructions: { type: string }
+                duration_days: { type: integer }
+                items:
+                  type: array
+                  items: { $ref: '#/components/schemas/PrescriptionItem' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prescription: { $ref: '#/components/schemas/Prescription' }
+
+  /doctor/earnings/summary:
+    get:
+      summary: Doctor earnings summary (gross, fee, net, available)
+      responses: { '200': { description: OK } }
+
+  /pharmacy/orders/{id}/dispense/finish:
+    post:
+      summary: Mark dispensed (decrements stock)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses: { '200': { description: OK } }
+
+  /pharmacy/orders/{id}/ship:
+    post:
+      summary: Attach carrier + tracking number
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses: { '200': { description: OK } }
+
+  /admin/doctors/{doctorId}/review:
+    post:
+      summary: Approve or reject doctor verification
+      parameters:
+        - in: path
+          name: doctorId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [approve, reject] }
+                reason:   { type: string }
+      responses: { '200': { description: OK } }
+
+  /admin/reports/dashboard:
+    get:
+      summary: Platform KPIs
+      responses: { '200': { description: OK } }
+
+  /admin/reports/export/{entity}:
+    get:
+      summary: CSV export
+      parameters:
+        - in: path
+          name: entity
+          required: true
+          schema: { type: string, enum: [orders, appointments, payments] }
+      responses:
+        '200':
+          description: CSV stream
+          content:
+            text/csv: {}

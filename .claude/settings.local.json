@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(py --version)",
+      "Bash(where python:*)",
+      "Bash(where py:*)",
+      "Bash(where pip3:*)",
+      "Bash(where conda:*)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/xian/AppData/Local/Programs/**)",
+      "Bash(where node:*)",
+      "Bash(cd /tmp)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e ':*)",
+      "Bash(cp 'E:/Downloads/HansMed_Modern_TCM_14.html' 'E:/Hansmed-system/HansMed_Modern_TCM_14.html')",
+      "Bash(ls -la 'E:/Hansmed-system/'*.html)"
+    ]
+  }
+}

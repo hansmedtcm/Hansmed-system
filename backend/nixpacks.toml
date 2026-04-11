@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["php83", "php83Extensions.pdo_mysql", "php83Extensions.bcmath", "php83Extensions.intl", "php83Extensions.zip", "php83Extensions.gd"]
+
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader"]
+
+[phases.build]
+cmds = ["php artisan config:cache", "php artisan route:cache"]
+
+[start]
+cmd = "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
