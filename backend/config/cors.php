@@ -4,6 +4,7 @@ return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
     'allowed_origins' => [
+        'https://hansmedtcm.github.io',
         'https://hansmed.com',
         'https://www.hansmed.com',
         'http://localhost:8000',
