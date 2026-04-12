@@ -37,7 +37,8 @@ class AuthController extends Controller
         // create role-specific profile row
         match ($data['role']) {
             User::ROLE_PATIENT  => $user->patientProfile()->create([
-                'nickname' => $data['nickname'] ?? null,
+                'nickname'  => $data['nickname'] ?? null,
+                'full_name' => $data['nickname'] ?? null,
             ]),
             User::ROLE_DOCTOR   => $user->doctorProfile()->create([
                 'full_name' => $data['full_name'] ?? $data['email'],
@@ -80,8 +81,9 @@ class AuthController extends Controller
 
         $token = $user->createToken('api', [$user->role])->plainTextToken;
 
+        $relation = $user->role . 'Profile';
         return response()->json([
-            'user'  => $user,
+            'user'  => $user->load($relation),
             'token' => $token,
         ]);
     }
