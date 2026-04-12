@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
-    // C-02: personal info  +  C-03: health record (height/weight)
     public function show(Request $request)
     {
         $user = $request->user()->load('patientProfile');
@@ -17,13 +16,30 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $data = $request->validate([
-            'nickname'   => ['nullable', 'string', 'max:80'],
-            'avatar_url' => ['nullable', 'url', 'max:500'],
-            'gender'     => ['nullable', 'in:male,female,other'],
-            'birth_date' => ['nullable', 'date', 'before:today'],
-            'phone'      => ['nullable', 'string', 'max:40'],
-            'height_cm'  => ['nullable', 'numeric', 'between:30,260'],
-            'weight_kg'  => ['nullable', 'numeric', 'between:1,400'],
+            'full_name'       => ['nullable', 'string', 'max:120'],
+            'nickname'        => ['nullable', 'string', 'max:80'],
+            'avatar_url'      => ['nullable', 'url', 'max:500'],
+            'gender'          => ['nullable', 'in:male,female,other'],
+            'birth_date'      => ['nullable', 'date', 'before:today'],
+            'phone'           => ['nullable', 'string', 'max:40'],
+            'ic_number'       => ['nullable', 'string', 'max:40'],
+            'occupation'      => ['nullable', 'string', 'max:120'],
+            'address_line1'   => ['nullable', 'string', 'max:255'],
+            'address_line2'   => ['nullable', 'string', 'max:255'],
+            'city'            => ['nullable', 'string', 'max:80'],
+            'state'           => ['nullable', 'string', 'max:80'],
+            'postal_code'     => ['nullable', 'string', 'max:20'],
+            'country'         => ['nullable', 'string', 'max:80'],
+            'emergency_contact_name'     => ['nullable', 'string', 'max:120'],
+            'emergency_contact_phone'    => ['nullable', 'string', 'max:40'],
+            'emergency_contact_relation' => ['nullable', 'string', 'max:60'],
+            'blood_type'          => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-,unknown'],
+            'allergies'           => ['nullable', 'string', 'max:1000'],
+            'medical_history'     => ['nullable', 'string', 'max:2000'],
+            'current_medications' => ['nullable', 'string', 'max:1000'],
+            'family_history'      => ['nullable', 'string', 'max:1000'],
+            'height_cm'           => ['nullable', 'numeric', 'between:30,260'],
+            'weight_kg'           => ['nullable', 'numeric', 'between:1,400'],
         ]);
 
         $profile = $request->user()->patientProfile()->updateOrCreate(

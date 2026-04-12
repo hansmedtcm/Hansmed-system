@@ -1,0 +1,18 @@
+ALTER TABLE patient_profiles
+  ADD COLUMN full_name VARCHAR(120) NULL AFTER nickname,
+  ADD COLUMN ic_number VARCHAR(40) NULL AFTER phone,
+  ADD COLUMN occupation VARCHAR(120) NULL AFTER ic_number,
+  ADD COLUMN address_line1 VARCHAR(255) NULL AFTER occupation,
+  ADD COLUMN address_line2 VARCHAR(255) NULL AFTER address_line1,
+  ADD COLUMN city VARCHAR(80) NULL AFTER address_line2,
+  ADD COLUMN state VARCHAR(80) NULL AFTER city,
+  ADD COLUMN postal_code VARCHAR(20) NULL AFTER state,
+  ADD COLUMN country VARCHAR(80) NULL AFTER postal_code,
+  ADD COLUMN emergency_contact_name VARCHAR(120) NULL AFTER country,
+  ADD COLUMN emergency_contact_phone VARCHAR(40) NULL AFTER emergency_contact_name,
+  ADD COLUMN emergency_contact_relation VARCHAR(60) NULL AFTER emergency_contact_phone,
+  ADD COLUMN blood_type VARCHAR(10) NULL AFTER emergency_contact_relation,
+  ADD COLUMN allergies TEXT NULL AFTER blood_type,
+  ADD COLUMN medical_history TEXT NULL AFTER allergies,
+  ADD COLUMN current_medications TEXT NULL AFTER medical_history,
+  ADD COLUMN family_history TEXT NULL AFTER current_medications;

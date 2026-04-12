@@ -11,8 +11,12 @@ class PatientProfile extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'user_id', 'nickname', 'avatar_url', 'gender', 'birth_date',
-        'phone', 'height_cm', 'weight_kg',
+        'user_id', 'nickname', 'full_name', 'avatar_url', 'gender', 'birth_date',
+        'phone', 'ic_number', 'occupation',
+        'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country',
+        'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation',
+        'blood_type', 'allergies', 'medical_history', 'current_medications',
+        'family_history', 'height_cm', 'weight_kg',
     ];
 
     protected $casts = [

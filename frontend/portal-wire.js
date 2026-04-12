@@ -115,32 +115,127 @@
 
   // ── Profile Panel ──
   async function loadProfile() {
-    var user = A.getUser();
-    if (!user || !A.getToken()) return;
+    var el = document.getElementById('p-profile');
+    if (!el || !A.getToken()) return;
     try {
       var res = await A.patient.getProfile();
-      var profile = res.user || res;
-      var p = profile.patient_profile || {};
-      // Fill form fields
-      setVal('p-profile', 'Full Name', p.nickname || profile.email);
-      setVal('p-profile', 'Email', profile.email);
-      setVal('p-profile', 'Phone', p.phone || '');
-      setVal('p-profile', 'Date of Birth', p.birth_date || '');
+      var user = res.user || res;
+      var p = user.patient_profile || {};
+
+      el.innerHTML = ''
+        + '<h3>Personal Profile</h3>'
+        + '<div class="sub-label">個人資料管理 · Manage your information</div>'
+        // Section 1: Basic Info
+        + sectionLabel('Basic Information · 基本資料')
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-bottom:1.5rem;">'
+        + profileField('pp-fullname', 'Full Name · 姓名', p.full_name || p.nickname || '', 'text')
+        + profileField('pp-nickname', 'Nickname · 暱稱', p.nickname || '', 'text')
+        + profileField('pp-email', 'Email · 電郵', user.email || '', 'email', true)
+        + profileField('pp-phone', 'Phone · 電話', p.phone || '', 'tel')
+        + profileField('pp-ic', 'IC / ID Number · 身份證號碼', p.ic_number || '', 'text')
+        + profileField('pp-dob', 'Date of Birth · 出生日期', p.birth_date ? p.birth_date.substring(0,10) : '', 'date')
+        + profileSelect('pp-gender', 'Gender · 性別', p.gender || '', [
+            {v:'',l:'Select · 請選擇'},{v:'male',l:'Male · 男'},{v:'female',l:'Female · 女'},{v:'other',l:'Other · 其他'}
+          ])
+        + profileField('pp-occupation', 'Occupation · 職業', p.occupation || '', 'text')
+        + '</div>'
+        // Section 2: Address
+        + sectionLabel('Address · 地址')
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-bottom:1.5rem;">'
+        + profileField('pp-addr1', 'Address Line 1 · 地址', p.address_line1 || '', 'text')
+        + profileField('pp-addr2', 'Address Line 2 · 地址2', p.address_line2 || '', 'text')
+        + profileField('pp-city', 'City · 城市', p.city || '', 'text')
+        + profileField('pp-state', 'State · 州', p.state || '', 'text')
+        + profileField('pp-postal', 'Postal Code · 郵遞區號', p.postal_code || '', 'text')
+        + profileField('pp-country', 'Country · 國家', p.country || '', 'text')
+        + '</div>'
+        // Section 3: Emergency Contact
+        + sectionLabel('Emergency Contact · 緊急聯絡人')
+        + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.3rem;margin-bottom:1.5rem;">'
+        + profileField('pp-emname', 'Name · 姓名', p.emergency_contact_name || '', 'text')
+        + profileField('pp-emphone', 'Phone · 電話', p.emergency_contact_phone || '', 'tel')
+        + profileField('pp-emrel', 'Relationship · 關係', p.emergency_contact_relation || '', 'text')
+        + '</div>'
+        // Section 4: Medical
+        + sectionLabel('Medical Information · 醫療資訊')
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-bottom:1.5rem;">'
+        + profileSelect('pp-blood', 'Blood Type · 血型', p.blood_type || '', [
+            {v:'',l:'Select · 請選擇'},{v:'A+',l:'A+'},{v:'A-',l:'A-'},{v:'B+',l:'B+'},{v:'B-',l:'B-'},
+            {v:'AB+',l:'AB+'},{v:'AB-',l:'AB-'},{v:'O+',l:'O+'},{v:'O-',l:'O-'},{v:'unknown',l:'Unknown · 不明'}
+          ])
+        + profileField('pp-height', 'Height (cm) · 身高', p.height_cm || '', 'number')
+        + profileField('pp-weight', 'Weight (kg) · 體重', p.weight_kg || '', 'number')
+        + '</div>'
+        + profileArea('pp-allergies', 'Allergies · 過敏史', p.allergies || '', 'e.g. Penicillin, shellfish, pollen · 青黴素、海鮮、花粉')
+        + profileArea('pp-medhist', 'Medical History · 病史', p.medical_history || '', 'e.g. Diabetes (2020), mild anaemia (2022) · 糖尿病、貧血')
+        + profileArea('pp-meds', 'Current Medications · 現用藥物', p.current_medications || '', 'e.g. Vitamin D 1000IU daily · 每日維他命D')
+        + profileArea('pp-famhist', 'Family History · 家族病史', p.family_history || '', 'e.g. Mother: hypertension, Father: diabetes · 母親高血壓')
+        + '<div style="margin-top:1.5rem;">'
+        + '  <button class="btn-primary" onclick="saveProfile()">Save Changes · 儲存變更</button>'
+        + '</div>';
     } catch (e) { console.error('loadProfile', e); }
   }
 
-  function setVal(panelId, labelText, value) {
-    var panel = document.getElementById(panelId);
-    if (!panel) return;
-    var labels = panel.querySelectorAll('label');
-    for (var i = 0; i < labels.length; i++) {
-      if (labels[i].textContent.indexOf(labelText) >= 0) {
-        var input = labels[i].parentElement.querySelector('input, select');
-        if (input) input.value = value;
-        break;
-      }
-    }
+  function sectionLabel(text) {
+    return '<div style="font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:1.5rem 0 .8rem;border-bottom:1px solid var(--mist);padding-bottom:.4rem;">' + text + '</div>';
   }
+
+  function profileField(id, label, value, type, disabled) {
+    return '<div><label style="display:block;font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">' + label + '</label>'
+      + '<input id="' + id + '" type="' + type + '" style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--mist);padding:.6rem 0;color:var(--ink);font-family:\'Cormorant Garamond\',serif;font-size:1.05rem;outline:none;" value="' + escHtml(value) + '"' + (disabled ? ' disabled' : '') + '></div>';
+  }
+
+  function profileSelect(id, label, value, options) {
+    var html = '<div><label style="display:block;font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">' + label + '</label>'
+      + '<select id="' + id + '" style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--mist);padding:.6rem 0;color:var(--ink);font-family:\'Cormorant Garamond\',serif;font-size:1.05rem;outline:none;">';
+    options.forEach(function (o) {
+      html += '<option value="' + o.v + '"' + (o.v === value ? ' selected' : '') + '>' + o.l + '</option>';
+    });
+    return html + '</select></div>';
+  }
+
+  function profileArea(id, label, value, placeholder) {
+    return '<div style="margin-bottom:1rem;"><label style="display:block;font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">' + label + '</label>'
+      + '<textarea id="' + id + '" rows="2" placeholder="' + placeholder + '" style="width:100%;background:transparent;border:1px solid var(--mist);padding:.6rem;color:var(--ink);font-family:\'Source Sans 3\',sans-serif;font-size:.9rem;outline:none;resize:vertical;">' + escHtml(value) + '</textarea></div>';
+  }
+
+  function escHtml(s) { return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+  window.saveProfile = async function () {
+    var data = {
+      full_name:       gv('pp-fullname'),
+      nickname:        gv('pp-nickname'),
+      phone:           gv('pp-phone'),
+      ic_number:       gv('pp-ic'),
+      birth_date:      gv('pp-dob'),
+      gender:          gv('pp-gender'),
+      occupation:      gv('pp-occupation'),
+      address_line1:   gv('pp-addr1'),
+      address_line2:   gv('pp-addr2'),
+      city:            gv('pp-city'),
+      state:           gv('pp-state'),
+      postal_code:     gv('pp-postal'),
+      country:         gv('pp-country'),
+      emergency_contact_name:     gv('pp-emname'),
+      emergency_contact_phone:    gv('pp-emphone'),
+      emergency_contact_relation: gv('pp-emrel'),
+      blood_type:          gv('pp-blood'),
+      height_cm:           gv('pp-height') || null,
+      weight_kg:           gv('pp-weight') || null,
+      allergies:           gv('pp-allergies'),
+      medical_history:     gv('pp-medhist'),
+      current_medications: gv('pp-meds'),
+      family_history:      gv('pp-famhist'),
+    };
+    try {
+      await A.patient.updateProfile(data);
+      showToast('Profile saved! · 資料已儲存 ✓');
+    } catch (e) {
+      showToast(e.message || 'Failed to save · 儲存失敗');
+    }
+  };
+
+  function gv(id) { var el = document.getElementById(id); return el ? el.value : ''; }
 
   // ── Tongue History ──
   async function loadTongueHistory() {
