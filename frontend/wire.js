@@ -149,8 +149,14 @@
   var _origLoginSuccess = window.loginSuccess;
   window.loginSuccess = function (user) {
     // Normalize backend user shape to what the HTML expects
+    // Name can be in patient_profile.nickname, patient_profile.full_name,
+    // doctor_profile.full_name, or pharmacy_profile.name
+    var pp = user.patient_profile || {};
+    var dp = user.doctor_profile || {};
+    var php = user.pharmacy_profile || {};
+    var displayName = pp.full_name || pp.nickname || dp.full_name || php.name || user.name || user.email;
     window.currentUser = {
-      name: user.nickname || user.full_name || user.name || user.email,
+      name: displayName,
       email: user.email,
       role: user.role,
       id: user.id,
