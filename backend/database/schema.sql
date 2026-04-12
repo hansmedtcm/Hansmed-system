@@ -1,0 +1,441 @@
+-- HansMed TCM Platform — canonical schema (MySQL 8)
+-- Covers: users/roles, tongue diagnosis, questionnaires, appointments,
+-- video consultations, prescriptions, pharmacies, inventory, orders,
+-- shipments, payments, withdrawals, notifications, audit, content.
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- =========================================================
+-- 1. AUTH & PROFILES
+-- =========================================================
+CREATE TABLE users (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email           VARCHAR(190) NOT NULL UNIQUE,
+  password_hash   VARCHAR(255) NOT NULL,
+  role            ENUM('patient','doctor','pharmacy','admin') NOT NULL,
+  status          ENUM('pending','active','suspended','deleted') NOT NULL DEFAULT 'active',
+  email_verified_at DATETIME NULL,
+  remember_token  VARCHAR(100) NULL,
+  last_login_at   DATETIME NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_users_role_status (role, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE personal_access_tokens (
+  id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tokenable_type VARCHAR(191) NOT NULL,
+  tokenable_id   BIGINT UNSIGNED NOT NULL,
+  name           VARCHAR(191) NOT NULL,
+  token          VARCHAR(64) NOT NULL UNIQUE,
+  abilities      TEXT NULL,
+  last_used_at   DATETIME NULL,
+  expires_at     DATETIME NULL,
+  created_at     DATETIME NULL,
+  updated_at     DATETIME NULL,
+  KEY idx_pat_tokenable (tokenable_type, tokenable_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE patient_profiles (
+  user_id      BIGINT UNSIGNED PRIMARY KEY,
+  nickname     VARCHAR(80) NULL,
+  avatar_url   VARCHAR(500) NULL,
+  gender       ENUM('male','female','other') NULL,
+  birth_date   DATE NULL,
+  phone        VARCHAR(40) NULL,
+  height_cm    DECIMAL(5,2) NULL,
+  weight_kg    DECIMAL(5,2) NULL,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pp_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE doctor_profiles (
+  user_id           BIGINT UNSIGNED PRIMARY KEY,
+  full_name         VARCHAR(120) NOT NULL,
+  avatar_url        VARCHAR(500) NULL,
+  bio               TEXT NULL,
+  specialties       VARCHAR(500) NULL,
+  license_no        VARCHAR(120) NULL,
+  license_doc_url   VARCHAR(500) NULL,
+  verification_status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  rating            DECIMAL(3,2) NOT NULL DEFAULT 0,
+  consultation_count INT UNSIGNED NOT NULL DEFAULT 0,
+  consultation_fee  DECIMAL(10,2) NOT NULL DEFAULT 0,
+  accepting_appointments TINYINT(1) NOT NULL DEFAULT 1,
+  created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_dp_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_doctor_status (verification_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE doctor_schedules (
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  doctor_id   BIGINT UNSIGNED NOT NULL,
+  weekday     TINYINT NOT NULL, -- 0..6
+  start_time  TIME NOT NULL,
+  end_time    TIME NOT NULL,
+  slot_minutes SMALLINT NOT NULL DEFAULT 30,
+  is_active   TINYINT(1) NOT NULL DEFAULT 1,
+  CONSTRAINT fk_ds_doctor FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_ds_doctor (doctor_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE pharmacy_profiles (
+  user_id        BIGINT UNSIGNED PRIMARY KEY,
+  name           VARCHAR(160) NOT NULL,
+  license_no     VARCHAR(120) NULL,
+  license_doc_url VARCHAR(500) NULL,
+  business_doc_url VARCHAR(500) NULL,
+  verification_status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  address_line   VARCHAR(255) NULL,
+  city           VARCHAR(80) NULL,
+  state          VARCHAR(80) NULL,
+  country        VARCHAR(80) NULL,
+  postal_code    VARCHAR(20) NULL,
+  latitude       DECIMAL(10,7) NULL,
+  longitude      DECIMAL(10,7) NULL,
+  delivery_radius_km DECIMAL(6,2) NULL,
+  business_hours VARCHAR(255) NULL,
+  phone          VARCHAR(40) NULL,
+  created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_php_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_php_status (verification_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- 2. HEALTH RECORDS / TONGUE DIAGNOSIS / QUESTIONNAIRES
+-- =========================================================
+CREATE TABLE tongue_diagnoses (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  patient_id      BIGINT UNSIGNED NOT NULL,
+  image_url       VARCHAR(500) NOT NULL,
+  thumbnail_url   VARCHAR(500) NULL,
+  third_party_request_id VARCHAR(120) NULL,
+  status          ENUM('uploaded','processing','completed','failed') NOT NULL DEFAULT 'uploaded',
+  -- structured result fields per PDF: 舌色/舌苔/舌形/齿痕/裂纹/润燥
+  tongue_color    VARCHAR(60) NULL,
+  coating         VARCHAR(60) NULL,
+  shape           VARCHAR(60) NULL,
+  teeth_marks     TINYINT(1) NULL,
+  cracks          TINYINT(1) NULL,
+  moisture        VARCHAR(60) NULL,
+  raw_response    JSON NULL,
+  constitution_report JSON NULL,
+  health_score    SMALLINT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_td_patient FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_td_patient_created (patient_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE questionnaires (
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  patient_id  BIGINT UNSIGNED NOT NULL,
+  symptoms    JSON NULL,
+  lifestyle   JSON NULL,
+  diet        JSON NULL,
+  discomfort_areas JSON NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_q_patient FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_q_patient (patient_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- 3. APPOINTMENTS & CONSULTATIONS
+-- =========================================================
+CREATE TABLE appointments (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  patient_id      BIGINT UNSIGNED NOT NULL,
+  doctor_id       BIGINT UNSIGNED NOT NULL,
+  scheduled_start DATETIME NOT NULL,
+  scheduled_end   DATETIME NOT NULL,
+  status          ENUM('pending_payment','confirmed','in_progress','completed','cancelled','no_show') NOT NULL DEFAULT 'pending_payment',
+  fee             DECIMAL(10,2) NOT NULL,
+  payment_id      BIGINT UNSIGNED NULL,
+  tongue_diagnosis_id BIGINT UNSIGNED NULL,
+  questionnaire_id BIGINT UNSIGNED NULL,
+  notes           TEXT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_ap_patient FOREIGN KEY (patient_id) REFERENCES users(id),
+  CONSTRAINT fk_ap_doctor  FOREIGN KEY (doctor_id)  REFERENCES users(id),
+  KEY idx_ap_doctor_time (doctor_id, scheduled_start),
+  KEY idx_ap_patient_time (patient_id, scheduled_start),
+  KEY idx_ap_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE consultations (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  appointment_id  BIGINT UNSIGNED NOT NULL UNIQUE,
+  room_id         VARCHAR(120) NULL,
+  started_at      DATETIME NULL,
+  ended_at        DATETIME NULL,
+  duration_seconds INT UNSIGNED NULL,
+  transcript      MEDIUMTEXT NULL,
+  doctor_notes    TEXT NULL,
+  CONSTRAINT fk_co_ap FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE consultation_snapshots (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  consultation_id BIGINT UNSIGNED NOT NULL,
+  image_url       VARCHAR(500) NOT NULL,
+  taken_by        ENUM('patient','doctor') NOT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cs_co FOREIGN KEY (consultation_id) REFERENCES consultations(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- 4. PRESCRIPTIONS
+-- =========================================================
+CREATE TABLE prescriptions (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  appointment_id  BIGINT UNSIGNED NOT NULL,
+  doctor_id       BIGINT UNSIGNED NOT NULL,
+  patient_id      BIGINT UNSIGNED NOT NULL,
+  status          ENUM('draft','issued','revised','revoked','dispensed') NOT NULL DEFAULT 'draft',
+  diagnosis       TEXT NULL,
+  instructions    TEXT NULL,
+  contraindications TEXT NULL,
+  duration_days   SMALLINT NULL,
+  parent_id       BIGINT UNSIGNED NULL, -- for revisions
+  issued_at       DATETIME NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_rx_ap FOREIGN KEY (appointment_id) REFERENCES appointments(id),
+  CONSTRAINT fk_rx_doctor FOREIGN KEY (doctor_id) REFERENCES users(id),
+  CONSTRAINT fk_rx_patient FOREIGN KEY (patient_id) REFERENCES users(id),
+  KEY idx_rx_patient (patient_id),
+  KEY idx_rx_doctor (doctor_id),
+  KEY idx_rx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE prescription_items (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  prescription_id BIGINT UNSIGNED NOT NULL,
+  product_id      BIGINT UNSIGNED NULL,
+  drug_name       VARCHAR(200) NOT NULL,
+  specification   VARCHAR(120) NULL,
+  dosage          VARCHAR(120) NULL,    -- e.g. "10g"
+  frequency       VARCHAR(120) NULL,    -- e.g. "TID"
+  usage_method    VARCHAR(255) NULL,
+  quantity        DECIMAL(10,2) NOT NULL,
+  unit            VARCHAR(20) NOT NULL DEFAULT 'g',
+  notes           VARCHAR(500) NULL,
+  CONSTRAINT fk_rxi_rx FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- 5. PRODUCTS / INVENTORY (per pharmacy)
+-- =========================================================
+CREATE TABLE products (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  pharmacy_id     BIGINT UNSIGNED NOT NULL,
+  sku             VARCHAR(80) NULL,
+  name            VARCHAR(200) NOT NULL,
+  specification   VARCHAR(120) NULL,
+  description     TEXT NULL,
+  image_url       VARCHAR(500) NULL,
+  unit            VARCHAR(20) NOT NULL DEFAULT 'g',
+  unit_price      DECIMAL(10,2) NOT NULL,
+  is_listed       TINYINT(1) NOT NULL DEFAULT 1,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pr_pharm FOREIGN KEY (pharmacy_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_pr_pharm_listed (pharmacy_id, is_listed)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE inventory (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id      BIGINT UNSIGNED NOT NULL,
+  quantity_on_hand DECIMAL(12,2) NOT NULL DEFAULT 0,
+  reorder_threshold DECIMAL(12,2) NOT NULL DEFAULT 0,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_inv_pr FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  UNIQUE KEY uk_inv_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE inventory_movements (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id      BIGINT UNSIGNED NOT NULL,
+  change_qty      DECIMAL(12,2) NOT NULL, -- + in / - out
+  reason          ENUM('purchase','sale','adjustment','return','stocktake') NOT NULL,
+  reference_type  VARCHAR(60) NULL,
+  reference_id    BIGINT UNSIGNED NULL,
+  created_by      BIGINT UNSIGNED NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_im_pr FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  KEY idx_im_product (product_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- 6. ADDRESSES, ORDERS, SHIPMENTS
+-- =========================================================
+CREATE TABLE addresses (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id      BIGINT UNSIGNED NOT NULL,
+  recipient    VARCHAR(120) NOT NULL,
+  phone        VARCHAR(40) NOT NULL,
+  country      VARCHAR(80) NOT NULL,
+  state        VARCHAR(80) NULL,
+  city         VARCHAR(80) NOT NULL,
+  line1        VARCHAR(255) NOT NULL,
+  line2        VARCHAR(255) NULL,
+  postal_code  VARCHAR(20) NULL,
+  is_default   TINYINT(1) NOT NULL DEFAULT 0,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_addr_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_addr_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE orders (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_no        VARCHAR(40) NOT NULL UNIQUE,
+  patient_id      BIGINT UNSIGNED NOT NULL,
+  pharmacy_id     BIGINT UNSIGNED NOT NULL,
+  prescription_id BIGINT UNSIGNED NULL,
+  address_id      BIGINT UNSIGNED NOT NULL,
+  status          ENUM('pending_payment','paid','dispensing','dispensed','shipped','delivered','completed','cancelled','refunded','after_sale') NOT NULL DEFAULT 'pending_payment',
+  subtotal        DECIMAL(10,2) NOT NULL,
+  shipping_fee    DECIMAL(10,2) NOT NULL DEFAULT 0,
+  total           DECIMAL(10,2) NOT NULL,
+  currency        CHAR(3) NOT NULL DEFAULT 'CNY',
+  payment_id      BIGINT UNSIGNED NULL,
+  paid_at         DATETIME NULL,
+  cancelled_at    DATETIME NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_o_patient FOREIGN KEY (patient_id) REFERENCES users(id),
+  CONSTRAINT fk_o_pharm   FOREIGN KEY (pharmacy_id) REFERENCES users(id),
+  CONSTRAINT fk_o_rx      FOREIGN KEY (prescription_id) REFERENCES prescriptions(id),
+  CONSTRAINT fk_o_addr    FOREIGN KEY (address_id) REFERENCES addresses(id),
+  KEY idx_o_patient (patient_id, created_at),
+  KEY idx_o_pharm (pharmacy_id, created_at),
+  KEY idx_o_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE order_items (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id     BIGINT UNSIGNED NOT NULL,
+  product_id   BIGINT UNSIGNED NULL,
+  drug_name    VARCHAR(200) NOT NULL,
+  specification VARCHAR(120) NULL,
+  unit_price   DECIMAL(10,2) NOT NULL,
+  quantity     DECIMAL(10,2) NOT NULL,
+  unit         VARCHAR(20) NOT NULL DEFAULT 'g',
+  line_total   DECIMAL(10,2) NOT NULL,
+  CONSTRAINT fk_oi_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE shipments (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id     BIGINT UNSIGNED NOT NULL UNIQUE,
+  carrier      VARCHAR(80) NULL,
+  tracking_no  VARCHAR(120) NULL,
+  status       ENUM('preparing','shipped','in_transit','delivered','exception') NOT NULL DEFAULT 'preparing',
+  shipped_at   DATETIME NULL,
+  delivered_at DATETIME NULL,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_sh_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE shipment_events (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  shipment_id  BIGINT UNSIGNED NOT NULL,
+  event_time   DATETIME NOT NULL,
+  location     VARCHAR(200) NULL,
+  description  VARCHAR(500) NULL,
+  CONSTRAINT fk_se_sh FOREIGN KEY (shipment_id) REFERENCES shipments(id) ON DELETE CASCADE,
+  KEY idx_se_sh_time (shipment_id, event_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- 7. PAYMENTS, FINANCE
+-- =========================================================
+CREATE TABLE payments (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id         BIGINT UNSIGNED NOT NULL,
+  payable_type    ENUM('appointment','order') NOT NULL,
+  payable_id      BIGINT UNSIGNED NOT NULL,
+  provider        ENUM('stripe','paypal','alipay','wechat') NOT NULL,
+  provider_ref    VARCHAR(190) NULL,
+  amount          DECIMAL(10,2) NOT NULL,
+  currency        CHAR(3) NOT NULL DEFAULT 'CNY',
+  status          ENUM('pending','succeeded','failed','refunded','partial_refunded') NOT NULL DEFAULT 'pending',
+  raw_payload     JSON NULL,
+  paid_at         DATETIME NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pay_user FOREIGN KEY (user_id) REFERENCES users(id),
+  KEY idx_pay_payable (payable_type, payable_id),
+  KEY idx_pay_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE withdrawals (
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id     BIGINT UNSIGNED NOT NULL, -- doctor or pharmacy
+  amount      DECIMAL(10,2) NOT NULL,
+  currency    CHAR(3) NOT NULL DEFAULT 'CNY',
+  status      ENUM('pending','approved','rejected','paid') NOT NULL DEFAULT 'pending',
+  bank_info   JSON NULL,
+  reviewed_by BIGINT UNSIGNED NULL,
+  reviewed_at DATETIME NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_w_user FOREIGN KEY (user_id) REFERENCES users(id),
+  KEY idx_w_user_status (user_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- 8. NOTIFICATIONS, CONTENT, CONFIG, AUDIT
+-- =========================================================
+CREATE TABLE notifications (
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id     BIGINT UNSIGNED NOT NULL,
+  type        VARCHAR(80) NOT NULL,
+  title       VARCHAR(200) NOT NULL,
+  body        TEXT NULL,
+  data        JSON NULL,
+  read_at     DATETIME NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_n_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_n_user_read (user_id, read_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE content_pages (
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug        VARCHAR(120) NOT NULL UNIQUE, -- privacy, tos, help, faq
+  title       VARCHAR(200) NOT NULL,
+  body_html   MEDIUMTEXT NOT NULL,
+  locale      VARCHAR(10) NOT NULL DEFAULT 'en',
+  updated_by  BIGINT UNSIGNED NULL,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE system_configs (
+  `key`       VARCHAR(120) PRIMARY KEY,
+  `value`     TEXT NOT NULL,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE audit_logs (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id      BIGINT UNSIGNED NULL,
+  action       VARCHAR(120) NOT NULL,
+  target_type  VARCHAR(80) NULL,
+  target_id    BIGINT UNSIGNED NULL,
+  ip_address   VARCHAR(45) NULL,
+  user_agent   VARCHAR(255) NULL,
+  payload      JSON NULL,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_al_user (user_id),
+  KEY idx_al_target (target_type, target_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET FOREIGN_KEY_CHECKS = 1;
