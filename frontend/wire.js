@@ -28,8 +28,16 @@
 
   function checkApi() {
     return fetch(window.HANSMED_API_BASE + '/auth/me', { method: 'GET', headers: { 'Accept': 'application/json' } })
-      .then(function () { _apiReachable = true; })
-      .catch(function () { _apiReachable = false; });
+      .then(function (res) {
+        _apiReachable = true;
+        console.log('[HansMed] API connected ✓ — using LIVE backend');
+        showToast('🟢 Connected to live server · 已連接伺服器');
+      })
+      .catch(function (err) {
+        _apiReachable = false;
+        console.log('[HansMed] API unreachable — using DEMO mode', err);
+        showToast('🟡 Demo mode — server offline · 離線示範模式');
+      });
   }
 
   // Run check on load — if API is down, skip all overrides
