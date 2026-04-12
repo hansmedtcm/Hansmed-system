@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\FinanceController;
+use App\Http\Controllers\Admin\PatientController as AdminPatientController;
 use App\Http\Controllers\Admin\PrescriptionOversightController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\SystemConfigController;
@@ -53,28 +54,33 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ================== PATIENT ==================
     Route::middleware('role:patient')->prefix('patient')->group(function () {
+        // These routes are accessible even before registration is completed
         Route::get('/profile', [PatientProfileController::class, 'show']);
         Route::put('/profile', [PatientProfileController::class, 'update']);
+        Route::post('/profile/complete-registration', [PatientProfileController::class, 'completeRegistration']);
 
-        Route::apiResource('addresses', AddressController::class)->except(['show']);
+        // Everything below requires completed registration
+        Route::middleware('registration.complete')->group(function () {
+            Route::apiResource('addresses', AddressController::class)->except(['show']);
 
-        Route::get('/tongue-diagnoses',         [TongueDiagnosisController::class, 'index']);
-        Route::post('/tongue-diagnoses',        [TongueDiagnosisController::class, 'store']);
-        Route::get('/tongue-diagnoses/{id}',    [TongueDiagnosisController::class, 'show']);
-        Route::delete('/tongue-diagnoses/{id}', [TongueDiagnosisController::class, 'destroy']);
+            Route::get('/tongue-diagnoses',         [TongueDiagnosisController::class, 'index']);
+            Route::post('/tongue-diagnoses',        [TongueDiagnosisController::class, 'store']);
+            Route::get('/tongue-diagnoses/{id}',    [TongueDiagnosisController::class, 'show']);
+            Route::delete('/tongue-diagnoses/{id}', [TongueDiagnosisController::class, 'destroy']);
 
-        Route::get('/doctors',            [DoctorBrowseController::class, 'index']);
-        Route::get('/doctors/{doctorId}', [DoctorBrowseController::class, 'show']);
-        Route::get('/pharmacies',         [PharmacyBrowseController::class, 'index']);
+            Route::get('/doctors',            [DoctorBrowseController::class, 'index']);
+            Route::get('/doctors/{doctorId}', [DoctorBrowseController::class, 'show']);
+            Route::get('/pharmacies',         [PharmacyBrowseController::class, 'index']);
 
-        Route::get('/appointments',              [PatientAppointmentController::class, 'index']);
-        Route::post('/appointments',             [PatientAppointmentController::class, 'store']);
-        Route::post('/appointments/{id}/cancel', [PatientAppointmentController::class, 'cancel']);
+            Route::get('/appointments',              [PatientAppointmentController::class, 'index']);
+            Route::post('/appointments',             [PatientAppointmentController::class, 'store']);
+            Route::post('/appointments/{id}/cancel', [PatientAppointmentController::class, 'cancel']);
 
-        Route::get('/prescriptions', [PatientOrderController::class, 'prescriptions']);
-        Route::get('/orders',        [PatientOrderController::class, 'index']);
-        Route::post('/orders',       [PatientOrderController::class, 'store']);
-        Route::get('/orders/{id}',   [PatientOrderController::class, 'show']);
+            Route::get('/prescriptions', [PatientOrderController::class, 'prescriptions']);
+            Route::get('/orders',        [PatientOrderController::class, 'index']);
+            Route::post('/orders',       [PatientOrderController::class, 'store']);
+            Route::get('/orders/{id}',   [PatientOrderController::class, 'show']);
+        });
     });
 
     // ================== DOCTOR ==================
@@ -139,5 +145,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Reports (M-13)
         Route::get('/reports/dashboard',        [ReportsController::class, 'dashboard']);
         Route::get('/reports/export/{entity}',  [ReportsController::class, 'exportCsv']);
+
+        // Patient management (admin can edit locked profiles)
+        Route::get('/patients',          [AdminPatientController::class, 'index']);
+        Route::get('/patients/{id}',     [AdminPatientController::class, 'show']);
+        Route::put('/patients/{id}',     [AdminPatientController::class, 'update']);
     });
 });

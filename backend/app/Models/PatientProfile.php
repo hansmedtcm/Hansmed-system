@@ -11,7 +11,8 @@ class PatientProfile extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'user_id', 'nickname', 'full_name', 'avatar_url', 'gender', 'birth_date',
+        'user_id', 'registration_completed',
+        'nickname', 'full_name', 'avatar_url', 'gender', 'birth_date',
         'phone', 'ic_number', 'occupation',
         'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country',
         'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation',
@@ -20,9 +21,10 @@ class PatientProfile extends Model
     ];
 
     protected $casts = [
-        'birth_date' => 'date',
-        'height_cm'  => 'decimal:2',
-        'weight_kg'  => 'decimal:2',
+        'birth_date'             => 'date',
+        'height_cm'              => 'decimal:2',
+        'weight_kg'              => 'decimal:2',
+        'registration_completed' => 'boolean',
     ];
 
     public function user() { return $this->belongsTo(User::class, 'user_id'); }

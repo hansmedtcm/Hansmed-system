@@ -121,10 +121,13 @@
       var res = await A.patient.getProfile();
       var user = res.user || res;
       var p = user.patient_profile || {};
+      var locked = p.registration_completed;
+      _profileLocked = locked;
 
       el.innerHTML = ''
         + '<h3>Personal Profile</h3>'
         + '<div class="sub-label">個人資料管理 · Manage your information</div>'
+        + (locked ? '<div style="background:var(--washi-dark);border-left:3px solid var(--gold);padding:.8rem 1rem;margin-bottom:1rem;font-size:.85rem;color:var(--stone);">🔒 Profile is locked. Contact admin to request changes. · 資料已鎖定，如需修改請聯絡管理員。</div>' : '')
         // Section 1: Basic Info
         + sectionLabel('Basic Information · 基本資料')
         + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-bottom:1.5rem;">'
@@ -171,7 +174,7 @@
         + profileArea('pp-meds', 'Current Medications · 現用藥物', p.current_medications || '', 'e.g. Vitamin D 1000IU daily · 每日維他命D')
         + profileArea('pp-famhist', 'Family History · 家族病史', p.family_history || '', 'e.g. Mother: hypertension, Father: diabetes · 母親高血壓')
         + '<div style="margin-top:1.5rem;">'
-        + '  <button class="btn-primary" onclick="saveProfile()">Save Changes · 儲存變更</button>'
+        + (locked ? '' : '  <button class="btn-primary" onclick="saveProfile()">Save Changes · 儲存變更</button>')
         + '</div>';
     } catch (e) { console.error('loadProfile', e); }
   }
@@ -180,14 +183,17 @@
     return '<div style="font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:1.5rem 0 .8rem;border-bottom:1px solid var(--mist);padding-bottom:.4rem;">' + text + '</div>';
   }
 
+  var _profileLocked = false;
+
   function profileField(id, label, value, type, disabled) {
+    var dis = disabled || _profileLocked;
     return '<div><label style="display:block;font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">' + label + '</label>'
-      + '<input id="' + id + '" type="' + type + '" style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--mist);padding:.6rem 0;color:var(--ink);font-family:\'Cormorant Garamond\',serif;font-size:1.05rem;outline:none;" value="' + escHtml(value) + '"' + (disabled ? ' disabled' : '') + '></div>';
+      + '<input id="' + id + '" type="' + type + '" style="width:100%;background:' + (dis ? 'var(--washi-dark)' : 'transparent') + ';border:none;border-bottom:1.5px solid var(--mist);padding:.6rem 0;color:var(--ink);font-family:\'Cormorant Garamond\',serif;font-size:1.05rem;outline:none;" value="' + escHtml(value) + '"' + (dis ? ' disabled' : '') + '></div>';
   }
 
   function profileSelect(id, label, value, options) {
     var html = '<div><label style="display:block;font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">' + label + '</label>'
-      + '<select id="' + id + '" style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--mist);padding:.6rem 0;color:var(--ink);font-family:\'Cormorant Garamond\',serif;font-size:1.05rem;outline:none;">';
+      + '<select id="' + id + '" style="width:100%;background:' + (_profileLocked ? 'var(--washi-dark)' : 'transparent') + ';border:none;border-bottom:1.5px solid var(--mist);padding:.6rem 0;color:var(--ink);font-family:\'Cormorant Garamond\',serif;font-size:1.05rem;outline:none;"' + (_profileLocked ? ' disabled' : '') + '>';
     options.forEach(function (o) {
       html += '<option value="' + o.v + '"' + (o.v === value ? ' selected' : '') + '>' + o.l + '</option>';
     });
@@ -196,7 +202,7 @@
 
   function profileArea(id, label, value, placeholder) {
     return '<div style="margin-bottom:1rem;"><label style="display:block;font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">' + label + '</label>'
-      + '<textarea id="' + id + '" rows="2" placeholder="' + placeholder + '" style="width:100%;background:transparent;border:1px solid var(--mist);padding:.6rem;color:var(--ink);font-family:\'Source Sans 3\',sans-serif;font-size:.9rem;outline:none;resize:vertical;">' + escHtml(value) + '</textarea></div>';
+      + '<textarea id="' + id + '" rows="2" placeholder="' + placeholder + '" style="width:100%;background:' + (_profileLocked ? 'var(--washi-dark)' : 'transparent') + ';border:1px solid var(--mist);padding:.6rem;color:var(--ink);font-family:\'Source Sans 3\',sans-serif;font-size:.9rem;outline:none;resize:vertical;"' + (_profileLocked ? ' disabled' : '') + '>' + escHtml(value) + '</textarea></div>';
   }
 
   function escHtml(s) { return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
