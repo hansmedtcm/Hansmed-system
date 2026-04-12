@@ -1,7 +1,7 @@
 FROM php:8.3-cli
 
 RUN apt-get update && apt-get install -y \
-    git unzip libonig-dev libzip-dev libpng-dev libicu-dev default-mysql-client \
+    git unzip libonig-dev libzip-dev libpng-dev libicu-dev \
     && docker-php-ext-install pdo pdo_mysql bcmath intl zip gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -14,8 +14,6 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-RUN chmod +x /app/start.sh
-
 EXPOSE ${PORT:-8080}
 
-CMD ["/app/start.sh"]
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
