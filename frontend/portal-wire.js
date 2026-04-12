@@ -22,6 +22,7 @@
     // Load data based on panel
     if (id === 'p-overview')      loadOverview();
     if (id === 'p-profile')       loadProfile();
+    if (id === 'p-health')        loadHealthRecords();
     if (id === 'p-tongue')        loadTongueHistory();
     if (id === 'p-appointments')  loadAppointments();
     if (id === 'p-rx')            loadPrescriptions();
@@ -39,22 +40,39 @@
     }
   };
 
+  // ── Resolve display name from user object (handles nested profiles) ──
+  function getDisplayName(user) {
+    if (!user) return 'User';
+    var pp = user.patient_profile || {};
+    var dp = user.doctor_profile || {};
+    var php = user.pharmacy_profile || {};
+    return pp.full_name || pp.nickname || dp.full_name || php.name || user.name || user.email;
+  }
+
   // ── Sidebar: show real user name ──
-  function updateSidebar() {
-    var user = A.getUser();
+  async function updateSidebar() {
+    // Fetch fresh user data with profile relation
+    var user;
+    try {
+      user = await A.authMe();
+    } catch {
+      user = A.getUser();
+    }
     if (!user) return;
-    var name = user.nickname || user.full_name || user.name || user.email;
-    // Update sidebar name
+    var name = getDisplayName(user);
+    // Update sidebar
     var sidebar = document.querySelector('.portal-sidebar');
     if (sidebar) {
       var nameEl = sidebar.querySelector('div[style*="font-size:1rem"]');
       if (nameEl) nameEl.textContent = name;
       var memberEl = sidebar.querySelector('div[style*="font-size:.62rem"]');
       if (memberEl) memberEl.textContent = 'Member since ' + new Date(user.created_at || Date.now()).getFullYear();
-      // Update avatar initial
       var avatarEl = sidebar.querySelector('div[style*="border-radius:50%"]');
       if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
     }
+    // Also update nav bar name
+    var navName = document.getElementById('nav-user-name');
+    if (navName) navName.textContent = name;
   }
 
   // ── Overview Panel ──
@@ -63,7 +81,7 @@
     if (!el || !A.getToken()) return;
     try {
       var user = A.getUser();
-      var name = user ? (user.nickname || user.full_name || user.name || user.email) : 'User';
+      var name = getDisplayName(user);
 
       // Fetch real data in parallel
       var [appts, rxs, diags] = await Promise.allSettled([
@@ -242,6 +260,91 @@
   };
 
   function gv(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+
+  // ── Health Records (clinical history at this clinic) ──
+  async function loadHealthRecords() {
+    var el = document.getElementById('p-health');
+    if (!el || !A.getToken()) return;
+    try {
+      // Fetch completed appointments + prescriptions as clinical history
+      var [apptsRes, rxRes, profileRes] = await Promise.allSettled([
+        A.patient.listAppointments(),
+        A.patient.listPrescriptions(),
+        A.patient.getProfile(),
+      ]);
+      var appts = apptsRes.status === 'fulfilled' ? (apptsRes.value.data || []) : [];
+      var rxs = rxRes.status === 'fulfilled' ? (rxRes.value.data || []) : [];
+      var profile = profileRes.status === 'fulfilled' ? (profileRes.value.user || {}) : {};
+      var pp = profile.patient_profile || {};
+      var locked = pp.registration_completed;
+
+      var completed = appts.filter(function (a) { return a.status === 'completed'; });
+
+      var html = '<h3>Health Records · 健康檔案</h3>'
+        + '<div class="sub-label">Your clinical history at HansMed · 在漢方現代中醫的就診記錄</div>';
+
+      // Quick medical summary from profile (read-only)
+      html += '<div style="background:var(--washi);border:1px solid var(--mist);padding:1.2rem;margin:1.5rem 0;display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">'
+        + '<div><div style="font-size:.65rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Blood Type · 血型</div><div style="font-size:1rem;color:var(--ink);margin-top:.2rem;">' + (pp.blood_type || '—') + '</div></div>'
+        + '<div><div style="font-size:.65rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Allergies · 過敏史</div><div style="font-size:.85rem;color:var(--ink);margin-top:.2rem;">' + (pp.allergies || '—') + '</div></div>'
+        + '<div><div style="font-size:.65rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Height / Weight</div><div style="font-size:1rem;color:var(--ink);margin-top:.2rem;">' + (pp.height_cm ? pp.height_cm + ' cm' : '—') + ' / ' + (pp.weight_kg ? pp.weight_kg + ' kg' : '—') + '</div></div>'
+        + '</div>';
+
+      // Consultation history
+      html += '<div style="font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:1.5rem 0 .8rem;">Consultation History · 就診記錄</div>';
+
+      if (!completed.length && !rxs.length) {
+        html += emptyState('No clinical records yet · 暫無就診記錄<br><br>Your consultation history will appear here after your first visit.');
+      } else {
+        // Merge appointments with their prescriptions
+        completed.forEach(function (a) {
+          var matchedRx = rxs.filter(function (r) { return r.appointment_id === a.id; });
+          html += '<div style="background:var(--washi);border:1px solid var(--mist);border-left:3px solid var(--sage);padding:1.2rem;margin-bottom:.8rem;">'
+            + '<div style="display:flex;justify-content:space-between;align-items:start;">'
+            + '  <div>'
+            + '    <div style="font-family:\'Noto Serif SC\',serif;font-size:1rem;color:var(--ink);">' + formatDate(a.scheduled_start) + '</div>'
+            + '    <div style="font-size:.78rem;color:var(--stone);margin-top:.2rem;">Doctor #' + a.doctor_id + (a.notes ? ' · ' + a.notes : '') + '</div>'
+            + '  </div>'
+            + '  <span style="font-size:.65rem;padding:.2rem .6rem;border-radius:3px;background:var(--sage);color:#fff;">Completed</span>'
+            + '</div>';
+
+          if (matchedRx.length) {
+            matchedRx.forEach(function (rx) {
+              html += '<div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--mist);">'
+                + '<div style="font-size:.72rem;color:var(--gold);margin-bottom:.3rem;">Diagnosis · 診斷</div>'
+                + '<div style="font-size:.9rem;color:var(--ink);">' + (rx.diagnosis || '—') + '</div>';
+              if (rx.items && rx.items.length) {
+                html += '<div style="font-size:.72rem;color:var(--gold);margin:.5rem 0 .3rem;">Prescription · 處方</div>';
+                html += '<div style="font-size:.82rem;color:var(--stone);">' + rx.items.map(function (i) { return i.drug_name + ' ' + i.quantity + i.unit; }).join(', ') + '</div>';
+              }
+              if (rx.instructions) {
+                html += '<div style="font-size:.72rem;color:var(--gold);margin:.5rem 0 .3rem;">Instructions · 醫囑</div>';
+                html += '<div style="font-size:.82rem;color:var(--stone);">' + rx.instructions + '</div>';
+              }
+              html += '</div>';
+            });
+          }
+          html += '</div>';
+        });
+
+        // Show prescriptions without appointments (standalone)
+        var orphanRx = rxs.filter(function (r) {
+          return !completed.some(function (a) { return a.id === r.appointment_id; });
+        });
+        if (orphanRx.length) {
+          html += '<div style="font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:1.5rem 0 .8rem;">Other Prescriptions · 其他處方</div>';
+          orphanRx.forEach(function (rx) {
+            html += '<div style="background:var(--washi);border:1px solid var(--mist);border-left:3px solid var(--gold);padding:1rem;margin-bottom:.6rem;">'
+              + '<div style="font-size:.9rem;color:var(--ink);">' + (rx.diagnosis || 'Prescription #' + rx.id) + '</div>'
+              + '<div style="font-size:.78rem;color:var(--stone);margin-top:.2rem;">' + formatDate(rx.created_at) + ' · ' + rx.status + '</div>'
+              + '</div>';
+          });
+        }
+      }
+
+      el.innerHTML = html;
+    } catch (e) { console.error('loadHealthRecords', e); }
+  }
 
   // ── Tongue History ──
   async function loadTongueHistory() {
