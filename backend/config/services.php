@@ -4,7 +4,12 @@ return [
 
     'stripe' => [
         'secret'         => env('STRIPE_SECRET'),
+        'publishable'    => env('STRIPE_PUBLISHABLE_KEY'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'currency'       => env('STRIPE_CURRENCY', 'myr'),
+        // Malaysia payment methods supported by Stripe:
+        // card, fpx, grabpay, touch_n_go (via Stripe), shopeepay
+        'payment_methods' => ['card', 'fpx', 'grabpay'],
     ],
 
     'paypal' => [
