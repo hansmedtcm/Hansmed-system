@@ -204,7 +204,11 @@ const notificationApi = {
 // ── Admin ─────────────────────────────────────────────────────────
 
 const adminApi = {
-  // Doctor/pharmacy verification
+  // Doctor management (full CRUD)
+  listDoctors:        (params = '') => api.get('/admin/doctors' + (params ? '?' + params : '')),
+  createDoctor:       (data) => api.post('/admin/doctors', data),
+  updateDoctor:       (id, data) => api.put('/admin/doctors/' + id, data),
+  toggleDoctor:       (id) => api.post('/admin/doctors/' + id + '/toggle'),
   pendingDoctors:     () => api.get('/admin/doctors/pending'),
   reviewDoctor:       (id, data) => api.post('/admin/doctors/' + id + '/review', data),
   pendingPharmacies:  () => api.get('/admin/pharmacies/pending'),

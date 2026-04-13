@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DoctorManagementController;
 use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\PatientController as AdminPatientController;
 use App\Http\Controllers\Admin\PrescriptionOversightController;
@@ -150,5 +151,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/patients',          [AdminPatientController::class, 'index']);
         Route::get('/patients/{id}',     [AdminPatientController::class, 'show']);
         Route::put('/patients/{id}',     [AdminPatientController::class, 'update']);
+
+        // Doctor management (full CRUD — admin creates doctor accounts)
+        Route::get('/doctors',              [DoctorManagementController::class, 'index']);
+        Route::post('/doctors',             [DoctorManagementController::class, 'store']);
+        Route::put('/doctors/{id}',         [DoctorManagementController::class, 'update']);
+        Route::post('/doctors/{id}/toggle', [DoctorManagementController::class, 'toggleStatus']);
     });
 });

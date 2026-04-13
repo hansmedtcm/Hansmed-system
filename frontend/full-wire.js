@@ -90,25 +90,86 @@
     } catch {}
   };
 
-  // ── Admin: Doctors ──
+  // ── Admin: Doctors (full management) ──
   async function loadAdmDoctors() {
     try {
-      var pending = await A.admin.pendingDoctors();
-      var docs = pending.data || [];
-      // Also update the ADMIN_DOCTORS array for any existing render functions
-      window.ADMIN_DOCTORS = docs.map(function (d) {
+      var res = await A.admin.listDoctors();
+      var docs = res.data || [];
+      window.ADMIN_DOCTORS = docs.map(function (u) {
+        var dp = u.doctor_profile || {};
         return {
-          id: d.user_id,
-          name: d.full_name,
-          email: d.user ? d.user.email : '',
-          spec: d.specialties || 'TCM',
-          exp: '',
-          status: d.verification_status,
+          id: u.id,
+          name: dp.full_name || u.email,
+          email: u.email,
+          spec: dp.specialties || 'TCM',
+          exp: (dp.consultation_count || 0) + ' consultations',
+          status: u.status,
+          fee: dp.consultation_fee || 0,
+          accepting: dp.accepting_appointments,
+          verification: dp.verification_status,
         };
       });
-      var _origRender = window.renderAdminDoctors;
-      if (typeof _origRender === 'function') _origRender();
-    } catch {}
+
+      // Re-render the doctor table
+      var el = document.getElementById('adm-doctors');
+      if (!el) return;
+
+      var tbody = el.querySelector('tbody');
+      if (!tbody) {
+        // Build the table from scratch if prototype table doesn't match
+        el.innerHTML = ''
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">'
+          + '  <h3>Doctor Management · 醫師管理</h3>'
+          + '  <button class="btn-primary" onclick="openAddDoctorForm()">+ Add Doctor · 新增醫師</button>'
+          + '</div>'
+          + '<div id="add-doctor-form" style="display:none;background:var(--washi);padding:1.5rem;margin-bottom:1.5rem;border:1px solid var(--mist);">'
+          + '  <h4 style="margin-bottom:1rem;">New Doctor Account · 新增醫師帳號</h4>'
+          + '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">'
+          + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Full Name · 姓名 *</label><input id="ad-name" class="fi" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+          + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Email · 電郵 *</label><input id="ad-email" type="email" class="fi" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+          + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Password · 密碼 *</label><input id="ad-password" type="password" class="fi" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;" placeholder="Min 8 characters"></div>'
+          + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Consultation Fee (RM) · 診費 *</label><input id="ad-fee" type="number" value="120" class="fi" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+          + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Specialties · 專長</label><input id="ad-spec" class="fi" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;" placeholder="e.g. General TCM, Gynecology"></div>'
+          + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">License No · 執照號碼</label><input id="ad-license" class="fi" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+          + '  </div>'
+          + '  <div style="margin-top:.8rem;"><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Bio · 簡介</label><textarea id="ad-bio" rows="2" style="width:100%;padding:.5rem;border:1px solid var(--mist);background:transparent;outline:none;resize:vertical;"></textarea></div>'
+          + '  <div style="margin-top:1rem;display:flex;gap:.5rem;">'
+          + '    <button class="btn-primary" onclick="submitNewDoctor()">Create Account · 建立帳號</button>'
+          + '    <button class="btn-outline" onclick="closeAddDoctorForm()">Cancel · 取消</button>'
+          + '  </div>'
+          + '</div>'
+          + '<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--mist);">'
+          + '<th style="text-align:left;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Doctor</th>'
+          + '<th style="text-align:left;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);">Email</th>'
+          + '<th style="text-align:left;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);">Specialty</th>'
+          + '<th style="text-align:center;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);">Fee</th>'
+          + '<th style="text-align:center;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);">Status</th>'
+          + '<th style="text-align:right;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);">Actions</th>'
+          + '</tr></thead><tbody id="adm-doctors-tbody"></tbody></table>';
+        tbody = document.getElementById('adm-doctors-tbody');
+      }
+
+      if (tbody) {
+        tbody.innerHTML = window.ADMIN_DOCTORS.map(function (d) {
+          var statusColor = d.status === 'active' ? 'var(--sage)' : d.status === 'suspended' ? 'var(--red-seal)' : 'var(--gold)';
+          return '<tr style="border-bottom:1px solid var(--mist);">'
+            + '<td style="padding:.6rem;font-size:.88rem;color:var(--ink);">' + d.name + '</td>'
+            + '<td style="padding:.6rem;font-size:.82rem;color:var(--stone);">' + d.email + '</td>'
+            + '<td style="padding:.6rem;font-size:.82rem;color:var(--stone);">' + d.spec + '</td>'
+            + '<td style="padding:.6rem;text-align:center;font-size:.88rem;">RM ' + parseFloat(d.fee).toFixed(0) + '</td>'
+            + '<td style="padding:.6rem;text-align:center;"><span style="font-size:.68rem;padding:.2rem .5rem;border-radius:3px;background:' + statusColor + ';color:#fff;">' + d.status + '</span></td>'
+            + '<td style="padding:.6rem;text-align:right;">'
+            + '<button class="ph-btn-outline" style="font-size:.65rem;padding:.3rem .6rem;" onclick="toggleDoctorStatus(' + d.id + ')">' + (d.status === 'active' ? 'Suspend' : 'Activate') + '</button>'
+            + '</td></tr>';
+        }).join('');
+
+        if (!window.ADMIN_DOCTORS.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--stone);">No doctors yet. Click "+ Add Doctor" to create one. · 暫無醫師，請新增。</td></tr>';
+        }
+      }
+    } catch (e) {
+      console.error('loadAdmDoctors', e);
+    }
   }
 
   // ── Admin: Patients ──
@@ -329,6 +390,70 @@
   // ================================================================
   // 7. ADMIN: Doctor approval buttons
   // ================================================================
+
+  // ── Add Doctor form ──
+  window.openAddDoctorForm = function () {
+    var f = document.getElementById('add-doctor-form');
+    if (f) f.style.display = 'block';
+  };
+  window.closeAddDoctorForm = function () {
+    var f = document.getElementById('add-doctor-form');
+    if (f) f.style.display = 'none';
+  };
+
+  window.submitNewDoctor = async function () {
+    var name = (document.getElementById('ad-name') || {}).value || '';
+    var email = (document.getElementById('ad-email') || {}).value || '';
+    var password = (document.getElementById('ad-password') || {}).value || '';
+    var fee = (document.getElementById('ad-fee') || {}).value || '120';
+    var spec = (document.getElementById('ad-spec') || {}).value || '';
+    var license = (document.getElementById('ad-license') || {}).value || '';
+    var bio = (document.getElementById('ad-bio') || {}).value || '';
+
+    if (!name || !email || !password) {
+      showToast('Name, email and password are required · 姓名、電郵和密碼為必填');
+      return;
+    }
+    if (password.length < 8) {
+      showToast('Password must be at least 8 characters · 密碼至少8個字元');
+      return;
+    }
+
+    try {
+      await A.admin.createDoctor({
+        full_name: name,
+        email: email,
+        password: password,
+        consultation_fee: parseFloat(fee),
+        specialties: spec,
+        license_no: license,
+        bio: bio,
+      });
+      showToast('Doctor account created! · 醫師帳號已建立 ✓');
+      closeAddDoctorForm();
+      // Clear form
+      ['ad-name','ad-email','ad-password','ad-spec','ad-license','ad-bio'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      loadAdmDoctors();
+    } catch (e) {
+      var msg = '';
+      if (e.data && e.data.errors) {
+        var k = Object.keys(e.data.errors)[0];
+        msg = e.data.errors[k][0];
+      }
+      showToast(msg || e.message || 'Failed to create doctor');
+    }
+  };
+
+  window.toggleDoctorStatus = async function (doctorId) {
+    try {
+      var res = await A.admin.toggleDoctor(doctorId);
+      showToast('Doctor ' + (res.user.status || 'updated') + ' · 醫師狀態已更新 ✓');
+      loadAdmDoctors();
+    } catch (e) { showToast(e.message || 'Failed'); }
+  };
 
   window.approveDoctor = async function (doctorId) {
     try {
