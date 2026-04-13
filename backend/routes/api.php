@@ -118,6 +118,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/reconciliation/summary', [PharmacyReconController::class, 'summary']);
         Route::get('/reconciliation/daily',   [PharmacyReconController::class, 'dailyBreakdown']);
+
+        // POS (Point of Sale)
+        Route::get('/pos/products',       [\App\Http\Controllers\PosController::class, 'products']);
+        Route::post('/pos/sale',          [\App\Http\Controllers\PosController::class, 'sale']);
+        Route::get('/pos/history',        [\App\Http\Controllers\PosController::class, 'history']);
+        Route::get('/pos/sales/{id}',     [\App\Http\Controllers\PosController::class, 'show']);
+        Route::get('/pos/daily-summary',  [\App\Http\Controllers\PosController::class, 'dailySummary']);
     });
 
     // ================== ADMIN ==================

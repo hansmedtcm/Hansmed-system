@@ -1,0 +1,22 @@
+CREATE TABLE pos_sales (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  sale_no         VARCHAR(40) NOT NULL UNIQUE,
+  pharmacy_id     BIGINT UNSIGNED NOT NULL,
+  cashier_id      BIGINT UNSIGNED NOT NULL,
+  patient_name    VARCHAR(120) NULL,
+  patient_id      BIGINT UNSIGNED NULL,
+  prescription_id BIGINT UNSIGNED NULL,
+  sale_type       ENUM('walk_in','otc','prescription') NOT NULL DEFAULT 'walk_in',
+  payment_method  ENUM('cash','card','ewallet_tng','ewallet_grab','ewallet_shopee','fpx') NOT NULL,
+  subtotal        DECIMAL(10,2) NOT NULL,
+  tax             DECIMAL(10,2) NOT NULL DEFAULT 0,
+  total           DECIMAL(10,2) NOT NULL,
+  amount_received DECIMAL(10,2) NOT NULL,
+  change_amount   DECIMAL(10,2) NOT NULL DEFAULT 0,
+  notes           VARCHAR(500) NULL,
+  items           JSON NOT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pos_pharm FOREIGN KEY (pharmacy_id) REFERENCES users(id),
+  KEY idx_pos_pharm_date (pharmacy_id, created_at),
+  KEY idx_pos_sale_no (sale_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
