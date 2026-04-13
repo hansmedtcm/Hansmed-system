@@ -79,13 +79,8 @@
   window.showAdminPanel = async function (id, btn) {
     if (typeof _origShowAdminPanel === 'function') _origShowAdminPanel(id, btn);
 
-    // Only clear panels that we fully rebuild with API data
-    var rebuildPanels = ['adm-dashboard', 'adm-doctors', 'adm-accounts', 'adm-orders'];
-    var panel = document.getElementById(id);
-    if (panel && rebuildPanels.indexOf(id) >= 0) {
-      panel.innerHTML = '<div style="color:var(--stone);padding:2rem;">Loading... · 載入中...</div>';
-    }
-
+    // Don't clear panels — let the API functions handle their own content
+    // This prevents "Loading..." stuck state if API fails
     try {
       if (id === 'adm-dashboard')    await loadAdminDashStats();
       if (id === 'adm-doctors')      await loadAdmDoctors();
@@ -93,7 +88,7 @@
       if (id === 'adm-orders')       await loadAdmOrders();
       if (id === 'adm-accounts')     await loadAdmAccounts();
       if (id === 'adm-settings')     loadAdmSettings();
-    } catch {}
+    } catch (e) { console.error('Admin panel load error:', id, e); }
   };
 
   // ── Admin: Doctors (full management) ──
@@ -182,8 +177,7 @@
   async function loadAdmPatients(search) {
     try {
       var params = search ? '?search=' + encodeURIComponent(search) : '';
-      var res = await A.admin.listPrescriptions ? await A.api.get('/admin/patients' + params) : null;
-      if (!res) return;
+      var res = await A.api.get('/admin/patients' + params);
       var patients = res.data || [];
       window.ADMIN_PATIENTS = patients.map(function (u) {
         var p = u.patient_profile || {};
@@ -292,8 +286,8 @@
 
       el.innerHTML = ''
         + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">'
-        + '  <h3>Account Management · 帳號管理</h3>'
-        + '  <button class="btn-primary" onclick="openCreateAccountForm()">+ Create Account · 新增帳號</button>'
+        + '  <h3 style="font-family:\'Cormorant Garamond\',\'Noto Serif SC\',serif;font-weight:400;font-size:1.6rem;">Account Management · 帳號管理</h3>'
+        + '  <button class="btn-primary" style="font-size:.72rem;padding:.6rem 1.5rem;" onclick="openCreateAccountForm()">+ Create Account · 新增帳號</button>'
         + '</div>'
         + '<div id="create-account-form" style="display:none;background:var(--washi);padding:1.5rem;margin-bottom:1.5rem;border:1px solid var(--mist);">'
         + '  <h4 style="margin-bottom:1rem;">New Account · 新增帳號</h4>'
@@ -328,10 +322,10 @@
         + '  </div>'
         + '</div>'
         + '<div style="display:flex;gap:.5rem;margin-bottom:1rem;">'
-        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'\')">All · 全部</button>'
-        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'doctor\')">Doctors · 醫師</button>'
-        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'pharmacy\')">Pharmacy · 藥房</button>'
-        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'admin\')">Admin · 管理員</button>'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAccounts(\'\')">All · 全部</button>'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAccounts(\'doctor\')">Doctors · 醫師</button>'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAccounts(\'pharmacy\')">Pharmacy · 藥房</button>'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAccounts(\'admin\')">Admin · 管理員</button>'
         + '</div>'
         + '<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--mist);">'
         + '<th style="text-align:left;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Name</th>'
