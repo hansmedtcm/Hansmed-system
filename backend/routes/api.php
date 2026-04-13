@@ -159,6 +159,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/patients/{id}',     [AdminPatientController::class, 'show']);
         Route::put('/patients/{id}',     [AdminPatientController::class, 'update']);
 
+        // Account management (create doctor/pharmacy/admin from one place)
+        Route::get('/accounts',             [\App\Http\Controllers\Admin\AccountController::class, 'index']);
+        Route::post('/accounts',            [\App\Http\Controllers\Admin\AccountController::class, 'store']);
+        Route::post('/accounts/{id}/toggle',[\App\Http\Controllers\Admin\AccountController::class, 'toggleStatus']);
+
         // Doctor management (full CRUD — admin creates doctor accounts)
         Route::get('/doctors',              [DoctorManagementController::class, 'index']);
         Route::post('/doctors',             [DoctorManagementController::class, 'store']);

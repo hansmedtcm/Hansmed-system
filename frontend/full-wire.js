@@ -276,10 +276,146 @@
     // Keep prototype data for now
   }
 
-  // ── Admin: Accounts ──
+  // ── Admin: Accounts (create doctor/pharmacy/admin) ──
   async function loadAdmAccounts() {
-    // Could list all users — for now keep prototype
+    try {
+      var res = await A.admin.listAccounts();
+      var users = res.data || [];
+      var el = document.getElementById('adm-accounts');
+      if (!el) return;
+
+      el.innerHTML = ''
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">'
+        + '  <h3>Account Management · 帳號管理</h3>'
+        + '  <button class="btn-primary" onclick="openCreateAccountForm()">+ Create Account · 新增帳號</button>'
+        + '</div>'
+        + '<div id="create-account-form" style="display:none;background:var(--washi);padding:1.5rem;margin-bottom:1.5rem;border:1px solid var(--mist);">'
+        + '  <h4 style="margin-bottom:1rem;">New Account · 新增帳號</h4>'
+        + '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">'
+        + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Role · 角色 *</label>'
+        + '      <select id="ca-role" onchange="toggleAccountFields()" style="width:100%;padding:.5rem;border:1px solid var(--mist);background:var(--washi);outline:none;">'
+        + '        <option value="doctor">Doctor · 醫師</option>'
+        + '        <option value="pharmacy">Pharmacy · 藥房</option>'
+        + '        <option value="admin">Admin · 管理員</option>'
+        + '      </select></div>'
+        + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Name · 名稱 *</label><input id="ca-name" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Email · 電郵 *</label><input id="ca-email" type="email" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Password · 密碼 *</label><input id="ca-pw" type="password" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;" placeholder="Min 8 characters"></div>'
+        + '  </div>'
+        + '  <div id="ca-doctor-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">'
+        + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Specialties · 專長</label><input id="ca-spec" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;" placeholder="e.g. General TCM, Gynecology"></div>'
+        + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Consultation Fee (RM)</label><input id="ca-fee" type="number" value="120" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '    <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">License No</label><input id="ca-license" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '  </div>'
+        + '  <div id="ca-pharmacy-fields" style="display:none;">'
+        + '    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">'
+        + '      <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Address · 地址</label><input id="ca-addr" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '      <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">City · 城市</label><input id="ca-city" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '      <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">State · 州</label><input id="ca-state" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '      <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Phone · 電話</label><input id="ca-phone" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '      <div><label style="font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">License No</label><input id="ca-ph-license" style="width:100%;padding:.5rem 0;border:none;border-bottom:1px solid var(--mist);background:transparent;outline:none;"></div>'
+        + '    </div>'
+        + '  </div>'
+        + '  <div style="margin-top:1rem;display:flex;gap:.5rem;">'
+        + '    <button class="btn-primary" onclick="submitCreateAccount()">Create Account · 建立帳號</button>'
+        + '    <button class="btn-outline" onclick="closeCreateAccountForm()">Cancel · 取消</button>'
+        + '  </div>'
+        + '</div>'
+        + '<div style="display:flex;gap:.5rem;margin-bottom:1rem;">'
+        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'\')">All · 全部</button>'
+        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'doctor\')">Doctors · 醫師</button>'
+        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'pharmacy\')">Pharmacy · 藥房</button>'
+        + '  <button class="ph-btn-outline" onclick="filterAccounts(\'admin\')">Admin · 管理員</button>'
+        + '</div>'
+        + '<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--mist);">'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Name</th>'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;color:var(--gold);">Email</th>'
+        + '<th style="text-align:center;padding:.6rem;font-size:.68rem;color:var(--gold);">Role</th>'
+        + '<th style="text-align:center;padding:.6rem;font-size:.68rem;color:var(--gold);">Status</th>'
+        + '<th style="text-align:right;padding:.6rem;font-size:.68rem;color:var(--gold);">Actions</th>'
+        + '</tr></thead><tbody id="adm-accounts-tbody">'
+        + renderAccountRows(users)
+        + '</tbody></table>';
+    } catch (e) { console.error('loadAdmAccounts', e); }
   }
+
+  function renderAccountRows(users) {
+    if (!users.length) return '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--stone);">No accounts yet · 暫無帳號</td></tr>';
+    return users.map(function (u) {
+      var dp = u.doctor_profile || {};
+      var pp = u.pharmacy_profile || {};
+      var name = dp.full_name || pp.name || u.email;
+      var roleColors = { doctor: 'var(--sage)', pharmacy: 'var(--gold)', admin: 'var(--red-seal)' };
+      var statusColor = u.status === 'active' ? 'var(--sage)' : 'var(--red-seal)';
+      return '<tr style="border-bottom:1px solid var(--mist);">'
+        + '<td style="padding:.6rem;font-size:.88rem;">' + name + '</td>'
+        + '<td style="padding:.6rem;font-size:.82rem;color:var(--stone);">' + u.email + '</td>'
+        + '<td style="padding:.6rem;text-align:center;"><span style="font-size:.65rem;padding:.2rem .5rem;border-radius:3px;background:' + (roleColors[u.role] || 'var(--stone)') + ';color:#fff;">' + u.role + '</span></td>'
+        + '<td style="padding:.6rem;text-align:center;"><span style="font-size:.65rem;padding:.2rem .5rem;border-radius:3px;background:' + statusColor + ';color:#fff;">' + u.status + '</span></td>'
+        + '<td style="padding:.6rem;text-align:right;"><button class="ph-btn-outline" style="font-size:.65rem;padding:.3rem .6rem;" onclick="toggleAccountStatus(' + u.id + ')">' + (u.status === 'active' ? 'Suspend' : 'Activate') + '</button></td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  window.openCreateAccountForm = function () {
+    var f = document.getElementById('create-account-form');
+    if (f) f.style.display = 'block';
+    toggleAccountFields();
+  };
+  window.closeCreateAccountForm = function () {
+    var f = document.getElementById('create-account-form');
+    if (f) f.style.display = 'none';
+  };
+  window.toggleAccountFields = function () {
+    var role = (document.getElementById('ca-role') || {}).value;
+    var d = document.getElementById('ca-doctor-fields');
+    var p = document.getElementById('ca-pharmacy-fields');
+    if (d) d.style.display = role === 'doctor' ? 'grid' : 'none';
+    if (p) p.style.display = role === 'pharmacy' ? 'block' : 'none';
+  };
+  window.submitCreateAccount = async function () {
+    var role = (document.getElementById('ca-role') || {}).value;
+    var name = (document.getElementById('ca-name') || {}).value;
+    var email = (document.getElementById('ca-email') || {}).value;
+    var pw = (document.getElementById('ca-pw') || {}).value;
+    if (!name || !email || !pw) { showToast('Name, email and password required · 必填'); return; }
+    if (pw.length < 8) { showToast('Password min 8 characters · 密碼至少8字元'); return; }
+    var payload = { role: role, name: name, email: email, password: pw };
+    if (role === 'doctor') {
+      payload.specialties = (document.getElementById('ca-spec') || {}).value || null;
+      payload.consultation_fee = parseFloat((document.getElementById('ca-fee') || {}).value) || 120;
+      payload.license_no = (document.getElementById('ca-license') || {}).value || null;
+    } else if (role === 'pharmacy') {
+      payload.address_line = (document.getElementById('ca-addr') || {}).value || null;
+      payload.city = (document.getElementById('ca-city') || {}).value || null;
+      payload.state = (document.getElementById('ca-state') || {}).value || null;
+      payload.phone = (document.getElementById('ca-phone') || {}).value || null;
+      payload.license_no = (document.getElementById('ca-ph-license') || {}).value || null;
+    }
+    try {
+      await A.admin.createAccount(payload);
+      showToast(role + ' account created! · 帳號已建立 ✓');
+      closeCreateAccountForm();
+      loadAdmAccounts();
+    } catch (e) {
+      var msg = ''; if (e.data && e.data.errors) { var k = Object.keys(e.data.errors)[0]; msg = e.data.errors[k][0]; }
+      showToast(msg || e.message || 'Failed');
+    }
+  };
+  window.filterAccounts = async function (role) {
+    try {
+      var res = await A.admin.listAccounts(role ? 'role=' + role : '');
+      var tbody = document.getElementById('adm-accounts-tbody');
+      if (tbody) tbody.innerHTML = renderAccountRows(res.data || []);
+    } catch {}
+  };
+  window.toggleAccountStatus = async function (id) {
+    try {
+      var res = await A.admin.toggleAccount(id);
+      showToast('Account ' + (res.user.status || 'updated') + ' · 已更新 ✓');
+      loadAdmAccounts();
+    } catch (e) { showToast(e.message || 'Failed'); }
+  };
 
   // ── Admin: Settings — wire save buttons ──
   function loadAdmSettings() {

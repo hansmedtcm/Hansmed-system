@@ -204,6 +204,11 @@ const notificationApi = {
 // ── Admin ─────────────────────────────────────────────────────────
 
 const adminApi = {
+  // Account management (create any role)
+  listAccounts:       (params = '') => api.get('/admin/accounts' + (params ? '?' + params : '')),
+  createAccount:      (data) => api.post('/admin/accounts', data),
+  toggleAccount:      (id) => api.post('/admin/accounts/' + id + '/toggle'),
+
   // Doctor management (full CRUD)
   listDoctors:        (params = '') => api.get('/admin/doctors' + (params ? '?' + params : '')),
   createDoctor:       (data) => api.post('/admin/doctors', data),
