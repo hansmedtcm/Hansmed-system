@@ -53,6 +53,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/paypal/create',  [PayPalController::class, 'create']);
     Route::post('/payments/paypal/capture', [PayPalController::class, 'capture']);
 
+    // Chat
+    Route::get('/chat/threads',                        [\App\Http\Controllers\ChatController::class, 'threads']);
+    Route::post('/chat/thread',                        [\App\Http\Controllers\ChatController::class, 'getOrCreateThread']);
+    Route::get('/chat/threads/{threadId}/messages',    [\App\Http\Controllers\ChatController::class, 'messages']);
+    Route::post('/chat/threads/{threadId}/messages',   [\App\Http\Controllers\ChatController::class, 'send']);
+
+    // Documents
+    Route::get('/documents/prescription/{id}',  [\App\Http\Controllers\DocumentController::class, 'prescriptionPdf']);
+
+    // Available slots (public for booking)
+    Route::get('/doctors/{doctorId}/slots',  [\App\Http\Controllers\Doctor\ScheduleController::class, 'availableSlots']);
+
     // ================== PATIENT ==================
     Route::middleware('role:patient')->prefix('patient')->group(function () {
         // These routes are accessible even before registration is completed
@@ -101,6 +113,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/earnings/history', [DoctorEarningsController::class, 'history']);
         Route::get('/withdrawals',      [DoctorEarningsController::class, 'withdrawals']);
         Route::post('/withdrawals',     [DoctorEarningsController::class, 'requestWithdrawal']);
+
+        // Schedule management
+        Route::get('/schedules',       [\App\Http\Controllers\Doctor\ScheduleController::class, 'index']);
+        Route::post('/schedules',      [\App\Http\Controllers\Doctor\ScheduleController::class, 'store']);
+        Route::delete('/schedules/{id}',[\App\Http\Controllers\Doctor\ScheduleController::class, 'destroy']);
+
+        // Document generation
+        Route::post('/documents/mc',       [\App\Http\Controllers\DocumentController::class, 'medicalCertificate']);
+        Route::post('/documents/referral', [\App\Http\Controllers\DocumentController::class, 'referralLetter']);
     });
 
     // ================== PHARMACY ==================
