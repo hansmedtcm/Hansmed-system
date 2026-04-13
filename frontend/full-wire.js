@@ -79,7 +79,14 @@
   window.showAdminPanel = async function (id, btn) {
     if (typeof _origShowAdminPanel === 'function') _origShowAdminPanel(id, btn);
 
+    // Clear old content immediately to prevent "flash" of hardcoded data
+    var panel = document.getElementById(id);
+    if (panel && id !== 'adm-dashboard') {
+      panel.innerHTML = '<div style="color:var(--stone);padding:2rem;">Loading... · 載入中...</div>';
+    }
+
     try {
+      if (id === 'adm-dashboard')    await loadAdminDashStats();
       if (id === 'adm-doctors')      await loadAdmDoctors();
       if (id === 'adm-patients')     await loadAdmPatients();
       if (id === 'adm-appointments') await loadAdmAppointments();
@@ -438,19 +445,66 @@
 
   // ── Admin: Dashboard stats ──
   async function loadAdminDashStats() {
+    var panel = document.getElementById('adm-dashboard') || document.querySelector('#page-admin .admin-panel.active');
+    if (!panel) return;
+
+    // Clear old hardcoded content immediately
+    panel.innerHTML = '<div style="color:var(--stone);padding:2rem;">Loading dashboard... · 載入中...</div>';
+
     try {
       var res = await A.admin.dashboard();
-      // Try to update stat cards in the admin dashboard
-      var panel = document.getElementById('adm-dashboard') || document.querySelector('#page-admin .admin-panel.active');
-      if (!panel) return;
-      var statNums = panel.querySelectorAll('.stat-card-num');
-      if (statNums.length >= 4) {
-        statNums[0].textContent = res.users ? res.users.patients : '0';
-        statNums[1].textContent = res.appointments ? res.appointments.today : '0';
-        statNums[2].textContent = res.orders ? res.orders.total : '0';
-        statNums[3].textContent = res.payments_last_30d ? 'RM ' + parseFloat(res.payments_last_30d).toFixed(0) : 'RM 0';
-      }
-    } catch {}
+      var u = res.users || {};
+      var a = res.appointments || {};
+      var o = res.orders || {};
+      var rev = parseFloat(res.payments_last_30d || 0);
+
+      panel.innerHTML = ''
+        + '<h3 style="margin-bottom:.3rem;">Dashboard · 儀表板</h3>'
+        + '<div class="sub-label" style="margin-bottom:1.5rem;">HansMed Modern TCM — Operations Overview</div>'
+        // Stats
+        + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;">'
+        + dashStat(u.doctors || 0, 'Active Doctors · 在職醫師')
+        + dashStat(u.patients || 0, 'Total Patients · 總患者數')
+        + dashStat(a.today || 0, "Today's Appts · 今日預約")
+        + dashStat('RM ' + (rev >= 1000 ? (rev / 1000).toFixed(1) + 'K' : rev.toFixed(0)), 'Monthly Revenue · 月收入')
+        + '</div>'
+        // Summary cards
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">'
+        + '<div>'
+        + '  <div style="font-family:\'Source Sans 3\',sans-serif;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;">System Status · 系統狀態</div>'
+        + '  <div style="background:var(--washi);border:1px solid var(--mist);padding:1rem;">'
+        + statusRow('Total Appointments · 總預約', a.total || 0)
+        + statusRow('Completed · 已完成', a.completed || 0)
+        + statusRow('Total Orders · 總訂單', o.total || 0)
+        + statusRow('Paid Orders · 已付款', o.paid || 0)
+        + statusRow('Order Revenue · 訂單收入', 'RM ' + parseFloat(o.revenue || 0).toFixed(2))
+        + '  </div>'
+        + '</div>'
+        + '<div>'
+        + '  <div style="font-family:\'Source Sans 3\',sans-serif;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;">Quick Actions · 快捷操作</div>'
+        + '  <div style="display:grid;gap:.5rem;">'
+        + '    <button class="btn-primary" style="width:100%;text-align:left;padding:.8rem 1rem;" onclick="showAdminPanel(\'adm-accounts\')">+ Create Account · 新增帳號</button>'
+        + '    <button class="btn-outline" style="width:100%;text-align:left;padding:.8rem 1rem;" onclick="showAdminPanel(\'adm-orders\')">📦 View Orders · 查看訂單</button>'
+        + '    <button class="btn-outline" style="width:100%;text-align:left;padding:.8rem 1rem;" onclick="exportAdminCSV(\'orders\')">📊 Export Orders CSV · 匯出訂單</button>'
+        + '    <button class="btn-outline" style="width:100%;text-align:left;padding:.8rem 1rem;" onclick="showAdminPanel(\'adm-auditlogs\')">📜 View Audit Logs · 查看日志</button>'
+        + '  </div>'
+        + '</div>'
+        + '</div>';
+    } catch (e) {
+      panel.innerHTML = '<p style="color:var(--red-seal);padding:2rem;">Failed to load dashboard · 載入失敗</p>';
+    }
+  }
+
+  function dashStat(num, label) {
+    return '<div style="background:var(--washi);border:1px solid var(--mist);padding:1.5rem;text-align:center;">'
+      + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:2.2rem;color:var(--ink);line-height:1;">' + num + '</div>'
+      + '<div style="font-family:\'Source Sans 3\',sans-serif;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--stone);margin-top:.4rem;">' + label + '</div>'
+      + '</div>';
+  }
+
+  function statusRow(label, value) {
+    return '<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--mist);font-size:.85rem;">'
+      + '<span style="color:var(--stone);">' + label + '</span><strong>' + value + '</strong></div>';
   }
 
   // Load admin dashboard when admin page opens

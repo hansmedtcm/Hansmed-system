@@ -25,6 +25,12 @@
     var nav = document.querySelector('#page-admin .admin-nav, #page-admin [class*="admin-sidebar"]');
     if (!nav || document.getElementById('adm-tongue-btn')) return;
 
+    // Add a section label first
+    var sectionDiv = document.createElement('div');
+    sectionDiv.className = 'admin-nav-section';
+    sectionDiv.innerHTML = '<div class="admin-nav-label">System · 系統</div>';
+    nav.appendChild(sectionDiv);
+
     var tabs = [
       { id: 'adm-tongue',      icon: '👅', label: 'Tongue Config · 舌診配置' },
       { id: 'adm-permissions',  icon: '🔐', label: 'Permissions · 權限管理' },
@@ -35,8 +41,8 @@
     tabs.forEach(function (t) {
       var btn = document.createElement('button');
       btn.id = t.id + '-btn';
-      btn.className = 'admin-nav-item';
-      btn.innerHTML = t.icon + ' ' + t.label;
+      btn.className = 'admin-nav-btn';
+      btn.innerHTML = '<span class="nav-icon">' + t.icon + '</span> ' + t.label;
       btn.onclick = function () { showAdminPanel(t.id, btn); };
       nav.appendChild(btn);
 
