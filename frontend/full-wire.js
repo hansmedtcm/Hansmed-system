@@ -79,9 +79,10 @@
   window.showAdminPanel = async function (id, btn) {
     if (typeof _origShowAdminPanel === 'function') _origShowAdminPanel(id, btn);
 
-    // Clear old content immediately to prevent "flash" of hardcoded data
+    // Only clear panels that we fully rebuild with API data
+    var rebuildPanels = ['adm-dashboard', 'adm-doctors', 'adm-accounts', 'adm-orders'];
     var panel = document.getElementById(id);
-    if (panel && id !== 'adm-dashboard') {
+    if (panel && rebuildPanels.indexOf(id) >= 0) {
       panel.innerHTML = '<div style="color:var(--stone);padding:2rem;">Loading... · 載入中...</div>';
     }
 
@@ -89,9 +90,7 @@
       if (id === 'adm-dashboard')    await loadAdminDashStats();
       if (id === 'adm-doctors')      await loadAdmDoctors();
       if (id === 'adm-patients')     await loadAdmPatients();
-      if (id === 'adm-appointments') await loadAdmAppointments();
       if (id === 'adm-orders')       await loadAdmOrders();
-      if (id === 'adm-inventory')    await loadAdmInventory();
       if (id === 'adm-accounts')     await loadAdmAccounts();
       if (id === 'adm-settings')     loadAdmSettings();
     } catch {}
