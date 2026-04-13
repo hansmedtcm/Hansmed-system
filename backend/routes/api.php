@@ -171,6 +171,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/configs',  [SystemConfigController::class, 'index']);
         Route::post('/configs', [SystemConfigController::class, 'upsert']);
 
+        // Tongue diagnosis config (M-05)
+        Route::get('/tongue-config',  [\App\Http\Controllers\Admin\TongueDiagnosisConfigController::class, 'index']);
+        Route::post('/tongue-config', [\App\Http\Controllers\Admin\TongueDiagnosisConfigController::class, 'update']);
+
+        // Permission management (M-10)
+        Route::get('/permissions',  [\App\Http\Controllers\Admin\PermissionController::class, 'index']);
+        Route::post('/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'update']);
+
+        // Audit logs (M-11)
+        Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index']);
+
+        // Content management (M-12)
+        Route::get('/content',              [\App\Http\Controllers\Admin\ContentController::class, 'index']);
+        Route::get('/content/{slug}',       [\App\Http\Controllers\Admin\ContentController::class, 'show']);
+        Route::post('/content',             [\App\Http\Controllers\Admin\ContentController::class, 'upsert']);
+        Route::delete('/content/{slug}',    [\App\Http\Controllers\Admin\ContentController::class, 'destroy']);
+
         // Reports (M-13)
         Route::get('/reports/dashboard',        [ReportsController::class, 'dashboard']);
         Route::get('/reports/export/{entity}',  [ReportsController::class, 'exportCsv']);
