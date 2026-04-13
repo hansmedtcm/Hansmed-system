@@ -32,9 +32,17 @@ Route::post('/auth/register',   [AuthController::class, 'register']);
 Route::post('/auth/login',      [AuthController::class, 'login']);
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
 
+// Public content pages (privacy, terms, FAQ)
+Route::get('/pages',        [\App\Http\Controllers\ContentPageController::class, 'index']);
+Route::get('/pages/{slug}', [\App\Http\Controllers\ContentPageController::class, 'show']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me',      [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // Account security (C-21)
+    Route::post('/auth/change-password', [\App\Http\Controllers\Auth\SecurityController::class, 'changePassword']);
+    Route::post('/auth/delete-account',  [\App\Http\Controllers\Auth\SecurityController::class, 'deleteAccount']);
 
     // Notifications (all roles)
     Route::get('/notifications',              [NotificationController::class, 'index']);
@@ -80,6 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/tongue-diagnoses',        [TongueDiagnosisController::class, 'store']);
             Route::get('/tongue-diagnoses/{id}',    [TongueDiagnosisController::class, 'show']);
             Route::delete('/tongue-diagnoses/{id}', [TongueDiagnosisController::class, 'destroy']);
+
+            // Health questionnaire (C-08)
+            Route::post('/questionnaires',  [\App\Http\Controllers\Patient\QuestionnaireController::class, 'store']);
+            Route::get('/questionnaires',   [\App\Http\Controllers\Patient\QuestionnaireController::class, 'index']);
 
             Route::get('/doctors',            [DoctorBrowseController::class, 'index']);
             Route::get('/doctors/{doctorId}', [DoctorBrowseController::class, 'show']);
