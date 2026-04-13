@@ -98,6 +98,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ================== DOCTOR ==================
     Route::middleware('role:doctor')->prefix('doctor')->group(function () {
+        // Profile (D-02)
+        Route::get('/profile',  [\App\Http\Controllers\Doctor\ProfileController::class, 'show']);
+        Route::put('/profile',  [\App\Http\Controllers\Doctor\ProfileController::class, 'update']);
+
+        // Patient list (D-05) + tongue reports (D-06) + consultation history (D-10)
+        Route::get('/patients',                          [\App\Http\Controllers\Doctor\PatientListController::class, 'index']);
+        Route::get('/patients/{id}/tongue-diagnoses',    [\App\Http\Controllers\Doctor\PatientListController::class, 'tongueDiagnoses']);
+        Route::get('/patients/{id}/consultations',       [\App\Http\Controllers\Doctor\PatientListController::class, 'consultationHistory']);
+
         Route::get('/appointments',                [DoctorAppointmentController::class, 'index']);
         Route::get('/appointments/{id}',           [DoctorAppointmentController::class, 'show']);
         Route::post('/appointments/{id}/start',    [DoctorAppointmentController::class, 'start']);
