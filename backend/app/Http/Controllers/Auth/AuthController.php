@@ -81,9 +81,13 @@ class AuthController extends Controller
 
         $token = $user->createToken('api', [$user->role])->plainTextToken;
 
+        // Admin has no profile table — only load relation if it exists
         $relation = $user->role . 'Profile';
+        if (method_exists($user, $relation)) {
+            $user->load($relation);
+        }
         return response()->json([
-            'user'  => $user->load($relation),
+            'user'  => $user,
             'token' => $token,
         ]);
     }
@@ -92,7 +96,10 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $relation = $user->role . 'Profile';
-        return response()->json(['user' => $user->load($relation)]);
+        if (method_exists($user, $relation)) {
+            $user->load($relation);
+        }
+        return response()->json(['user' => $user]);
     }
 
     public function logout(Request $request)
