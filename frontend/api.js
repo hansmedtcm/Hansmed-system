@@ -204,6 +204,9 @@ const notificationApi = {
 // ── Admin ─────────────────────────────────────────────────────────
 
 const adminApi = {
+  // Appointments
+  listAppointments:   (params = '') => api.get('/admin/appointments' + (params ? '?' + params : '')),
+
   // Account management (create any role)
   listAccounts:       (params = '') => api.get('/admin/accounts' + (params ? '?' + params : '')),
   createAccount:      (data) => api.post('/admin/accounts', data),

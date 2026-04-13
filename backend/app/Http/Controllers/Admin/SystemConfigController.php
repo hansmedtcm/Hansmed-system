@@ -8,12 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class SystemConfigController extends Controller
 {
-    // M-09: key/value config (fees, thresholds, feature flags, terms URLs)
     public function index()
     {
-        $rows = DB::table('system_configs')->orderBy('key')->get();
-        $map  = [];
-        foreach ($rows as $r) $map[$r->key] = $this->decode($r->value);
+        $rows = DB::table('system_configs')->orderBy('config_key')->get();
+        $map = [];
+        foreach ($rows as $r) $map[$r->config_key] = $this->decode($r->config_value);
         return response()->json(['configs' => $map]);
     }
 
@@ -26,16 +25,9 @@ class SystemConfigController extends Controller
         DB::transaction(function () use ($data, $request) {
             foreach ($data['configs'] as $key => $value) {
                 DB::table('system_configs')->updateOrInsert(
-                    ['key' => $key],
-                    ['value' => is_scalar($value) ? (string) $value : json_encode($value)],
+                    ['config_key' => $key],
+                    ['config_value' => is_scalar($value) ? (string) $value : json_encode($value), 'updated_at' => now()],
                 );
-                DB::table('audit_logs')->insert([
-                    'user_id'     => $request->user()->id,
-                    'action'      => 'system_config.upsert',
-                    'target_type' => 'system_config',
-                    'payload'     => json_encode(['key' => $key, 'value' => $value]),
-                    'created_at'  => now(),
-                ]);
             }
         });
 

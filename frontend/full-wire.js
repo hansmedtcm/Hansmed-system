@@ -226,48 +226,94 @@
 
   // ── Admin: Appointments ──
   async function loadAdmAppointments() {
+    var el = document.getElementById('adm-appointments');
+    if (!el) return;
     try {
-      var res = await A.api.get('/admin/finance/orders'); // appointments don't have a direct admin list yet
-      // Use doctor appointments as a proxy or show placeholder
+      var res = await A.admin.listAppointments();
+      var appts = res.data || [];
+
+      el.innerHTML = ''
+        + '<h3 style="font-family:\'Cormorant Garamond\',serif;font-weight:400;font-size:1.6rem;margin-bottom:1rem;">Appointments · 預約管理</h3>'
+        + '<div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAdmAppts(\'\')">All · 全部</button>'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAdmAppts(\'confirmed\')">Confirmed · 已確認</button>'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAdmAppts(\'completed\')">Completed · 已完成</button>'
+        + '  <button class="btn-outline" style="padding:.4rem 1rem;font-size:.72rem;" onclick="filterAdmAppts(\'cancelled\')">Cancelled · 已取消</button>'
+        + '</div>'
+        + '<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--mist);">'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Date</th>'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;color:var(--gold);">Patient</th>'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;color:var(--gold);">Doctor</th>'
+        + '<th style="text-align:center;padding:.6rem;font-size:.68rem;color:var(--gold);">Fee</th>'
+        + '<th style="text-align:center;padding:.6rem;font-size:.68rem;color:var(--gold);">Status</th>'
+        + '</tr></thead><tbody>'
+        + (appts.length ? appts.map(function (a) {
+            var statusColors = { confirmed:'var(--sage)', completed:'var(--sage)', pending_payment:'var(--gold)', cancelled:'var(--red-seal)', in_progress:'orange' };
+            return '<tr style="border-bottom:1px solid var(--mist);">'
+              + '<td style="padding:.6rem;font-size:.82rem;">' + formatDate(a.scheduled_start) + '</td>'
+              + '<td style="padding:.6rem;font-size:.82rem;">Patient #' + a.patient_id + '</td>'
+              + '<td style="padding:.6rem;font-size:.82rem;">Doctor #' + a.doctor_id + '</td>'
+              + '<td style="padding:.6rem;text-align:center;font-size:.88rem;">RM ' + parseFloat(a.fee).toFixed(0) + '</td>'
+              + '<td style="padding:.6rem;text-align:center;"><span style="font-size:.65rem;padding:.2rem .5rem;border-radius:3px;background:' + (statusColors[a.status] || 'var(--stone)') + ';color:#fff;">' + a.status.replace(/_/g, ' ') + '</span></td>'
+              + '</tr>';
+          }).join('') : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--stone);">No appointments yet · 暫無預約</td></tr>')
+        + '</tbody></table>';
+    } catch (e) { console.error('loadAdmAppointments', e); }
+  }
+
+  window.filterAdmAppts = async function (status) {
+    try {
+      var res = await A.admin.listAppointments(status ? 'status=' + status : '');
       var el = document.getElementById('adm-appointments');
       if (!el) return;
-
-      // For now keep the prototype rendering but update the data if we can
-      var _origRender = window.renderAdminAppts;
-      if (typeof _origRender === 'function') _origRender();
+      var tbody = el.querySelector('tbody');
+      if (!tbody) return;
+      var appts = res.data || [];
+      var statusColors = { confirmed:'var(--sage)', completed:'var(--sage)', pending_payment:'var(--gold)', cancelled:'var(--red-seal)', in_progress:'orange' };
+      tbody.innerHTML = appts.length ? appts.map(function (a) {
+        return '<tr style="border-bottom:1px solid var(--mist);">'
+          + '<td style="padding:.6rem;font-size:.82rem;">' + formatDate(a.scheduled_start) + '</td>'
+          + '<td style="padding:.6rem;font-size:.82rem;">Patient #' + a.patient_id + '</td>'
+          + '<td style="padding:.6rem;font-size:.82rem;">Doctor #' + a.doctor_id + '</td>'
+          + '<td style="padding:.6rem;text-align:center;">RM ' + parseFloat(a.fee).toFixed(0) + '</td>'
+          + '<td style="padding:.6rem;text-align:center;"><span style="font-size:.65rem;padding:.2rem .5rem;border-radius:3px;background:' + (statusColors[a.status] || 'var(--stone)') + ';color:#fff;">' + a.status.replace(/_/g, ' ') + '</span></td>'
+          + '</tr>';
+      }).join('') : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--stone);">No appointments · 暫無</td></tr>';
     } catch {}
-  }
+  };
 
   // ── Admin: Orders ──
   async function loadAdmOrders() {
+    var el = document.getElementById('adm-orders');
+    if (!el) return;
     try {
       var res = await A.admin.listOrders();
       var orders = res.data || [];
-      if (!orders.length) return;
+      var statusColors = { pending_payment:'#e6a817', paid:'var(--gold)', dispensing:'orange', shipped:'#4a90d9', delivered:'var(--sage)', completed:'var(--sage)', cancelled:'var(--red-seal)' };
 
-      var el = document.getElementById('adm-orders');
-      if (!el) return;
-
-      var tbody = el.querySelector('tbody');
-      if (!tbody) return;
-
-      tbody.innerHTML = orders.map(function (o) {
-        var statusColors = {
-          pending_payment: '#e6a817', paid: 'var(--gold)', dispensing: 'orange',
-          shipped: '#4a90d9', delivered: 'var(--sage)', completed: 'var(--sage)',
-          cancelled: 'var(--red-seal)',
-        };
-        var items = (o.items || []).map(function (i) { return i.drug_name; }).join(', ');
-        return '<tr>'
-          + '<td style="padding:.6rem;font-size:.82rem;">' + o.order_no + '</td>'
-          + '<td style="padding:.6rem;font-size:.82rem;">Patient #' + o.patient_id + '</td>'
-          + '<td style="padding:.6rem;font-size:.82rem;">' + (items || '—') + '</td>'
-          + '<td style="padding:.6rem;font-size:.82rem;">RM ' + parseFloat(o.total).toFixed(2) + '</td>'
-          + '<td style="padding:.6rem;"><span style="font-size:.7rem;padding:.2rem .5rem;border-radius:3px;background:' + (statusColors[o.status] || 'var(--stone)') + ';color:#fff;">' + o.status.replace(/_/g, ' ') + '</span></td>'
-          + '<td style="padding:.6rem;font-size:.78rem;color:var(--stone);">' + formatDate(o.created_at) + '</td>'
-          + '</tr>';
-      }).join('');
-    } catch {}
+      el.innerHTML = ''
+        + '<h3 style="font-family:\'Cormorant Garamond\',serif;font-weight:400;font-size:1.6rem;margin-bottom:1rem;">Orders · 訂單管理</h3>'
+        + '<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid var(--mist);">'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;">Order No</th>'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;color:var(--gold);">Patient</th>'
+        + '<th style="text-align:left;padding:.6rem;font-size:.68rem;color:var(--gold);">Items</th>'
+        + '<th style="text-align:center;padding:.6rem;font-size:.68rem;color:var(--gold);">Total</th>'
+        + '<th style="text-align:center;padding:.6rem;font-size:.68rem;color:var(--gold);">Status</th>'
+        + '<th style="text-align:right;padding:.6rem;font-size:.68rem;color:var(--gold);">Date</th>'
+        + '</tr></thead><tbody>'
+        + (orders.length ? orders.map(function (o) {
+            var items = (o.items || []).map(function (i) { return i.drug_name; }).join(', ');
+            return '<tr style="border-bottom:1px solid var(--mist);">'
+              + '<td style="padding:.6rem;font-size:.82rem;">' + o.order_no + '</td>'
+              + '<td style="padding:.6rem;font-size:.82rem;">Patient #' + o.patient_id + '</td>'
+              + '<td style="padding:.6rem;font-size:.82rem;color:var(--stone);">' + (items || '—') + '</td>'
+              + '<td style="padding:.6rem;text-align:center;">RM ' + parseFloat(o.total).toFixed(2) + '</td>'
+              + '<td style="padding:.6rem;text-align:center;"><span style="font-size:.65rem;padding:.2rem .5rem;border-radius:3px;background:' + (statusColors[o.status] || 'var(--stone)') + ';color:#fff;">' + o.status.replace(/_/g, ' ') + '</span></td>'
+              + '<td style="padding:.6rem;text-align:right;font-size:.78rem;color:var(--stone);">' + formatDate(o.created_at) + '</td>'
+              + '</tr>';
+          }).join('') : '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--stone);">No orders yet · 暫無訂單</td></tr>')
+        + '</tbody></table>';
+    } catch (e) { console.error('loadAdmOrders', e); }
   }
 
   // ── Admin: Inventory ──

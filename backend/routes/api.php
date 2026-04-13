@@ -190,6 +190,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/finance/withdrawals/{id}/review', [FinanceController::class, 'reviewWithdrawal']);
         Route::get('/finance/orders',                   [FinanceController::class, 'orders']);
 
+        // Appointments (admin view all)
+        Route::get('/appointments', [\App\Http\Controllers\Admin\AppointmentController::class, 'index']);
+
         // Prescription oversight (M-06)
         Route::get('/prescriptions',                  [PrescriptionOversightController::class, 'index']);
         Route::get('/prescriptions/{id}',             [PrescriptionOversightController::class, 'show']);
