@@ -147,6 +147,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ================== PHARMACY ==================
     Route::middleware('role:pharmacy')->prefix('pharmacy')->group(function () {
+        // Profile (P-02)
+        Route::get('/profile',  [\App\Http\Controllers\Pharmacy\ProfileController::class, 'show']);
+        Route::put('/profile',  [\App\Http\Controllers\Pharmacy\ProfileController::class, 'update']);
+
+        // Prescription inbox (P-03)
+        Route::get('/prescriptions', [\App\Http\Controllers\Pharmacy\PrescriptionInboxController::class, 'index']);
+
         Route::get('/products',             [PharmacyProductController::class, 'index']);
         Route::post('/products',            [PharmacyProductController::class, 'store']);
         Route::put('/products/{id}',        [PharmacyProductController::class, 'update']);
