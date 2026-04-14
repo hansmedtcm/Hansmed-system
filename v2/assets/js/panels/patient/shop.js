@@ -126,14 +126,15 @@
         stock_label: p.stock > 0 ? 'In stock · 有貨' : 'Out of stock · 缺貨',
       };
       var node = HM.render.fromTemplate('tpl-product-card', data);
+      var cardEl = node.firstElementChild;
       var btn = node.querySelector('[data-action="add"]');
-      btn.addEventListener('click', function (e) {
+      if (btn) btn.addEventListener('click', function (e) {
         e.stopPropagation();
         HM.cart.add(p, 1);
         HM.ui.toast(p.name + ' added to cart · 已加入', 'success');
         updateCartCount();
       });
-      node.addEventListener('click', function () { renderDetail(document.getElementById('panel-container'), p.id); });
+      if (cardEl) cardEl.addEventListener('click', function () { renderDetail(document.getElementById('panel-container'), p.id); });
       g.appendChild(node);
     });
   }

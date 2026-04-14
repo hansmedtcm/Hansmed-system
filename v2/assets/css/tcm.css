@@ -271,41 +271,79 @@
 }
 
 /* ── APOTHECARY CABINET (SVG-based) ────────────── */
-.apothecary-cabinet {
-  width: 100%;
-  max-width: 320px;
-  aspect-ratio: 4/5;
-  background: linear-gradient(to bottom, #3d2818 0%, #2a1810 100%);
-  border-radius: var(--r-md);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 2px;
-  padding: 12px;
-  box-shadow: var(--shadow-lg);
+.hero-drawer-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
 }
-.apothecary-drawer {
-  background: var(--washi-dark);
-  border-radius: var(--r-sm);
+.hero-drawer-svg {
+  width: min(340px, 46vw);
+  height: auto;
+  filter: drop-shadow(0 18px 48px rgba(26,22,18,.18)) drop-shadow(0 4px 12px rgba(26,22,18,.1));
+}
+@media (max-width: 768px) {
+  .hero-drawer-svg { width: min(280px, 90vw); }
+}
+.hero-drawer-caption {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  margin-top: 1.4rem;
+}
+.hero-drawer-caption-zh {
+  font-family: var(--font-zh);
+  font-size: 1.1rem;
+  color: var(--ink);
+  letter-spacing: 0.22em;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.hero-drawer-caption-en {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--stone);
+  letter-spacing: 0.06em;
+  display: block;
+}
+.hero-drawer-pillars {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  margin-top: 0.9rem;
+  position: relative;
+  z-index: 3;
+  flex-wrap: wrap;
+}
+.hdp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.22rem;
+}
+.hdp-icon {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(184, 150, 90, 0.5);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-zh);
-  font-size: 1rem;
-  color: var(--ink);
-  position: relative;
-  transition: background var(--dur-base) var(--ease-out);
+  font-size: 0.8rem;
+  color: var(--gold);
 }
-.apothecary-drawer::after {
-  content: "";
-  position: absolute;
-  bottom: 25%;
-  width: 20%;
-  height: 3px;
-  background: var(--gold);
-  border-radius: 50%;
-  opacity: 0.8;
+.hdp-zh {
+  font-family: var(--font-zh);
+  font-size: 0.6rem;
+  color: var(--stone);
 }
-.apothecary-drawer:hover {
-  background: var(--washi);
+.hdp-en {
+  font-family: var(--font-body);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(122, 112, 104, 0.6);
 }

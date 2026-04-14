@@ -69,12 +69,18 @@
         examples: concern.examples,
       };
       var node = HM.render.fromTemplate('tpl-concern-card', data);
-      node.addEventListener('click', function () {
-        state.concern = concern;
-        markStep(1, true);
-        markStep(2, false);
-        showTimeStep();
-      });
+      // IMPORTANT: fromTemplate returns a DocumentFragment. After appendChild
+      // the fragment is empty and any listener on it is lost. Attach to the
+      // actual root button/card element inside the fragment.
+      var cardEl = node.firstElementChild || node.querySelector('.concern-card');
+      if (cardEl) {
+        cardEl.addEventListener('click', function () {
+          state.concern = concern;
+          markStep(1, true);
+          markStep(2, false);
+          showTimeStep();
+        });
+      }
       host.appendChild(node);
     });
   }

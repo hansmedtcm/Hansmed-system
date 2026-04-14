@@ -8,25 +8,26 @@
   async function render(el) {
     el.innerHTML = '<div class="page-header">' +
       '<div class="page-header-label">Tongue Diagnosis · 舌診</div>' +
-      '<h1 class="page-title">AI Tongue Analysis</h1>' +
-      '<p class="page-subtitle">Upload a photo of your tongue for AI-assisted analysis based on classical TCM</p>' +
+      '<h1 class="page-title">AI Tongue Analysis · 人工智能舌診</h1>' +
+      '<p class="page-subtitle">Upload a photo of your tongue for AI-assisted analysis based on classical TCM.<br>' +
+      '<span style="font-family: var(--font-zh);">上傳舌頭照片，AI 根據古典中醫學為您分析體質。</span></p>' +
       '</div>' +
 
       '<div class="card card--pad-lg mb-6" style="max-width: 700px;">' +
       '<h3 class="mb-3">📷 New Tongue Scan · 新舌診</h3>' +
-      '<p class="text-muted text-sm mb-4">Tips for best results:<br>' +
-      '• Natural lighting, no filter<br>' +
-      '• Extend tongue fully, relaxed<br>' +
-      '• Clean tongue (not right after eating)<br>' +
-      '• Phone camera, 1-2 feet away</p>' +
+      '<p class="text-muted text-sm mb-4"><strong>Tips for best results · 最佳效果小貼士：</strong><br>' +
+      '• Natural lighting, no filter · 自然光線，不使用濾鏡<br>' +
+      '• Extend tongue fully, relaxed · 舌頭完全伸出，放鬆<br>' +
+      '• Clean tongue (not right after eating) · 乾淨舌面（勿剛進食後）<br>' +
+      '• Phone camera, 1-2 feet away · 手機距離 30-60 公分</p>' +
       '<label class="btn btn--primary btn--lg btn--block" style="cursor: pointer;">' +
-      '📷 Upload Tongue Photo · 上傳照片' +
+      '📷 Upload Tongue Photo · 上傳舌頭照片' +
       '<input type="file" accept="image/*" capture="environment" id="tongue-file" style="display:none;">' +
       '</label>' +
       '<div id="tongue-analyzing" style="display:none; margin-top: var(--s-4);"></div>' +
       '</div>' +
 
-      '<div class="text-label mb-3">Scan History · 舌診歷史</div>' +
+      '<div class="text-label mb-3">Scan History · 舌診歷史記錄</div>' +
       '<div id="tongue-list"></div>';
 
     document.getElementById('tongue-file').addEventListener('change', handleUpload);
@@ -42,7 +43,7 @@
     box.innerHTML = '' +
       '<div class="flex flex-gap-3" style="align-items: center;">' +
       '<img id="tongue-preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--r-md); border: 1px solid var(--border);">' +
-      '<div><strong>✓ Photo uploaded · 照片已上傳</strong><div class="text-muted text-sm mt-1"><span class="spinner"></span> Analyzing…</div></div>' +
+      '<div><strong>✓ Photo uploaded · 照片已上傳</strong><div class="text-muted text-sm mt-1"><span class="spinner"></span> Analyzing… · 分析中…</div></div>' +
       '</div>';
 
     var reader = new FileReader();
@@ -73,7 +74,7 @@
           loadHistory();
         } else if (res.diagnosis.status === 'failed' || attempts > 30) {
           clearInterval(interval);
-          box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">Analysis failed. Please try again.</div></div>';
+          box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">Analysis failed. Please try again. · 分析失敗，請重試。</div></div>';
         }
       } catch {}
     }, 3000);
@@ -86,11 +87,11 @@
 
     var html = '<div class="card card--bordered" style="border-left-color: var(--sage);">' +
       '<div class="flex-between mb-3"><strong>✓ Analysis Complete · 分析完成</strong>' +
-      '<a href="#/tongue/' + diag.id + '" class="btn btn--ghost btn--sm">View Details →</a></div>';
+      '<a href="#/tongue/' + diag.id + '" class="btn btn--ghost btn--sm">View Details · 詳情 →</a></div>';
 
     if (constitution.name_en) {
       html += '<div class="mb-3">' +
-        '<div class="text-label">Constitution · 體質</div>' +
+        '<div class="text-label">Constitution · 體質類型</div>' +
         '<div class="card-title">' + HM.format.esc(constitution.name_en) + '</div>' +
         (constitution.name_zh ? '<div class="text-muted text-sm" style="font-family: var(--font-zh);">' + constitution.name_zh + '</div>' : '') +
         '</div>';
@@ -98,7 +99,7 @@
 
     if (diag.health_score != null) {
       var color = diag.health_score >= 80 ? 'var(--sage)' : diag.health_score >= 60 ? 'var(--gold)' : 'var(--red-seal)';
-      html += '<div class="mb-3">Health Score: <strong style="font-size: 1.5rem; color: ' + color + ';">' + diag.health_score + '</strong>/100</div>';
+      html += '<div class="mb-3">Health Score · 健康評分: <strong style="font-size: 1.5rem; color: ' + color + ';">' + diag.health_score + '</strong>/100</div>';
     }
 
     if (findings.length) {
@@ -127,8 +128,8 @@
       if (!items.length) {
         HM.state.empty(container, {
           icon: '👅',
-          title: 'No scans yet',
-          text: 'Your tongue diagnosis history will appear here',
+          title: 'No scans yet · 暫無記錄',
+          text: 'Your tongue diagnosis history will appear here · 您的舌診記錄將會顯示於此',
         });
         return;
       }
@@ -165,7 +166,7 @@
       var recs = report.recommendations || [];
 
       var html = '<div class="page-header">' +
-        '<button class="btn btn--ghost" onclick="location.hash=\'#/tongue\'">← Back to History</button>' +
+        '<button class="btn btn--ghost" onclick="location.hash=\'#/tongue\'">← Back to History · 返回記錄</button>' +
         '</div>' +
         '<div class="grid-2" style="gap: var(--s-6); align-items: start;">' +
         '<div><img src="' + HM.format.esc(d.image_url) + '" style="width: 100%; border-radius: var(--r-md); border: 1px solid var(--border);"></div>' +
@@ -179,13 +180,13 @@
 
       if (d.health_score != null) {
         var color = d.health_score >= 80 ? 'var(--sage)' : d.health_score >= 60 ? 'var(--gold)' : 'var(--red-seal)';
-        html += '<div class="card mb-4"><div class="text-label mb-1">Health Score</div><strong style="font-size: 2.5rem; color: ' + color + ';">' + d.health_score + '</strong>/100</div>';
+        html += '<div class="card mb-4"><div class="text-label mb-1">Health Score · 健康評分</div><strong style="font-size: 2.5rem; color: ' + color + ';">' + d.health_score + '</strong>/100</div>';
       }
 
       html += '</div></div>';
 
       if (findings.length) {
-        html += '<div class="mt-6"><div class="text-label mb-3">Findings · 檢查結果</div>' +
+        html += '<div class="mt-6"><div class="text-label mb-3">Diagnostic Findings · 檢查結果</div>' +
           '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">';
         findings.forEach(function (f) {
           html += '<div class="card">' +

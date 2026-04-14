@@ -103,7 +103,8 @@
         price_formatted: fmt.money(p.price),
       };
       var node = HM.render.fromTemplate('tpl-product-card', data);
-      node.addEventListener('click', function () {
+      var cardEl = node.firstElementChild;
+      if (cardEl) cardEl.addEventListener('click', function () {
         location.href = 'portal.html#/shop';
       });
       el.appendChild(node);
