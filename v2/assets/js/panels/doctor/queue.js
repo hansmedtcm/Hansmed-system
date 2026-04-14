@@ -20,7 +20,10 @@
       '<h1 class="page-title">Patient Pool</h1>' +
       '<p class="text-muted mt-1">Patients have paid and are waiting. Pick one to start the consultation.</p>' +
       '</div>' +
+      '<div class="flex gap-2" style="align-items:center;">' +
       '<input type="date" id="q-date" class="field-input field-input--boxed" value="' + today + '" style="max-width: 180px;">' +
+      '<button class="btn btn--primary" id="q-new-appt">+ New · 新建</button>' +
+      '</div>' +
       '</div>' +
 
       '<div class="filter-bar mb-4">' +
@@ -34,6 +37,13 @@
     document.getElementById('q-date').addEventListener('change', function (e) {
       state.date = e.target.value;
       load();
+    });
+
+    document.getElementById('q-new-appt').addEventListener('click', function () {
+      // Reuse the patients panel booking modal
+      if (HM.doctorPanels.patients && HM.doctorPanels.patients._book) {
+        HM.doctorPanels.patients._book(null, null);
+      }
     });
 
     document.querySelectorAll('.filter-chip').forEach(function (c) {

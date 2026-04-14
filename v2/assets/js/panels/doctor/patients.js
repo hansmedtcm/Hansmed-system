@@ -6,13 +6,15 @@
   HM.doctorPanels = HM.doctorPanels || {};
 
   async function render(el) {
-    el.innerHTML = '<div class="page-header">' +
-      '<div class="page-header-label">My Patients · 我的患者</div>' +
-      '<h1 class="page-title">Patient List</h1>' +
+    el.innerHTML = '<div class="page-header flex-between">' +
+      '<div><div class="page-header-label">My Patients · 我的患者</div>' +
+      '<h1 class="page-title">Patient List</h1></div>' +
+      '<button class="btn btn--primary" id="pt-book-any">+ New Appointment · 新建預約</button>' +
       '</div>' +
       '<input id="pt-search" type="text" class="field-input field-input--boxed mb-4" placeholder="Search by name, IC, phone… · 搜尋" style="max-width: 400px;">' +
       '<div id="pt-list"></div>';
 
+    document.getElementById('pt-book-any').addEventListener('click', function () { showBookModal(null, null); });
     await load();
     document.getElementById('pt-search').addEventListener('input', debounce(load, 300));
   }
@@ -82,7 +84,10 @@
         '<h2>' + HM.format.esc(name) + '</h2>' +
         '<p class="text-muted">' + (pp.ic_number || '') + ' · ' + (pp.phone || '') + ' · ' + (pp.gender || '') + '</p>' +
         '</div>' +
+        '<div class="flex gap-2">' +
+        '<button class="btn btn--primary btn--sm" onclick="HM.doctorPanels.patients._book(' + patient.id + ', \'' + HM.format.esc(name).replace(/'/g, "\\'") + '\')">+ Book Appointment · 預約</button>' +
         '<button class="btn btn--outline btn--sm" onclick="HM.doctorPanels.patients._chat(' + patient.id + ')">💬 Chat</button>' +
+        '</div>' +
         '</div>' +
         '<div class="grid-4 grid-auto mt-4" style="gap: var(--s-3);">' +
         summaryCell('Blood Type', pp.blood_type || '—') +
@@ -138,6 +143,121 @@
     return function () { clearTimeout(t); t = setTimeout(fn, ms); };
   }
 
+  function showBookModal(prefilledId, prefilledName) {
+    var todayStr = new Date().toISOString().slice(0, 10);
+    var nowTime = new Date();
+    nowTime.setMinutes(0, 0, 0);
+    nowTime.setHours(nowTime.getHours() + 1);
+    var defaultTime = String(nowTime.getHours()).padStart(2, '0') + ':00';
+
+    var content = '<form id="dbook-form">' +
+      '<div class="field"><label class="field-label" data-required>Patient</label>';
+
+    if (prefilledId) {
+      content += '<input type="hidden" name="patient_id" value="' + prefilledId + '">' +
+        '<input type="text" class="field-input field-input--boxed" value="' + HM.format.esc(prefilledName) + ' (#' + prefilledId + ')" readonly>';
+    } else {
+      content += '<select name="patient_id" id="dbook-patient" class="field-input field-input--boxed" required>' +
+        '<option value="">Loading patients…</option>' +
+        '</select>';
+    }
+
+    content += '</div>' +
+
+      '<div class="field-grid field-grid--2">' +
+      '<div class="field"><label class="field-label" data-required>Date · 日期</label>' +
+      '<input type="date" name="date" class="field-input field-input--boxed" required min="' + todayStr + '" value="' + todayStr + '"></div>' +
+      '<div class="field"><label class="field-label" data-required>Time · 時段</label>' +
+      '<input type="time" name="time" class="field-input field-input--boxed" required value="' + defaultTime + '" step="900"></div>' +
+      '</div>' +
+
+      '<div class="field-grid field-grid--2">' +
+      '<div class="field"><label class="field-label">Duration (min)</label>' +
+      '<select name="duration" class="field-input field-input--boxed">' +
+      '<option value="30">30 minutes</option><option value="45">45 minutes</option>' +
+      '<option value="60" selected>60 minutes</option><option value="90">90 minutes</option>' +
+      '</select></div>' +
+      '<div class="field"><label class="field-label">Fee (RM)</label>' +
+      '<input type="number" name="fee" min="0" step="0.01" class="field-input field-input--boxed" value="0" placeholder="0 = no charge"></div>' +
+      '</div>' +
+
+      '<div class="field"><label class="field-label">Concern · 主訴</label>' +
+      '<input type="text" name="concern_label" class="field-input field-input--boxed" placeholder="e.g. Follow-up, Headache, Cold"></div>' +
+
+      '<div class="field"><label class="field-label">Notes · 備註</label>' +
+      '<textarea name="notes" class="field-input field-input--boxed" rows="3" placeholder="Reason for booking, anything to prepare…"></textarea></div>' +
+
+      '<div data-general-error class="alert alert--danger" style="display:none;"></div>' +
+      '<button type="submit" class="btn btn--primary btn--block mt-4">Create Appointment · 建立預約</button>' +
+      '</form>';
+
+    var m = HM.ui.modal({
+      size: 'md',
+      title: 'New Appointment for Patient · 為患者新建預約',
+      content: content,
+    });
+
+    var form = m.element.querySelector('#dbook-form');
+
+    if (!prefilledId) {
+      // Populate the patient dropdown
+      HM.api.doctor.listPatients('').then(function (res) {
+        var select = m.element.querySelector('#dbook-patient');
+        var items = res.data || [];
+        if (!items.length) {
+          select.innerHTML = '<option value="">No patients on file yet</option>';
+          return;
+        }
+        select.innerHTML = '<option value="">— Select a patient —</option>' +
+          items.map(function (p) {
+            var pp = p.patient_profile || {};
+            var name = pp.full_name || pp.nickname || p.email;
+            return '<option value="' + p.id + '">' + HM.format.esc(name) + ' (#' + p.id + ')</option>';
+          }).join('');
+      }).catch(function () {
+        m.element.querySelector('#dbook-patient').innerHTML = '<option value="">Failed to load patients</option>';
+      });
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var data = HM.form.serialize(form);
+      var startStr = data.date + 'T' + data.time + ':00';
+      var endDate = new Date(startStr);
+      endDate.setMinutes(endDate.getMinutes() + parseInt(data.duration || '60', 10));
+      var endIso = endDate.getFullYear() + '-' +
+        String(endDate.getMonth() + 1).padStart(2, '0') + '-' +
+        String(endDate.getDate()).padStart(2, '0') + 'T' +
+        String(endDate.getHours()).padStart(2, '0') + ':' +
+        String(endDate.getMinutes()).padStart(2, '0') + ':00';
+
+      var payload = {
+        patient_id: parseInt(data.patient_id, 10),
+        scheduled_start: startStr,
+        scheduled_end: endIso,
+        fee: parseFloat(data.fee || '0'),
+        concern_label: data.concern_label || null,
+        notes: data.notes || null,
+      };
+
+      HM.form.setLoading(form, true);
+      try {
+        var res = await HM.api.doctor.createAppointment(payload);
+        m.close();
+        HM.ui.toast('Appointment created · 預約已建立', 'success');
+        // Refresh the patient list / detail view
+        if (location.hash.indexOf('#/patients/') === 0) {
+          renderDetail(document.getElementById('panel-container'), payload.patient_id);
+        } else {
+          load();
+        }
+      } catch (err) {
+        HM.form.setLoading(form, false);
+        HM.form.showGeneralError(form, err.message || 'Could not create appointment');
+      }
+    });
+  }
+
   HM.doctorPanels.patients = {
     render: render,
     renderDetail: renderDetail,
@@ -146,6 +266,9 @@
         var r = await HM.api.chat.openThread({ patient_id: patientId });
         location.hash = '#/messages/' + r.thread.id;
       } catch (e) { HM.ui.toast('Could not open chat', 'danger'); }
+    },
+    _book: function (patientId, patientName) {
+      showBookModal(patientId, patientName);
     },
   };
 })();

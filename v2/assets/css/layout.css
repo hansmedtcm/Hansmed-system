@@ -39,11 +39,11 @@
   align-items: center;
   gap: 0.6rem;
   color: var(--ink);
-  font-family: var(--font-zh);
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-family: var(--font-kaiti);
+  font-size: 1.2rem;
+  font-weight: 400;
   text-decoration: none;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
 }
 .nav-brand-en {
   display: block;

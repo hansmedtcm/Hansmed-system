@@ -39,6 +39,52 @@ class AppointmentController extends Controller
         ]);
     }
 
+    // Doctor creates an appointment for an existing patient (no payment required)
+    public function storeForPatient(\Illuminate\Http\Request $request)
+    {
+        $data = $request->validate([
+            'patient_id'      => ['required', 'integer', 'exists:users,id'],
+            'scheduled_start' => ['required', 'date'],
+            'scheduled_end'   => ['required', 'date', 'after:scheduled_start'],
+            'fee'             => ['nullable', 'numeric', 'min:0'],
+            'notes'           => ['nullable', 'string', 'max:2000'],
+            'concern'         => ['nullable', 'string', 'max:60'],
+            'concern_label'   => ['nullable', 'string', 'max:120'],
+            'recommended_specialty' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        // Verify patient exists and has correct role
+        $patient = \App\Models\User::where('id', $data['patient_id'])
+            ->where('role', 'patient')
+            ->firstOrFail();
+
+        // Prevent double-booking the doctor
+        $conflict = Appointment::where('doctor_id', $request->user()->id)
+            ->whereNotIn('status', ['cancelled', 'no_show'])
+            ->where('scheduled_start', '<', $data['scheduled_end'])
+            ->where('scheduled_end',   '>', $data['scheduled_start'])
+            ->exists();
+        if ($conflict) {
+            return response()->json(['message' => 'You already have an appointment in this slot'], 422);
+        }
+
+        $appt = Appointment::create([
+            'patient_id'             => $data['patient_id'],
+            'doctor_id'              => $request->user()->id,
+            'scheduled_start'        => $data['scheduled_start'],
+            'scheduled_end'          => $data['scheduled_end'],
+            'status'                 => 'confirmed',
+            'fee'                    => $data['fee'] ?? 0,
+            'notes'                  => $data['notes'] ?? null,
+            'concern'                => $data['concern'] ?? null,
+            'concern_label'          => $data['concern_label'] ?? null,
+            'recommended_specialty'  => $data['recommended_specialty'] ?? null,
+            'is_pool'                => 0,
+        ]);
+
+        return response()->json(['appointment' => $appt], 201);
+    }
+
     // D-07 hook: mark consultation started/ended
     public function start(Request $request, int $id)
     {

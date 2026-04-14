@@ -120,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/patients/{id}/consultations',       [\App\Http\Controllers\Doctor\PatientListController::class, 'consultationHistory']);
 
         Route::get('/appointments',                [DoctorAppointmentController::class, 'index']);
+        Route::post('/appointments',               [DoctorAppointmentController::class, 'storeForPatient']);
         Route::get('/appointments/{id}',           [DoctorAppointmentController::class, 'show']);
         Route::post('/appointments/{id}/start',    [DoctorAppointmentController::class, 'start']);
         Route::post('/appointments/{id}/complete', [DoctorAppointmentController::class, 'complete']);
@@ -182,6 +183,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ================== ADMIN ==================
     Route::middleware('role:admin')->prefix('admin')->group(function () {
+        // One-shot DB migrations (idempotent)
+        Route::post('/migrate/pool-booking', [\App\Http\Controllers\Admin\MigrationController::class, 'poolBooking']);
+
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);
         Route::post('/doctors/{doctorId}/review',      [VerificationController::class, 'reviewDoctor']);

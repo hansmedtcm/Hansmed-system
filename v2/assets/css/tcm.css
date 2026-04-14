@@ -199,7 +199,22 @@
   text-align: center;
 }
 
+/* ── KAITI HELPER ───────────────────────────────── */
+.font-kaiti {
+  font-family: var(--font-kaiti) !important;
+  font-weight: 400;
+}
+
 /* ── HERO STYLES ────────────────────────────────── */
+.hero-clinic-name {
+  font-family: var(--font-kaiti);
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  color: var(--ink);
+  letter-spacing: 0.12em;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+  line-height: 1.1;
+}
 .hero {
   position: relative;
   min-height: 80vh;

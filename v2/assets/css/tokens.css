@@ -39,6 +39,7 @@
   /* ── Typography ── */
   --font-display: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
   --font-zh:      'Noto Serif SC', 'Microsoft YaHei', serif;
+  --font-kaiti:   'ZhengYanKaiTi', 'Ma Shan Zheng', 'Noto Serif SC', 'KaiTi', 'BiauKai', serif;
   --font-body:    'Source Sans 3', 'Noto Serif SC', system-ui, -apple-system, sans-serif;
   --font-mono:    'SF Mono', Monaco, Consolas, 'Courier New', monospace;
 
