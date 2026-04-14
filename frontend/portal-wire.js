@@ -137,7 +137,10 @@
         )
         + '  </div>'
         + '</div>';
-    } catch (e) { console.error('loadOverview', e); }
+    } catch (e) {
+      console.error('[HansMed] loadOverview failed:', e);
+      if (el) el.innerHTML = '<div style="padding:2rem;color:var(--red-seal);text-align:center;">Failed to load. Please refresh. · 載入失敗，請重新整理。</div>';
+    }
   }
 
   // ── Profile Panel ──

@@ -15,7 +15,16 @@
       "Bash(npm install:*)",
       "Bash(node -e ':*)",
       "Bash(cp 'E:/Downloads/HansMed_Modern_TCM_14.html' 'E:/Hansmed-system/HansMed_Modern_TCM_14.html')",
-      "Bash(ls -la 'E:/Hansmed-system/'*.html)"
+      "Bash(ls -la 'E:/Hansmed-system/'*.html)",
+      "Bash(xargs ls:*)",
+      "Bash(grep -n \"class PosController\" /e/Hansmed-system/backend/app/Http/Controllers/*.php)",
+      "Bash(grep -rn \"\\\\.get\\('.*chat\\\\|\\\\.post\\('.*chat\" /e/Hansmed-system/frontend/*.js)",
+      "Bash(grep -v \"//.*\")",
+      "Bash(grep -rn \"window\\\\._apiReachable\\\\|_apiReachable === false\" /e/Hansmed-system/frontend/*.js)",
+      "Bash(grep -n \"registration.complete\\\\|registration_completed\" /e/Hansmed-system/frontend/*.js)",
+      "Bash(grep -n \"Promise.allSettled\\\\|Promise.all\" /e/Hansmed-system/frontend/*.js)",
+      "Bash(grep -n \"window\\\\.gv\\\\|function gv\" /e/Hansmed-system/frontend/*.js)",
+      "Bash(grep -n \"window\\\\.showPage\\\\|window\\\\.showPortalPanel\\\\|window\\\\.showDoctorPanel\\\\|window\\\\.showAdminPanel\\\\|window\\\\.showPharmPanel\" /e/Hansmed-system/frontend/*.js)"
     ]
   }
 }

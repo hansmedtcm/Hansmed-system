@@ -27,15 +27,25 @@
   var _apiReachable = null; // null = unknown, true/false after check
 
   function checkApi() {
-    return fetch(window.HANSMED_API_BASE + '/auth/me', { method: 'GET', headers: { 'Accept': 'application/json' } })
+    // Timeout after 5 seconds — if API takes longer, assume offline
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, 5000);
+
+    return fetch(window.HANSMED_API_BASE + '/auth/me', {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal,
+    })
       .then(function (res) {
+        clearTimeout(timeoutId);
         _apiReachable = true;
         console.log('[HansMed] API connected ✓ — using LIVE backend');
         showToast('🟢 Connected to live server · 已連接伺服器');
       })
       .catch(function (err) {
+        clearTimeout(timeoutId);
         _apiReachable = false;
-        console.log('[HansMed] API unreachable — using DEMO mode', err);
+        console.warn('[HansMed] API unreachable — using DEMO mode', err.message);
         showToast('🟡 Demo mode — server offline · 離線示範模式');
       });
   }
