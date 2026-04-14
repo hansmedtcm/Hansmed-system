@@ -56,16 +56,15 @@
   margin-top: 2px;
 }
 .nav-brand-mark {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 2px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: block;
 }
-.nav-brand-mark span {
-  background: var(--ink);
-  border-radius: 1px;
+.nav-brand-text {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
 }
 
 .nav-menu {

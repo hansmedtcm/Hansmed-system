@@ -12,14 +12,12 @@
   var form = HM.form;
   var fmt = HM.format;
 
-  // ── Redirect logged-in users to their portal ──
+  // ── Keep the session fresh but DO NOT auto-redirect ──
+  // Logged-in users should be able to browse the public home page.
+  // They can click "My Portal" in the nav to enter their portal.
+  // (Only auto-redirect immediately after login — see landing.js login handler.)
   if (auth.isAuthenticated()) {
-    auth.refresh().then(function () {
-      // Only redirect if URL isn't explicitly ?stay
-      if (location.search.indexOf('stay') < 0) {
-        auth.redirectToPortal();
-      }
-    });
+    auth.refresh().catch(function () { /* token invalid: ignore, nav will show Sign In */ });
   }
 
   // ── Session expired message ──
