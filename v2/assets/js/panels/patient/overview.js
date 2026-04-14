@@ -64,7 +64,7 @@
       html += '<div class="card" style="padding: var(--s-5);">' +
         '<p class="text-muted text-sm">No upcoming appointments</p>' +
         '<p class="text-muted text-sm" style="font-family: var(--font-zh);">暫無預約</p>' +
-        '<button class="btn btn--outline btn--sm mt-4" onclick="location.hash=\'#/doctors\'">Book Consultation · 預約 →</button>' +
+        '<button class="btn btn--outline btn--sm mt-4" onclick="location.hash=\'#/book\'">Book Consultation · 預約 →</button>' +
         '</div>';
     } else {
       html += '<div class="card card--bordered" style="padding: var(--s-5);">' +
@@ -105,10 +105,10 @@
     return '<div>' +
       '<div class="text-label mb-3">Quick Actions · 快捷操作</div>' +
       '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">' +
-      actionCard('👨‍⚕️', 'Find Doctor', '尋醫', '#/doctors') +
+      actionCard('📅', 'Book Appointment', '預約', '#/book') +
+      actionCard('🛍️', 'Shop', '商店', '#/shop') +
       actionCard('👅', 'New Tongue Scan', '新舌診', '#/tongue') +
       actionCard('💊', 'My Prescriptions', '我的處方', '#/prescriptions') +
-      actionCard('💬', 'Message Doctor', '醫師對話', '#/messages') +
       '</div>' +
       '</div>';
   }

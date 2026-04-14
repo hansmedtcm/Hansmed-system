@@ -71,50 +71,71 @@
     }
   });
 
-  // ── Load doctors ──
-  async function loadDoctors() {
-    var el = document.getElementById('doctors-grid');
+  // ── Featured shop items (previewed on landing) ──
+  // Curated fallback used if the backend catalog isn't wired up yet.
+  var FEATURED_FALLBACK = [
+    { emoji: '🍵', category: 'Tea · 茶飲', name: 'Ginger Wellness Tea', name_zh: '薑母養生茶', price: 28 },
+    { emoji: '🌿', category: 'Herbs · 草藥', name: 'Astragalus Root', name_zh: '黃芪', price: 45 },
+    { emoji: '💊', category: 'OTC · 成藥', name: 'Cough & Cold Formula', name_zh: '止咳感冒方', price: 32 },
+    { emoji: '🧴', category: 'Topical · 外用', name: 'Meridian Balm', name_zh: '經絡膏', price: 38 },
+  ];
+
+  async function loadShopPreview() {
+    var el = document.getElementById('shop-preview-grid');
     if (!el) return;
+    var items = FEATURED_FALLBACK;
     try {
-      var res = await api.patient.listDoctors('sort=rating');
-      var doctors = (res.data || []).slice(0, 4);
-
-      if (!doctors.length) {
-        HM.state.empty(el, {
-          icon: '👨‍⚕️',
-          title: 'No doctors available yet',
-          text: 'Doctors will appear here once admins onboard them.',
-        });
-        return;
+      // Try the curated catalog endpoint; if unavailable, use fallback.
+      if (api.pages && api.shop && api.shop.featured) {
+        var res = await api.shop.featured();
+        if (res.data && res.data.length) items = res.data.slice(0, 4);
       }
+    } catch (_) { /* fall through to fallback */ }
 
-      el.innerHTML = '';
-      doctors.forEach(function (d) {
-        var data = {
-          id: d.user_id,
-          full_name: d.full_name || 'Doctor',
-          initial: (d.full_name || 'D').charAt(0),
-          specialties: d.specialties || 'TCM Practitioner',
-          rating: parseFloat(d.rating || 0).toFixed(1),
-          consultation_count: d.consultation_count || 0,
-          fee_formatted: fmt.money(d.consultation_fee),
-        };
-        var node = HM.render.fromTemplate('tpl-doctor-card', data);
-        node.querySelector('[data-action="view"]').addEventListener('click', function () {
-          if (!auth.isAuthenticated()) location.hash = '#/register';
-          else auth.redirectToPortal();
-        });
-        el.appendChild(node);
+    el.innerHTML = '';
+    items.forEach(function (p) {
+      var data = {
+        id: p.id || p.name,
+        emoji: p.emoji || '🌿',
+        category: p.category || 'Remedy',
+        name: p.name,
+        name_zh: p.name_zh || '',
+        price_formatted: fmt.money(p.price),
+      };
+      var node = HM.render.fromTemplate('tpl-product-card', data);
+      node.addEventListener('click', function () {
+        location.href = 'portal.html#/shop';
       });
-    } catch (e) {
-      HM.state.empty(el, {
-        icon: '👨‍⚕️',
-        title: 'Unable to load doctors',
-        text: 'Please try again shortly.',
-      });
+      el.appendChild(node);
+    });
+  }
+  loadShopPreview();
+
+  // ── Nav state: if logged-in, swap Sign In button for My Portal ──
+  function updateNavAuthState() {
+    var slot = document.getElementById('nav-auth-slot');
+    if (!slot) return;
+    if (auth.isAuthenticated()) {
+      var user = api.getUser();
+      var name = user ? auth.displayName(user) : 'Portal';
+      slot.innerHTML = '<button class="btn btn--primary btn--sm" onclick="HM.auth.redirectToPortal()">' +
+        'My Portal · 我的帳號</button>';
     }
   }
-  loadDoctors();
+  updateNavAuthState();
+
+  // ── Cart badge: sync count from localStorage ──
+  function updateCartBadge() {
+    var cart = [];
+    try { cart = JSON.parse(localStorage.getItem('hm_cart') || '[]'); } catch (_) { cart = []; }
+    var count = cart.reduce(function (s, it) { return s + (it.qty || 1); }, 0);
+    var el = document.getElementById('nav-cart');
+    var num = document.getElementById('nav-cart-count');
+    if (el) el.setAttribute('data-count', String(count));
+    if (num) num.textContent = count;
+  }
+  updateCartBadge();
+  window.addEventListener('storage', updateCartBadge);
 
   // ── Auth Modal ──
   var activeModal = null;

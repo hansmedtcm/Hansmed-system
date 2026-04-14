@@ -19,7 +19,7 @@
       chip('cancelled', 'Cancelled · 已取消') +
       '</div>' +
       '<div id="appt-list"></div>' +
-      '<div class="text-center mt-6"><button class="btn btn--primary" onclick="location.hash=\'#/doctors\'">+ Book New · 新預約</button></div>';
+      '<div class="text-center mt-6"><button class="btn btn--primary" onclick="location.hash=\'#/book\'">+ Book New · 新預約</button></div>';
 
     document.querySelectorAll('.filter-chip').forEach(function (c) {
       c.addEventListener('click', function () {
@@ -57,7 +57,7 @@
           title: 'No appointments',
           text: 'Your consultation bookings will appear here',
           actionText: 'Book First Consultation',
-          actionHref: '#/doctors',
+          actionHref: '#/book',
         });
         return;
       }

@@ -60,6 +60,18 @@
   pollNotifications();
   pollTimer = setInterval(pollNotifications, 60000);
 
+  // ── Cart badge sync ──
+  function updateCartBadge() {
+    var count = (HM.cart && HM.cart.count) ? HM.cart.count() : 0;
+    var badge = document.getElementById('sb-cart-count');
+    if (!badge) return;
+    if (count > 0) { badge.style.display = 'inline-flex'; badge.textContent = count; }
+    else { badge.style.display = 'none'; }
+  }
+  updateCartBadge();
+  if (HM.bus) HM.bus.on('cart:changed', updateCartBadge);
+  window.addEventListener('storage', updateCartBadge);
+
   // ── Routes ──
   router.on('#/', function () {
     HM.patientPanels.overview.render(panel());
@@ -70,17 +82,20 @@
   router.on('#/health', function () {
     HM.patientPanels.health.render(panel());
   });
-  router.on('#/doctors', function () {
-    HM.patientPanels.doctors.render(panel());
-  });
-  router.on('#/doctors/:id', function (params) {
-    HM.patientPanels.doctors.renderDetail(panel(), params.id);
-  });
   router.on('#/book', function () {
     HM.patientPanels.booking.render(panel());
   });
-  router.on('#/book/:doctorId', function (params) {
-    HM.patientPanels.booking.render(panel(), params.doctorId);
+  router.on('#/shop', function () {
+    HM.patientPanels.shop.render(panel());
+  });
+  router.on('#/shop/:id', function (params) {
+    HM.patientPanels.shop.renderDetail(panel(), params.id);
+  });
+  router.on('#/cart', function () {
+    HM.patientPanels.cart.render(panel());
+  });
+  router.on('#/checkout', function () {
+    HM.patientPanels.cart.renderCheckout(panel());
   });
   router.on('#/appointments', function () {
     HM.patientPanels.appointments.render(panel());

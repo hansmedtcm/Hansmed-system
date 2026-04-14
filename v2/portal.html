@@ -59,12 +59,13 @@
     <a class="sidebar-link" data-route="#/health" href="#/health"><span class="sidebar-link-icon">📋</span><span class="sidebar-link-label">Health Records · 健康檔案</span></a>
 
     <div class="sidebar-section"><div class="sidebar-label">Consultations · 問診</div></div>
-    <a class="sidebar-link" data-route="#/doctors" href="#/doctors"><span class="sidebar-link-icon">👨‍⚕️</span><span class="sidebar-link-label">Find Doctor · 尋醫</span></a>
-    <a class="sidebar-link" data-route="#/book" href="#/book"><span class="sidebar-link-icon">📅</span><span class="sidebar-link-label">Book · 預約</span></a>
-    <a class="sidebar-link" data-route="#/appointments" href="#/appointments"><span class="sidebar-link-icon">🗓️</span><span class="sidebar-link-label">Appointments · 預約記錄</span></a>
+    <a class="sidebar-link" data-route="#/book" href="#/book"><span class="sidebar-link-icon">📅</span><span class="sidebar-link-label">Book Appointment · 預約</span></a>
+    <a class="sidebar-link" data-route="#/appointments" href="#/appointments"><span class="sidebar-link-icon">🗓️</span><span class="sidebar-link-label">My Appointments · 預約記錄</span></a>
     <a class="sidebar-link" data-route="#/tongue" href="#/tongue"><span class="sidebar-link-icon">👅</span><span class="sidebar-link-label">Tongue Scan · 舌診</span></a>
 
-    <div class="sidebar-section"><div class="sidebar-label">Medicine · 用藥</div></div>
+    <div class="sidebar-section"><div class="sidebar-label">Shop &amp; Medicine · 商店</div></div>
+    <a class="sidebar-link" data-route="#/shop" href="#/shop"><span class="sidebar-link-icon">🛍️</span><span class="sidebar-link-label">Shop · 商店</span></a>
+    <a class="sidebar-link" data-route="#/cart" href="#/cart"><span class="sidebar-link-icon">🛒</span><span class="sidebar-link-label">Cart · 購物車 <span id="sb-cart-count" class="sidebar-link-badge" style="display:none;">0</span></span></a>
     <a class="sidebar-link" data-route="#/prescriptions" href="#/prescriptions"><span class="sidebar-link-icon">💊</span><span class="sidebar-link-label">Prescriptions · 處方</span></a>
     <a class="sidebar-link" data-route="#/orders" href="#/orders"><span class="sidebar-link-icon">📦</span><span class="sidebar-link-label">Orders · 訂單</span></a>
 
@@ -175,28 +176,32 @@
   </div>
 </template>
 
-<!-- Doctor card (compact for patient browse) -->
-<template id="tpl-doc-browse-card">
-  <div class="doctor-card" data-id="" data-action="select">
-    <div class="doctor-card-header">
-      <div class="doctor-card-avatar" data-bind="initial"></div>
-      <div class="doctor-card-name" data-bind="full_name"></div>
-      <div class="doctor-card-spec" data-bind="specialties"></div>
-    </div>
-    <div class="doctor-card-stats">
-      <div class="doctor-card-stat">
-        <strong data-bind="rating"></strong>
-        <span>Rating</span>
+<!-- Shop product card -->
+<template id="tpl-product-card">
+  <div class="card product-card" data-id="">
+    <div class="product-card-img" data-bind="emoji" style="font-size: 3rem; text-align:center; padding: var(--s-5); background: var(--washi); border-radius: var(--r-md); margin-bottom: var(--s-3);"></div>
+    <div class="text-label text-gold mb-1" data-bind="category"></div>
+    <div class="card-title" data-bind="name"></div>
+    <div class="text-sm text-muted mt-1" data-bind="name_zh" style="font-family: var(--font-zh);"></div>
+    <div class="text-xs text-muted mt-2 mb-3" data-bind="description"></div>
+    <div class="flex-between" style="align-items:center;">
+      <div>
+        <div class="card-title" style="font-size: var(--text-lg); color: var(--gold);" data-bind="price_formatted"></div>
+        <div class="text-xs text-muted" data-bind="stock_label"></div>
       </div>
-      <div class="doctor-card-stat">
-        <strong data-bind="fee_formatted"></strong>
-        <span>Per Visit</span>
-      </div>
-    </div>
-    <div class="doctor-card-footer">
-      <button class="btn btn--primary btn--sm" data-action="book">Book · 預約 →</button>
+      <button class="btn btn--primary btn--sm" data-action="add">+ Cart · 加入</button>
     </div>
   </div>
+</template>
+
+<!-- Symptom concern card (for booking) -->
+<template id="tpl-concern-card">
+  <button class="card card--clickable concern-card" data-id="" style="text-align:left; padding: var(--s-5); border: 1px solid var(--border); background: var(--bg); cursor: pointer;">
+    <div style="font-size: 2rem; margin-bottom: var(--s-2);" data-bind="icon"></div>
+    <div class="card-title" data-bind="name"></div>
+    <div class="text-sm text-muted mt-1" data-bind="name_zh" style="font-family: var(--font-zh);"></div>
+    <div class="text-xs text-muted mt-2" data-bind="examples"></div>
+  </button>
 </template>
 
 <!-- Notification item -->
@@ -226,14 +231,16 @@
 <script src="assets/js/i18n.js"></script>
 
 <!-- Panels -->
+<script src="assets/js/panels/patient/cart-store.js"></script>
 <script src="assets/js/panels/patient/registration-wall.js"></script>
 <script src="assets/js/panels/patient/overview.js"></script>
 <script src="assets/js/panels/patient/profile.js"></script>
 <script src="assets/js/panels/patient/health.js"></script>
-<script src="assets/js/panels/patient/doctors.js"></script>
 <script src="assets/js/panels/patient/booking.js"></script>
 <script src="assets/js/panels/patient/appointments.js"></script>
 <script src="assets/js/panels/patient/tongue.js"></script>
+<script src="assets/js/panels/patient/shop.js"></script>
+<script src="assets/js/panels/patient/cart.js"></script>
 <script src="assets/js/panels/patient/prescriptions.js"></script>
 <script src="assets/js/panels/patient/orders.js"></script>
 <script src="assets/js/panels/patient/messages.js"></script>

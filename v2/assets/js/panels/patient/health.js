@@ -44,7 +44,7 @@
           '<div class="state-icon">📋</div>' +
           '<div class="state-title">No clinical records yet</div>' +
           '<div class="state-text">Your consultation history will appear here after your first visit.</div>' +
-          '<div class="state-actions"><a href="#/doctors" class="btn btn--primary">Book First Consultation</a></div>' +
+          '<div class="state-actions"><a href="#/book" class="btn btn--primary">Book First Consultation</a></div>' +
           '</div></div>';
       } else {
         completed.forEach(function (a) {

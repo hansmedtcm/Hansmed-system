@@ -292,6 +292,14 @@
     show: function (slug) { return api.get('/pages/' + slug); },
   };
 
+  // ── Shop (curated public catalog) ──
+  var shop = {
+    list:     function (q) { return api.get('/shop/products' + (q ? '?' + q : '')); },
+    featured: function ()  { return api.get('/shop/featured'); },
+    show:     function (id){ return api.get('/shop/products/' + id); },
+    checkout: function (d) { return api.post('/shop/checkout', d); },
+  };
+
   // ── Security ──
   var security = {
     changePassword: function (d) { return api.post('/auth/change-password', d); },
@@ -319,6 +327,7 @@
     doctor: doctor,
     pharmacy: pharmacy,
     admin: admin,
+    shop: shop,
     notification: notification,
     chat: chat,
     consultation: consultation,

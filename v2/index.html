@@ -18,6 +18,27 @@
 <link rel="stylesheet" href="assets/css/patterns.css">
 <link rel="stylesheet" href="assets/css/tcm.css">
 <link rel="stylesheet" href="assets/css/responsive.css">
+<style>
+  .nav-cart-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--gold);
+    border-radius: 9px;
+    margin-left: -6px;
+    vertical-align: top;
+  }
+  #nav-cart { position: relative; }
+  #nav-cart[data-count="0"] .nav-cart-badge { display: none; }
+  .product-card { transition: transform .15s ease; }
+  .product-card:hover { transform: translateY(-2px); }
+</style>
 </head>
 <body>
 
@@ -39,17 +60,24 @@
   </button>
   <ul class="nav-menu">
     <li><a href="#home" class="nav-link">Home · 首頁</a></li>
-    <li><a href="#services" class="nav-link">Services · 服務</a></li>
-    <li><a href="#doctors" class="nav-link">Doctors · 醫師</a></li>
     <li><a href="#about" class="nav-link">About · 關於</a></li>
+    <li><a href="#services" class="nav-link">Services · 服務</a></li>
+    <li><a href="portal.html#/shop" class="nav-link">Shop · 商店</a></li>
+    <li><a href="portal.html#/book" class="nav-link">Book · 預約</a></li>
+    <li><a href="portal.html#/tongue" class="nav-link">AI Diagnosis · 診斷</a></li>
     <li><a href="#contact" class="nav-link">Contact · 聯絡</a></li>
+    <li>
+      <a href="portal.html#/shop" class="nav-link" id="nav-cart" aria-label="Shopping cart">
+        🛒 <span id="nav-cart-count" class="nav-cart-badge">0</span>
+      </a>
+    </li>
     <li>
       <div class="lang-switcher" role="group" aria-label="Language">
         <button class="lang-btn is-active" data-lang="en">EN</button>
         <button class="lang-btn" data-lang="zh">中</button>
       </div>
     </li>
-    <li>
+    <li id="nav-auth-slot">
       <button class="btn btn--primary btn--sm" onclick="location.hash='#/login'">Sign In · 登入</button>
     </li>
   </ul>
@@ -70,11 +98,11 @@
       </span>
     </p>
     <div class="hero-cta">
-      <button class="btn btn--primary btn--lg" onclick="location.hash='#/register'">
+      <button class="btn btn--primary btn--lg" onclick="location.href='portal.html#/book'">
         Book Consultation · 預約問診
       </button>
-      <button class="btn btn--outline btn--lg" onclick="scrollTo('doctors')">
-        Meet Our Doctors · 認識醫師
+      <button class="btn btn--outline btn--lg" onclick="location.href='portal.html#/shop'">
+        Browse Shop · 逛商店
       </button>
     </div>
   </div>
@@ -169,8 +197,8 @@
       </div>
       <div class="text-center">
         <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--ink); color: var(--gold); font-family: var(--font-display); font-size: 1.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--s-4); font-weight: 500;">2</div>
-        <h3>Choose Doctor</h3>
-        <p class="text-muted text-sm mt-2">Browse licensed TCM practitioners by specialty and availability</p>
+        <h3>Pick Concern &amp; Time</h3>
+        <p class="text-muted text-sm mt-2">Tell us your symptom and pick a date. We'll match you with a specialist.</p>
       </div>
       <div class="text-center">
         <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--ink); color: var(--gold); font-family: var(--font-display); font-size: 1.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--s-4); font-weight: 500;">3</div>
@@ -186,20 +214,43 @@
   </div>
 </section>
 
-<!-- ══════════════ DOCTORS ══════════════ -->
-<section id="doctors" class="section container">
+<!-- ══════════════ POPULAR REMEDIES ══════════════ -->
+<section id="shop-preview" class="section container">
   <div class="section-header">
-    <div class="section-label">Licensed Practitioners · 持證醫師</div>
-    <h2 class="section-title">Meet Our <em>Doctors</em></h2>
+    <div class="section-label">HansMed Shop · 漢方商店</div>
+    <h2 class="section-title">Popular <em>Remedies</em></h2>
+    <p class="text-muted text-sm mt-2" style="text-align:center; max-width: 500px; margin: var(--s-3) auto 0;">
+      Carefully curated TCM herbs, OTC formulas, and wellness teas. Browse our full shop after signing in.
+    </p>
   </div>
-  <div id="doctors-grid" class="grid-auto" style="gap: var(--s-5);">
+  <div id="shop-preview-grid" class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s-5);">
     <div class="state state--loading">
       <div class="state-icon"></div>
-      <div class="state-text">Loading doctors…</div>
+      <div class="state-text">Loading remedies…</div>
     </div>
   </div>
   <div class="text-center mt-6">
-    <button class="btn btn--outline" onclick="location.hash='#/register'">Book with a doctor · 預約醫師</button>
+    <button class="btn btn--outline" onclick="location.href='portal.html#/shop'">Browse Full Shop · 逛全店 →</button>
+  </div>
+</section>
+
+<!-- ══════════════ BOOKING CTA ══════════════ -->
+<section class="section bg-washi">
+  <div class="container" style="max-width: 780px; text-align: center;">
+    <div class="section-label">Consultation · 問診</div>
+    <h2 class="section-title"><em>Book</em> a Doctor Consultation</h2>
+    <p class="text-muted mt-3" style="max-width: 580px; margin: var(--s-3) auto;">
+      Pick the symptom you want to discuss and a convenient time — our system matches you with a licensed specialist.
+      Need a specific doctor? Message us in chat after booking and we'll arrange it.
+    </p>
+    <p style="font-family: var(--font-zh); color: var(--stone); margin-top: var(--s-2);">
+      選擇您關注的症狀與時段，系統自動配對對應專科的持證醫師。如需指定醫師，預約後在對話中告訴我們，我們會為您安排。
+    </p>
+    <div class="mt-6">
+      <button class="btn btn--primary btn--lg" onclick="location.href='portal.html#/book'">
+        Book Now · 立即預約
+      </button>
+    </div>
   </div>
 </section>
 
@@ -290,7 +341,8 @@
       <div class="footer-heading">Platform</div>
       <div class="footer-links">
         <a href="#services" class="footer-link">Services</a>
-        <a href="#doctors" class="footer-link">Doctors</a>
+        <a href="portal.html#/shop" class="footer-link">Shop</a>
+        <a href="portal.html#/book" class="footer-link">Book Consultation</a>
         <a href="#/register" class="footer-link">Sign Up</a>
         <a href="#/login" class="footer-link">Sign In</a>
       </div>
@@ -396,30 +448,16 @@
   </div>
 </template>
 
-<!-- ══════════════ DOCTOR CARD TEMPLATE ══════════════ -->
-<template id="tpl-doctor-card">
-  <div class="doctor-card" data-action="view" data-id="">
-    <div class="doctor-card-header">
-      <div class="doctor-card-avatar" data-bind="initial"></div>
-      <div class="doctor-card-name" data-bind="full_name"></div>
-      <div class="doctor-card-spec" data-bind="specialties"></div>
-    </div>
-    <div class="doctor-card-stats">
-      <div class="doctor-card-stat">
-        <strong data-bind="rating"></strong>
-        <span>Rating</span>
-      </div>
-      <div class="doctor-card-stat">
-        <strong data-bind="consultation_count"></strong>
-        <span>Consults</span>
-      </div>
-      <div class="doctor-card-stat">
-        <strong data-bind="fee_formatted" data-unsafe></strong>
-        <span>Per Visit</span>
-      </div>
-    </div>
-    <div class="doctor-card-footer">
-      <button class="btn btn--ghost btn--sm">View Profile · 查看 →</button>
+<!-- ══════════════ PRODUCT CARD TEMPLATE ══════════════ -->
+<template id="tpl-product-card">
+  <div class="card card--clickable product-card" data-id="">
+    <div class="product-card-img" data-bind="emoji" style="font-size: 3rem; text-align:center; padding: var(--s-4); background: var(--washi); border-radius: var(--r-md); margin-bottom: var(--s-3);"></div>
+    <div class="text-label text-gold mb-1" data-bind="category"></div>
+    <div class="card-title" data-bind="name"></div>
+    <div class="text-sm text-muted mt-1 mb-3" data-bind="name_zh" style="font-family: var(--font-zh);"></div>
+    <div class="flex-between" style="align-items:center;">
+      <div class="card-title" style="font-size: var(--text-lg); color: var(--gold);" data-bind="price_formatted"></div>
+      <button class="btn btn--outline btn--sm" data-action="add">+ Cart</button>
     </div>
   </div>
 </template>
