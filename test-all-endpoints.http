@@ -1,0 +1,299 @@
+### HansMed Full System Test — hit every endpoint in order
+### Use with VSCode REST Client or JetBrains HTTP Client
+### Tests must be run sequentially (variables passed between requests)
+
+@base = https://hansmed-system-production.up.railway.app/api
+
+# ════════════════════════════════════════════════════════════
+# SECTION 1: AUTH & REGISTRATION
+# ════════════════════════════════════════════════════════════
+
+### 1.1 Register a test patient
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test-patient-{{$timestamp}}@test.com",
+  "password": "password123",
+  "role": "patient",
+  "nickname": "Test Patient"
+}
+
+> {% client.global.set("patientToken", response.body.token); client.global.set("patientId", response.body.user.id); %}
+
+### 1.2 Patient /me
+GET {{base}}/auth/me
+Authorization: Bearer {{patientToken}}
+
+### 1.3 Complete registration (full profile)
+POST {{base}}/patient/profile/complete-registration
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "full_name": "Test Patient Full",
+  "phone": "+60123456789",
+  "ic_number": "900101-14-1234",
+  "gender": "male",
+  "birth_date": "1990-01-01",
+  "address_line1": "123 Test St",
+  "city": "Kuala Lumpur",
+  "state": "WP",
+  "postal_code": "50000",
+  "country": "Malaysia",
+  "emergency_contact_name": "Emergency",
+  "emergency_contact_phone": "+60129999999",
+  "emergency_contact_relation": "Parent",
+  "blood_type": "O+",
+  "allergies": "None"
+}
+
+### 1.4 Change password
+POST {{base}}/auth/change-password
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "current_password": "password123",
+  "new_password": "newpass456",
+  "new_password_confirmation": "newpass456"
+}
+
+### 1.5 Logout
+POST {{base}}/auth/logout
+Authorization: Bearer {{patientToken}}
+
+# ════════════════════════════════════════════════════════════
+# SECTION 2: ADMIN LOGIN + ACCOUNT MANAGEMENT
+# ════════════════════════════════════════════════════════════
+
+### 2.1 Admin login (must exist in DB already)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@hansmed.com",
+  "password": "Admin@Hans1"
+}
+
+> {% client.global.set("adminToken", response.body.token); %}
+
+### 2.2 Admin dashboard stats
+GET {{base}}/admin/reports/dashboard
+Authorization: Bearer {{adminToken}}
+
+### 2.3 List accounts
+GET {{base}}/admin/accounts
+Authorization: Bearer {{adminToken}}
+
+### 2.4 List patients
+GET {{base}}/admin/patients
+Authorization: Bearer {{adminToken}}
+
+### 2.5 List doctors
+GET {{base}}/admin/doctors
+Authorization: Bearer {{adminToken}}
+
+### 2.6 List appointments
+GET {{base}}/admin/appointments
+Authorization: Bearer {{adminToken}}
+
+### 2.7 Finance overview
+GET {{base}}/admin/finance/overview
+Authorization: Bearer {{adminToken}}
+
+### 2.8 Prescription oversight
+GET {{base}}/admin/prescriptions
+Authorization: Bearer {{adminToken}}
+
+### 2.9 Permissions
+GET {{base}}/admin/permissions
+Authorization: Bearer {{adminToken}}
+
+### 2.10 Audit logs
+GET {{base}}/admin/audit-logs
+Authorization: Bearer {{adminToken}}
+
+### 2.11 Tongue diagnosis config
+GET {{base}}/admin/tongue-config
+Authorization: Bearer {{adminToken}}
+
+### 2.12 Content pages
+GET {{base}}/admin/content
+Authorization: Bearer {{adminToken}}
+
+### 2.13 System configs
+GET {{base}}/admin/configs
+Authorization: Bearer {{adminToken}}
+
+### 2.14 Create doctor account via admin
+POST {{base}}/admin/accounts
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "doctor",
+  "name": "Dr Test",
+  "email": "dr-test-{{$timestamp}}@test.com",
+  "password": "doctor123",
+  "consultation_fee": 120,
+  "specialties": "General TCM"
+}
+
+> {% client.global.set("doctorEmail", response.body.user.email); client.global.set("doctorId", response.body.user.id); %}
+
+### 2.15 Create pharmacy account via admin
+POST {{base}}/admin/accounts
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "pharmacy",
+  "name": "Test Pharmacy",
+  "email": "pharm-test-{{$timestamp}}@test.com",
+  "password": "pharma123",
+  "city": "Kuala Lumpur"
+}
+
+> {% client.global.set("pharmEmail", response.body.user.email); %}
+
+# ════════════════════════════════════════════════════════════
+# SECTION 3: DOCTOR FLOW
+# ════════════════════════════════════════════════════════════
+
+### 3.1 Doctor login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{doctorEmail}}",
+  "password": "doctor123"
+}
+
+> {% client.global.set("docToken", response.body.token); %}
+
+### 3.2 Doctor profile
+GET {{base}}/doctor/profile
+Authorization: Bearer {{docToken}}
+
+### 3.3 List appointments
+GET {{base}}/doctor/appointments
+Authorization: Bearer {{docToken}}
+
+### 3.4 Earnings summary
+GET {{base}}/doctor/earnings/summary
+Authorization: Bearer {{docToken}}
+
+### 3.5 Patient list
+GET {{base}}/doctor/patients
+Authorization: Bearer {{docToken}}
+
+### 3.6 Add schedule
+POST {{base}}/doctor/schedules
+Authorization: Bearer {{docToken}}
+Content-Type: application/json
+
+{
+  "weekday": 1,
+  "start_time": "09:00",
+  "end_time": "17:00",
+  "slot_minutes": 30
+}
+
+### 3.7 List schedules
+GET {{base}}/doctor/schedules
+Authorization: Bearer {{docToken}}
+
+# ════════════════════════════════════════════════════════════
+# SECTION 4: PHARMACY FLOW
+# ════════════════════════════════════════════════════════════
+
+### 4.1 Pharmacy login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{pharmEmail}}",
+  "password": "pharma123"
+}
+
+> {% client.global.set("pharmToken", response.body.token); %}
+
+### 4.2 Pharmacy profile
+GET {{base}}/pharmacy/profile
+Authorization: Bearer {{pharmToken}}
+
+### 4.3 List products
+GET {{base}}/pharmacy/products
+Authorization: Bearer {{pharmToken}}
+
+### 4.4 Create product
+POST {{base}}/pharmacy/products
+Authorization: Bearer {{pharmToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Herb",
+  "unit_price": 5.00,
+  "unit": "g",
+  "initial_stock": 1000
+}
+
+### 4.5 POS products
+GET {{base}}/pharmacy/pos/products
+Authorization: Bearer {{pharmToken}}
+
+### 4.6 POS daily summary
+GET {{base}}/pharmacy/pos/daily-summary
+Authorization: Bearer {{pharmToken}}
+
+### 4.7 Orders list
+GET {{base}}/pharmacy/orders
+Authorization: Bearer {{pharmToken}}
+
+### 4.8 Prescription inbox
+GET {{base}}/pharmacy/prescriptions
+Authorization: Bearer {{pharmToken}}
+
+### 4.9 Reconciliation
+GET {{base}}/pharmacy/reconciliation/summary
+Authorization: Bearer {{pharmToken}}
+
+# ════════════════════════════════════════════════════════════
+# SECTION 5: PATIENT — BROWSE + BOOK
+# ════════════════════════════════════════════════════════════
+
+### 5.1 Patient login again
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test-patient-...",
+  "password": "newpass456"
+}
+
+> {% client.global.set("patientToken2", response.body.token); %}
+
+### 5.2 Browse doctors
+GET {{base}}/patient/doctors
+Authorization: Bearer {{patientToken2}}
+
+### 5.3 Browse pharmacies
+GET {{base}}/patient/pharmacies
+Authorization: Bearer {{patientToken2}}
+
+### 5.4 List tongue diagnoses
+GET {{base}}/patient/tongue-diagnoses
+Authorization: Bearer {{patientToken2}}
+
+### 5.5 Notifications
+GET {{base}}/patient/../notifications
+Authorization: Bearer {{patientToken2}}
+
+### 5.6 List appointments
+GET {{base}}/patient/appointments
+Authorization: Bearer {{patientToken2}}
+
+### 5.7 Addresses
+GET {{base}}/patient/addresses
+Authorization: Bearer {{patientToken2}}

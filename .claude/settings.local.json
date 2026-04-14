@@ -24,7 +24,14 @@
       "Bash(grep -n \"registration.complete\\\\|registration_completed\" /e/Hansmed-system/frontend/*.js)",
       "Bash(grep -n \"Promise.allSettled\\\\|Promise.all\" /e/Hansmed-system/frontend/*.js)",
       "Bash(grep -n \"window\\\\.gv\\\\|function gv\" /e/Hansmed-system/frontend/*.js)",
-      "Bash(grep -n \"window\\\\.showPage\\\\|window\\\\.showPortalPanel\\\\|window\\\\.showDoctorPanel\\\\|window\\\\.showAdminPanel\\\\|window\\\\.showPharmPanel\" /e/Hansmed-system/frontend/*.js)"
+      "Bash(grep -n \"window\\\\.showPage\\\\|window\\\\.showPortalPanel\\\\|window\\\\.showDoctorPanel\\\\|window\\\\.showAdminPanel\\\\|window\\\\.showPharmPanel\" /e/Hansmed-system/frontend/*.js)",
+      "Bash(grep -v \"//\")",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" -X POST https://hansmed-system-production.up.railway.app/api/auth/login -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"email\":\"admin@hansmed.com\",\"password\":\"Admin@Hans1\"}')",
+      "Bash(curl -s -w 'HTTP %{http_code}\\\\n' -H 'Authorization: Bearer 10|1UxYnRE9RYWdHJiu1ome43oHr3zvzOcVFn3YU5ZH1f3466e7' -H 'Accept: application/json' https://hansmed-system-production.up.railway.app/api/admin/reports/dashboard)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -H 'Authorization: Bearer 10|1UxYnRE9RYWdHJiu1ome43oHr3zvzOcVFn3YU5ZH1f3466e7' -H 'Accept: application/json' https://hansmed-system-production.up.railway.app/api/__TRACKED_VAR__)",
+      "Bash(curl -s -X POST \"https://hansmed-system-production.up.railway.app/api/auth/login\" -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"email\":\"pharma@hansmed.com\",\"password\":\"password\"}')",
+      "Bash(curl -s -X POST https://hansmed-system-production.up.railway.app/api/admin/accounts -H 'Authorization: Bearer 10|1UxYnRE9RYWdHJiu1ome43oHr3zvzOcVFn3YU5ZH1f3466e7' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"role\":\"doctor\",\"name\":\"Dr Audit Test\",\"email\":\"audit-dr-__TRACKED_VAR__@test.com\",\"password\":\"test1234\",\"consultation_fee\":100,\"specialties\":\"Test\"}')",
+      "Bash(curl -s -X POST https://hansmed-system-production.up.railway.app/api/auth/login -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"email\":\"audit-dr-1776144110@test.com\",\"password\":\"test1234\"}')"
     ]
   }
 }

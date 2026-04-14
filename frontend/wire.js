@@ -228,26 +228,32 @@
   };
 
   async function _handleTongueApi(file) {
-
-    // Show loading state
+    // Show clear upload + loading state
     var resultEl = document.getElementById('tongue-result');
-    if (resultEl) resultEl.innerHTML = '<p style="color:var(--stone)">Analyzing tongue image... · 正在分析舌象...</p>';
+    if (resultEl) {
+      resultEl.innerHTML = ''
+        + '<div style="text-align:center;padding:1rem;">'
+        + '<div style="font-size:1.5rem;margin-bottom:.5rem;">✓</div>'
+        + '<div style="color:var(--sage);font-size:.9rem;margin-bottom:.3rem;">Photo uploaded · 照片已上傳</div>'
+        + '<div style="color:var(--stone);font-size:.85rem;">Analyzing tongue image... · 正在分析舌象...</div>'
+        + '<div style="margin-top:.8rem;display:inline-block;width:24px;height:24px;border:3px solid var(--mist);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;"></div>'
+        + '</div>'
+        + '<style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
+    }
 
     try {
       var res = await A.patient.uploadTongue(file);
       var diag = res.diagnosis;
 
       if (diag.status === 'processing') {
-        // Queued — poll for result
-        if (resultEl) resultEl.innerHTML = '<p style="color:var(--gold)">Analysis in progress... · 分析中... (results will appear shortly)</p>';
         pollTongueDiagnosis(diag.id, resultEl);
       } else if (diag.status === 'completed') {
         renderTongueResult(diag, resultEl);
       } else {
-        if (resultEl) resultEl.innerHTML = '<p style="color:var(--red-seal)">Analysis failed. Please try again. · 分析失敗，請重試。</p>';
+        if (resultEl) resultEl.innerHTML = '<p style="color:var(--red-seal);text-align:center;">Analysis failed. Please try again. · 分析失敗，請重試。</p>';
       }
     } catch (e) {
-      if (resultEl) resultEl.innerHTML = '<p style="color:var(--red-seal)">' + (e.message || 'Upload failed') + '</p>';
+      if (resultEl) resultEl.innerHTML = '<p style="color:var(--red-seal);text-align:center;">' + (e.message || 'Upload failed') + '</p>';
     }
   }
 
@@ -317,7 +323,73 @@
 
     html += '</div>';
     el.innerHTML = html;
+
+    // Store tongue result globally so it can be used in final AI report
+    window._tongueDiagnosisResult = {
+      findings: findings,
+      constitution: constitution,
+      health_score: report.health_score,
+      recommendations: report.recommendations,
+      tongue_color: diag.tongue_color,
+      coating: diag.coating,
+      shape: diag.shape,
+    };
+    if (window.aiState) {
+      window.aiState.tongueScan = constitution.name_en ?
+        'Tongue: ' + (diag.tongue_color || '').replace(/_/g,' ') + ', ' + (diag.coating || '').replace(/_/g,' ') +
+        ' — <strong>' + constitution.name_en + '</strong> · ' + (constitution.name_zh || '') :
+        'Tongue scan completed';
+      window.aiState.tongueData = window._tongueDiagnosisResult;
+    }
+
+    // Make sure the "Continue to Questions" button is visible and clearly labeled
+    var proceedBtn = document.querySelector('#ai-tongue button[onclick="proceedTongue()"]');
+    if (proceedBtn) {
+      proceedBtn.textContent = 'Continue to Questions · 繼續問診 →';
+      proceedBtn.style.marginTop = '1.1rem';
+      proceedBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
+
+  // Override genReport to inject detailed tongue data into the final report
+  var _origGenReport = window.genReport;
+  window.genReport = function () {
+    if (typeof _origGenReport === 'function') _origGenReport();
+    // Add detailed tongue analysis to the constitution box if we have API data
+    var tongue = window._tongueDiagnosisResult;
+    if (!tongue || !tongue.constitution || !tongue.constitution.name_en) return;
+    var box = document.getElementById('constitution-box');
+    if (!box) return;
+
+    var findings = tongue.findings || [];
+    var score = tongue.health_score;
+    var scoreColor = score >= 80 ? 'var(--sage)' : score >= 60 ? 'var(--gold)' : 'var(--red-seal)';
+
+    var tongueHtml = '<div style="margin-top:1.2rem;padding:1rem 1.2rem;background:var(--washi);border-left:3px solid var(--sage);">'
+      + '<div style="font-family:\'Source Sans 3\',sans-serif;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem;">👅 Detailed Tongue Analysis · 詳細舌診分析</div>';
+
+    if (score != null) {
+      tongueHtml += '<div style="font-size:.92rem;margin-bottom:.5rem;">Tongue Health Score · 舌診健康評分：<strong style="font-size:1.4rem;color:' + scoreColor + ';">' + score + '</strong>/100</div>';
+    }
+
+    if (findings.length) {
+      tongueHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.5rem;font-size:.8rem;">';
+      findings.forEach(function (f) {
+        tongueHtml += '<div style="color:var(--stone);">'
+          + '<span style="color:var(--gold);text-transform:capitalize;">' + f.category.replace(/_/g, ' ') + ':</span> '
+          + (f.value || f.value_zh || '—')
+          + '</div>';
+      });
+      tongueHtml += '</div>';
+    }
+
+    tongueHtml += '<div style="margin-top:.6rem;font-size:.82rem;color:var(--stone);"><em>' + tongue.constitution.name_en;
+    if (tongue.constitution.name_zh) tongueHtml += ' · ' + tongue.constitution.name_zh;
+    tongueHtml += '</em></div>';
+    tongueHtml += '</div>';
+
+    box.insertAdjacentHTML('beforeend', tongueHtml);
+  };
 
   // ================================================================
   // 3. BOOKING — override confirmBooking
