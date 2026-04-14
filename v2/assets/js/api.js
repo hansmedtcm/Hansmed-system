@@ -178,8 +178,7 @@
 
     getEarnings:       function () { return api.get('/doctor/earnings/summary'); },
     getEarningHistory: function (page) { return api.get('/doctor/earnings/history?page=' + (page || 1)); },
-    listWithdrawals:   function (page) { return api.get('/doctor/withdrawals?page=' + (page || 1)); },
-    requestWithdrawal: function (d) { return api.post('/doctor/withdrawals', d); },
+    // Doctor withdrawals removed — doctors are paid by clinic salary, not commission.
 
     issueMC:       function (d) { return api.post('/doctor/documents/mc', d); },
     issueReferral: function (d) { return api.post('/doctor/documents/referral', d); },
