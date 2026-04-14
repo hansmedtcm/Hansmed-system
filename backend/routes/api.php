@@ -124,6 +124,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/appointments/{id}/start',    [DoctorAppointmentController::class, 'start']);
         Route::post('/appointments/{id}/complete', [DoctorAppointmentController::class, 'complete']);
 
+        // Patient pool (doctors pick unclaimed pool appointments)
+        Route::get('/pool',             [\App\Http\Controllers\Doctor\PoolController::class, 'index']);
+        Route::post('/pool/{id}/pick',  [\App\Http\Controllers\Doctor\PoolController::class, 'pick']);
+
         Route::get('/prescriptions',              [DoctorPrescriptionController::class, 'index']);
         Route::post('/prescriptions',             [DoctorPrescriptionController::class, 'store']);
         Route::get('/prescriptions/{id}',         [DoctorPrescriptionController::class, 'show']);

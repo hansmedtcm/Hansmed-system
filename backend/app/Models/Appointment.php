@@ -12,6 +12,8 @@ class Appointment extends Model
         'patient_id', 'doctor_id', 'scheduled_start', 'scheduled_end',
         'status', 'fee', 'payment_id', 'tongue_diagnosis_id',
         'questionnaire_id', 'notes',
+        // Pool-mode fields
+        'concern', 'concern_label', 'recommended_specialty', 'is_pool',
     ];
 
     protected $casts = [

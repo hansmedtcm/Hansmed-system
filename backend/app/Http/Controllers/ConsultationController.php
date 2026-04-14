@@ -20,11 +20,25 @@ class ConsultationController extends Controller
         $user = $request->user();
         $appt = Appointment::findOrFail($appointmentId);
 
+        // Auto-claim for pool appointments when a doctor tries to join.
+        if (! $appt->doctor_id && $user->role === 'doctor') {
+            $appt->doctor_id = $user->id;
+            $appt->is_pool = 0;
+            if (! in_array($appt->status, ['in_progress', 'completed'], true)) {
+                $appt->status = 'confirmed';
+            }
+            $appt->save();
+        }
+
+        // Participants only (patient on the booking OR the doctor who claimed it).
         if ($appt->patient_id !== $user->id && $appt->doctor_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-        if (! in_array($appt->status, ['confirmed', 'in_progress'], true)) {
-            return response()->json(['message' => 'Appointment not joinable'], 422);
+
+        // Allow more statuses: pool pickups may still be in 'pending_payment' or 'paid'.
+        $joinable = ['pending_payment', 'paid', 'confirmed', 'in_progress'];
+        if (! in_array($appt->status, $joinable, true)) {
+            return response()->json(['message' => 'Appointment ' . $appt->status . ' — cannot join'], 422);
         }
 
         $consult = Consultation::firstOrCreate(

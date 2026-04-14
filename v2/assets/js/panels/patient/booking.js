@@ -175,8 +175,9 @@
       '</div>' +
 
       '<div class="field mb-4">' +
-      '<label class="field-label">Notes for the doctor · 備註 (Optional)</label>' +
-      '<textarea id="bk-notes" class="field-input field-input--boxed" rows="3" placeholder="Describe symptoms, how long, severity, medications you take…"></textarea>' +
+      '<label class="field-label" data-required>Notes for the doctor · 病情說明 (Required)</label>' +
+      '<textarea id="bk-notes" class="field-input field-input--boxed" rows="4" required placeholder="Describe your symptoms, how long they have lasted, severity (1-10), any medications you take, and anything else the doctor should know. · 請描述症狀、持續時間、嚴重程度、正在服用的藥物等。"></textarea>' +
+      '<div class="field-hint text-xs text-muted mt-1">This helps the doctor prepare before the session. Minimum 15 characters. · 有助醫師了解病情，至少 15 字。</div>' +
       '</div>' +
 
       '<div class="flex flex-gap-3">' +
@@ -196,7 +197,15 @@
   }
 
   async function confirmBooking() {
-    var notes = document.getElementById('bk-notes').value;
+    var notesEl = document.getElementById('bk-notes');
+    var notes = (notesEl.value || '').trim();
+    if (notes.length < 15) {
+      notesEl.focus();
+      notesEl.style.borderColor = 'var(--red-seal)';
+      HM.ui.toast('Please describe your condition (at least 15 characters) · 請說明病情 (至少 15 字)', 'danger', 4000);
+      return;
+    }
+    notesEl.style.borderColor = '';
     var btn = document.getElementById('bk-confirm');
     btn.classList.add('is-loading');
     btn.disabled = true;

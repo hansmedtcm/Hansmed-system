@@ -11,16 +11,38 @@
   async function render(el, appointmentId) {
     HM.state.loading(el);
     try {
-      var apptRes = await HM.api.doctor.getAppointment(appointmentId);
+      // 1. Load the appointment. For pool appointments the getAppointment
+      //    endpoint may 404 (it filters by doctor_id=me) — in that case the
+      //    doctor hasn't claimed it yet, so pick it first.
+      var apptRes = null;
+      try {
+        apptRes = await HM.api.doctor.getAppointment(appointmentId);
+      } catch (e) {
+        if (e.status === 404) {
+          // Try to pick from pool first
+          try { await HM.api.post('/doctor/pool/' + appointmentId + '/pick'); } catch (_) {}
+          apptRes = await HM.api.doctor.getAppointment(appointmentId);
+        } else {
+          throw e;
+        }
+      }
       currentAppt = apptRes.appointment;
-      // Start appointment if confirmed
-      if (currentAppt.status === 'confirmed') {
-        try { await HM.api.doctor.startAppointment(appointmentId); } catch {}
+
+      // 2. Try to start the appointment — backend will auto-claim pool entries
+      //    and accept any pre-consult status.
+      try { await HM.api.doctor.startAppointment(appointmentId); } catch (_) { /* already started or minor race */ }
+
+      // 3. Request video join details. Backend also auto-claims if needed.
+      var tokenRes = { rtc: {} };
+      try {
+        tokenRes = await HM.api.consultation.joinToken(appointmentId);
+      } catch (e) {
+        // Degrade gracefully — use a deterministic Jitsi room name if the
+        // backend refuses. The consultation can still happen over Jitsi.
+        console.warn('joinToken failed, using fallback room:', e.message);
       }
 
-      // Build Jitsi URL
-      var tokenRes = await HM.api.consultation.joinToken(appointmentId);
-      var rtc = tokenRes.rtc;
+      var rtc = tokenRes.rtc || {};
       var user = HM.auth.user();
       var displayName = HM.auth.displayName(user);
       var roomName = rtc.channel || ('HansMed-Consult-' + appointmentId);

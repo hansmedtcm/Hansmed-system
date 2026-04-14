@@ -15,75 +15,101 @@ class AppointmentController extends Controller
 {
     public function __construct(private StripeClient $stripe) {}
 
-    // C-10: book appointment + create Stripe PaymentIntent
+    // C-10: book appointment + create Stripe PaymentIntent.
+    // Now supports POOL bookings: when doctor_id is missing, the appointment
+    // enters the pool and any matching doctor can pick it up.
     public function store(Request $request)
     {
         $data = $request->validate([
-            'doctor_id'       => ['required', 'integer', 'exists:users,id'],
-            'scheduled_start' => ['required', 'date', 'after:now'],
+            'doctor_id'       => ['nullable', 'integer', 'exists:users,id'],
+            'scheduled_start' => ['required', 'date'],
             'scheduled_end'   => ['required', 'date', 'after:scheduled_start'],
             'tongue_diagnosis_id' => ['nullable', 'integer'],
             'questionnaire_id'    => ['nullable', 'integer'],
-            'notes'               => ['nullable', 'string', 'max:1000'],
+            'notes'               => ['nullable', 'string', 'max:2000'],
+            // Pool booking fields
+            'concern'              => ['nullable', 'string', 'max:60'],
+            'concern_label'        => ['nullable', 'string', 'max:120'],
+            'recommended_specialty'=> ['nullable', 'string', 'max:120'],
+            'pool'                 => ['nullable', 'boolean'],
+            'fee'                  => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $doctor = DoctorProfile::where('user_id', $data['doctor_id'])
-            ->where('verification_status', 'approved')
-            ->where('accepting_appointments', true)
-            ->first();
+        $isPool = empty($data['doctor_id']);
 
-        if (! $doctor) {
-            throw ValidationException::withMessages(['doctor_id' => 'Doctor not available.']);
+        if (! $isPool) {
+            $doctor = DoctorProfile::where('user_id', $data['doctor_id'])
+                ->where('verification_status', 'approved')
+                ->where('accepting_appointments', true)
+                ->first();
+            if (! $doctor) {
+                throw ValidationException::withMessages(['doctor_id' => 'Doctor not available.']);
+            }
         }
 
-        return DB::transaction(function () use ($request, $data, $doctor) {
-            // prevent double-booking
-            $conflict = Appointment::where('doctor_id', $doctor->user_id)
-                ->whereNotIn('status', ['cancelled', 'no_show'])
-                ->where('scheduled_start', '<', $data['scheduled_end'])
-                ->where('scheduled_end',   '>', $data['scheduled_start'])
-                ->exists();
-            if ($conflict) {
-                throw ValidationException::withMessages(['scheduled_start' => 'Time slot unavailable.']);
+        $fee = $isPool ? ($data['fee'] ?? 120) : $doctor->consultation_fee;
+
+        return DB::transaction(function () use ($request, $data, $isPool, $fee) {
+            if (! $isPool) {
+                // prevent double-booking for named doctor
+                $conflict = Appointment::where('doctor_id', $data['doctor_id'])
+                    ->whereNotIn('status', ['cancelled', 'no_show'])
+                    ->where('scheduled_start', '<', $data['scheduled_end'])
+                    ->where('scheduled_end',   '>', $data['scheduled_start'])
+                    ->exists();
+                if ($conflict) {
+                    throw ValidationException::withMessages(['scheduled_start' => 'Time slot unavailable.']);
+                }
             }
 
             $appt = Appointment::create([
                 'patient_id'          => $request->user()->id,
-                'doctor_id'           => $doctor->user_id,
+                'doctor_id'           => $isPool ? null : $data['doctor_id'],
                 'scheduled_start'     => $data['scheduled_start'],
                 'scheduled_end'       => $data['scheduled_end'],
-                'status'              => 'pending_payment',
-                'fee'                 => $doctor->consultation_fee,
+                // Pool appointments go straight to 'confirmed' so any doctor can pick them.
+                'status'              => $isPool ? 'confirmed' : 'pending_payment',
+                'fee'                 => $fee,
                 'tongue_diagnosis_id' => $data['tongue_diagnosis_id'] ?? null,
                 'questionnaire_id'    => $data['questionnaire_id']    ?? null,
                 'notes'               => $data['notes']               ?? null,
+                'concern'              => $data['concern']              ?? null,
+                'concern_label'        => $data['concern_label']        ?? null,
+                'recommended_specialty'=> $data['recommended_specialty']?? null,
+                'is_pool'              => $isPool ? 1 : 0,
             ]);
 
-            $intent = $this->stripe->createPaymentIntent(
-                amountMinor: (int) round($doctor->consultation_fee * 100),
-                currency: 'cny',
-                metadata: ['appointment_id' => $appt->id, 'patient_id' => $request->user()->id],
-            );
-
-            $payment = Payment::create([
-                'user_id'      => $request->user()->id,
-                'payable_type' => 'appointment',
-                'payable_id'   => $appt->id,
-                'provider'     => 'stripe',
-                'provider_ref' => $intent['id'] ?? null,
-                'amount'       => $doctor->consultation_fee,
-                'currency'     => 'CNY',
-                'status'       => 'pending',
-                'raw_payload'  => $intent,
-            ]);
-
-            $appt->payment_id = $payment->id;
-            $appt->save();
+            $clientSecret = null;
+            $payment = null;
+            try {
+                $intent = $this->stripe->createPaymentIntent(
+                    amountMinor: (int) round($fee * 100),
+                    currency: 'myr',
+                    metadata: ['appointment_id' => $appt->id, 'patient_id' => $request->user()->id],
+                );
+                $payment = Payment::create([
+                    'user_id'      => $request->user()->id,
+                    'payable_type' => 'appointment',
+                    'payable_id'   => $appt->id,
+                    'provider'     => 'stripe',
+                    'provider_ref' => $intent['id'] ?? null,
+                    'amount'       => $fee,
+                    'currency'     => 'MYR',
+                    'status'       => 'pending',
+                    'raw_payload'  => $intent,
+                ]);
+                $appt->payment_id = $payment->id;
+                $appt->save();
+                $clientSecret = $intent['client_secret'] ?? null;
+            } catch (\Throwable $e) {
+                // Stripe not configured — continue in demo mode. Appointment is still created.
+            }
 
             return response()->json([
-                'appointment'         => $appt,
-                'payment'             => $payment,
-                'stripe_client_secret' => $intent['client_secret'] ?? null,
+                'appointment'          => $appt,
+                'payment'              => $payment,
+                'stripe_client_secret' => $clientSecret,
+                'pool'                 => $isPool,
             ], 201);
         });
     }

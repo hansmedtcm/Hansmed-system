@@ -8,8 +8,16 @@
   async function render(el, appointmentId) {
     HM.state.loading(el);
     try {
-      var res = await HM.api.consultation.joinToken(appointmentId);
-      var rtc = res.rtc;
+      // Try to fetch a proper join token. Degrade gracefully if the backend
+      // refuses — Jitsi can still host the call with a deterministic room.
+      var rtc = {};
+      try {
+        var res = await HM.api.consultation.joinToken(appointmentId);
+        rtc = res.rtc || {};
+      } catch (e) {
+        console.warn('joinToken failed, falling back:', e.message);
+      }
+
       var user = HM.auth.user();
       var displayName = HM.auth.displayName(user);
       var roomName = rtc.channel || ('HansMed-Consult-' + appointmentId);

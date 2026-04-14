@@ -42,11 +42,22 @@ class AppointmentController extends Controller
     // D-07 hook: mark consultation started/ended
     public function start(Request $request, int $id)
     {
-        $appt = Appointment::where('doctor_id', $request->user()->id)->findOrFail($id);
-        if ($appt->status !== 'confirmed') {
-            return response()->json(['message' => 'Not confirmed'], 422);
+        // Accept pool appointments too — if they haven't been picked, assign to current doctor.
+        $appt = Appointment::findOrFail($id);
+        if (! $appt->doctor_id) {
+            $appt->doctor_id = $request->user()->id;
+            $appt->is_pool = 0;
+        } elseif ($appt->doctor_id !== $request->user()->id) {
+            return response()->json(['message' => 'Not your appointment'], 403);
         }
-        $appt->update(['status' => 'in_progress']);
+
+        if (in_array($appt->status, ['completed', 'cancelled', 'no_show'], true)) {
+            return response()->json(['message' => 'Appointment already ' . $appt->status], 422);
+        }
+
+        // Any pre-consult state (pending_payment, paid, confirmed) → in_progress.
+        $appt->status = 'in_progress';
+        $appt->save();
         return response()->json(['appointment' => $appt]);
     }
 
