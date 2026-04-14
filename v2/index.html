@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI tongue diagnosis, herbal prescriptions, pharmacy delivery.">
+<meta name="theme-color" content="#1a1612">
+<title>HansMed Modern TCM · 漢方現代中醫</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/patterns.css">
+<link rel="stylesheet" href="assets/css/tcm.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="nav" id="nav">
+  <a href="index.html" class="nav-brand">
+    <span class="nav-brand-mark" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </span>
+    <span>
+      漢方現代中醫
+      <span class="nav-brand-en">HansMed Modern TCM</span>
+    </span>
+  </a>
+  <button class="nav-toggle" aria-label="Menu" aria-expanded="false" onclick="toggleNav()">
+    <span class="nav-toggle-icon"></span>
+  </button>
+  <ul class="nav-menu">
+    <li><a href="#home" class="nav-link">Home · 首頁</a></li>
+    <li><a href="#services" class="nav-link">Services · 服務</a></li>
+    <li><a href="#doctors" class="nav-link">Doctors · 醫師</a></li>
+    <li><a href="#about" class="nav-link">About · 關於</a></li>
+    <li><a href="#contact" class="nav-link">Contact · 聯絡</a></li>
+    <li>
+      <div class="lang-switcher" role="group" aria-label="Language">
+        <button class="lang-btn is-active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="zh">中</button>
+      </div>
+    </li>
+    <li>
+      <button class="btn btn--primary btn--sm" onclick="location.hash='#/login'">Sign In · 登入</button>
+    </li>
+  </ul>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<main id="main">
+<section id="home" class="hero bg-washi-dotted">
+  <div class="hero-content">
+    <div class="eyebrow">Traditional · 傳統智慧 · Modern Care</div>
+    <h1>Healing Begins <em>with Harmony</em></h1>
+    <p class="hero-tagline">
+      Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.
+      Book consultations, receive herbal prescriptions, and order medicines from trusted pharmacies.
+      <br><br>
+      <span style="font-family: var(--font-zh); font-size: .95rem;">
+        持證中醫師線上問診 · 草本處方 · 藥房配送
+      </span>
+    </p>
+    <div class="hero-cta">
+      <button class="btn btn--primary btn--lg" onclick="location.hash='#/register'">
+        Book Consultation · 預約問診
+      </button>
+      <button class="btn btn--outline btn--lg" onclick="scrollTo('doctors')">
+        Meet Our Doctors · 認識醫師
+      </button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="kanji-watermark kanji-watermark--hero" aria-hidden="true">醫</div>
+    <div class="apothecary-cabinet" aria-hidden="true">
+      <div class="apothecary-drawer">當歸</div>
+      <div class="apothecary-drawer">黃芪</div>
+      <div class="apothecary-drawer">白朮</div>
+      <div class="apothecary-drawer">熟地</div>
+      <div class="apothecary-drawer">白芍</div>
+      <div class="apothecary-drawer">川芎</div>
+      <div class="apothecary-drawer">黨參</div>
+      <div class="apothecary-drawer">甘草</div>
+      <div class="apothecary-drawer">茯苓</div>
+    </div>
+  </div>
+  <div class="hero-badges">
+    <span class="hero-badge">✓ Licensed Practitioners</span>
+    <span class="hero-badge">✓ Telehealth</span>
+    <span class="hero-badge">✓ Secure & Private</span>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════ SERVICES ══════════════ -->
+<section id="services" class="section container">
+  <div class="section-header">
+    <div class="section-label">Our Services · 我們的服務</div>
+    <h2 class="section-title">Comprehensive TCM <em>Care</em></h2>
+  </div>
+  <div class="grid-auto">
+
+    <div class="card">
+      <div style="font-size: 2rem; color: var(--gold); margin-bottom: var(--s-3);">🌿</div>
+      <h3>TCM Consultation</h3>
+      <p class="text-muted text-sm mt-2">Video consultation with licensed TCM practitioners. Get diagnosis and personalized treatment plans.</p>
+      <p style="font-family: var(--font-zh); color: var(--stone); font-size: .82rem; margin-top: var(--s-2);">線上視訊問診 · 個人化治療</p>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 2rem; color: var(--gold); margin-bottom: var(--s-3);">👅</div>
+      <h3>AI Tongue Diagnosis</h3>
+      <p class="text-muted text-sm mt-2">Upload a tongue photo for AI-assisted analysis based on classical TCM diagnostic frameworks.</p>
+      <p style="font-family: var(--font-zh); color: var(--stone); font-size: .82rem; margin-top: var(--s-2);">智能舌診 · 體質辨識</p>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 2rem; color: var(--gold); margin-bottom: var(--s-3);">📝</div>
+      <h3>Electronic Prescriptions</h3>
+      <p class="text-muted text-sm mt-2">Receive digital prescriptions with dosage instructions, contraindications, and printable PDFs.</p>
+      <p style="font-family: var(--font-zh); color: var(--stone); font-size: .82rem; margin-top: var(--s-2);">電子處方 · 詳細用法</p>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 2rem; color: var(--gold); margin-bottom: var(--s-3);">📦</div>
+      <h3>Pharmacy Delivery</h3>
+      <p class="text-muted text-sm mt-2">Order herbs and formulas from verified pharmacies with doorstep delivery and tracking.</p>
+      <p style="font-family: var(--font-zh); color: var(--stone); font-size: .82rem; margin-top: var(--s-2);">藥房配送 · 全程追蹤</p>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 2rem; color: var(--gold); margin-bottom: var(--s-3);">💬</div>
+      <h3>Doctor Chat</h3>
+      <p class="text-muted text-sm mt-2">Message your doctor between consultations for follow-up questions or prescription adjustments.</p>
+      <p style="font-family: var(--font-zh); color: var(--stone); font-size: .82rem; margin-top: var(--s-2);">醫師對話 · 即時回覆</p>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 2rem; color: var(--gold); margin-bottom: var(--s-3);">📋</div>
+      <h3>Health Records</h3>
+      <p class="text-muted text-sm mt-2">Secure digital health records with consultation history, prescriptions, and tongue diagnosis tracking.</p>
+      <p style="font-family: var(--font-zh); color: var(--stone); font-size: .82rem; margin-top: var(--s-2);">健康檔案 · 安全保密</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════ HOW IT WORKS ══════════════ -->
+<section class="section bg-washi">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">How It Works · 使用流程</div>
+      <h2 class="section-title">Four Simple Steps</h2>
+    </div>
+    <div class="grid-4 grid-auto" style="gap: var(--s-6);">
+      <div class="text-center">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--ink); color: var(--gold); font-family: var(--font-display); font-size: 1.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--s-4); font-weight: 500;">1</div>
+        <h3>Sign Up</h3>
+        <p class="text-muted text-sm mt-2">Create your account and complete your health profile</p>
+      </div>
+      <div class="text-center">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--ink); color: var(--gold); font-family: var(--font-display); font-size: 1.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--s-4); font-weight: 500;">2</div>
+        <h3>Choose Doctor</h3>
+        <p class="text-muted text-sm mt-2">Browse licensed TCM practitioners by specialty and availability</p>
+      </div>
+      <div class="text-center">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--ink); color: var(--gold); font-family: var(--font-display); font-size: 1.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--s-4); font-weight: 500;">3</div>
+        <h3>Consult Online</h3>
+        <p class="text-muted text-sm mt-2">Join video consultation, get diagnosis and prescription</p>
+      </div>
+      <div class="text-center">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--ink); color: var(--gold); font-family: var(--font-display); font-size: 1.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--s-4); font-weight: 500;">4</div>
+        <h3>Receive Medicine</h3>
+        <p class="text-muted text-sm mt-2">Order herbs from pharmacy, delivered to your door</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ DOCTORS ══════════════ -->
+<section id="doctors" class="section container">
+  <div class="section-header">
+    <div class="section-label">Licensed Practitioners · 持證醫師</div>
+    <h2 class="section-title">Meet Our <em>Doctors</em></h2>
+  </div>
+  <div id="doctors-grid" class="grid-auto" style="gap: var(--s-5);">
+    <div class="state state--loading">
+      <div class="state-icon"></div>
+      <div class="state-text">Loading doctors…</div>
+    </div>
+  </div>
+  <div class="text-center mt-6">
+    <button class="btn btn--outline" onclick="location.hash='#/register'">Book with a doctor · 預約醫師</button>
+  </div>
+</section>
+
+<!-- ══════════════ ABOUT ══════════════ -->
+<section id="about" class="section bg-washi">
+  <div class="container" style="max-width: 900px;">
+    <div class="section-header">
+      <div class="section-label">About Us · 關於我們</div>
+      <h2 class="section-title">A New Way to Experience <em>Traditional Medicine</em></h2>
+    </div>
+    <p style="font-size: var(--text-lg); line-height: var(--leading-relaxed); color: var(--stone); text-align: center; max-width: 700px; margin: 0 auto;">
+      HansMed Modern TCM bridges classical Chinese medicine with modern telehealth.
+      Licensed practitioners, AI-assisted diagnostics, and trusted pharmacy partners —
+      all accessible from your phone.
+    </p>
+    <p style="font-family: var(--font-zh); font-size: var(--text-base); line-height: 2; color: var(--stone); text-align: center; max-width: 700px; margin: var(--s-4) auto 0;">
+      漢方現代中醫融合古典中醫智慧與現代遠程醫療，持證醫師在線問診，智能輔助診斷，可信賴的藥房合作夥伴，讓傳統中醫觸手可及。
+    </p>
+    <div class="stats-grid mt-8" style="max-width: 700px; margin: var(--s-8) auto 0;">
+      <div class="stat-card">
+        <div class="stat-number">25+</div>
+        <div class="stat-label">Licensed Doctors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">10+</div>
+        <div class="stat-label">TCM Specialties</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Chat Support</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ EMERGENCY DISCLAIMER ══════════════ -->
+<section class="section--sm container">
+  <div class="emergency-banner">
+    <div class="emergency-banner-title">⚠ Medical Emergency Notice</div>
+    <div class="emergency-banner-text">
+      HansMed is designed for non-emergency consultations. If you are experiencing chest pain, difficulty breathing, severe bleeding, or other life-threatening symptoms, please call <strong>999</strong> immediately or visit the nearest emergency department.
+      <br>
+      <span style="font-family: var(--font-zh);">漢方現代中醫僅提供非緊急醫療諮詢。如遇胸痛、呼吸困難、嚴重出血等緊急情況，請立即撥打 999 或前往急診。</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CONTACT ══════════════ -->
+<section id="contact" class="section bg-washi">
+  <div class="container" style="max-width: 600px;">
+    <div class="section-header">
+      <div class="section-label">Get in Touch · 聯絡我們</div>
+      <h2 class="section-title">Questions? We're Here to Help</h2>
+    </div>
+    <form id="contact-form" class="card card--pad-lg">
+      <div class="field">
+        <label class="field-label" data-required>Name · 姓名</label>
+        <input type="text" name="name" class="field-input field-input--boxed" required>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input field-input--boxed" required>
+      </div>
+      <div class="field">
+        <label class="field-label">Subject · 主題</label>
+        <input type="text" name="subject" class="field-input field-input--boxed">
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Message · 訊息</label>
+        <textarea name="message" class="field-input field-input--boxed" rows="5" required></textarea>
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">Send Message · 傳送訊息</button>
+    </form>
+  </div>
+</section>
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-heading">HansMed</div>
+      <p style="color: rgba(245, 240, 232, 0.65); font-size: var(--text-sm); line-height: var(--leading-relaxed);">
+        Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.
+      </p>
+    </div>
+    <div>
+      <div class="footer-heading">Platform</div>
+      <div class="footer-links">
+        <a href="#services" class="footer-link">Services</a>
+        <a href="#doctors" class="footer-link">Doctors</a>
+        <a href="#/register" class="footer-link">Sign Up</a>
+        <a href="#/login" class="footer-link">Sign In</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-heading">For Professionals</div>
+      <div class="footer-links">
+        <a href="#/login" class="footer-link">Doctor Login</a>
+        <a href="#/login" class="footer-link">Pharmacy Login</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-heading">Legal</div>
+      <div class="footer-links">
+        <a href="javascript:showPage('privacy-policy')" class="footer-link">Privacy Policy</a>
+        <a href="javascript:showPage('terms')" class="footer-link">Terms of Service</a>
+        <a href="javascript:showPage('faq')" class="footer-link">FAQ</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>&copy; 2026 HansMed Modern TCM · 漢方現代中醫</div>
+    <div>Made with care in Malaysia · 馬來西亞</div>
+  </div>
+</footer>
+
+<!-- ══════════════ AUTH MODAL (shown via hash router) ══════════════ -->
+<template id="tpl-auth-modal">
+  <div class="auth-modal">
+    <div class="tabs" style="margin-bottom: var(--s-5);">
+      <button class="tab" data-tab="login">Sign In · 登入</button>
+      <button class="tab" data-tab="register">Register · 註冊</button>
+      <button class="tab" data-tab="professional">Doctor/Pharmacy · 專業</button>
+    </div>
+
+    <!-- Login panel -->
+    <form class="tab-panel" data-panel="login">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Welcome Back</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in to your HansMed account</p>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required autocomplete="current-password">
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+    </form>
+
+    <!-- Register panel -->
+    <form class="tab-panel" data-panel="register">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Create Account</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Join HansMed as a patient · 註冊成為患者</p>
+      <div class="field">
+        <label class="field-label" data-required>Name · 姓名</label>
+        <input type="text" name="nickname" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required autocomplete="new-password" minlength="8">
+        <div class="field-hint">Minimum 8 characters · 至少8個字元</div>
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Create Account · 建立帳號</button>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">
+        By registering, you agree to our
+        <a href="javascript:showPage('terms')">Terms</a> and
+        <a href="javascript:showPage('privacy-policy')">Privacy Policy</a>
+      </p>
+    </form>
+
+    <!-- Professional login -->
+    <form class="tab-panel" data-panel="professional">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Professional Sign In</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">For doctors, pharmacies, and administrators</p>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">
+        Need an account? Contact your administrator.
+      </p>
+    </form>
+  </div>
+</template>
+
+<!-- ══════════════ DOCTOR CARD TEMPLATE ══════════════ -->
+<template id="tpl-doctor-card">
+  <div class="doctor-card" data-action="view" data-id="">
+    <div class="doctor-card-header">
+      <div class="doctor-card-avatar" data-bind="initial"></div>
+      <div class="doctor-card-name" data-bind="full_name"></div>
+      <div class="doctor-card-spec" data-bind="specialties"></div>
+    </div>
+    <div class="doctor-card-stats">
+      <div class="doctor-card-stat">
+        <strong data-bind="rating"></strong>
+        <span>Rating</span>
+      </div>
+      <div class="doctor-card-stat">
+        <strong data-bind="consultation_count"></strong>
+        <span>Consults</span>
+      </div>
+      <div class="doctor-card-stat">
+        <strong data-bind="fee_formatted" data-unsafe></strong>
+        <span>Per Visit</span>
+      </div>
+    </div>
+    <div class="doctor-card-footer">
+      <button class="btn btn--ghost btn--sm">View Profile · 查看 →</button>
+    </div>
+  </div>
+</template>
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/bus.js"></script>
+<script src="assets/js/format.js"></script>
+<script src="assets/js/empty.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/form.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/router.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/pages/landing.js"></script>
+
+</body>
+</html>

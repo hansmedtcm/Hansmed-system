@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1612">
+<title>Doctor Portal · HansMed</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/patterns.css">
+<link rel="stylesheet" href="assets/css/tcm.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <span class="nav-brand-mark" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </span>
+    <span>
+      漢方現代中醫
+      <span class="nav-brand-en">Doctor Portal · 醫師端</span>
+    </span>
+  </a>
+  <ul class="nav-menu" style="gap: 0.75rem;">
+    <li id="notif-bell" style="position:relative; cursor:pointer;" onclick="location.hash='#/notifications'">
+      <span style="font-size: 1.2rem;">🔔</span>
+      <span id="notif-count" class="sidebar-link-badge" style="position:absolute; top:-5px; right:-8px; display:none;">0</span>
+    </li>
+    <li style="color: var(--stone); font-size: var(--text-sm);" id="user-greeting">—</li>
+    <li><button class="btn btn--ghost btn--sm" onclick="HM.auth.logout().then(function(){location.href='index.html';})">Sign Out · 登出</button></li>
+  </ul>
+</nav>
+
+<div class="portal-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sb-avatar">—</div>
+      <div class="sidebar-name" id="sb-name">Loading…</div>
+      <div class="sidebar-sub" id="sb-since">Doctor</div>
+    </div>
+    <div class="sidebar-section"><div class="sidebar-label">Clinical · 臨床</div></div>
+    <a class="sidebar-link" data-route="#/" href="#/"><span class="sidebar-link-icon">📊</span><span class="sidebar-link-label">Dashboard · 總覽</span></a>
+    <a class="sidebar-link" data-route="#/queue" href="#/queue"><span class="sidebar-link-icon">📅</span><span class="sidebar-link-label">Today's Queue · 今日候診</span></a>
+    <a class="sidebar-link" data-route="#/appointments" href="#/appointments"><span class="sidebar-link-icon">🗓️</span><span class="sidebar-link-label">All Appointments · 所有預約</span></a>
+    <a class="sidebar-link" data-route="#/patients" href="#/patients"><span class="sidebar-link-icon">👥</span><span class="sidebar-link-label">Patients · 患者</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Treatment · 治療</div></div>
+    <a class="sidebar-link" data-route="#/prescriptions" href="#/prescriptions"><span class="sidebar-link-icon">📝</span><span class="sidebar-link-label">Prescriptions · 處方</span></a>
+    <a class="sidebar-link" data-route="#/schedule" href="#/schedule"><span class="sidebar-link-icon">⏰</span><span class="sidebar-link-label">My Schedule · 排班</span></a>
+    <a class="sidebar-link" data-route="#/documents" href="#/documents"><span class="sidebar-link-icon">📄</span><span class="sidebar-link-label">Documents · 文件</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Business · 業務</div></div>
+    <a class="sidebar-link" data-route="#/earnings" href="#/earnings"><span class="sidebar-link-icon">💰</span><span class="sidebar-link-label">Earnings · 收入</span></a>
+    <a class="sidebar-link" data-route="#/withdrawals" href="#/withdrawals"><span class="sidebar-link-icon">🏦</span><span class="sidebar-link-label">Withdrawals · 提現</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Communication · 溝通</div></div>
+    <a class="sidebar-link" data-route="#/messages" href="#/messages"><span class="sidebar-link-icon">💬</span><span class="sidebar-link-label">Messages · 訊息</span></a>
+    <a class="sidebar-link" data-route="#/notifications" href="#/notifications"><span class="sidebar-link-icon">🔔</span><span class="sidebar-link-label">Notifications · 通知</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Account · 帳號</div></div>
+    <a class="sidebar-link" data-route="#/profile" href="#/profile"><span class="sidebar-link-icon">👤</span><span class="sidebar-link-label">My Profile · 個人資料</span></a>
+    <a class="sidebar-link" data-route="#/help" href="#/help"><span class="sidebar-link-icon">❓</span><span class="sidebar-link-label">Help · 幫助</span></a>
+  </aside>
+
+  <main class="main" id="main">
+    <div id="panel-container">
+      <div class="state state--loading"><div class="state-icon"></div><div class="state-text">Loading…</div></div>
+    </div>
+  </main>
+</div>
+
+<!-- Consultation card -->
+<template id="tpl-consult-card">
+  <div class="card mb-3" data-id="">
+    <div class="flex-between">
+      <div>
+        <div class="text-label text-gold mb-1" data-bind="scheduled_start" data-format="datetime"></div>
+        <div class="card-title" data-bind="patient_name"></div>
+        <div class="text-muted text-sm mt-1" data-bind="notes"></div>
+      </div>
+      <div style="text-align: right;">
+        <div data-bind="status_badge" data-unsafe></div>
+        <div class="text-sm mt-2" data-bind="fee_formatted"></div>
+      </div>
+    </div>
+    <div class="flex flex-gap-2 mt-4">
+      <button class="btn btn--primary btn--sm" data-action="consult" data-bind-show="can_consult">Start Consult · 開始問診</button>
+      <button class="btn btn--outline btn--sm" data-action="view">Details · 詳情</button>
+      <button class="btn btn--outline btn--sm" data-action="chat">💬 Chat</button>
+    </div>
+  </div>
+</template>
+
+<!-- Patient card -->
+<template id="tpl-patient-card">
+  <div class="card card--clickable mb-3" data-id="" data-action="view">
+    <div class="flex-between">
+      <div class="flex flex-gap-3">
+        <div class="avatar" data-bind="initial"></div>
+        <div>
+          <div class="card-title" data-bind="name"></div>
+          <div class="text-xs text-muted" data-bind="contact"></div>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <div class="text-sm" data-bind="visits_text"></div>
+        <div class="text-xs text-muted" data-bind="last_visit_text"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/bus.js"></script>
+<script src="assets/js/format.js"></script>
+<script src="assets/js/empty.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/form.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/router.js"></script>
+<script src="assets/js/i18n.js"></script>
+
+<script src="assets/js/panels/doctor/dashboard.js"></script>
+<script src="assets/js/panels/doctor/queue.js"></script>
+<script src="assets/js/panels/doctor/appointments.js"></script>
+<script src="assets/js/panels/doctor/patients.js"></script>
+<script src="assets/js/panels/doctor/consult.js"></script>
+<script src="assets/js/panels/doctor/prescriptions.js"></script>
+<script src="assets/js/panels/doctor/schedule.js"></script>
+<script src="assets/js/panels/doctor/documents.js"></script>
+<script src="assets/js/panels/doctor/earnings.js"></script>
+<script src="assets/js/panels/doctor/withdrawals.js"></script>
+<script src="assets/js/panels/doctor/messages.js"></script>
+<script src="assets/js/panels/doctor/notifications.js"></script>
+<script src="assets/js/panels/doctor/profile.js"></script>
+<script src="assets/js/panels/doctor/help.js"></script>
+
+<script src="assets/js/pages/doctor.js"></script>
+
+</body>
+</html>

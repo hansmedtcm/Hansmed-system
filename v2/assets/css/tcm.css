@@ -1,0 +1,311 @@
+/* ============================================================
+   TCM decorative elements — kanji, seals, washi, brush
+   ============================================================ */
+
+/* ── VERTICAL CHINESE TEXT RAIL ────────────────── */
+.vert-text {
+  position: absolute;
+  font-family: var(--font-zh);
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: rgba(122, 112, 104, 0.38);
+  writing-mode: vertical-rl;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── KANJI WATERMARK ───────────────────────────── */
+.kanji-watermark {
+  position: absolute;
+  font-family: var(--font-zh);
+  font-weight: 600;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(122, 112, 104, 0.12);
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+}
+.kanji-watermark--hero {
+  font-size: clamp(8rem, 14vw, 16rem);
+}
+
+/* ── WASHI TEXTURE BACKGROUND ──────────────────── */
+.bg-washi {
+  background: var(--washi);
+}
+.bg-washi-dotted {
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(184, 150, 90, 0.08) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+.bg-washi-grid {
+  background-color: var(--washi);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(26, 22, 18, 0.03) 0, rgba(26, 22, 18, 0.03) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, rgba(26, 22, 18, 0.03) 0, rgba(26, 22, 18, 0.03) 1px, transparent 1px, transparent 40px);
+}
+
+/* ── RED SEAL (chop) ───────────────────────────── */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--red-seal);
+  border-radius: var(--r-sm);
+  transform: rotate(-8deg);
+  opacity: 0.7;
+  font-family: var(--font-zh);
+  font-size: var(--text-xs);
+  color: var(--red-seal);
+  writing-mode: vertical-rl;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  padding: 0.2rem;
+}
+
+/* ── KAMON (family crest) ──────────────────────── */
+.kamon {
+  width: 48px;
+  height: 48px;
+  opacity: 0.7;
+}
+
+/* ── BRUSH DIVIDER ─────────────────────────────── */
+.brush-divider {
+  position: relative;
+  height: 12px;
+  margin: var(--s-4) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.brush-divider::before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  opacity: 0.4;
+}
+.brush-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  opacity: 0.4;
+}
+.brush-divider-mark {
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  margin: 0 var(--s-3);
+  opacity: 0.6;
+}
+
+/* ── FEATURE LABEL (Japanese-style eyebrow) ────── */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: var(--s-3);
+}
+.eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--gold);
+}
+
+/* ── DOCTOR CARD (TCM styled) ──────────────────── */
+.doctor-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: all var(--dur-base) var(--ease-out);
+  cursor: pointer;
+}
+.doctor-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+.doctor-card-header {
+  padding: var(--s-6);
+  background: linear-gradient(to bottom, var(--washi) 0%, var(--cream) 100%);
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+.doctor-card-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--gold);
+  font-family: var(--font-zh);
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--s-3);
+  border: 2px solid var(--gold);
+}
+.doctor-card-name {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.doctor-card-spec {
+  font-family: var(--font-zh);
+  font-size: var(--text-sm);
+  color: var(--stone);
+}
+.doctor-card-body {
+  padding: var(--s-4) var(--s-5);
+}
+.doctor-card-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: var(--s-3) 0;
+  font-size: var(--text-xs);
+}
+.doctor-card-stat {
+  text-align: center;
+}
+.doctor-card-stat strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--ink);
+}
+.doctor-card-stat span {
+  color: var(--stone);
+  letter-spacing: 0.08em;
+}
+.doctor-card-footer {
+  padding: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+/* ── HERO STYLES ────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: 80vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding-bottom: var(--s-8);
+  }
+}
+.hero-content {
+  padding: var(--s-12) var(--s-8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 2;
+  position: relative;
+}
+@media (max-width: 768px) {
+  .hero-content {
+    padding: var(--s-8) var(--s-6);
+  }
+}
+.hero-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+.hero-tagline {
+  margin-top: var(--s-4);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--stone);
+  font-weight: 300;
+  max-width: 480px;
+}
+.hero-cta {
+  margin-top: var(--s-6);
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.hero-badges {
+  position: absolute;
+  bottom: var(--s-6);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hero-badge {
+  background: rgba(245, 240, 232, 0.9);
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: var(--stone);
+  text-transform: uppercase;
+  border-radius: var(--r-sm);
+}
+
+/* ── APOTHECARY CABINET (SVG-based) ────────────── */
+.apothecary-cabinet {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 4/5;
+  background: linear-gradient(to bottom, #3d2818 0%, #2a1810 100%);
+  border-radius: var(--r-md);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  padding: 12px;
+  box-shadow: var(--shadow-lg);
+}
+.apothecary-drawer {
+  background: var(--washi-dark);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-zh);
+  font-size: 1rem;
+  color: var(--ink);
+  position: relative;
+  transition: background var(--dur-base) var(--ease-out);
+}
+.apothecary-drawer::after {
+  content: "";
+  position: absolute;
+  bottom: 25%;
+  width: 20%;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+.apothecary-drawer:hover {
+  background: var(--washi);
+}

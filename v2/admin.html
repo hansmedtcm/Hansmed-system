@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1612">
+<title>Admin Console · HansMed</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/patterns.css">
+<link rel="stylesheet" href="assets/css/tcm.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <span class="nav-brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+    <span>漢方現代中醫<span class="nav-brand-en">Admin Console · 管理員</span></span>
+  </a>
+  <ul class="nav-menu" style="gap: 0.75rem;">
+    <li style="color: var(--stone); font-size: var(--text-sm);" id="user-greeting">—</li>
+    <li><button class="btn btn--ghost btn--sm" onclick="HM.auth.logout().then(function(){location.href='index.html';})">Sign Out</button></li>
+  </ul>
+</nav>
+
+<div class="portal-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sb-avatar">A</div>
+      <div class="sidebar-name" id="sb-name">Admin</div>
+      <div class="sidebar-sub">Platform Administrator</div>
+    </div>
+
+    <div class="sidebar-section"><div class="sidebar-label">Overview · 總覽</div></div>
+    <a class="sidebar-link" data-route="#/" href="#/"><span class="sidebar-link-icon">📊</span><span class="sidebar-link-label">Dashboard · 儀表板</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Users · 用戶</div></div>
+    <a class="sidebar-link" data-route="#/verifications" href="#/verifications"><span class="sidebar-link-icon">✅</span><span class="sidebar-link-label">Verifications · 審核</span></a>
+    <a class="sidebar-link" data-route="#/accounts" href="#/accounts"><span class="sidebar-link-icon">👥</span><span class="sidebar-link-label">Accounts · 帳號</span></a>
+    <a class="sidebar-link" data-route="#/patients" href="#/patients"><span class="sidebar-link-icon">🧑</span><span class="sidebar-link-label">Patients · 患者</span></a>
+    <a class="sidebar-link" data-route="#/doctors" href="#/doctors"><span class="sidebar-link-icon">👨‍⚕️</span><span class="sidebar-link-label">Doctors · 醫師</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Operations · 運營</div></div>
+    <a class="sidebar-link" data-route="#/appointments" href="#/appointments"><span class="sidebar-link-icon">🗓️</span><span class="sidebar-link-label">Appointments · 預約</span></a>
+    <a class="sidebar-link" data-route="#/prescriptions" href="#/prescriptions"><span class="sidebar-link-icon">📝</span><span class="sidebar-link-label">Prescriptions · 處方</span></a>
+    <a class="sidebar-link" data-route="#/orders" href="#/orders"><span class="sidebar-link-icon">📦</span><span class="sidebar-link-label">Orders · 訂單</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Finance · 財務</div></div>
+    <a class="sidebar-link" data-route="#/finance" href="#/finance"><span class="sidebar-link-icon">💰</span><span class="sidebar-link-label">Finance · 財務</span></a>
+    <a class="sidebar-link" data-route="#/withdrawals" href="#/withdrawals"><span class="sidebar-link-icon">🏦</span><span class="sidebar-link-label">Withdrawals · 提現</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">System · 系統</div></div>
+    <a class="sidebar-link" data-route="#/content" href="#/content"><span class="sidebar-link-icon">📄</span><span class="sidebar-link-label">Content · 內容</span></a>
+    <a class="sidebar-link" data-route="#/tongue-config" href="#/tongue-config"><span class="sidebar-link-icon">👅</span><span class="sidebar-link-label">Tongue Config · 舌診</span></a>
+    <a class="sidebar-link" data-route="#/permissions" href="#/permissions"><span class="sidebar-link-icon">🔐</span><span class="sidebar-link-label">Permissions · 權限</span></a>
+    <a class="sidebar-link" data-route="#/audit" href="#/audit"><span class="sidebar-link-icon">📜</span><span class="sidebar-link-label">Audit Logs · 日誌</span></a>
+    <a class="sidebar-link" data-route="#/config" href="#/config"><span class="sidebar-link-icon">⚙️</span><span class="sidebar-link-label">Settings · 設定</span></a>
+  </aside>
+
+  <main class="main" id="main">
+    <div id="panel-container">
+      <div class="state state--loading"><div class="state-icon"></div><div class="state-text">Loading…</div></div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/bus.js"></script>
+<script src="assets/js/format.js"></script>
+<script src="assets/js/empty.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/form.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/router.js"></script>
+<script src="assets/js/i18n.js"></script>
+
+<script src="assets/js/panels/admin/dashboard.js"></script>
+<script src="assets/js/panels/admin/verifications.js"></script>
+<script src="assets/js/panels/admin/accounts.js"></script>
+<script src="assets/js/panels/admin/patients.js"></script>
+<script src="assets/js/panels/admin/doctors.js"></script>
+<script src="assets/js/panels/admin/appointments.js"></script>
+<script src="assets/js/panels/admin/prescriptions.js"></script>
+<script src="assets/js/panels/admin/orders.js"></script>
+<script src="assets/js/panels/admin/finance.js"></script>
+<script src="assets/js/panels/admin/withdrawals.js"></script>
+<script src="assets/js/panels/admin/content.js"></script>
+<script src="assets/js/panels/admin/tongue-config.js"></script>
+<script src="assets/js/panels/admin/permissions.js"></script>
+<script src="assets/js/panels/admin/audit.js"></script>
+<script src="assets/js/panels/admin/config.js"></script>
+
+<script src="assets/js/pages/admin.js"></script>
+</body>
+</html>

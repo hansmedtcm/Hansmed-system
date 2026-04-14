@@ -1,0 +1,137 @@
+/* ============================================================
+   HansMed Design Tokens
+   Single source of truth for colors, typography, spacing, etc.
+   ============================================================ */
+
+:root {
+  /* ── Color palette — Japanese apothecary ── */
+  --ink:          #1a1612;   /* primary text, borders */
+  --stone:        #7a7068;   /* secondary text, labels */
+  --sage:         #7a8c72;   /* success, positive states */
+  --gold:         #b8965a;   /* accent, highlights, links */
+  --washi:        #f5f0e8;   /* light background cards */
+  --washi-dark:   #ede7d8;   /* raised surfaces */
+  --cream:        #faf7f2;   /* page background */
+  --mist:         #e8e2d6;   /* borders, dividers */
+  --red-seal:     #c0392b;   /* errors, warnings, emergency */
+
+  /* ── Semantic colors ── */
+  --text-primary:    var(--ink);
+  --text-secondary:  var(--stone);
+  --text-inverse:    var(--washi);
+  --surface:         var(--cream);
+  --surface-raised:  var(--washi);
+  --surface-elevated: var(--washi-dark);
+  --border:          var(--mist);
+  --accent:          var(--gold);
+  --success:         var(--sage);
+  --danger:          var(--red-seal);
+  --warning:         #e6a817;
+  --info:            #6699bb;
+
+  /* ── Status pills (order/appointment/prescription) ── */
+  --pill-pending:    #e6a817;
+  --pill-active:     var(--gold);
+  --pill-progress:   #4a90d9;
+  --pill-success:    var(--sage);
+  --pill-danger:     var(--red-seal);
+
+  /* ── Typography ── */
+  --font-display: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+  --font-zh:      'Noto Serif SC', 'Microsoft YaHei', serif;
+  --font-body:    'Source Sans 3', 'Noto Serif SC', system-ui, -apple-system, sans-serif;
+  --font-mono:    'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+
+  /* ── Type scale ── */
+  --text-xs:   0.68rem;
+  --text-sm:   0.82rem;
+  --text-base: 0.95rem;
+  --text-lg:   1.1rem;
+  --text-xl:   1.35rem;
+  --text-2xl:  1.7rem;
+  --text-3xl:  2.2rem;
+  --text-4xl:  clamp(2.2rem, 4vw, 3.2rem);
+  --text-5xl:  clamp(2.6rem, 5vw, 4.2rem);
+
+  --leading-tight:  1.2;
+  --leading-snug:   1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.85;
+  --leading-loose:  2;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide:  0.1em;
+  --tracking-wider: 0.18em;
+  --tracking-widest: 0.3em;
+
+  /* ── Spacing scale ── */
+  --s-0:  0;
+  --s-1:  0.25rem;
+  --s-2:  0.5rem;
+  --s-3:  0.75rem;
+  --s-4:  1rem;
+  --s-5:  1.25rem;
+  --s-6:  1.5rem;
+  --s-8:  2rem;
+  --s-10: 2.5rem;
+  --s-12: 3rem;
+  --s-16: 4rem;
+  --s-20: 5rem;
+  --s-24: 6rem;
+
+  /* ── Radii ── */
+  --r-none: 0;
+  --r-sm:   2px;
+  --r-md:   4px;
+  --r-lg:   8px;
+  --r-xl:   12px;
+  --r-pill: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-xs: 0 1px 2px rgba(26, 22, 18, 0.05);
+  --shadow-sm: 0 2px 4px rgba(26, 22, 18, 0.06);
+  --shadow-md: 0 4px 12px rgba(26, 22, 18, 0.08);
+  --shadow-lg: 0 8px 24px rgba(26, 22, 18, 0.12);
+  --shadow-xl: 0 16px 40px rgba(26, 22, 18, 0.16);
+
+  /* ── Layout ── */
+  --container-sm:  640px;
+  --container-md:  768px;
+  --container-lg:  1024px;
+  --container-xl:  1280px;
+  --container-2xl: 1440px;
+
+  --nav-height:     4rem;
+  --sidebar-width:  240px;
+
+  /* ── Motion ── */
+  --ease-out:   cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:   150ms;
+  --dur-base:   250ms;
+  --dur-slow:   400ms;
+
+  /* ── Z-index ── */
+  --z-base:    1;
+  --z-raised:  10;
+  --z-sticky:  100;
+  --z-overlay: 500;
+  --z-modal:   900;
+  --z-toast:   1000;
+  --z-max:     9999;
+
+  /* ── Focus ring ── */
+  --focus-ring: 0 0 0 3px rgba(184, 150, 90, 0.35);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

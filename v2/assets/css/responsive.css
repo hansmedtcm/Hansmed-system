@@ -1,0 +1,61 @@
+/* ============================================================
+   Responsive — mobile-first media queries (min-width only)
+   ============================================================ */
+
+/* Mobile first: default styles target 320-639px */
+
+/* ── Small screens (tablets) 640px+ ──────────── */
+@media (min-width: 640px) {
+  .sm\:grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .sm\:grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .sm\:hidden { display: none !important; }
+  .sm\:block  { display: block !important; }
+  .sm\:flex   { display: flex !important; }
+}
+
+/* ── Medium screens (small laptops) 768px+ ────── */
+@media (min-width: 768px) {
+  .md\:grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .md\:grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .md\:grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .md\:hidden { display: none !important; }
+  .md\:block  { display: block !important; }
+  .md\:flex   { display: flex !important; }
+  .md\:text-left { text-align: left; }
+}
+
+/* ── Large screens (desktop) 1024px+ ──────────── */
+@media (min-width: 1024px) {
+  .lg\:grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .lg\:grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .lg\:hidden { display: none !important; }
+  .lg\:block  { display: block !important; }
+  .lg\:flex   { display: flex !important; }
+}
+
+/* ── Print styles ─────────────────────────────── */
+@media print {
+  .nav, .sidebar, .footer, .btn, .toast-container, .modal-backdrop {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+  .main {
+    padding: 0;
+  }
+  .card, .alert {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  a {
+    color: black !important;
+    text-decoration: underline;
+  }
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+}
