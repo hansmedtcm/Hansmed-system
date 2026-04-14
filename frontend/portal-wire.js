@@ -19,6 +19,15 @@
   var _orig = window.showPortalPanel;
   window.showPortalPanel = function (id, btn) {
     if (typeof _orig === 'function') _orig(id, btn);
+
+    // Clear panel content immediately to prevent flash of hardcoded data
+    // Only for panels we fully rebuild with API data
+    var apiPanels = ['p-overview','p-profile','p-health','p-tongue','p-appointments','p-rx','p-orders','p-notif'];
+    if (apiPanels.indexOf(id) >= 0 && A.getToken()) {
+      var panel = document.getElementById(id);
+      if (panel) panel.innerHTML = '<div style="color:var(--stone);padding:2rem;text-align:center;">Loading... · 載入中...</div>';
+    }
+
     // Load data based on panel
     if (id === 'p-overview')      loadOverview();
     if (id === 'p-profile')       loadProfile();

@@ -194,17 +194,30 @@
   // 2. TONGUE DIAGNOSIS — override handleTongue
   // ================================================================
 
-  wrapWithFallback('handleTongue', async function (input) {
+  var _origHandleTongue = window.handleTongue;
+  window.handleTongue = async function (input) {
     if (!input.files || !input.files[0]) return;
     var file = input.files[0];
 
-    // Show preview immediately
-    var previewEl = document.getElementById('tongue-preview') || document.getElementById('tongue-img');
-    if (previewEl) {
-      var reader = new FileReader();
-      reader.onload = function (e) { previewEl.src = e.target.result; };
-      reader.readAsDataURL(file);
+    // Show preview immediately (match prototype: set img src + show container)
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var imgEl = document.getElementById('tongue-img');
+      var containerEl = document.getElementById('tongue-preview');
+      if (imgEl) imgEl.src = e.target.result;
+      if (containerEl) containerEl.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+
+    // If user not logged in, or API unreachable, use prototype's random analysis
+    if (!A.getToken() || _apiReachable === false) {
+      if (typeof _origHandleTongue === 'function') _origHandleTongue(input);
+      return;
     }
+    await _handleTongueApi(file);
+  };
+
+  async function _handleTongueApi(file) {
 
     // Show loading state
     var resultEl = document.getElementById('tongue-result');
@@ -226,7 +239,7 @@
     } catch (e) {
       if (resultEl) resultEl.innerHTML = '<p style="color:var(--red-seal)">' + (e.message || 'Upload failed') + '</p>';
     }
-  });
+  }
 
   function pollTongueDiagnosis(id, el) {
     var attempts = 0;
