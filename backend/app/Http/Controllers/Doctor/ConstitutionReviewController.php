@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ConstitutionReviewController extends Controller
 {
+    public function __construct(private NotificationService $notify) {}
+
     // GET /doctor/constitution-reviews?filter=pending|mine|all
     public function index(Request $request)
     {
@@ -62,6 +65,32 @@ class ConstitutionReviewController extends Controller
             ];
         }
 
+        return response()->json(['data' => $out]);
+    }
+
+    // GET /doctor/patients/{patientId}/constitution-reviews
+    // Used for context when reviewing a tongue diagnosis — shows the patient's
+    // recent AI constitution reports so the doctor sees the full picture.
+    public function byPatient(Request $request, int $patientId)
+    {
+        $rows = DB::table('questionnaires')
+            ->where('patient_id', $patientId)
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $s = json_decode($row->symptoms ?? '{}', true) ?: [];
+            if (($s['kind'] ?? '') !== 'ai_constitution_v2') continue;
+            $out[] = [
+                'id'            => $row->id,
+                'created_at'    => $row->created_at,
+                'review_status' => $s['review_status'] ?? 'pending',
+                'patterns'      => $s['patterns'] ?? [],
+                'dimensions'    => $s['dimensions'] ?? [],
+            ];
+        }
         return response()->json(['data' => $out]);
     }
 
@@ -115,6 +144,9 @@ class ConstitutionReviewController extends Controller
         DB::table('questionnaires')
             ->where('id', $id)
             ->update(['symptoms' => json_encode($s)]);
+
+        // Notify the patient (approved or needs_changes both fire).
+        $this->notify->constitutionReviewed((int) $row->patient_id, $id, $data['decision']);
 
         return response()->json([
             'questionnaire' => [

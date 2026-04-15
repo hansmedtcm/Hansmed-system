@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\TongueDiagnosis;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 /**
@@ -20,6 +21,8 @@ use Illuminate\Http\Request;
  */
 class TongueReviewController extends Controller
 {
+    public function __construct(private NotificationService $notify) {}
+
     // GET /doctor/tongue-reviews?filter=pending|recent|all
     public function index(Request $request)
     {
@@ -65,6 +68,9 @@ class TongueReviewController extends Controller
         $d->reviewed_by          = $request->user()->id;
         $d->reviewed_at          = now();
         $d->save();
+
+        // Notify the patient — both "approved" and "needs_changes" fire.
+        $this->notify->tongueReviewed((int) $d->patient_id, (int) $d->id, $data['decision']);
 
         return response()->json(['diagnosis' => $d]);
     }

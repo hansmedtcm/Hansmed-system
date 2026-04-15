@@ -137,6 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // AI constitution questionnaire review
         Route::get('/constitution-reviews',            [\App\Http\Controllers\Doctor\ConstitutionReviewController::class, 'index']);
+        Route::get('/patients/{patientId}/constitution-reviews', [\App\Http\Controllers\Doctor\ConstitutionReviewController::class, 'byPatient']);
         Route::get('/constitution-reviews/{id}',       [\App\Http\Controllers\Doctor\ConstitutionReviewController::class, 'show']);
         Route::post('/constitution-reviews/{id}/review', [\App\Http\Controllers\Doctor\ConstitutionReviewController::class, 'review']);
 

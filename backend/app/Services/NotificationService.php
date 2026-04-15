@@ -71,4 +71,34 @@ class NotificationService
             "Your withdrawal request was {$decision}.",
             ['withdrawal_id' => $withdrawalId]);
     }
+
+    public function tongueReviewed(int $patientId, int $diagnosisId, string $decision): void
+    {
+        if ($decision === 'approved') {
+            $this->notify($patientId, 'tongue.approved',
+                'Tongue diagnosis approved · 舌診審核通過',
+                'A doctor has reviewed your tongue analysis. Check your report for personalised advice. · 醫師已完成審核，請查看您的報告與建議。',
+                ['diagnosis_id' => $diagnosisId, 'route' => '#/tongue/' . $diagnosisId]);
+        } else {
+            $this->notify($patientId, 'tongue.changes',
+                'Tongue diagnosis — more info needed · 舌診需補充資料',
+                'The reviewing doctor has added notes to your tongue analysis. Please read them and consider booking a consultation. · 醫師已留下備註，請查看。',
+                ['diagnosis_id' => $diagnosisId, 'route' => '#/tongue/' . $diagnosisId]);
+        }
+    }
+
+    public function constitutionReviewed(int $patientId, int $questionnaireId, string $decision): void
+    {
+        if ($decision === 'approved') {
+            $this->notify($patientId, 'constitution.approved',
+                'Constitution report approved · 體質報告已批准',
+                'Your AI constitution report has been reviewed and approved. View your personalised herb, food and lifestyle plan. · 您的 AI 體質報告已審核批准，請查看個人化建議。',
+                ['questionnaire_id' => $questionnaireId, 'route' => '#/ai-diagnosis/' . $questionnaireId]);
+        } else {
+            $this->notify($patientId, 'constitution.changes',
+                'Constitution report — more info needed · 體質報告需補充',
+                'The reviewing doctor has requested clarification on your constitution report. Please read the comment and consider booking a consultation. · 醫師已要求補充資料或建議您預約問診。',
+                ['questionnaire_id' => $questionnaireId, 'route' => '#/ai-diagnosis/' . $questionnaireId]);
+        }
+    }
 }

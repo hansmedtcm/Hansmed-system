@@ -18,8 +18,15 @@
     year: 0, month: 0,   // current month view
     schedules: [],       // weekly recurring availability
     appointments: [],    // this month's appointments
-    offDays: [],         // array of 'YYYY-MM-DD'
+    overrides: [],       // array of { date, type: 'off'|'custom', start?, end? }
   };
+
+  function overrideFor(dateStr) {
+    for (var i = 0; i < state.overrides.length; i++) {
+      if (state.overrides[i].date === dateStr) return state.overrides[i];
+    }
+    return null;
+  }
 
   async function render(el) {
     var now = new Date();
@@ -84,8 +91,18 @@
   async function loadOffDays() {
     try {
       var res = await HM.api.doctor.listOffDays();
-      state.offDays = res.data || [];
-    } catch (_) { state.offDays = []; }
+      var list = res.data || [];
+      // Backend may still return legacy strings; normalise to objects.
+      state.overrides = list.map(function (e) {
+        if (typeof e === 'string') return { date: e, type: 'off' };
+        return {
+          date:  e.date,
+          type:  e.type || 'off',
+          start: e.start || null,
+          end:   e.end || null,
+        };
+      });
+    } catch (_) { state.overrides = []; }
   }
 
   // ── Calendar ────────────────────────────────────────────────
@@ -116,8 +133,8 @@
       apptsByDate[d].push(a);
     });
 
-    var offSet = {};
-    state.offDays.forEach(function (d) { offSet[d] = true; });
+    var overrideByDate = {};
+    state.overrides.forEach(function (e) { overrideByDate[e.date] = e; });
 
     var today = new Date();
     var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
@@ -144,11 +161,15 @@
       var weekday = dateObj.getDay();
       var weeklySlots = slotsByWeekday[weekday] || [];
       var hasWork = weeklySlots.length > 0;
-      var isOff = !!offSet[dateStr];
+      var override = overrideByDate[dateStr];
+      var isOff = override && override.type === 'off';
+      var isCustom = override && override.type === 'custom';
       var appts = apptsByDate[dateStr] || [];
+
       var classes = ['cal-cell'];
       if (dateStr === todayStr) classes.push('cal-cell--today');
       if (isOff) classes.push('cal-cell--off');
+      else if (isCustom) classes.push('cal-cell--custom');
       else if (hasWork) classes.push('cal-cell--work');
 
       var apptDot = '';
@@ -157,10 +178,13 @@
       }
 
       var workTime = '';
-      if (hasWork && !isOff) {
-        workTime = '<div class="cal-work-time">' + weeklySlots[0].start_time.slice(0,5) + '–' + weeklySlots[0].end_time.slice(0,5) + '</div>';
-      } else if (isOff) {
+      if (isOff) {
         workTime = '<div class="cal-off-label">OFF · 休</div>';
+      } else if (isCustom) {
+        workTime = '<div class="cal-custom-time">' + override.start + '–' + override.end + '</div>' +
+                   '<div class="cal-custom-label">Custom · 自訂</div>';
+      } else if (hasWork) {
+        workTime = '<div class="cal-work-time">' + weeklySlots[0].start_time.slice(0,5) + '–' + weeklySlots[0].end_time.slice(0,5) + '</div>';
       }
 
       html += '<div class="' + classes.join(' ') + '" data-date="' + dateStr + '">' +
@@ -175,6 +199,7 @@
     // Legend
     html += '<div class="cal-legend">' +
       '<span><span class="cal-dot cal-dot--work"></span> Working day · 工作日</span>' +
+      '<span><span class="cal-dot cal-dot--custom"></span> Custom hours · 自訂時段</span>' +
       '<span><span class="cal-dot cal-dot--off"></span> Off day · 假期</span>' +
       '<span><span class="cal-dot cal-dot--appt"></span> Has appointments · 有預約</span>' +
       '</div>';
@@ -201,9 +226,32 @@
     var weekday = dateObj.getDay();
     var weeklySlots = state.schedules.filter(function (s) { return s.weekday === weekday; });
     var appts = state.appointments.filter(function (a) { return (a.scheduled_start || '').slice(0, 10) === dateStr; });
-    var isOff = state.offDays.indexOf(dateStr) >= 0;
+    var override = overrideFor(dateStr);
+    var isOff = override && override.type === 'off';
+    var isCustom = override && override.type === 'custom';
 
-    var content = '<div class="mb-3"><strong>' + dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '</strong></div>';
+    // Defaults for custom-hours inputs: use override values if set, else weekly pattern, else 09:00-13:00.
+    var defaultStart = isCustom ? override.start
+                     : (weeklySlots.length ? weeklySlots[0].start_time.slice(0, 5) : '09:00');
+    var defaultEnd   = isCustom ? override.end
+                     : (weeklySlots.length ? weeklySlots[0].end_time.slice(0, 5) : '13:00');
+
+    // Current status banner
+    var statusHtml;
+    if (isOff) {
+      statusHtml = '<div class="alert alert--danger mb-3" style="margin-top:0;"><div class="alert-body text-sm">' +
+        '🚫 <strong>Full Day Off · 全日休息</strong><br>Patients cannot book on this date.</div></div>';
+    } else if (isCustom) {
+      statusHtml = '<div class="alert alert--warning mb-3" style="margin-top:0;"><div class="alert-body text-sm">' +
+        '⏰ <strong>Custom Hours · 自訂時段</strong> — ' + override.start + ' to ' + override.end +
+        '<br>Overrides the weekly pattern for this date only.</div></div>';
+    } else {
+      statusHtml = '<div class="alert alert--info mb-3" style="margin-top:0;"><div class="alert-body text-sm">' +
+        '✓ <strong>Normal Working Day · 正常工作日</strong><br>Following the weekly pattern.</div></div>';
+    }
+
+    var content = '<div class="mb-3"><strong>' + dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '</strong></div>' +
+      statusHtml;
 
     // Weekly availability info
     content += '<div class="text-label mb-2">Weekly Availability · 每週可用時段</div>';
@@ -232,33 +280,100 @@
       content += '<p class="text-muted text-sm mb-3">No appointments on this day.</p>';
     }
 
-    // Off-day toggle
-    content += '<div class="alert alert--info mt-4">' +
-      '<div class="alert-body text-sm">' +
+    // ── Override controls ──
+    content += '<div class="text-label mt-4 mb-2">Adjust This Date · 調整此日期</div>' +
+      '<div class="card" style="padding: var(--s-4); background: var(--washi);">' +
+
+      // Custom hours
+      '<div class="text-sm" style="font-weight: 500; margin-bottom: var(--s-2);">⏰ Custom Hours · 自訂時段</div>' +
+      '<div class="text-xs text-muted mb-3">Work only during these hours on this specific date (e.g. half-day).</div>' +
+      '<div class="flex gap-2" style="align-items: end;">' +
+      '<div><label class="text-xs text-muted">Start · 開始</label>' +
+      '<input type="time" id="ov-start" class="field-input field-input--boxed" value="' + defaultStart + '" style="margin:0;"></div>' +
+      '<div><label class="text-xs text-muted">End · 結束</label>' +
+      '<input type="time" id="ov-end" class="field-input field-input--boxed" value="' + defaultEnd + '" style="margin:0;"></div>' +
+      '<button class="btn btn--primary btn--sm" id="save-custom" style="margin-left:auto;">Set Custom Hours · 儲存自訂</button>' +
+      '</div>' +
+
+      // Quick half-day buttons
+      '<div class="flex gap-2 mt-3 flex-wrap">' +
+      '<button class="btn btn--outline btn--sm" data-quick="morning">☀️ Morning Only · 上午</button>' +
+      '<button class="btn btn--outline btn--sm" data-quick="afternoon">🌆 Afternoon Only · 下午</button>' +
+      '</div>' +
+
+      '<hr style="margin: var(--s-4) 0; border: none; border-top: 1px solid var(--border);">' +
+
+      // Action buttons
+      '<div class="flex gap-2 flex-wrap">' +
       (isOff
-        ? 'This day is marked as <strong>OFF</strong>. Patients cannot book into your weekly slots on this specific day.'
-        : 'This day follows your normal weekly availability. You can mark it as OFF to block bookings on this specific date only.') +
-      '</div></div>' +
-      '<div class="flex gap-2">' +
-      '<button class="btn btn--' + (isOff ? 'outline' : 'danger') + '" id="toggle-off">' +
-      (isOff ? '✓ Resume as working day · 恢復工作' : '✗ Mark as off day · 標記為假期') +
-      '</button>' +
+        ? '<button class="btn btn--primary" id="act-resume">✓ Restore Normal Day · 恢復正常工作日</button>'
+        : '<button class="btn btn--danger" id="act-off">✗ Mark as Full-Day Off · 標記為假期</button>') +
+      (override
+        ? '<button class="btn btn--ghost" id="act-clear">Clear override · 清除調整</button>'
+        : '') +
+      '</div>' +
       '</div>';
 
-    var m = HM.ui.modal({ title: 'Day Details · ' + dateStr, content: content });
+    var m = HM.ui.modal({ title: 'Day Details · ' + dateStr, content: content, size: 'md' });
 
-    m.element.querySelector('#toggle-off').addEventListener('click', async function () {
-      this.disabled = true;
-      try {
-        var res = await HM.api.doctor.toggleOffDay(dateStr);
-        state.offDays = res.data || [];
-        HM.ui.toast(res.action === 'added' ? 'Marked as off day · 已標記假期' : 'Restored as working day · 恢復工作', 'success');
-        m.close();
-        renderCalendar();
-      } catch (e) {
-        this.disabled = false;
-        HM.ui.toast(e.message || 'Failed', 'danger');
-      }
+    function doRequest(type, start, end) {
+      var btns = m.element.querySelectorAll('button');
+      btns.forEach(function (b) { b.disabled = true; });
+      return HM.api.doctor.setDayOverride(dateStr, type, start, end)
+        .then(function (res) {
+          state.overrides = (res.data || []).map(function (e) {
+            if (typeof e === 'string') return { date: e, type: 'off' };
+            return e;
+          });
+          var msg = {
+            off:     'Marked as off day · 已標記假期',
+            custom:  'Custom hours saved · 自訂時段已儲存',
+            cleared: 'Restored to normal day · 已恢復正常',
+          }[res.action] || 'Updated';
+          HM.ui.toast(msg, 'success');
+          m.close();
+          renderCalendar();
+        })
+        .catch(function (e) {
+          btns.forEach(function (b) { b.disabled = false; });
+          HM.ui.toast(e.message || 'Failed', 'danger');
+        });
+    }
+
+    // Wire handlers
+    var actOff    = m.element.querySelector('#act-off');
+    var actResume = m.element.querySelector('#act-resume');
+    var actClear  = m.element.querySelector('#act-clear');
+    var saveC     = m.element.querySelector('#save-custom');
+
+    if (actOff)    actOff.addEventListener('click', function () { doRequest('off'); });
+    if (actResume) actResume.addEventListener('click', function () { doRequest('clear'); });
+    if (actClear)  actClear.addEventListener('click', function () { doRequest('clear'); });
+    if (saveC) saveC.addEventListener('click', function () {
+      var s = m.element.querySelector('#ov-start').value;
+      var e = m.element.querySelector('#ov-end').value;
+      if (!s || !e) return HM.ui.toast('Please enter both start and end', 'warning');
+      if (s >= e) return HM.ui.toast('Start must be before end', 'warning');
+      doRequest('custom', s, e);
+    });
+
+    m.element.querySelectorAll('[data-quick]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var kind = btn.getAttribute('data-quick');
+        // Anchor quick presets to the weekly pattern if available.
+        var baseStart = weeklySlots.length ? weeklySlots[0].start_time.slice(0, 5) : '09:00';
+        var baseEnd   = weeklySlots.length ? weeklySlots[0].end_time.slice(0, 5)   : '17:00';
+        var mid = '13:00';
+        // Simple midpoint calc if there's a weekly pattern
+        if (weeklySlots.length) {
+          var sH = parseInt(baseStart.slice(0, 2), 10);
+          var eH = parseInt(baseEnd.slice(0, 2), 10);
+          mid = String(Math.round((sH + eH) / 2)).padStart(2, '0') + ':00';
+        }
+        var s = kind === 'morning' ? baseStart : mid;
+        var e = kind === 'morning' ? mid : baseEnd;
+        doRequest('custom', s, e);
+      });
     });
   }
 
@@ -321,13 +436,17 @@
       '.cal-cell--today{outline:2px solid var(--gold);outline-offset:-2px;}' +
       '.cal-cell--work{background:rgba(122,140,114,.07);}' +
       '.cal-cell--off{background:rgba(192,57,43,.08);}' +
+      '.cal-cell--custom{background:rgba(184,150,90,.12);}' +
       '.cal-daynum{font-family:var(--font-display);font-size:var(--text-lg);color:var(--ink);line-height:1;margin-bottom:4px;}' +
       '.cal-work-time{font-size:10px;color:var(--sage);font-weight:500;}' +
+      '.cal-custom-time{font-size:10px;color:var(--gold);font-weight:600;}' +
+      '.cal-custom-label{font-size:9px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;}' +
       '.cal-off-label{font-size:10px;color:var(--red-seal);font-weight:600;letter-spacing:.08em;}' +
       '.cal-appt-count{position:absolute;bottom:6px;right:8px;font-size:10px;color:var(--gold);font-weight:500;background:rgba(184,150,90,.15);padding:2px 6px;border-radius:999px;}' +
       '.cal-legend{display:flex;gap:var(--s-4);margin-top:var(--s-3);font-size:var(--text-xs);color:var(--stone);flex-wrap:wrap;}' +
       '.cal-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle;}' +
       '.cal-dot--work{background:rgba(122,140,114,.7);}' +
+      '.cal-dot--custom{background:rgba(184,150,90,.7);}' +
       '.cal-dot--off{background:rgba(192,57,43,.7);}' +
       '.cal-dot--appt{background:var(--gold);}';
     document.head.appendChild(s);

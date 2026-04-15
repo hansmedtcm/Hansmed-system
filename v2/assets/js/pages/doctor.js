@@ -41,8 +41,10 @@
   HM.router.on('#/patients/:id', function (p) { HM.doctorPanels.patients.renderDetail(panel(), p.id); });
   HM.router.on('#/consult/:id', function (p) { HM.doctorPanels.consult.render(panel(), p.id); });
   HM.router.on('#/prescriptions', function () { HM.doctorPanels.prescriptions.render(panel()); });
-  HM.router.on('#/tongue-reviews', function () { HM.doctorPanels.tongueReviews.render(panel()); });
-  HM.router.on('#/constitution-reviews', function () { HM.doctorPanels.constitutionReviews.render(panel()); });
+  HM.router.on('#/reviews', function () { HM.doctorPanels.reviews.render(panel()); });
+  // Legacy URLs redirect to the combined queue
+  HM.router.on('#/tongue-reviews', function () { location.hash = '#/reviews'; });
+  HM.router.on('#/constitution-reviews', function () { location.hash = '#/reviews'; });
   HM.router.on('#/schedule', function () { HM.doctorPanels.schedule.render(panel()); });
   HM.router.on('#/documents', function () { HM.doctorPanels.documents.render(panel()); });
   HM.router.on('#/earnings', function () { HM.doctorPanels.earnings.render(panel()); });

@@ -177,8 +177,11 @@
     createSchedule: function (d) { return api.post('/doctor/schedules', d); },
     deleteSchedule: function (id) { return api.delete('/doctor/schedules/' + id); },
 
-    listOffDays:   function ()  { return api.get('/doctor/off-days'); },
-    toggleOffDay:  function (d) { return api.post('/doctor/off-days', { date: d }); },
+    listOffDays:    function ()  { return api.get('/doctor/off-days'); },
+    toggleOffDay:   function (d) { return api.post('/doctor/off-days', { date: d }); },
+    setDayOverride: function (d, type, start, end) {
+      return api.post('/doctor/off-days', { date: d, type: type, start: start, end: end });
+    },
 
     getEarnings:       function () { return api.get('/doctor/earnings/summary'); },
     getEarningHistory: function (page) { return api.get('/doctor/earnings/history?page=' + (page || 1)); },
@@ -190,9 +193,10 @@
     reviewTongue:      function (id, d)  { return api.post('/doctor/tongue-reviews/' + id + '/review', d); },
 
     // AI constitution review
-    listConstitutionReviews: function (filter) { return api.get('/doctor/constitution-reviews' + (filter ? '?filter=' + filter : '')); },
-    getConstitutionReview:   function (id)     { return api.get('/doctor/constitution-reviews/' + id); },
-    reviewConstitution:      function (id, d)  { return api.post('/doctor/constitution-reviews/' + id + '/review', d); },
+    listConstitutionReviews:    function (filter)   { return api.get('/doctor/constitution-reviews' + (filter ? '?filter=' + filter : '')); },
+    patientConstitutionReports: function (patientId){ return api.get('/doctor/patients/' + patientId + '/constitution-reviews'); },
+    getConstitutionReview:      function (id)       { return api.get('/doctor/constitution-reviews/' + id); },
+    reviewConstitution:         function (id, d)    { return api.post('/doctor/constitution-reviews/' + id + '/review', d); },
 
     issueMC:       function (d) { return api.post('/doctor/documents/mc', d); },
     issueReferral: function (d) { return api.post('/doctor/documents/referral', d); },
