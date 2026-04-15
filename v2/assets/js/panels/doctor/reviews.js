@@ -12,6 +12,20 @@
   'use strict';
   HM.doctorPanels = HM.doctorPanels || {};
 
+  // Bilingual labels for the 10 constitution dimensions (matches DIMS in patient ai-diagnosis.js)
+  var DIM_LABELS = {
+    qi_xu:     { en: 'Qi Level',         zh: '氣之盈虧' },
+    qi_zhi:    { en: 'Qi Stagnation',    zh: '氣滯度' },
+    pi_wei:    { en: 'Digestion',        zh: '脾胃虛實' },
+    xue_xu:    { en: 'Blood Level',      zh: '血之盈虧' },
+    xue_yu:    { en: 'Blood Stasis',     zh: '血瘀度' },
+    ti_re:     { en: 'Heat',             zh: '體熱虛實' },
+    ti_han:    { en: 'Cold',             zh: '體寒虛實' },
+    shi_qi:    { en: 'Moisture',         zh: '濕氣度' },
+    shui_mian: { en: 'Sleep',            zh: '睡眠品質' },
+    min_li:    { en: 'Immunity',         zh: '免疫敏感' },
+  };
+
   var HERB_MAP = {
     'Qi Deficiency':            { herbs:['黃耆 Huang Qi','黨參 Dang Shen','白朮 Bai Zhu','大棗 Da Zao','炙甘草 Zhi Gan Cao'], foods:['山藥 Yam','紅棗 Red dates','小米粥 Millet congee','雞湯 Chicken broth'], avoid:'Raw & cold foods, excessive sweating · 忌生冷食物' },
     'Blood Deficiency':         { herbs:['熟地黃 Shu Di','當歸 Dang Gui','白芍 Bai Shao','阿膠 E Jiao','龍眼肉 Long Yan'], foods:['豬肝 Pork liver','黑芝麻 Black sesame','菠菜 Spinach','枸杞 Wolfberry'], avoid:'Spicy & drying foods · 忌辛辣燥熱' },
@@ -255,12 +269,19 @@
         '</div>'
       ) : '') +
 
-      '<div class="text-xs text-muted mb-2">10 Dimensions</div>' +
+      '<div class="text-xs text-muted mb-2">10 Dimensions · 十維體質</div>' +
       '<table style="width:100%;font-size:var(--text-xs);">' +
       Object.keys(dims).map(function (k) {
         var v = dims[k];
+        var meta = DIM_LABELS[k] || { en: k, zh: '' };
         var color = v === 0 ? 'var(--sage)' : Math.abs(v) >= 2 ? 'var(--red-seal)' : 'var(--gold)';
-        return '<tr><td style="padding:2px 0;">' + k + '</td><td style="padding:2px 0;text-align:right;color:' + color + ';font-weight:500;">[' + (v > 0 ? '+' + v : v) + ']</td></tr>';
+        return '<tr>' +
+          '<td style="padding:3px 0;">' +
+          '<span style="font-family:var(--font-zh);color:var(--ink);">' + meta.zh + '</span>' +
+          '<span class="text-muted" style="margin-left:6px;font-size:10px;">' + meta.en + '</span>' +
+          '</td>' +
+          '<td style="padding:3px 0;text-align:right;color:' + color + ';font-weight:500;font-family:var(--font-mono);">[' + (v > 0 ? '+' + v : v) + ']</td>' +
+          '</tr>';
       }).join('') +
       '</table>' +
 
@@ -310,7 +331,11 @@
 
       '<div data-general-error class="alert alert--danger" style="display:none;"></div>' +
 
-      '<div class="flex gap-2 mt-4">' +
+      '<div class="flex gap-2 mt-4 flex-wrap">' +
+      '<button type="button" class="btn btn--outline btn--sm" id="cr-prescribe">💊 Prescribe Medicine · 開立處方</button>' +
+      '</div>' +
+
+      '<div class="flex gap-2 mt-2">' +
       '<button type="button" class="btn btn--danger btn--sm" data-decision="needs_changes">Request Changes · 要求修改</button>' +
       '<button type="submit" class="btn btn--primary btn--block" data-decision="approved">✓ Approve &amp; Send to Patient · 批准並發送</button>' +
       '</div>' +
@@ -339,6 +364,22 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       submitConstitution(form, m, id, 'approved');
+    });
+
+    // Prescribe — opens a second modal, seeded with the primary pattern's herbs
+    m.element.querySelector('#cr-prescribe').addEventListener('click', function () {
+      var seed = (template.herbs || []).map(function (h) {
+        // Herbs like "黃耆 Huang Qi" — use the leading Chinese as drug_name.
+        var parts = h.split(/\s+/);
+        return { drug_name: parts[0] || h, note: h, quantity: 10, unit: 'g' };
+      });
+      openPrescribeModal({
+        patient_id: qRow.patient_id,
+        source_type: 'constitution',
+        source_id: qRow.id,
+        default_diagnosis: (patterns[0] ? (patterns[0].c || patterns[0].l) : ''),
+        seed_items: seed,
+      });
     });
   }
 
@@ -442,7 +483,11 @@
 
       '<div data-general-error class="alert alert--danger" style="display:none;"></div>' +
 
-      '<div class="flex gap-2 mt-4">' +
+      '<div class="flex gap-2 mt-4 flex-wrap">' +
+      '<button type="button" class="btn btn--outline btn--sm" id="tr-prescribe">💊 Prescribe Medicine · 開立處方</button>' +
+      '</div>' +
+
+      '<div class="flex gap-2 mt-2">' +
       '<button type="button" class="btn btn--danger btn--sm" data-decision="needs_changes">Request Changes · 要求修改</button>' +
       '<button type="submit" class="btn btn--primary btn--block" data-decision="approved">✓ Approve · 批准</button>' +
       '</div>' +
@@ -467,6 +512,131 @@
       e.preventDefault();
       submitTongue(form, m, id, 'approved');
     });
+
+    // Prescribe — opens a second modal, seeded with the existing med suggestions
+    m.element.querySelector('#tr-prescribe').addEventListener('click', function () {
+      var seedItems = existingMeds.map(function (mItem) {
+        return { drug_name: mItem.name_zh || mItem.name || '', note: mItem.note || '', quantity: 10, unit: 'g' };
+      });
+      openPrescribeModal({
+        patient_id: d.patient_id,
+        source_type: 'tongue',
+        source_id: d.id,
+        default_diagnosis: (c.name_zh || c.name_en || ''),
+        seed_items: seedItems,
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  PRESCRIBE MODAL — issue a formal prescription from a review
+  // ═══════════════════════════════════════════════════════════
+  function openPrescribeModal(opts) {
+    var content = '<form id="rx-form">' +
+      '<div class="alert alert--info mb-3" style="margin-top:0;"><div class="alert-body text-xs">' +
+      '<strong>Formal prescription · 正式處方</strong><br>' +
+      'This creates a real prescription in the patient\'s record. They will receive a notification and can order the medicines via the pharmacy.' +
+      '</div></div>' +
+
+      '<div class="field-grid field-grid--2">' +
+      '<div class="field"><label class="field-label">Diagnosis · 診斷</label>' +
+      '<input name="diagnosis" class="field-input field-input--boxed" value="' + HM.format.esc(opts.default_diagnosis || '') + '" placeholder="e.g. Qi-Blood Deficiency · 氣血兩虛"></div>' +
+      '<div class="field"><label class="field-label">Duration (days)</label>' +
+      '<input name="duration_days" type="number" class="field-input field-input--boxed" value="7" min="1" max="90"></div>' +
+      '</div>' +
+
+      '<div class="field"><label class="field-label">Instructions · 醫囑</label>' +
+      '<textarea name="instructions" class="field-input field-input--boxed" rows="2" placeholder="How to take, when, any warnings…"></textarea></div>' +
+
+      '<div class="text-label mb-2 mt-3">Herb Items · 藥材</div>' +
+      '<div id="rx-items">' +
+      (opts.seed_items && opts.seed_items.length
+        ? opts.seed_items.map(rxItemRow).join('')
+        : rxItemRow({ drug_name: '', note: '', quantity: 10, unit: 'g' })) +
+      '</div>' +
+      '<button type="button" class="btn btn--ghost btn--sm" id="rx-add">+ Add Item</button>' +
+
+      '<div data-general-error class="alert alert--danger mt-3" style="display:none;"></div>' +
+
+      '<div class="flex gap-2 mt-4">' +
+      '<button type="button" class="btn btn--ghost" id="rx-cancel">Cancel</button>' +
+      '<button type="submit" class="btn btn--primary btn--block">Issue Prescription · 開立處方</button>' +
+      '</div>' +
+      '</form>';
+
+    var m = HM.ui.modal({ size: 'lg', title: '💊 Prescribe Medicine · 開立處方', content: content });
+
+    var form = m.element.querySelector('#rx-form');
+    m.element.querySelector('#rx-cancel').addEventListener('click', function () { m.close(); });
+    m.element.querySelector('#rx-add').addEventListener('click', function () {
+      m.element.querySelector('#rx-items').insertAdjacentHTML('beforeend', rxItemRow({ drug_name: '', note: '', quantity: 10, unit: 'g' }));
+    });
+    m.element.querySelector('#rx-items').addEventListener('click', function (e) {
+      if (e.target.matches('[data-remove-rx]')) e.target.closest('.rx-item-row').remove();
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var diagnosis = form.querySelector('[name="diagnosis"]').value.trim();
+      var duration  = parseInt(form.querySelector('[name="duration_days"]').value || '7', 10);
+      var instr     = form.querySelector('[name="instructions"]').value.trim();
+
+      var names     = Array.from(form.querySelectorAll('[name="rx_name[]"]')).map(function (x) { return x.value.trim(); });
+      var specs     = Array.from(form.querySelectorAll('[name="rx_spec[]"]')).map(function (x) { return x.value.trim(); });
+      var qtys      = Array.from(form.querySelectorAll('[name="rx_qty[]"]')).map(function (x) { return parseFloat(x.value) || 0; });
+      var units     = Array.from(form.querySelectorAll('[name="rx_unit[]"]')).map(function (x) { return x.value.trim() || 'g'; });
+      var freqs     = Array.from(form.querySelectorAll('[name="rx_freq[]"]')).map(function (x) { return x.value.trim(); });
+      var notes     = Array.from(form.querySelectorAll('[name="rx_notes[]"]')).map(function (x) { return x.value.trim(); });
+
+      var items = [];
+      for (var i = 0; i < names.length; i++) {
+        if (names[i] && qtys[i] > 0) {
+          items.push({
+            drug_name:     names[i],
+            specification: specs[i] || null,
+            quantity:      qtys[i],
+            unit:          units[i],
+            frequency:     freqs[i] || null,
+            notes:         notes[i] || null,
+          });
+        }
+      }
+
+      if (!items.length) {
+        HM.form.showGeneralError(form, 'Add at least one herb with quantity > 0');
+        return;
+      }
+
+      HM.form.setLoading(form, true);
+      try {
+        await HM.api.doctor.issuePrescription({
+          patient_id:    opts.patient_id,
+          source_type:   opts.source_type,
+          source_id:     opts.source_id,
+          diagnosis:     diagnosis || null,
+          instructions:  instr || null,
+          duration_days: duration,
+          items:         items,
+        });
+        m.close();
+        HM.ui.toast('Prescription issued · 處方已開立', 'success');
+      } catch (err) {
+        HM.form.setLoading(form, false);
+        HM.form.showGeneralError(form, err.message || 'Failed to issue prescription');
+      }
+    });
+  }
+
+  function rxItemRow(item) {
+    return '<div class="rx-item-row" style="display:grid;grid-template-columns:2fr 1fr 70px 60px 1fr auto;gap:6px;margin-bottom:6px;">' +
+      '<input class="field-input field-input--boxed" name="rx_name[]" placeholder="Drug · 藥名" value="' + HM.format.esc(item.drug_name || '') + '" style="margin:0;padding:6px 10px;">' +
+      '<input class="field-input field-input--boxed" name="rx_spec[]" placeholder="Spec" value="' + HM.format.esc(item.specification || '') + '" style="margin:0;padding:6px 10px;">' +
+      '<input class="field-input field-input--boxed" name="rx_qty[]" type="number" step="0.1" placeholder="Qty" value="' + (item.quantity || 10) + '" style="margin:0;padding:6px 10px;">' +
+      '<input class="field-input field-input--boxed" name="rx_unit[]" placeholder="Unit" value="' + HM.format.esc(item.unit || 'g') + '" style="margin:0;padding:6px 10px;">' +
+      '<input class="field-input field-input--boxed" name="rx_freq[]" placeholder="Frequency · 用法" value="' + HM.format.esc(item.frequency || '') + '" style="margin:0;padding:6px 10px;">' +
+      '<button type="button" class="btn btn--ghost btn--sm" data-remove-rx style="margin:0;">✕</button>' +
+      '</div>' +
+      (item.note ? '<div class="text-xs text-muted" style="margin:-4px 0 6px 2px;">↑ from: ' + HM.format.esc(item.note) + '<input type="hidden" name="rx_notes[]" value="' + HM.format.esc(item.note) + '"></div>' : '<input type="hidden" name="rx_notes[]" value="">');
   }
 
   function renderMiniConstitution(q) {

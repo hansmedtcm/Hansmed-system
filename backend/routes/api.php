@@ -203,6 +203,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/pool-booking',       [\App\Http\Controllers\Admin\MigrationController::class, 'poolBooking']);
         Route::post('/migrate/tongue-review',      [\App\Http\Controllers\Admin\MigrationController::class, 'tongueReview']);
         Route::post('/migrate/doctor-off-days',    [\App\Http\Controllers\Admin\MigrationController::class, 'doctorOffDays']);
+        Route::post('/migrate/rx-from-review',     [\App\Http\Controllers\Admin\MigrationController::class, 'rxFromReview']);
 
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);

@@ -62,6 +62,40 @@ class MigrationController extends Controller
         ]);
     }
 
+    public function rxFromReview(Request $request)
+    {
+        $log = [];
+        $errors = [];
+
+        // Drop the FK if present (MySQL quirk — foreign keys sometimes block ALTER).
+        try {
+            DB::statement('ALTER TABLE prescriptions DROP FOREIGN KEY fk_rx_ap');
+            $log[] = 'dropped fk_rx_ap';
+        } catch (\Throwable $e) {
+            $log[] = 'fk_rx_ap: ' . $e->getMessage();
+        }
+        // Make appointment_id nullable so prescriptions can originate from AI reviews.
+        try {
+            DB::statement('ALTER TABLE prescriptions MODIFY COLUMN appointment_id BIGINT UNSIGNED NULL');
+            $log[] = 'appointment_id is now nullable';
+        } catch (\Throwable $e) {
+            $errors[] = 'appointment_id nullable: ' . $e->getMessage();
+        }
+        // Re-add the FK so referential integrity is preserved when set.
+        try {
+            DB::statement('ALTER TABLE prescriptions ADD CONSTRAINT fk_rx_ap FOREIGN KEY (appointment_id) REFERENCES appointments(id)');
+            $log[] = 're-added fk_rx_ap';
+        } catch (\Throwable $e) {
+            $log[] = 'fk_rx_ap re-add: ' . $e->getMessage();
+        }
+
+        return response()->json([
+            'success' => empty($errors),
+            'log'     => $log,
+            'errors'  => $errors,
+        ]);
+    }
+
     public function doctorOffDays(Request $request)
     {
         $log = [];

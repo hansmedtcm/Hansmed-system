@@ -208,8 +208,8 @@
       '<li>Answer 10 bilingual questions (about 4 minutes)</li>' +
       '<li>Safety follow-ups fire on any red-flag answers</li>' +
       '<li>Radar chart + bars show your 10-dimension profile</li>' +
-      '<li>Personalised herb, food &amp; lifestyle advice</li>' +
       '<li>Results sent to a licensed TCM doctor for review</li>' +
+      '<li>Doctor approves &amp; personalises herb / food / lifestyle advice</li>' +
       '</ol>' +
       '</div>' +
 
@@ -223,14 +223,85 @@
       '</div>' +
 
       '<div class="flex gap-2 mt-5">' +
-      '<button class="btn btn--primary btn--lg" id="aid-start">Start · 開始測評</button>' +
+      '<button class="btn btn--primary btn--lg" id="aid-start">Start New Assessment · 開始新測評</button>' +
       '<button class="btn btn--outline btn--lg" onclick="location.hash=\'#/tongue\'">+ Add Tongue Scan First · 先做舌診</button>' +
+      '</div>' +
+
+      // Past reports section
+      '<div class="mt-8">' +
+      '<div class="text-label mb-3">📜 My Past Reports · 過往報告</div>' +
+      '<div id="aid-past">Loading…</div>' +
       '</div>';
 
     document.getElementById('aid-start').addEventListener('click', function () {
       state.qIndex = 0;
       renderQuestion(el);
     });
+
+    // Load past reports list
+    loadPastReports();
+  }
+
+  async function loadPastReports() {
+    var host = document.getElementById('aid-past');
+    if (!host) return;
+    try {
+      var res = await HM.api.patient.listQuestionnaires();
+      var rows = (res && res.data) || [];
+      var aiReports = [];
+      rows.forEach(function (row) {
+        var s = row.symptoms;
+        if (typeof s === 'string') { try { s = JSON.parse(s); } catch (_) { s = {}; } }
+        s = s || {};
+        if (s.kind !== 'ai_constitution_v2') return;
+        aiReports.push({
+          id:            row.id,
+          created_at:    row.created_at,
+          review_status: s.review_status || 'pending',
+          reviewed_at:   s.reviewed_at || null,
+          doctor_comment: s.doctor_comment || null,
+          patterns:      s.patterns || [],
+        });
+      });
+
+      if (!aiReports.length) {
+        host.innerHTML = '<div class="card"><p class="text-muted text-center" style="padding: var(--s-4);">No past reports yet. Start a new assessment above. · 尚無過往報告，請開始新測評。</p></div>';
+        return;
+      }
+
+      host.innerHTML = '';
+      aiReports.forEach(function (r) {
+        var card = document.createElement('div');
+        card.className = 'card card--clickable mb-2';
+        card.style.cursor = 'pointer';
+
+        var statusBadge = {
+          pending:       '<span class="badge">⏳ Pending review · 待審核</span>',
+          approved:      '<span class="badge badge--success">✓ Reviewed · 已審核</span>',
+          needs_changes: '<span class="badge badge--danger">⚠ Needs follow-up · 需跟進</span>',
+        }[r.review_status] || '';
+
+        var primary = r.patterns && r.patterns.length
+          ? ((r.patterns[0].c || '') + (r.patterns[0].l ? ' · ' + r.patterns[0].l : ''))
+          : 'Constitution report';
+
+        card.innerHTML = '<div class="flex-between" style="align-items:center;">' +
+          '<div>' +
+          '<div class="text-label text-gold mb-1">' + HM.format.datetime(r.created_at) + '</div>' +
+          '<div class="card-title" style="font-size: var(--text-base);">' + HM.format.esc(primary) + '</div>' +
+          (r.review_status === 'approved' && r.doctor_comment ? '<div class="text-xs text-muted mt-1">💬 Doctor has added advice — click to view</div>' : '') +
+          '</div>' +
+          '<div style="text-align:right;">' + statusBadge +
+          '<div class="text-xs text-muted mt-1">View →</div>' +
+          '</div>' +
+          '</div>';
+
+        card.addEventListener('click', function () { location.hash = '#/ai-diagnosis/' + r.id; });
+        host.appendChild(card);
+      });
+    } catch (e) {
+      host.innerHTML = '<div class="card"><p class="text-muted text-center" style="padding: var(--s-4);">Could not load past reports.</p></div>';
+    }
   }
 
   function renderQuestion(el) {

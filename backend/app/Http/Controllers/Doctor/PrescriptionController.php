@@ -13,11 +13,16 @@ class PrescriptionController extends Controller
 {
     public function __construct(private NotificationService $notifier) {}
 
-    // D-08: issue electronic prescription
+    // D-08: issue electronic prescription.
+    // Either appointment_id (from a consultation) OR patient_id (from an
+    // AI review with no appointment) must be provided.
     public function store(Request $request)
     {
         $data = $request->validate([
-            'appointment_id'        => ['required', 'integer'],
+            'appointment_id'        => ['nullable', 'integer'],
+            'patient_id'            => ['nullable', 'integer'],
+            'source_type'           => ['nullable', 'in:tongue,constitution'],
+            'source_id'             => ['nullable', 'integer'],
             'diagnosis'             => ['nullable', 'string', 'max:2000'],
             'instructions'          => ['nullable', 'string', 'max:2000'],
             'contraindications'     => ['nullable', 'string', 'max:2000'],
@@ -34,18 +39,34 @@ class PrescriptionController extends Controller
             'items.*.notes'         => ['nullable', 'string', 'max:500'],
         ]);
 
-        $appt = Appointment::where('doctor_id', $request->user()->id)
-            ->findOrFail($data['appointment_id']);
+        $apptId = null;
+        $patientId = null;
+        if (! empty($data['appointment_id'])) {
+            $appt = Appointment::where('doctor_id', $request->user()->id)
+                ->findOrFail($data['appointment_id']);
+            $apptId = $appt->id;
+            $patientId = $appt->patient_id;
+        } elseif (! empty($data['patient_id'])) {
+            $patientId = (int) $data['patient_id'];
+        } else {
+            return response()->json(['message' => 'appointment_id or patient_id required'], 422);
+        }
 
-        return DB::transaction(function () use ($appt, $data, $request) {
+        return DB::transaction(function () use ($apptId, $patientId, $data, $request) {
+            // Build notes string to record the source context if this Rx came from an AI review
+            $contextNote = null;
+            if (! empty($data['source_type']) && ! empty($data['source_id'])) {
+                $contextNote = 'Issued from ' . $data['source_type'] . ' review #' . $data['source_id'];
+            }
+
             $rx = Prescription::create([
-                'appointment_id'    => $appt->id,
+                'appointment_id'    => $apptId,
                 'doctor_id'         => $request->user()->id,
-                'patient_id'        => $appt->patient_id,
+                'patient_id'        => $patientId,
                 'status'            => 'issued',
                 'diagnosis'         => $data['diagnosis']         ?? null,
                 'instructions'      => $data['instructions']      ?? null,
-                'contraindications' => $data['contraindications'] ?? null,
+                'contraindications' => trim(($data['contraindications'] ?? '') . ($contextNote ? ' | ' . $contextNote : ''), ' |') ?: null,
                 'duration_days'     => $data['duration_days']     ?? null,
                 'issued_at'         => now(),
             ]);
@@ -64,7 +85,7 @@ class PrescriptionController extends Controller
                 ]);
             }
 
-            $this->notifier->prescriptionIssued($appt->patient_id, $rx->id);
+            $this->notifier->prescriptionIssued($patientId, $rx->id);
             return response()->json(['prescription' => $rx->load('items')], 201);
         });
     }
