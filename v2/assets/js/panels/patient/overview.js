@@ -106,9 +106,10 @@
       '<div class="text-label mb-3">Quick Actions · 快捷操作</div>' +
       '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">' +
       actionCard('📅', 'Book Appointment', '預約', '#/book') +
+      actionCard('🧭', 'AI Constitution', 'AI 體質', '#/ai-diagnosis') +
+      actionCard('👅', 'Tongue Scan', '舌診', '#/tongue') +
       actionCard('🛍️', 'Shop', '商店', '#/shop') +
-      actionCard('👅', 'New Tongue Scan', '新舌診', '#/tongue') +
-      actionCard('💊', 'My Prescriptions', '我的處方', '#/prescriptions') +
+      actionCard('💊', 'Prescriptions', '處方', '#/prescriptions') +
       '</div>' +
       '</div>';
   }

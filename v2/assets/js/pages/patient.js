@@ -112,6 +112,9 @@
   router.on('#/tongue/:id', function (params) {
     HM.patientPanels.tongue.renderDetail(panel(), params.id);
   });
+  router.on('#/ai-diagnosis', function () {
+    HM.patientPanels.aiDiagnosis.render(panel());
+  });
   router.on('#/prescriptions', function () {
     HM.patientPanels.prescriptions.render(panel());
   });
