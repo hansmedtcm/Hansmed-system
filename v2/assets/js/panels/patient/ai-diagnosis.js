@@ -193,43 +193,49 @@
 
   function renderIntro(el) {
     el.innerHTML = '<div class="page-header">' +
-      '<div class="page-header-label">AI Constitution Diagnosis · AI 體質診斷</div>' +
-      '<h1 class="page-title">Your 10-Dimension TCM Constitution Profile</h1>' +
-      '<p class="text-muted mt-1">A quick 10-question assessment maps your TCM constitution across energy, digestion, circulation, temperature, moisture, sleep and immunity. ' +
-      '<span style="font-family: var(--font-zh);">10 道題目，AI 為您繪出體質地圖。</span></p>' +
+      '<div class="page-header-label">AI Diagnosis · AI 智能診斷</div>' +
+      '<h1 class="page-title">Tongue Scan &amp; Constitution Assessment</h1>' +
+      '<p class="text-muted mt-1">Two AI tools that together map your full TCM picture — upload a tongue photo, answer 10 constitution questions, and a licensed doctor reviews both. ' +
+      '<span style="font-family: var(--font-zh);">舌診 + 體質測評雙管齊下，最後由中醫師審核確認。</span></p>' +
       '</div>' +
 
+      // ── Action cards ──
       '<div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: var(--s-5);">' +
 
-      '<div class="card card--pad-lg">' +
-      '<div style="font-size: 3rem; margin-bottom: var(--s-3);">📋</div>' +
-      '<h3 class="mb-2">How it works · 使用流程</h3>' +
-      '<ol style="padding-left: 20px; line-height: var(--leading-relaxed); font-size: var(--text-sm);">' +
-      '<li>Answer 10 bilingual questions (about 4 minutes)</li>' +
-      '<li>Safety follow-ups fire on any red-flag answers</li>' +
-      '<li>Radar chart + bars show your 10-dimension profile</li>' +
-      '<li>Results sent to a licensed TCM doctor for review</li>' +
-      '<li>Doctor approves &amp; personalises herb / food / lifestyle advice</li>' +
-      '</ol>' +
+      // Tongue scan card
+      '<div class="card card--pad-lg aid-action-card" id="aid-action-tongue">' +
+      '<div style="font-size: 3rem; margin-bottom: var(--s-3);">👅</div>' +
+      '<h3 class="mb-2">Tongue Scan · 舌診</h3>' +
+      '<p class="text-sm text-muted mb-3">Upload a clear tongue photo. AI analyses colour, coating, shape and moisture, then sends the result to a doctor for review. ' +
+      '<span style="font-family: var(--font-zh);">上傳舌頭照片，AI 分析舌色、舌苔、舌形，醫師審核建議。</span></p>' +
+      '<button class="btn btn--primary" onclick="location.hash=\'#/tongue\'">📷 Start Tongue Scan · 開始舌診 →</button>' +
       '</div>' +
 
-      '<div class="card card--pad-lg" style="border-left: 3px solid var(--gold);">' +
-      '<div style="font-size: 3rem; margin-bottom: var(--s-3);">🩺</div>' +
-      '<h3 class="mb-2">Important · 重要聲明</h3>' +
-      '<p class="text-sm text-muted">This assessment is a guide to your general TCM constitution. It is <strong>not a medical diagnosis</strong> and does not replace a consultation with a qualified practitioner or doctor. ' +
-      '<br><br><span style="font-family: var(--font-zh);">此測評為體質參考，<strong>不構成醫療診斷</strong>。</span></p>' +
+      // Constitution card
+      '<div class="card card--pad-lg aid-action-card" id="aid-action-constitution">' +
+      '<div style="font-size: 3rem; margin-bottom: var(--s-3);">🧭</div>' +
+      '<h3 class="mb-2">Constitution Quiz · 體質測評</h3>' +
+      '<p class="text-sm text-muted mb-3">Answer 10 bilingual questions to map your TCM constitution across energy, circulation, temperature, moisture, sleep and immunity. ' +
+      '<span style="font-family: var(--font-zh);">10 題測評，AI 繪製 10 維體質地圖。</span></p>' +
+      '<button class="btn btn--primary" id="aid-start">📝 Start Questionnaire · 開始測評 →</button>' +
       '</div>' +
 
       '</div>' +
 
-      '<div class="flex gap-2 mt-5">' +
-      '<button class="btn btn--primary btn--lg" id="aid-start">Start New Assessment · 開始新測評</button>' +
-      '<button class="btn btn--outline btn--lg" onclick="location.hash=\'#/tongue\'">+ Add Tongue Scan First · 先做舌診</button>' +
-      '</div>' +
+      // Safety notice
+      '<div class="alert alert--info mt-4">' +
+      '<div class="alert-icon">🩺</div>' +
+      '<div class="alert-body">' +
+      '<strong>How it works · 使用流程</strong><br>' +
+      '1. Run either or both assessments · 可做其一或兩者都做<br>' +
+      '2. Results sent to a licensed TCM doctor for review · 送交醫師審核<br>' +
+      '3. Doctor personalises your advice, may prescribe medicine · 醫師批准後提供個人化建議<br>' +
+      '4. Final report appears on this page with doctor\'s approved plan · 審核後顯示完整報告' +
+      '</div></div>' +
 
-      // Past reports section
+      // Combined history
       '<div class="mt-8">' +
-      '<div class="text-label mb-3">📜 My Past Reports · 過往報告</div>' +
+      '<div class="text-label mb-3">📜 My Past Records · 過往記錄</div>' +
       '<div id="aid-past">Loading…</div>' +
       '</div>';
 
@@ -238,70 +244,111 @@
       renderQuestion(el);
     });
 
-    // Load past reports list
+    // Load combined history
     loadPastReports();
   }
 
+  // ── Combined history: tongue scans + constitution reports, chronological ──
   async function loadPastReports() {
     var host = document.getElementById('aid-past');
     if (!host) return;
     try {
-      var res = await HM.api.patient.listQuestionnaires();
-      var rows = (res && res.data) || [];
-      var aiReports = [];
-      rows.forEach(function (row) {
+      var results = await Promise.all([
+        HM.api.patient.listQuestionnaires().catch(function () { return { data: [] }; }),
+        HM.api.patient.listDiagnoses().catch(function () { return { data: [] }; }),
+      ]);
+      var items = [];
+
+      // Constitution questionnaires
+      var qRows = (results[0] && results[0].data) || [];
+      qRows.forEach(function (row) {
         var s = row.symptoms;
         if (typeof s === 'string') { try { s = JSON.parse(s); } catch (_) { s = {}; } }
         s = s || {};
         if (s.kind !== 'ai_constitution_v2') return;
-        aiReports.push({
-          id:            row.id,
-          created_at:    row.created_at,
+        items.push({
+          kind: 'constitution',
+          id: row.id,
+          created_at: row.created_at,
           review_status: s.review_status || 'pending',
-          reviewed_at:   s.reviewed_at || null,
-          doctor_comment: s.doctor_comment || null,
-          patterns:      s.patterns || [],
+          summary: s.patterns && s.patterns.length
+            ? ((s.patterns[0].c || '') + (s.patterns[0].l ? ' · ' + s.patterns[0].l : ''))
+            : 'Constitution report',
+          has_advice: !!(s.doctor_comment || (s.doctor_advice && (s.doctor_advice.herbs || []).length)),
         });
       });
 
-      if (!aiReports.length) {
-        host.innerHTML = '<div class="card"><p class="text-muted text-center" style="padding: var(--s-4);">No past reports yet. Start a new assessment above. · 尚無過往報告，請開始新測評。</p></div>';
+      // Tongue scans
+      var tRows = (results[1] && results[1].data) || [];
+      tRows.forEach(function (t) {
+        var report = t.constitution_report || {};
+        var c = report.constitution || {};
+        items.push({
+          kind: 'tongue',
+          id: t.id,
+          created_at: t.created_at,
+          review_status: t.review_status || 'pending',
+          summary: c.name_en || c.name_zh || 'Tongue scan',
+          image_url: t.image_url,
+          health_score: t.health_score,
+          has_advice: !!(t.doctor_comment || (t.medicine_suggestions || []).length),
+        });
+      });
+
+      if (!items.length) {
+        host.innerHTML = '<div class="card"><p class="text-muted text-center" style="padding: var(--s-4);">No records yet. Start either assessment above. · 尚無記錄，請從上方開始。</p></div>';
         return;
       }
 
+      // Sort newest first
+      items.sort(function (a, b) { return (new Date(b.created_at)) - (new Date(a.created_at)); });
+
       host.innerHTML = '';
-      aiReports.forEach(function (r) {
-        var card = document.createElement('div');
-        card.className = 'card card--clickable mb-2';
-        card.style.cursor = 'pointer';
-
-        var statusBadge = {
-          pending:       '<span class="badge">⏳ Pending review · 待審核</span>',
-          approved:      '<span class="badge badge--success">✓ Reviewed · 已審核</span>',
-          needs_changes: '<span class="badge badge--danger">⚠ Needs follow-up · 需跟進</span>',
-        }[r.review_status] || '';
-
-        var primary = r.patterns && r.patterns.length
-          ? ((r.patterns[0].c || '') + (r.patterns[0].l ? ' · ' + r.patterns[0].l : ''))
-          : 'Constitution report';
-
-        card.innerHTML = '<div class="flex-between" style="align-items:center;">' +
-          '<div>' +
-          '<div class="text-label text-gold mb-1">' + HM.format.datetime(r.created_at) + '</div>' +
-          '<div class="card-title" style="font-size: var(--text-base);">' + HM.format.esc(primary) + '</div>' +
-          (r.review_status === 'approved' && r.doctor_comment ? '<div class="text-xs text-muted mt-1">💬 Doctor has added advice — click to view</div>' : '') +
-          '</div>' +
-          '<div style="text-align:right;">' + statusBadge +
-          '<div class="text-xs text-muted mt-1">View →</div>' +
-          '</div>' +
-          '</div>';
-
-        card.addEventListener('click', function () { location.hash = '#/ai-diagnosis/' + r.id; });
-        host.appendChild(card);
-      });
+      items.forEach(function (it) { host.appendChild(renderHistoryCard(it)); });
     } catch (e) {
-      host.innerHTML = '<div class="card"><p class="text-muted text-center" style="padding: var(--s-4);">Could not load past reports.</p></div>';
+      host.innerHTML = '<div class="card"><p class="text-muted text-center" style="padding: var(--s-4);">Could not load records.</p></div>';
     }
+  }
+
+  function renderHistoryCard(it) {
+    var card = document.createElement('div');
+    card.className = 'card card--clickable mb-2';
+    card.style.cursor = 'pointer';
+
+    var statusBadge = {
+      pending:       '<span class="badge">⏳ Pending review · 待審核</span>',
+      approved:      '<span class="badge badge--success">✓ Reviewed · 已審核</span>',
+      needs_changes: '<span class="badge badge--danger">⚠ Needs follow-up · 需跟進</span>',
+    }[it.review_status] || '';
+
+    var typeBadge = it.kind === 'tongue'
+      ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);">👅 Tongue · 舌診</span>'
+      : '<span class="badge" style="background:rgba(122,140,114,.15);color:var(--sage);">🧭 Constitution · 體質</span>';
+
+    var imgHtml = (it.kind === 'tongue' && it.image_url)
+      ? '<img src="' + HM.format.esc(it.image_url) + '" style="width:56px;height:56px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border);flex-shrink:0;">'
+      : '<div style="width:56px;height:56px;border-radius:var(--r-sm);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">' + (it.kind === 'tongue' ? '👅' : '🧭') + '</div>';
+
+    card.innerHTML = '<div class="flex gap-3" style="align-items:center;">' +
+      imgHtml +
+      '<div style="flex:1;">' +
+      '<div class="flex gap-2 mb-1" style="align-items:center;flex-wrap:wrap;">' + typeBadge + statusBadge + '</div>' +
+      '<div class="card-title" style="font-size: var(--text-base);">' + HM.format.esc(it.summary) + '</div>' +
+      '<div class="text-xs text-muted mt-1">' + HM.format.datetime(it.created_at) +
+      (it.review_status === 'approved' && it.has_advice ? ' · 💬 Doctor has added advice' : '') +
+      (it.kind === 'tongue' && it.health_score != null ? ' · Score ' + it.health_score + '/100' : '') +
+      '</div>' +
+      '</div>' +
+      '<div style="text-align:right;">' +
+      '<div class="text-xs text-muted">View →</div>' +
+      '</div>' +
+      '</div>';
+
+    card.addEventListener('click', function () {
+      if (it.kind === 'tongue') location.hash = '#/tongue/' + it.id;
+      else                      location.hash = '#/ai-diagnosis/' + it.id;
+    });
+    return card;
   }
 
   function renderQuestion(el) {

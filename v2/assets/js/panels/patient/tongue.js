@@ -198,7 +198,7 @@
       }
 
       var html = '<div class="page-header">' +
-        '<button class="btn btn--ghost" onclick="location.hash=\'#/tongue\'">← Back to History · 返回記錄</button>' +
+        '<button class="btn btn--ghost" onclick="location.hash=\'#/ai-diagnosis\'">← Back to AI Diagnosis · 返回 AI 診斷</button>' +
         '</div>' +
         reviewBanner +
         '<div class="grid-2" style="gap: var(--s-6); align-items: start;">' +
