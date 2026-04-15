@@ -9,7 +9,12 @@
     el.innerHTML = '<div class="page-header">' +
       '<div class="page-header-label">System Settings · 系統設定</div>' +
       '<h1 class="page-title">Platform Configuration</h1>' +
-      '</div><div id="cfg-body"></div>';
+      '</div>' +
+      '<div id="cfg-body"></div>' +
+      // Migrations always render so admins can use them even if getConfigs fails
+      '<div id="cfg-migrations"></div>';
+
+    renderMigrations();
 
     var body = document.getElementById('cfg-body');
     HM.state.loading(body);
@@ -83,46 +88,7 @@
 
         '<div data-general-error class="alert alert--danger" style="display:none;"></div>' +
         '<button type="submit" class="btn btn--primary">Save All Settings</button>' +
-        '</form>' +
-
-        '<div class="card mt-6" style="border-left: 3px solid var(--gold);">' +
-        '<div class="card-title">🗄️ Database Migrations · 資料庫升級</div>' +
-        '<p class="text-sm text-muted mb-3">Run one-time database changes when the platform is upgraded. Each migration is safe to re-run.</p>' +
-        '<div class="flex gap-2 flex-wrap">' +
-        '<button class="btn btn--outline" data-migration="pool-booking">Run: Pool Booking Schema · 執行候診池升級</button>' +
-        '<button class="btn btn--outline" data-migration="tongue-review">Run: Tongue Review Schema · 執行舌診審核升級</button>' +
-        '<button class="btn btn--outline" data-migration="doctor-off-days">Run: Doctor Off-Days Schema · 執行醫師假期升級</button>' +
-        '<button class="btn btn--outline" data-migration="rx-from-review">Run: Prescribe from AI Review · 執行審核開方升級</button>' +
-        '</div>' +
-        '<div id="migration-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
-        '</div>';
-
-      // Migration handler (one handler for all migration buttons)
-      document.querySelectorAll('[data-migration]').forEach(function (btn) {
-        btn.addEventListener('click', async function () {
-          var key = btn.getAttribute('data-migration');
-          var label = btn.textContent;
-          var out = document.getElementById('migration-output');
-          btn.disabled = true;
-          btn.textContent = 'Running… · 執行中…';
-          out.style.display = 'block';
-          out.textContent = 'Connecting…';
-          try {
-            var res = await HM.api.post('/admin/migrate/' + key);
-            var lines = ['[' + key + ']  ' + (res.success ? '✓ Success' : '⚠ Completed with warnings')];
-            (res.log || []).forEach(function (l) { lines.push('  · ' + l); });
-            (res.errors || []).forEach(function (e) { lines.push('  ✗ ' + e); });
-            out.textContent = lines.join('\n');
-            HM.ui.toast(res.success ? 'Migration successful' : 'Migration finished with warnings', res.success ? 'success' : 'warning');
-          } catch (e) {
-            out.textContent = '✗ ' + (e.message || 'Migration failed');
-            HM.ui.toast('Migration failed: ' + (e.message || ''), 'danger');
-          } finally {
-            btn.disabled = false;
-            btn.textContent = label;
-          }
-        });
-      });
+        '</form>';
 
       var form = document.getElementById('cfg-form');
       form.addEventListener('submit', async function (e) {
@@ -144,6 +110,48 @@
         }
       });
     } catch (e) { HM.state.error(body, e); }
+  }
+
+  function renderMigrations() {
+    var host = document.getElementById('cfg-migrations');
+    if (!host) return;
+    host.innerHTML = '<div class="card mt-6" style="border-left: 3px solid var(--gold);">' +
+      '<div class="card-title">🗄️ Database Migrations · 資料庫升級</div>' +
+      '<p class="text-sm text-muted mb-3">Run one-time database changes when the platform is upgraded. Each migration is safe to re-run.</p>' +
+      '<div class="flex gap-2 flex-wrap">' +
+      '<button class="btn btn--outline" data-migration="pool-booking">Run: Pool Booking Schema · 執行候診池升級</button>' +
+      '<button class="btn btn--outline" data-migration="tongue-review">Run: Tongue Review Schema · 執行舌診審核升級</button>' +
+      '<button class="btn btn--outline" data-migration="doctor-off-days">Run: Doctor Off-Days Schema · 執行醫師假期升級</button>' +
+      '<button class="btn btn--outline" data-migration="rx-from-review">Run: Prescribe from AI Review · 執行審核開方升級</button>' +
+      '</div>' +
+      '<div id="migration-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
+      '</div>';
+
+    host.querySelectorAll('[data-migration]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        var key = btn.getAttribute('data-migration');
+        var label = btn.textContent;
+        var out = document.getElementById('migration-output');
+        btn.disabled = true;
+        btn.textContent = 'Running… · 執行中…';
+        out.style.display = 'block';
+        out.textContent = 'Connecting…';
+        try {
+          var res = await HM.api.post('/admin/migrate/' + key);
+          var lines = ['[' + key + ']  ' + (res.success ? '✓ Success' : '⚠ Completed with warnings')];
+          (res.log || []).forEach(function (l) { lines.push('  · ' + l); });
+          (res.errors || []).forEach(function (e) { lines.push('  ✗ ' + e); });
+          out.textContent = lines.join('\n');
+          HM.ui.toast(res.success ? 'Migration successful' : 'Migration finished with warnings', res.success ? 'success' : 'warning');
+        } catch (e) {
+          out.textContent = '✗ ' + (e.message || 'Migration failed');
+          HM.ui.toast('Migration failed: ' + (e.message || ''), 'danger');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = label;
+        }
+      });
+    });
   }
 
   function field(name, label, value, type, fullWidth) {
