@@ -79,6 +79,14 @@
         '</div>' +
 
         '<div class="card mb-4">' +
+        '<div class="card-title">Walk-in Treatments · 臨診治療項目</div>' +
+        '<p class="text-xs text-muted mb-3">Treatments doctors can log during walk-in consultations. Each treatment has a key (id), EN name, 中文 name, emoji icon, and a "has points" flag (for therapies that use meridian points like acupuncture). Edit the JSON directly. ' +
+        '<span style="font-family: var(--font-zh);">臨診時醫師可記錄的治療項目清單。</span></p>' +
+        '<textarea name="treatment_types" class="field-input field-input--boxed" rows="10" style="font-family: var(--font-mono); font-size: var(--text-xs);" placeholder="[]">' + HM.format.esc(c.treatment_types || defaultTreatmentTypes()) + '</textarea>' +
+        '<div class="text-xs text-muted mt-2">Format: array of <code>{ key, name, name_zh, icon, has_points }</code> objects.</div>' +
+        '</div>' +
+
+        '<div class="card mb-4">' +
         '<div class="card-title">System · 系統</div>' +
         '<div class="field">' + check('maintenance_mode', 'Maintenance Mode (block logins except admin)', c.maintenance_mode === '1') + '</div>' +
         '<div class="field">' + check('allow_registration', 'Allow new patient registrations', c.allow_registration !== '0') + '</div>' +
@@ -123,6 +131,7 @@
       '<button class="btn btn--outline" data-migration="tongue-review">Run: Tongue Review Schema · 執行舌診審核升級</button>' +
       '<button class="btn btn--outline" data-migration="doctor-off-days">Run: Doctor Off-Days Schema · 執行醫師假期升級</button>' +
       '<button class="btn btn--outline" data-migration="rx-from-review">Run: Prescribe from AI Review · 執行審核開方升級</button>' +
+      '<button class="btn btn--outline" data-migration="walk-in-support">Run: Walk-in Support · 執行臨診支援升級</button>' +
       '</div>' +
       '<div id="migration-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
       '</div>';
@@ -158,6 +167,17 @@
     return '<div class="field"' + (fullWidth ? ' style="grid-column: span 2;"' : '') + '>' +
       '<label class="field-label">' + label + '</label>' +
       '<input name="' + name + '" type="' + (type || 'text') + '" class="field-input field-input--boxed" value="' + HM.format.esc(value || '') + '"></div>';
+  }
+
+  function defaultTreatmentTypes() {
+    return JSON.stringify([
+      { key: 'acupuncture', icon: '📍', name: 'Acupuncture', name_zh: '針灸', has_points: true },
+      { key: 'moxibustion', icon: '🔥', name: 'Moxibustion', name_zh: '艾灸', has_points: true },
+      { key: 'cupping',     icon: '🫙', name: 'Cupping',     name_zh: '拔罐', has_points: true },
+      { key: 'tuina',       icon: '👐', name: 'Tuina',       name_zh: '推拿', has_points: false },
+      { key: 'guasha',      icon: '🪮', name: 'Gua Sha',     name_zh: '刮痧', has_points: false },
+      { key: 'ear_seeds',   icon: '🌰', name: 'Ear Seeds',   name_zh: '耳針', has_points: true },
+    ], null, 2);
   }
 
   function check(name, label, checked) {

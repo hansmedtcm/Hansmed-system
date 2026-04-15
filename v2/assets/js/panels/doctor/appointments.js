@@ -63,9 +63,9 @@
         node.querySelector('[data-action="view"]').addEventListener('click', function () { location.hash = '#/appointments/' + a.id; });
         node.querySelector('[data-action="chat"]').addEventListener('click', async function () {
           try {
-            var r = await HM.api.chat.openThread({ patient_id: a.patient_id });
+            var r = await HM.api.chat.openThread({ patient_id: a.patient_id, appointment_id: a.id });
             location.hash = '#/messages/' + r.thread.id;
-          } catch {}
+          } catch (e) { HM.ui.toast(e.message || 'Could not open chat', 'danger'); }
         });
         container.appendChild(node);
       });

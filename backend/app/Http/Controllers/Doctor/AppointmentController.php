@@ -51,6 +51,7 @@ class AppointmentController extends Controller
             'concern'         => ['nullable', 'string', 'max:60'],
             'concern_label'   => ['nullable', 'string', 'max:120'],
             'recommended_specialty' => ['nullable', 'string', 'max:120'],
+            'visit_type'      => ['nullable', 'in:online,walk_in'],
         ]);
 
         // Verify patient exists and has correct role
@@ -80,6 +81,7 @@ class AppointmentController extends Controller
             'concern_label'          => $data['concern_label'] ?? null,
             'recommended_specialty'  => $data['recommended_specialty'] ?? null,
             'is_pool'                => 0,
+            'visit_type'             => $data['visit_type'] ?? 'online',
         ]);
 
         return response()->json(['appointment' => $appt], 201);

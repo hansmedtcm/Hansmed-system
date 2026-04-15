@@ -59,25 +59,40 @@ class ConsultationController extends Controller
         ]);
     }
 
-    // Called by doctor after video ends — persist notes + duration
+    // Called by doctor after video ends — persist notes + duration + case record + treatments.
+    // Walk-in visits use the same endpoint but skip the RTC portion.
     public function finish(Request $request, int $appointmentId)
     {
         $data = $request->validate([
             'duration_seconds' => ['nullable', 'integer', 'min:0'],
             'doctor_notes'     => ['nullable', 'string', 'max:5000'],
             'transcript'       => ['nullable', 'string'],
+            'case_record'      => ['nullable', 'array'],
+            'treatments'       => ['nullable', 'array'],
         ]);
 
         $appt = Appointment::where('doctor_id', $request->user()->id)
             ->findOrFail($appointmentId);
 
-        $consult = Consultation::where('appointment_id', $appt->id)->firstOrFail();
-        $consult->update([
+        // Walk-in visits might not have a pre-existing consultation row.
+        $consult = Consultation::firstOrCreate(
+            ['appointment_id' => $appt->id],
+            ['room_id' => 'appt-' . $appt->id]
+        );
+
+        $updates = [
             'ended_at'         => now(),
             'duration_seconds' => $data['duration_seconds'] ?? null,
             'doctor_notes'     => $data['doctor_notes']     ?? null,
             'transcript'       => $data['transcript']       ?? null,
-        ]);
+        ];
+        if (array_key_exists('case_record', $data)) {
+            $updates['case_record'] = json_encode($data['case_record']);
+        }
+        if (array_key_exists('treatments', $data)) {
+            $updates['treatments'] = json_encode($data['treatments']);
+        }
+        $consult->update($updates);
 
         return response()->json(['consultation' => $consult]);
     }

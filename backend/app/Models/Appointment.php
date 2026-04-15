@@ -14,6 +14,8 @@ class Appointment extends Model
         'questionnaire_id', 'notes',
         // Pool-mode fields
         'concern', 'concern_label', 'recommended_specialty', 'is_pool',
+        // Walk-in support
+        'visit_type',
     ];
 
     protected $casts = [

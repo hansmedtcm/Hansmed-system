@@ -62,6 +62,48 @@ class MigrationController extends Controller
         ]);
     }
 
+    public function walkInSupport(Request $request)
+    {
+        $log = [];
+        $errors = [];
+
+        // appointments.visit_type — online | walk_in
+        if (! Schema::hasColumn('appointments', 'visit_type')) {
+            try {
+                DB::statement("ALTER TABLE appointments ADD COLUMN visit_type VARCHAR(20) NOT NULL DEFAULT 'online' AFTER status");
+                $log[] = 'added appointments.visit_type';
+            } catch (\Throwable $e) { $errors[] = 'visit_type: ' . $e->getMessage(); }
+        } else {
+            $log[] = 'appointments.visit_type already exists, skipped';
+        }
+
+        // consultations.case_record — JSON TCM case record
+        if (! Schema::hasColumn('consultations', 'case_record')) {
+            try {
+                DB::statement("ALTER TABLE consultations ADD COLUMN case_record JSON NULL AFTER doctor_notes");
+                $log[] = 'added consultations.case_record';
+            } catch (\Throwable $e) { $errors[] = 'case_record: ' . $e->getMessage(); }
+        } else {
+            $log[] = 'consultations.case_record already exists, skipped';
+        }
+
+        // consultations.treatments — JSON list of treatments performed
+        if (! Schema::hasColumn('consultations', 'treatments')) {
+            try {
+                DB::statement("ALTER TABLE consultations ADD COLUMN treatments JSON NULL AFTER case_record");
+                $log[] = 'added consultations.treatments';
+            } catch (\Throwable $e) { $errors[] = 'treatments: ' . $e->getMessage(); }
+        } else {
+            $log[] = 'consultations.treatments already exists, skipped';
+        }
+
+        return response()->json([
+            'success' => empty($errors),
+            'log'     => $log,
+            'errors'  => $errors,
+        ]);
+    }
+
     public function rxFromReview(Request $request)
     {
         $log = [];

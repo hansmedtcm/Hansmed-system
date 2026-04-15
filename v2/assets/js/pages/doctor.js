@@ -49,6 +49,7 @@
   HM.router.on('#/documents', function () { HM.doctorPanels.documents.render(panel()); });
   HM.router.on('#/earnings', function () { HM.doctorPanels.earnings.render(panel()); });
   HM.router.on('#/messages', function () { HM.doctorPanels.messages.render(panel()); });
+  HM.router.on('#/messages/:id', function (p) { HM.doctorPanels.messages.render(panel(), p.id); });
   HM.router.on('#/notifications', function () { HM.doctorPanels.notifications.render(panel()); });
   HM.router.on('#/profile', function () { HM.doctorPanels.profile.render(panel()); });
   HM.router.on('#/help', function () { HM.doctorPanels.help.render(panel()); });

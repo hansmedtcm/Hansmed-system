@@ -164,6 +164,15 @@
 
     content += '</div>' +
 
+      '<div class="field">' +
+      '<label class="field-label" data-required>Visit Type · 就診方式</label>' +
+      '<div class="flex gap-2 flex-wrap">' +
+      '<label class="radio-option"><input type="radio" name="visit_type" value="walk_in" checked> 🏥 Walk-in · 臨診 (in-person)</label>' +
+      '<label class="radio-option"><input type="radio" name="visit_type" value="online"> 📹 Online · 線上 (video)</label>' +
+      '</div>' +
+      '<div class="text-xs text-muted mt-1">Walk-in visits skip video and focus on the case record / treatments log. · 臨診無需視訊，直接記錄病歷與治療。</div>' +
+      '</div>' +
+
       '<div class="field-grid field-grid--2">' +
       '<div class="field"><label class="field-label" data-required>Date · 日期</label>' +
       '<input type="date" name="date" class="field-input field-input--boxed" required min="' + todayStr + '" value="' + todayStr + '"></div>' +
@@ -238,6 +247,7 @@
         fee: parseFloat(data.fee || '0'),
         concern_label: data.concern_label || null,
         notes: data.notes || null,
+        visit_type: data.visit_type || 'walk_in',
       };
 
       HM.form.setLoading(form, true);

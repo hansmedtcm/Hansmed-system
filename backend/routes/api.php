@@ -36,6 +36,14 @@ Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
 Route::get('/pages',        [\App\Http\Controllers\ContentPageController::class, 'index']);
 Route::get('/pages/{slug}', [\App\Http\Controllers\ContentPageController::class, 'show']);
 
+// Public config snippets (treatment types, shop catalog pointers, etc.)
+Route::get('/public/treatment-types', function () {
+    $row = \Illuminate\Support\Facades\DB::table('system_configs')->where('config_key', 'treatment_types')->first();
+    if (! $row) return response()->json(['types' => []]);
+    $types = json_decode($row->config_value, true);
+    return response()->json(['types' => is_array($types) ? $types : []]);
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me',      [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -204,6 +212,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/tongue-review',      [\App\Http\Controllers\Admin\MigrationController::class, 'tongueReview']);
         Route::post('/migrate/doctor-off-days',    [\App\Http\Controllers\Admin\MigrationController::class, 'doctorOffDays']);
         Route::post('/migrate/rx-from-review',     [\App\Http\Controllers\Admin\MigrationController::class, 'rxFromReview']);
+        Route::post('/migrate/walk-in-support',    [\App\Http\Controllers\Admin\MigrationController::class, 'walkInSupport']);
 
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);
@@ -218,7 +227,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/finance/orders',                   [FinanceController::class, 'orders']);
 
         // Appointments (admin view all)
-        Route::get('/appointments', [\App\Http\Controllers\Admin\AppointmentController::class, 'index']);
+        Route::get('/appointments',  [\App\Http\Controllers\Admin\AppointmentController::class, 'index']);
+        Route::post('/appointments', [\App\Http\Controllers\Admin\AppointmentController::class, 'store']);
 
         // Prescription oversight (M-06)
         Route::get('/prescriptions',                  [PrescriptionOversightController::class, 'index']);

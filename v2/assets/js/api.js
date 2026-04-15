@@ -251,6 +251,7 @@
     reviewPharmacy:     function (id, d) { return api.post('/admin/pharmacies/' + id + '/review', d); },
 
     listAppointments:   function (q) { return api.get('/admin/appointments' + (q ? '?' + q : '')); },
+    createAppointment:  function (d) { return api.post('/admin/appointments', d); },
 
     financeOverview:    function () { return api.get('/admin/finance/overview'); },
     pendingWithdrawals: function () { return api.get('/admin/finance/withdrawals/pending'); },
