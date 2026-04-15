@@ -429,20 +429,20 @@
   }
 
   // ── REPORT ─────────────────────────────────────────────────
+  // The patient's pre-submit report shows ONLY the dimensions + constitution
+  // pills (no herb/food/lifestyle advice). Advice is reserved for the
+  // doctor-approved version on the detail page.
   function renderReport(el) {
     var dims = state.dims;
     Object.keys(DIMS).forEach(function (k) { if (!(k in dims)) dims[k] = 0; });
 
     var types = getConstitution(dims);
     var alerts = state.followUpAlerts || [];
-    var tips = buildLifestyleTips(dims);
-    var primaryType = types[0].l;
-    var herbData = HERB_MAP[primaryType] || HERB_MAP['Balanced Constitution'];
 
     el.innerHTML = '<div class="page-header">' +
       '<div class="page-header-label">Constitution Report · 體質報告</div>' +
       '<h1 class="page-title">Your 10-Dimension Profile</h1>' +
-      '<p class="text-muted mt-1">Assessment complete. This report will be sent to a licensed TCM doctor for review.</p>' +
+      '<p class="text-muted mt-1">Assessment complete. Submit for doctor review — your personalised herb, food and lifestyle advice will appear here after approval.</p>' +
       '</div>' +
 
       (alerts.length ? renderAlerts(alerts) : '') +
@@ -494,46 +494,13 @@
       '</div>' +
       '</div>' +
 
-      // Advice section
-      '<div class="card card--pad-lg mb-4">' +
-      '<div class="text-label mb-3">🌿 Recommended Herbs · 建議草藥</div>' +
-      '<div class="flex gap-2 flex-wrap mb-4">' +
-      herbData.herbs.map(function (h) {
-        return '<span class="aid-tag aid-tag--sage">' + HM.format.esc(h) + '</span>';
-      }).join('') +
-      '</div>' +
-
-      '<div class="text-label mb-3">🍱 Beneficial Foods · 有益食療</div>' +
-      '<div class="flex gap-2 flex-wrap mb-4">' +
-      herbData.foods.map(function (f) {
-        return '<span class="aid-tag aid-tag--gold">' + HM.format.esc(f) + '</span>';
-      }).join('') +
-      '</div>' +
-
-      '<div class="alert alert--warning mb-4">' +
-      '<div class="alert-icon">❌</div>' +
-      '<div class="alert-body">' +
-      '<strong>Avoid · 飲食禁忌</strong><br>' + HM.format.esc(herbData.avoid) +
-      '</div></div>' +
-
-      '<div class="text-label mb-3">💡 Lifestyle Advice · 生活建議</div>' +
-      '<div class="aid-tips">' +
-      tips.map(function (t) {
-        return '<div class="aid-tip">' +
-          '<span class="aid-tip-icon">' + t.icon + '</span>' +
-          '<div><div>' + HM.format.esc(t.en) + '</div>' +
-          '<div style="font-family: var(--font-zh); font-size: var(--text-xs); color: var(--stone); margin-top: 2px;">' + HM.format.esc(t.zh) + '</div></div>' +
-          '</div>';
-      }).join('') +
-      '</div>' +
-      '</div>' +
-
+      // What comes next
       '<div class="alert alert--info mb-4">' +
       '<div class="alert-icon">🩺</div>' +
       '<div class="alert-body">' +
-      '<strong>Sent for Doctor Review · 已送交醫師審核</strong><br>' +
-      'Herb suggestions above are general constitutional guidance. Any personalised prescription — especially complex multi-herb formulas — will come via a licensed TCM doctor after reviewing this report. ' +
-      '<span style="font-family: var(--font-zh);">以上為體質通用指引。個人化處方將由持證中醫師審核後提供。</span>' +
+      '<strong>Next step · 下一步</strong><br>' +
+      'Submit this report for a licensed TCM doctor to review. They will personalise your herb suggestions, food advice, and lifestyle tips based on your profile — and you will see the approved plan back on this page. ' +
+      '<span style="font-family: var(--font-zh);">送出後由持證中醫師審核，您將收到個人化的草藥、飲食與生活建議。</span>' +
       '</div></div>' +
 
       '<div class="flex gap-2 flex-wrap">' +
@@ -545,6 +512,139 @@
     injectStyle();
     document.getElementById('aid-save').addEventListener('click', function () { saveReport(types, alerts); });
     document.getElementById('aid-restart').addEventListener('click', function () { render(el); });
+  }
+
+  // Render a previously-submitted report — same dimensions view, plus the
+  // doctor-approved advice block if the doctor has reviewed.
+  function renderApprovedReport(el, report) {
+    var dims = report.dimensions || {};
+    Object.keys(DIMS).forEach(function (k) { if (!(k in dims)) dims[k] = 0; });
+    var types = report.patterns || getConstitution(dims);
+    var alerts = report.safety_alerts || [];
+    var status = report.review_status || 'pending';
+    var advice = report.doctor_advice || {};
+    var comment = report.doctor_comment || '';
+    var reviewedAt = report.reviewed_at || '';
+
+    var banner = '';
+    if (status === 'pending') {
+      banner = '<div class="alert alert--info mb-4"><div class="alert-icon">⏳</div><div class="alert-body">' +
+        '<strong>Awaiting Doctor Review · 等待醫師審核</strong><br>' +
+        'Your personalised advice will appear here once a licensed TCM doctor has reviewed your report. ' +
+        '<span style="font-family: var(--font-zh);">醫師審核後將顯示個人化建議。</span>' +
+        '</div></div>';
+    } else if (status === 'approved') {
+      banner = '<div class="alert alert--success mb-4"><div class="alert-icon">✓</div><div class="alert-body">' +
+        '<strong>Reviewed &amp; Approved by Doctor · 醫師已審核批准</strong>' +
+        (reviewedAt ? '<div class="text-xs text-muted mt-1">' + HM.format.datetime(reviewedAt) + '</div>' : '') +
+        '</div></div>';
+    } else if (status === 'needs_changes') {
+      banner = '<div class="alert alert--warning mb-4"><div class="alert-icon">⚠</div><div class="alert-body">' +
+        '<strong>Doctor Requested Clarification · 醫師要求補充資料</strong><br>' +
+        'Please read the comments below and consider booking a consultation.' +
+        '</div></div>';
+    }
+
+    el.innerHTML = '<div class="page-header">' +
+      '<button class="btn btn--ghost" onclick="location.hash=\'#/ai-diagnosis\'">← New Assessment · 新測評</button>' +
+      '<h1 class="page-title mt-2">Constitution Report · 體質報告</h1>' +
+      '</div>' +
+
+      banner +
+
+      (alerts.length ? renderAlerts(alerts) : '') +
+
+      // Constitution pills — always shown
+      '<div class="card card--pad-lg mb-4">' +
+      '<div class="text-label mb-3">Diagnosed Constitution · 體質診斷</div>' +
+      '<div class="flex gap-2 flex-wrap mb-4">' +
+      types.map(function (t) {
+        var colorMap = { green:'var(--sage)', yellow:'var(--gold)', red:'var(--red-seal)', blue:'#6699bb' };
+        var c = colorMap[t.col] || 'var(--stone)';
+        return '<span class="aid-pill" style="background:' + c + '22; color:' + c + '; border:1px solid ' + c + '66;">' +
+          HM.format.esc(t.l || '') + (t.c ? ' · ' + HM.format.esc(t.c) : '') + '</span>';
+      }).join('') +
+      '</div>' +
+      '</div>' +
+
+      // Radar + bars — always shown
+      '<div class="grid-2" style="grid-template-columns: 360px 1fr; gap: var(--s-5); align-items: start; margin-bottom: var(--s-4);">' +
+      '<div class="card card--pad-lg">' +
+      '<div class="text-label mb-2">Radar Chart · 雷達圖</div>' +
+      renderRadar(dims) +
+      '</div>' +
+      '<div class="card card--pad-lg">' +
+      '<div class="text-label mb-3">10 Dimensions · 10 維體質</div>' +
+      renderDimBars(dims) +
+      '</div>' +
+      '</div>' +
+
+      // Doctor advice — ONLY after approval
+      (status === 'approved' || status === 'needs_changes' ? renderDoctorAdvice(comment, advice) : '') +
+
+      '<div class="flex gap-2 mt-4 flex-wrap">' +
+      '<button class="btn btn--primary" onclick="location.hash=\'#/book\'">Book Consultation · 預約問診</button>' +
+      '<button class="btn btn--outline" onclick="location.hash=\'#/ai-diagnosis\'">New Assessment · 新測評</button>' +
+      '</div>';
+
+    injectStyle();
+  }
+
+  function renderDoctorAdvice(comment, advice) {
+    advice = advice || {};
+    var herbs = advice.herbs || [];
+    var foods = advice.foods || [];
+    var avoid = advice.avoid || '';
+    var tips  = advice.tips  || [];
+
+    var out = '<div class="card card--pad-lg mb-4" style="border-left: 3px solid var(--sage);">' +
+      '<div class="text-label mb-3">💬 Doctor\'s Plan · 醫師審核建議</div>';
+
+    if (comment) {
+      out += '<p style="white-space: pre-wrap; margin-bottom: var(--s-4); line-height: var(--leading-relaxed);">' + HM.format.esc(comment) + '</p>';
+    }
+
+    if (herbs.length) {
+      out += '<div class="text-label mb-2">🌿 Herbs · 建議草藥</div>' +
+        '<div class="flex gap-2 flex-wrap mb-4">' +
+        herbs.map(function (h) { return '<span class="aid-tag aid-tag--sage">' + HM.format.esc(h) + '</span>'; }).join('') +
+        '</div>';
+    }
+    if (foods.length) {
+      out += '<div class="text-label mb-2">🍱 Beneficial Foods · 有益食療</div>' +
+        '<div class="flex gap-2 flex-wrap mb-4">' +
+        foods.map(function (f) { return '<span class="aid-tag aid-tag--gold">' + HM.format.esc(f) + '</span>'; }).join('') +
+        '</div>';
+    }
+    if (avoid) {
+      out += '<div class="alert alert--warning mb-4"><div class="alert-icon">❌</div><div class="alert-body">' +
+        '<strong>Avoid · 飲食禁忌</strong><br>' + HM.format.esc(avoid) +
+        '</div></div>';
+    }
+    if (tips.length) {
+      out += '<div class="text-label mb-2">💡 Lifestyle Advice · 生活建議</div>' +
+        '<div class="aid-tips">' +
+        tips.map(function (t) {
+          return '<div class="aid-tip">' +
+            '<span class="aid-tip-icon">' + (t.icon || '💡') + '</span>' +
+            '<div>' +
+            (t.en ? '<div>' + HM.format.esc(t.en) + '</div>' : '') +
+            (t.zh ? '<div style="font-family: var(--font-zh); font-size: var(--text-xs); color: var(--stone); margin-top: 2px;">' + HM.format.esc(t.zh) + '</div>' : '') +
+            '</div></div>';
+        }).join('') +
+        '</div>';
+    }
+    if (!herbs.length && !foods.length && !avoid && !tips.length && !comment) {
+      out += '<p class="text-muted">Doctor has not yet added personalised advice.</p>';
+    }
+
+    out += '<div class="alert alert--warning mt-4"><div class="alert-body text-xs">' +
+      'This plan is based on your constitution profile and the reviewing doctor\'s judgment. For complex or multi-herb prescriptions, book a follow-up consultation. ' +
+      '<span style="font-family: var(--font-zh);">複方處方請預約深入問診。</span>' +
+      '</div></div>';
+
+    out += '</div>';
+    return out;
   }
 
   function renderAlerts(alerts) {
@@ -707,6 +807,7 @@
     var payload = {
       symptoms: {
         kind:          'ai_constitution_v2',
+        review_status: 'pending',
         answers:       state.answers,
         dimensions:    state.dims,
         patterns:      types,
@@ -715,14 +816,39 @@
       },
     };
     try {
-      await HM.api.patient.saveQuestionnaire(payload);
+      var res = await HM.api.patient.saveQuestionnaire(payload);
       HM.ui.toast('Submitted · 已送交醫師審核', 'success', 4000);
-      btn.textContent = '✓ Submitted · 已送出';
+      // Navigate to the report detail page so the patient sees their
+      // in-review view (dimensions only + pending banner).
+      var qId = res && res.questionnaire ? res.questionnaire.id : null;
+      if (qId) {
+        location.hash = '#/ai-diagnosis/' + qId;
+      } else {
+        btn.textContent = '✓ Submitted · 已送出';
+      }
     } catch (e) {
       btn.disabled = false;
       btn.textContent = 'Submit for Doctor Review · 送交醫師';
       HM.ui.toast('Could not submit: ' + (e.message || 'Error'), 'danger');
     }
+  }
+
+  // Load a previously-submitted report by ID (from a route like #/ai-diagnosis/123).
+  async function renderDetail(el, id) {
+    el.innerHTML = '<div class="state state--loading"><div class="state-icon"></div></div>';
+    try {
+      var res = await HM.api.patient.getQuestionnaire(id);
+      var row = res.questionnaire || {};
+      var s = row.symptoms;
+      // Backend returns symptoms as a JSON string; parse safely.
+      if (typeof s === 'string') { try { s = JSON.parse(s); } catch (_) { s = {}; } }
+      s = s || {};
+      if (s.kind !== 'ai_constitution_v2') {
+        el.innerHTML = '<p class="text-muted">This report is not an AI constitution report.</p>';
+        return;
+      }
+      renderApprovedReport(el, s);
+    } catch (e) { HM.state.error(el, e); }
   }
 
   // ── Styles ─────────────────────────────────────────────────
@@ -765,5 +891,5 @@
     document.head.appendChild(s);
   }
 
-  HM.patientPanels.aiDiagnosis = { render: render };
+  HM.patientPanels.aiDiagnosis = { render: render, renderDetail: renderDetail };
 })();

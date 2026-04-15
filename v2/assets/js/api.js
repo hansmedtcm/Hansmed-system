@@ -133,8 +133,9 @@
       return api.post('/patient/tongue-diagnoses', fd);
     },
 
-    saveQuestionnaire: function (d) { return api.post('/patient/questionnaires', d); },
-    listQuestionnaires: function () { return api.get('/patient/questionnaires'); },
+    saveQuestionnaire:  function (d)  { return api.post('/patient/questionnaires', d); },
+    listQuestionnaires: function ()   { return api.get('/patient/questionnaires'); },
+    getQuestionnaire:   function (id) { return api.get('/patient/questionnaires/' + id); },
 
     listDoctors:    function (q) { return api.get('/patient/doctors' + (q ? '?' + q : '')); },
     getDoctor:      function (id) { return api.get('/patient/doctors/' + id); },
@@ -176,6 +177,9 @@
     createSchedule: function (d) { return api.post('/doctor/schedules', d); },
     deleteSchedule: function (id) { return api.delete('/doctor/schedules/' + id); },
 
+    listOffDays:   function ()  { return api.get('/doctor/off-days'); },
+    toggleOffDay:  function (d) { return api.post('/doctor/off-days', { date: d }); },
+
     getEarnings:       function () { return api.get('/doctor/earnings/summary'); },
     getEarningHistory: function (page) { return api.get('/doctor/earnings/history?page=' + (page || 1)); },
     // Doctor withdrawals removed — doctors are paid by clinic salary, not commission.
@@ -184,6 +188,11 @@
     listTongueReviews: function (filter) { return api.get('/doctor/tongue-reviews' + (filter ? '?filter=' + filter : '')); },
     getTongueReview:   function (id)     { return api.get('/doctor/tongue-reviews/' + id); },
     reviewTongue:      function (id, d)  { return api.post('/doctor/tongue-reviews/' + id + '/review', d); },
+
+    // AI constitution review
+    listConstitutionReviews: function (filter) { return api.get('/doctor/constitution-reviews' + (filter ? '?filter=' + filter : '')); },
+    getConstitutionReview:   function (id)     { return api.get('/doctor/constitution-reviews/' + id); },
+    reviewConstitution:      function (id, d)  { return api.post('/doctor/constitution-reviews/' + id + '/review', d); },
 
     issueMC:       function (d) { return api.post('/doctor/documents/mc', d); },
     issueReferral: function (d) { return api.post('/doctor/documents/referral', d); },

@@ -62,6 +62,29 @@ class MigrationController extends Controller
         ]);
     }
 
+    public function doctorOffDays(Request $request)
+    {
+        $log = [];
+        $errors = [];
+
+        if (! Schema::hasColumn('doctor_profiles', 'off_days')) {
+            try {
+                DB::statement("ALTER TABLE doctor_profiles ADD COLUMN off_days JSON NULL AFTER accepting_appointments");
+                $log[] = 'added column off_days';
+            } catch (\Throwable $e) {
+                $errors[] = 'add off_days: ' . $e->getMessage();
+            }
+        } else {
+            $log[] = 'column off_days already exists, skipped';
+        }
+
+        return response()->json([
+            'success' => empty($errors),
+            'log'     => $log,
+            'errors'  => $errors,
+        ]);
+    }
+
     public function tongueReview(Request $request)
     {
         $log = [];

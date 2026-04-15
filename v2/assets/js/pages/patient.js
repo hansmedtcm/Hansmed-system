@@ -115,6 +115,9 @@
   router.on('#/ai-diagnosis', function () {
     HM.patientPanels.aiDiagnosis.render(panel());
   });
+  router.on('#/ai-diagnosis/:id', function (p) {
+    HM.patientPanels.aiDiagnosis.renderDetail(panel(), p.id);
+  });
   router.on('#/prescriptions', function () {
     HM.patientPanels.prescriptions.render(panel());
   });

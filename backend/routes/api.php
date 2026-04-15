@@ -90,8 +90,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/tongue-diagnoses/{id}', [TongueDiagnosisController::class, 'destroy']);
 
             // Health questionnaire (C-08)
-            Route::post('/questionnaires',  [\App\Http\Controllers\Patient\QuestionnaireController::class, 'store']);
-            Route::get('/questionnaires',   [\App\Http\Controllers\Patient\QuestionnaireController::class, 'index']);
+            Route::post('/questionnaires',      [\App\Http\Controllers\Patient\QuestionnaireController::class, 'store']);
+            Route::get('/questionnaires',       [\App\Http\Controllers\Patient\QuestionnaireController::class, 'index']);
+            Route::get('/questionnaires/{id}',  [\App\Http\Controllers\Patient\QuestionnaireController::class, 'show']);
 
             Route::get('/doctors',            [DoctorBrowseController::class, 'index']);
             Route::get('/doctors/{doctorId}', [DoctorBrowseController::class, 'show']);
@@ -134,6 +135,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/tongue-reviews/{id}',       [\App\Http\Controllers\Doctor\TongueReviewController::class, 'show']);
         Route::post('/tongue-reviews/{id}/review', [\App\Http\Controllers\Doctor\TongueReviewController::class, 'review']);
 
+        // AI constitution questionnaire review
+        Route::get('/constitution-reviews',            [\App\Http\Controllers\Doctor\ConstitutionReviewController::class, 'index']);
+        Route::get('/constitution-reviews/{id}',       [\App\Http\Controllers\Doctor\ConstitutionReviewController::class, 'show']);
+        Route::post('/constitution-reviews/{id}/review', [\App\Http\Controllers\Doctor\ConstitutionReviewController::class, 'review']);
+
         Route::get('/prescriptions',              [DoctorPrescriptionController::class, 'index']);
         Route::post('/prescriptions',             [DoctorPrescriptionController::class, 'store']);
         Route::get('/prescriptions/{id}',         [DoctorPrescriptionController::class, 'show']);
@@ -144,6 +150,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/earnings/history', [DoctorEarningsController::class, 'history']);
         Route::get('/withdrawals',      [DoctorEarningsController::class, 'withdrawals']);
         Route::post('/withdrawals',     [DoctorEarningsController::class, 'requestWithdrawal']);
+
+        // Off-days (ad-hoc days off on top of the weekly schedule)
+        Route::get('/off-days',  [\App\Http\Controllers\Doctor\OffDayController::class, 'index']);
+        Route::post('/off-days', [\App\Http\Controllers\Doctor\OffDayController::class, 'toggle']);
 
         // Schedule management
         Route::get('/schedules',       [\App\Http\Controllers\Doctor\ScheduleController::class, 'index']);
@@ -189,8 +199,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // ================== ADMIN ==================
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         // One-shot DB migrations (idempotent)
-        Route::post('/migrate/pool-booking',   [\App\Http\Controllers\Admin\MigrationController::class, 'poolBooking']);
-        Route::post('/migrate/tongue-review',  [\App\Http\Controllers\Admin\MigrationController::class, 'tongueReview']);
+        Route::post('/migrate/pool-booking',       [\App\Http\Controllers\Admin\MigrationController::class, 'poolBooking']);
+        Route::post('/migrate/tongue-review',      [\App\Http\Controllers\Admin\MigrationController::class, 'tongueReview']);
+        Route::post('/migrate/doctor-off-days',    [\App\Http\Controllers\Admin\MigrationController::class, 'doctorOffDays']);
 
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);
