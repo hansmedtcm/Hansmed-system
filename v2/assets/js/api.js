@@ -180,6 +180,11 @@
     getEarningHistory: function (page) { return api.get('/doctor/earnings/history?page=' + (page || 1)); },
     // Doctor withdrawals removed — doctors are paid by clinic salary, not commission.
 
+    // Tongue diagnosis review
+    listTongueReviews: function (filter) { return api.get('/doctor/tongue-reviews' + (filter ? '?filter=' + filter : '')); },
+    getTongueReview:   function (id)     { return api.get('/doctor/tongue-reviews/' + id); },
+    reviewTongue:      function (id, d)  { return api.post('/doctor/tongue-reviews/' + id + '/review', d); },
+
     issueMC:       function (d) { return api.post('/doctor/documents/mc', d); },
     issueReferral: function (d) { return api.post('/doctor/documents/referral', d); },
   };

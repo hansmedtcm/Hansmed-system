@@ -86,8 +86,15 @@
     var findings = report.findings || [];
 
     var html = '<div class="card card--bordered" style="border-left-color: var(--sage);">' +
-      '<div class="flex-between mb-3"><strong>✓ Analysis Complete · 分析完成</strong>' +
-      '<a href="#/tongue/' + diag.id + '" class="btn btn--ghost btn--sm">View Details · 詳情 →</a></div>';
+      '<div class="flex-between mb-3"><strong>✓ AI Analysis Complete · AI 分析完成</strong>' +
+      '<a href="#/tongue/' + diag.id + '" class="btn btn--ghost btn--sm">View Details · 詳情 →</a></div>' +
+
+      '<div class="alert alert--info mb-3" style="margin-top: 0;">' +
+      '<div class="alert-body text-sm">' +
+      '⏳ <strong>Awaiting doctor review · 等待醫師審核</strong><br>' +
+      'Your results have been sent to a licensed TCM practitioner. You will be notified when the review is complete. ' +
+      '<span style="font-family: var(--font-zh);">結果已送交持證中醫師審核，完成後會通知您。</span>' +
+      '</div></div>';
 
     if (constitution.name_en) {
       html += '<div class="mb-3">' +
@@ -138,12 +145,17 @@
       items.forEach(function (d) {
         var report = d.constitution_report || {};
         var c = report.constitution || {};
+        var reviewStatus = d.review_status || 'pending';
+        var statusTxt = reviewStatus === 'approved' ? '✓ Reviewed · 已審核' :
+                        reviewStatus === 'needs_changes' ? '⚠ See doctor comment' :
+                        '⏳ Awaiting review · 等待審核';
+        var features = [d.tongue_color, d.coating, d.shape].filter(Boolean).map(function (x) { return (x || '').replace(/_/g, ' '); }).join(' · ');
         var data = {
           id: d.id,
           created_at: d.created_at,
           image_url: d.image_url,
           constitution_name: c.name_en || 'Analysis complete',
-          features_summary: [d.tongue_color, d.coating, d.shape].filter(Boolean).map(function (x) { return (x || '').replace(/_/g, ' '); }).join(' · '),
+          features_summary: features + (features ? '  ·  ' : '') + statusTxt,
           health_score: d.health_score || '—',
         };
         var node = HM.render.fromTemplate('tpl-tongue-card', data);
@@ -165,9 +177,30 @@
       var findings = report.findings || [];
       var recs = report.recommendations || [];
 
+      var reviewStatus = d.review_status || 'pending';
+      var reviewBanner = '';
+      if (reviewStatus === 'pending') {
+        reviewBanner = '<div class="alert alert--info mb-4"><div class="alert-icon">⏳</div><div class="alert-body">' +
+          '<strong>Awaiting Doctor Review · 等待醫師審核</strong><br>' +
+          'Your AI analysis has been sent to a licensed TCM practitioner for approval. You will see the doctor\'s comments and medicine suggestions here once reviewed.' +
+          '<br><span style="font-family: var(--font-zh);">AI 分析已送交持證中醫師審核，醫師審核後將在此顯示醫師意見與藥物建議。</span>' +
+          '</div></div>';
+      } else if (reviewStatus === 'approved') {
+        reviewBanner = '<div class="alert alert--success mb-4"><div class="alert-icon">✓</div><div class="alert-body">' +
+          '<strong>Reviewed by Doctor · 醫師已審核</strong>' +
+          (d.reviewed_at ? '<div class="text-xs text-muted mt-1">' + HM.format.datetime(d.reviewed_at) + '</div>' : '') +
+          '</div></div>';
+      } else if (reviewStatus === 'needs_changes') {
+        reviewBanner = '<div class="alert alert--warning mb-4"><div class="alert-icon">⚠</div><div class="alert-body">' +
+          '<strong>Doctor requested more information · 醫師要求補充資料</strong><br>' +
+          'Please read the comments below and consider booking a consultation for clarification.' +
+          '</div></div>';
+      }
+
       var html = '<div class="page-header">' +
         '<button class="btn btn--ghost" onclick="location.hash=\'#/tongue\'">← Back to History · 返回記錄</button>' +
         '</div>' +
+        reviewBanner +
         '<div class="grid-2" style="gap: var(--s-6); align-items: start;">' +
         '<div><img src="' + HM.format.esc(d.image_url) + '" style="width: 100%; border-radius: var(--r-md); border: 1px solid var(--border);"></div>' +
         '<div>' +
@@ -200,12 +233,41 @@
       }
 
       if (recs.length) {
-        html += '<div class="mt-6"><div class="text-label mb-3">Lifestyle Recommendations · 養生建議</div>' +
+        html += '<div class="mt-6"><div class="text-label mb-3">Lifestyle Recommendations · 養生建議 (AI)</div>' +
           '<div class="card"><ul style="padding: 0; list-style: none;">';
         recs.forEach(function (r) {
           html += '<li style="padding: var(--s-2) 0; border-bottom: 1px solid var(--border); font-size: var(--text-sm);">• ' + HM.format.esc(r) + '</li>';
         });
         html += '</ul></div></div>';
+      }
+
+      // Doctor review section
+      if (reviewStatus === 'approved' || reviewStatus === 'needs_changes') {
+        if (d.doctor_comment) {
+          html += '<div class="mt-6"><div class="text-label mb-3">💬 Doctor\'s Comment · 醫師意見</div>' +
+            '<div class="card card--bordered" style="border-left-color: var(--sage);">' +
+            '<p style="white-space: pre-wrap; font-size: var(--text-sm); line-height: var(--leading-relaxed);">' + HM.format.esc(d.doctor_comment) + '</p>' +
+            '</div></div>';
+        }
+        var meds = d.medicine_suggestions || [];
+        if (meds.length) {
+          html += '<div class="mt-6"><div class="text-label mb-3">💊 Suggested by Doctor · 醫師建議藥物</div>' +
+            '<div class="card"><div class="alert alert--warning mb-3"><div class="alert-body text-xs">' +
+            '⚠️ These are suggestions from the reviewing doctor, not a prescription. For any complex or multi-herb formula, please book a follow-up consultation. ' +
+            '<span style="font-family: var(--font-zh);">這是醫師審核意見，非正式處方。如需複方，請預約進一步問診。</span>' +
+            '</div></div>' +
+            '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s-3);">';
+          meds.forEach(function (m) {
+            html += '<div style="padding: var(--s-3); background: var(--washi); border-radius: var(--r-md);">' +
+              '<strong>' + HM.format.esc(m.name || m.name_zh || '—') + '</strong>' +
+              (m.name_zh && m.name ? '<div class="text-xs text-muted" style="font-family: var(--font-zh);">' + HM.format.esc(m.name_zh) + '</div>' : '') +
+              (m.note ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(m.note) + '</div>' : '') +
+              '</div>';
+          });
+          html += '</div>' +
+            '<button class="btn btn--outline btn--sm mt-4" onclick="location.hash=\'#/book\'">Book Follow-up Consultation · 預約覆診</button>' +
+            '</div></div>';
+        }
       }
 
       el.innerHTML = html;

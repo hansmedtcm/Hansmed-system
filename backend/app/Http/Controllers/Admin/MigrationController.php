@@ -61,4 +61,43 @@ class MigrationController extends Controller
             'errors'  => $errors,
         ]);
     }
+
+    public function tongueReview(Request $request)
+    {
+        $log = [];
+        $errors = [];
+
+        $columns = [
+            'review_status'        => "ADD COLUMN review_status VARCHAR(20) NOT NULL DEFAULT 'pending' AFTER health_score",
+            'doctor_comment'       => "ADD COLUMN doctor_comment TEXT NULL AFTER review_status",
+            'reviewed_by'          => "ADD COLUMN reviewed_by BIGINT UNSIGNED NULL AFTER doctor_comment",
+            'reviewed_at'          => "ADD COLUMN reviewed_at DATETIME NULL AFTER reviewed_by",
+            'medicine_suggestions' => "ADD COLUMN medicine_suggestions JSON NULL AFTER reviewed_at",
+        ];
+        foreach ($columns as $col => $sql) {
+            if (Schema::hasColumn('tongue_diagnoses', $col)) {
+                $log[] = "column {$col} already exists, skipped";
+                continue;
+            }
+            try {
+                DB::statement("ALTER TABLE tongue_diagnoses {$sql}");
+                $log[] = "added column {$col}";
+            } catch (\Throwable $e) {
+                $errors[] = "add {$col}: " . $e->getMessage();
+            }
+        }
+
+        try {
+            DB::statement('ALTER TABLE tongue_diagnoses ADD INDEX idx_td_review (review_status, created_at)');
+            $log[] = 'added review index';
+        } catch (\Throwable $e) {
+            $log[] = 'review index: ' . $e->getMessage();
+        }
+
+        return response()->json([
+            'success' => empty($errors),
+            'log'     => $log,
+            'errors'  => $errors,
+        ]);
+    }
 }

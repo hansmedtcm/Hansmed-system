@@ -129,6 +129,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pool',             [\App\Http\Controllers\Doctor\PoolController::class, 'index']);
         Route::post('/pool/{id}/pick',  [\App\Http\Controllers\Doctor\PoolController::class, 'pick']);
 
+        // Tongue diagnosis doctor review
+        Route::get('/tongue-reviews',            [\App\Http\Controllers\Doctor\TongueReviewController::class, 'index']);
+        Route::get('/tongue-reviews/{id}',       [\App\Http\Controllers\Doctor\TongueReviewController::class, 'show']);
+        Route::post('/tongue-reviews/{id}/review', [\App\Http\Controllers\Doctor\TongueReviewController::class, 'review']);
+
         Route::get('/prescriptions',              [DoctorPrescriptionController::class, 'index']);
         Route::post('/prescriptions',             [DoctorPrescriptionController::class, 'store']);
         Route::get('/prescriptions/{id}',         [DoctorPrescriptionController::class, 'show']);
@@ -184,7 +189,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // ================== ADMIN ==================
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         // One-shot DB migrations (idempotent)
-        Route::post('/migrate/pool-booking', [\App\Http\Controllers\Admin\MigrationController::class, 'poolBooking']);
+        Route::post('/migrate/pool-booking',   [\App\Http\Controllers\Admin\MigrationController::class, 'poolBooking']);
+        Route::post('/migrate/tongue-review',  [\App\Http\Controllers\Admin\MigrationController::class, 'tongueReview']);
 
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);

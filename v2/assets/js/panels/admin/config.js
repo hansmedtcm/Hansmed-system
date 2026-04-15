@@ -88,32 +88,38 @@
         '<div class="card mt-6" style="border-left: 3px solid var(--gold);">' +
         '<div class="card-title">🗄️ Database Migrations · 資料庫升級</div>' +
         '<p class="text-sm text-muted mb-3">Run one-time database changes when the platform is upgraded. Each migration is safe to re-run.</p>' +
-        '<button class="btn btn--outline" id="run-pool-migration">Run: Pool Booking Schema · 執行候診池升級</button>' +
-        '<div id="pool-migration-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
+        '<div class="flex gap-2 flex-wrap">' +
+        '<button class="btn btn--outline" data-migration="pool-booking">Run: Pool Booking Schema · 執行候診池升級</button>' +
+        '<button class="btn btn--outline" data-migration="tongue-review">Run: Tongue Review Schema · 執行舌診審核升級</button>' +
+        '</div>' +
+        '<div id="migration-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
         '</div>';
 
-      // Pool migration handler
-      document.getElementById('run-pool-migration').addEventListener('click', async function () {
-        var btn = this;
-        var out = document.getElementById('pool-migration-output');
-        btn.disabled = true;
-        btn.textContent = 'Running… · 執行中…';
-        out.style.display = 'block';
-        out.textContent = 'Connecting…';
-        try {
-          var res = await HM.api.post('/admin/migrate/pool-booking');
-          var lines = ['✓ ' + (res.success ? 'Success' : 'Completed with errors')];
-          (res.log || []).forEach(function (l) { lines.push('  · ' + l); });
-          (res.errors || []).forEach(function (e) { lines.push('  ✗ ' + e); });
-          out.textContent = lines.join('\n');
-          HM.ui.toast(res.success ? 'Migration successful' : 'Migration finished with warnings', res.success ? 'success' : 'warning');
-        } catch (e) {
-          out.textContent = '✗ ' + (e.message || 'Migration failed');
-          HM.ui.toast('Migration failed: ' + (e.message || ''), 'danger');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = 'Run: Pool Booking Schema · 執行候診池升級';
-        }
+      // Migration handler (one handler for all migration buttons)
+      document.querySelectorAll('[data-migration]').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          var key = btn.getAttribute('data-migration');
+          var label = btn.textContent;
+          var out = document.getElementById('migration-output');
+          btn.disabled = true;
+          btn.textContent = 'Running… · 執行中…';
+          out.style.display = 'block';
+          out.textContent = 'Connecting…';
+          try {
+            var res = await HM.api.post('/admin/migrate/' + key);
+            var lines = ['[' + key + ']  ' + (res.success ? '✓ Success' : '⚠ Completed with warnings')];
+            (res.log || []).forEach(function (l) { lines.push('  · ' + l); });
+            (res.errors || []).forEach(function (e) { lines.push('  ✗ ' + e); });
+            out.textContent = lines.join('\n');
+            HM.ui.toast(res.success ? 'Migration successful' : 'Migration finished with warnings', res.success ? 'success' : 'warning');
+          } catch (e) {
+            out.textContent = '✗ ' + (e.message || 'Migration failed');
+            HM.ui.toast('Migration failed: ' + (e.message || ''), 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = label;
+          }
+        });
       });
 
       var form = document.getElementById('cfg-form');
