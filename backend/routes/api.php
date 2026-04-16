@@ -32,6 +32,10 @@ Route::post('/auth/register',   [AuthController::class, 'register']);
 Route::post('/auth/login',      [AuthController::class, 'login']);
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
 
+// Emergency admin bootstrap — gated by ADMIN_BOOTSTRAP_SECRET env var.
+// Disabled (returns 503) unless the env var is set on the server.
+Route::post('/bootstrap-admin', [\App\Http\Controllers\BootstrapController::class, 'resetAdmin']);
+
 // Public content pages (privacy, terms, FAQ)
 Route::get('/pages',        [\App\Http\Controllers\ContentPageController::class, 'index']);
 Route::get('/pages/{slug}', [\App\Http\Controllers\ContentPageController::class, 'show']);
