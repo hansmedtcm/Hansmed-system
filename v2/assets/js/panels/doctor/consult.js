@@ -297,22 +297,36 @@
 
   // ── Prescription panel ───────────────────────────────────
   function prescriptionMarkup() {
-    return '<div class="field-grid field-grid--2">' +
-      '<div class="field"><label class="field-label">Duration (days) · 療程</label>' +
-      '<input id="rx-days" class="field-input field-input--boxed" type="number" value="7" min="1" max="90"></div>' +
-      '<div class="field"><label class="field-label">Usage · 用法</label>' +
-      '<input id="rx-usage" class="field-input field-input--boxed" placeholder="e.g. 每日2次，水煎 Twice daily, decoct"></div>' +
+    return '<div class="text-label mb-2">Dosage Pattern · 服用方式</div>' +
+      '<div class="rx-dosage-row">' +
+      '<input id="rx-packs" class="field-input field-input--boxed rx-dosage-input" type="number" min="1" value="1" title="Packs per dose">' +
+      '<span class="rx-dosage-sep">×</span>' +
+      '<input id="rx-times" class="field-input field-input--boxed rx-dosage-input" type="number" min="1" value="2" title="Times per day">' +
+      '<span class="rx-dosage-sep">×</span>' +
+      '<input id="rx-days" class="field-input field-input--boxed rx-dosage-input" type="number" min="1" max="90" value="5" title="Duration in days">' +
+      '<span class="rx-dosage-hint" id="rx-dosage-hint">1 pack · 2 × day · 5 days</span>' +
       '</div>' +
+      '<div class="text-xs text-muted mt-1">Pack × Times per day × Days — e.g. <code>1 × 2 × 5</code> means 1 pack per dose, twice a day, for 5 days. ' +
+      '<span style="font-family: var(--font-zh);">每次服用包數 × 每日次數 × 天數。</span></div>' +
 
-      '<div class="text-label mt-3 mb-2">Herb Items · 藥材清單</div>' +
-      '<div class="text-xs text-muted mb-2">Start typing — suggestions come from pharmacy stock. ' +
-      '<span style="color: var(--sage);">● in stock</span> · ' +
-      '<span style="color: var(--red-seal);">● out of stock</span> · ' +
-      '<span style="color: var(--stone);">? not in catalog</span></div>' +
-      '<div id="rx-items-list" class="mb-3"></div>' +
+      '<div class="field mt-3"><label class="field-label">Usage Notes · 用法備註</label>' +
+      '<input id="rx-usage" class="field-input field-input--boxed" placeholder="e.g. 飯後服用，水煎 After meals, decoct with water"></div>' +
+
+      '<div class="text-label mt-4 mb-2">Herb Items · 藥材清單</div>' +
+      '<div class="text-xs text-muted mb-2">Type to search pharmacy stock. ' +
+      '<span style="color: var(--sage);">● in stock · 有貨</span> · ' +
+      '<span style="color: var(--red-seal);">● out of stock · 缺貨</span> · ' +
+      '<span style="color: var(--stone);">? not in catalog · 未上架</span></div>' +
+      '<div id="rx-items-list" class="mb-2"></div>' +
       '<datalist id="rx-catalog"></datalist>' +
 
-      '<button class="btn btn--outline btn--sm" id="rx-add-row">+ Add Herb · 新增藥材</button>';
+      '<button class="btn btn--outline btn--sm" id="rx-add-row">+ Add Herb · 新增藥材</button>' +
+
+      // Total summary
+      '<div id="rx-total" class="rx-total-box" style="display:none;">' +
+      '<div class="flex-between"><span class="text-muted text-sm">Total price · 總金額</span><strong id="rx-total-price">—</strong></div>' +
+      '<div class="flex-between mt-1"><span class="text-muted text-sm">Total weight · 總重</span><span id="rx-total-weight">—</span></div>' +
+      '</div>';
   }
 
   // ── Wire sidebar tabs + content ──────────────────────────
@@ -493,39 +507,74 @@
       return;
     }
 
-    // Compact one-line rows — just drug · qty · unit · ✕, with stock pill
+    // Read the dosage pattern so we can compute total grams
+    var packs = parseFloat(document.getElementById('rx-packs') && document.getElementById('rx-packs').value) || 1;
+    var times = parseFloat(document.getElementById('rx-times') && document.getElementById('rx-times').value) || 1;
+    var days  = parseFloat(document.getElementById('rx-days') && document.getElementById('rx-days').value) || 1;
+    var multiplier = packs * times * days; // total doses over the course
+
+    var totalPrice = 0;
+    var totalWeight = 0;
+    var totalUnit = '';
+
     container.innerHTML = '';
     var wrap = document.createElement('div');
     wrap.className = 'rx-list-wrap';
     state.rxItems.forEach(function (it, idx) {
       var match = catalogLookup(it.drug_name);
+      var price = match ? (parseFloat(match.min_price) || 0) : 0;
+      var perDose = parseFloat(it.quantity) || 0;
+      var courseQty = perDose * multiplier;
+      var lineTotal = price * courseQty;
+
+      totalPrice += lineTotal;
+      if (match && match.unit) {
+        if (!totalUnit) totalUnit = match.unit;
+        if (match.unit === totalUnit) totalWeight += courseQty;
+      } else if (!totalUnit && it.unit) {
+        totalUnit = it.unit;
+        totalWeight += courseQty;
+      }
+
       var stockPill;
       if (!it.drug_name) {
         stockPill = '<span class="rx-stock" title="Enter drug name" style="color:var(--stone);">—</span>';
       } else if (!match) {
-        stockPill = '<span class="rx-stock" title="Not in pharmacy catalog — patient may need to source elsewhere" style="color:var(--stone);">?</span>';
+        stockPill = '<span class="rx-stock" title="Not in pharmacy catalog · 未上架" style="color:var(--stone);">?</span>';
       } else {
         var stock = parseFloat(match.total_stock) || 0;
-        var need = parseFloat(it.quantity) || 0;
-        var shortOfNeed = stock < need;
         if (stock <= 0) {
-          stockPill = '<span class="rx-stock" title="Out of stock in all pharmacies" style="color:var(--red-seal);">●</span>';
-        } else if (shortOfNeed) {
-          stockPill = '<span class="rx-stock" title="Total stock ' + stock + ' ' + match.unit + ' — less than prescribed ' + need + '" style="color:var(--gold);">●</span>';
+          stockPill = '<span class="rx-stock" title="Out of stock · 缺貨" style="color:var(--red-seal);">●</span>';
+        } else if (stock < courseQty) {
+          stockPill = '<span class="rx-stock" title="Stock ' + stock + ' ' + match.unit + ' — less than course ' + courseQty.toFixed(1) + '" style="color:var(--gold);">●</span>';
         } else {
-          stockPill = '<span class="rx-stock" title="In stock: ' + stock + ' ' + match.unit + ' across ' + match.pharmacy_count + ' pharmacies" style="color:var(--sage);">●</span>';
+          stockPill = '<span class="rx-stock" title="In stock: ' + stock + ' ' + match.unit + ' (' + match.pharmacy_count + ' pharmacies)" style="color:var(--sage);">●</span>';
         }
       }
 
+      // Per-row info: total grams over course + line price
+      var infoRow = '';
+      if (perDose > 0) {
+        var totalStr = courseQty.toFixed(1) + (it.unit || match && match.unit || 'g');
+        var priceStr = match ? HM.format.money(lineTotal) : '<span class="text-muted">—</span>';
+        infoRow = '<div class="rx-line-info">' +
+          'Total · 總量 <strong>' + totalStr + '</strong>' +
+          '<span class="rx-line-sep">·</span>' +
+          'Price · 金額 <strong>' + priceStr + '</strong>' +
+          (match ? '<span class="rx-line-sep">·</span>Unit · 單價 ' + HM.format.money(price) + '/' + match.unit : '') +
+          '</div>';
+      }
+
       var row = document.createElement('div');
-      row.className = 'rx-line';
-      row.innerHTML =
+      row.className = 'rx-line-wrap';
+      row.innerHTML = '<div class="rx-line">' +
         '<span class="rx-line-num">' + (idx + 1) + '</span>' +
         '<input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '" list="rx-catalog" autocomplete="off">' +
         stockPill +
         '<input data-rx-field="quantity" data-rx-idx="' + idx + '" type="number" step="0.1" class="rx-line-qty" placeholder="Qty" value="' + (it.quantity || '') + '">' +
         '<input data-rx-field="unit" data-rx-idx="' + idx + '" class="rx-line-unit" placeholder="Unit" value="' + HM.format.esc(it.unit || 'g') + '">' +
-        '<button type="button" class="rx-line-remove" data-rx-remove="' + idx + '" title="Remove">✕</button>';
+        '<button type="button" class="rx-line-remove" data-rx-remove="' + idx + '" title="Remove">✕</button>' +
+        '</div>' + infoRow;
 
       row.querySelector('[data-rx-remove]').addEventListener('click', function () {
         state.rxItems.splice(idx, 1);
@@ -545,7 +594,6 @@
             if (m && m.unit) state.rxItems[i].unit = m.unit;
           }
         });
-        // Re-render on blur to refresh the stock pill / unit cell
         inp.addEventListener('change', function () { renderRxList(); });
         inp.addEventListener('blur',   function () { renderRxList(); });
       });
@@ -553,6 +601,31 @@
       wrap.appendChild(row);
     });
     container.appendChild(wrap);
+
+    // Wire dosage-pattern inputs (once per render so values persist + totals refresh)
+    ['rx-packs', 'rx-times', 'rx-days'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && !el._wiredDosage) {
+        el._wiredDosage = true;
+        el.addEventListener('input', function () { updateDosageHint(); renderRxList(); });
+      }
+    });
+    updateDosageHint();
+
+    // Summary box
+    var totalBox = document.getElementById('rx-total');
+    var totalPriceEl = document.getElementById('rx-total-price');
+    var totalWeightEl = document.getElementById('rx-total-weight');
+    if (totalBox && totalPriceEl && totalWeightEl) {
+      if (state.rxItems.length && totalWeight > 0) {
+        totalBox.style.display = 'block';
+        totalPriceEl.textContent = HM.format.money(totalPrice);
+        totalWeightEl.textContent = totalWeight.toFixed(1) + (totalUnit || 'g') +
+          ' (over ' + days + ' day' + (days === 1 ? '' : 's') + ')';
+      } else {
+        totalBox.style.display = 'none';
+      }
+    }
 
     // Keep the datalist populated from current catalog
     var dl = document.getElementById('rx-catalog');
@@ -619,8 +692,21 @@
       return;
     }
 
-    var days = parseInt(document.getElementById('rx-days') ? document.getElementById('rx-days').value : '7', 10) || 7;
+    var packs = parseInt(val('rx-packs'), 10) || 1;
+    var times = parseInt(val('rx-times'), 10) || 1;
+    var days  = parseInt(val('rx-days'),  10) || 7;
     var usage = val('rx-usage');
+
+    // Compose a detailed dosage string for the pharmacy and patient
+    var dosageLine = packs + ' pack · ' + times + '× per day · ' + days + ' days · 每次' + packs + '包 每日' + times + '次 共' + days + '天';
+    // Expand each row's qty to the course total so the pharmacy dispenses the whole course
+    var multiplier = packs * times * days;
+    var expandedRx = cleanRx.map(function (it) {
+      return Object.assign({}, it, {
+        quantity: parseFloat((parseFloat(it.quantity) * multiplier).toFixed(2)),
+        notes: (it.notes ? it.notes + ' | ' : '') + 'per dose: ' + it.quantity + (it.unit || 'g'),
+      });
+    });
 
     try {
       await HM.api.consultation.finish(state.appt.id, {
@@ -634,9 +720,9 @@
         await HM.api.doctor.issuePrescription({
           appointment_id: state.appt.id,
           diagnosis:      caseRecord.pattern_diagnosis || '',
-          instructions:   (caseRecord.doctor_instructions || '') + (usage ? '\n用法: ' + usage : ''),
+          instructions:   [dosageLine, usage, caseRecord.doctor_instructions].filter(Boolean).join('\n'),
           duration_days:  days,
-          items:          cleanRx,
+          items:          expandedRx,
         });
       }
 
@@ -681,6 +767,20 @@
     return null;
   }
 
+  function updateDosageHint() {
+    var hint = document.getElementById('rx-dosage-hint');
+    if (!hint) return;
+    var packs = parseFloat(document.getElementById('rx-packs').value) || 0;
+    var times = parseFloat(document.getElementById('rx-times').value) || 0;
+    var days  = parseFloat(document.getElementById('rx-days').value)  || 0;
+    if (!packs || !times || !days) { hint.textContent = ''; return; }
+    hint.textContent =
+      packs + ' pack' + (packs === 1 ? '' : 's') +
+      ' · ' + times + '× per day · ' +
+      days + ' day' + (days === 1 ? '' : 's') +
+      ' (' + (packs * times * days) + ' doses)';
+  }
+
   // ── Load treatment types from admin config (fallback to defaults) ──
   async function loadTreatmentTypes() {
     try {
@@ -720,7 +820,19 @@
       '.rx-line-unit{text-align:center;}' +
       '.rx-stock{font-size:14px;text-align:center;cursor:help;user-select:none;}' +
       '.rx-line-remove{background:none;border:none;color:var(--stone);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:var(--r-sm);}' +
-      '.rx-line-remove:hover{color:var(--red-seal);background:rgba(192,57,43,.08);}';
+      '.rx-line-remove:hover{color:var(--red-seal);background:rgba(192,57,43,.08);}' +
+      '.rx-line-wrap{border-bottom:1px solid var(--border);}' +
+      '.rx-line-wrap:last-child{border-bottom:none;}' +
+      '.rx-line-info{padding:2px 10px 6px 36px;font-size:11px;color:var(--stone);}' +
+      '.rx-line-info strong{color:var(--ink);font-weight:500;}' +
+      '.rx-line-sep{margin:0 6px;opacity:.4;}' +
+      // Dosage pattern row
+      '.rx-dosage-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}' +
+      '.rx-dosage-input{width:70px;text-align:center;margin:0;padding:8px 10px;font-size:var(--text-base);}' +
+      '.rx-dosage-sep{font-family:var(--font-display);font-size:var(--text-xl);color:var(--gold);font-weight:300;}' +
+      '.rx-dosage-hint{margin-left:8px;font-size:var(--text-xs);color:var(--stone);}' +
+      // Total summary box
+      '.rx-total-box{margin-top:var(--s-4);padding:var(--s-3) var(--s-4);background:var(--washi);border-radius:var(--r-md);border:1px solid var(--border);}';
     document.head.appendChild(s);
   }
 

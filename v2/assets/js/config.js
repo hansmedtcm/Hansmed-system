@@ -51,7 +51,7 @@
       // WhatsApp for appointment booking — used by the landing CTA.
       // Format: country code + number, NO '+' prefix, no spaces or dashes.
       // e.g. Malaysia +60 12-345 6789 → '60123456789'
-      whatsapp: '60123456789',
+      whatsapp: '601165600393',
       whatsappMessage: 'Hi HansMed, I would like to book an appointment. 您好，我想預約。',
     },
   };

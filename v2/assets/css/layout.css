@@ -127,34 +127,77 @@
 .nav-toggle-icon::before { top: -6px; }
 .nav-toggle-icon::after  { top: 6px; }
 
-/* Mobile nav */
+/* Morph to X when open */
+.nav.is-open .nav-toggle-icon { background: transparent; }
+.nav.is-open .nav-toggle-icon::before { transform: translateY(6px) rotate(45deg); }
+.nav.is-open .nav-toggle-icon::after  { transform: translateY(-6px) rotate(-45deg); }
+
+/* Mobile nav — drop-down sheet from the top */
 @media (max-width: 768px) {
   .nav-toggle { display: flex; }
+  .nav {
+    /* allow the menu to overflow below the nav bar */
+    position: relative;
+  }
   .nav-menu {
-    position: fixed;
-    top: var(--nav-height);
+    position: absolute;
+    top: 100%;
     left: 0;
     right: 0;
-    bottom: 0;
     background: var(--cream);
     flex-direction: column;
     align-items: stretch;
-    padding: var(--s-6);
-    gap: var(--s-4);
-    transform: translateX(-100%);
-    transition: transform var(--dur-base) var(--ease-out);
-    z-index: var(--z-sticky);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
+    padding: var(--s-4) var(--s-5);
+    gap: 0;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 8px 20px rgba(26, 22, 18, 0.08);
+    z-index: 200;
+    /* Hidden by default — smooth slide */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height var(--dur-base) var(--ease-out),
+                opacity var(--dur-base) var(--ease-out),
+                padding var(--dur-base) var(--ease-out);
+    pointer-events: none;
   }
   .nav.is-open .nav-menu {
-    transform: translateX(0);
+    max-height: calc(100vh - var(--nav-height));
+    opacity: 1;
+    pointer-events: auto;
+    padding: var(--s-4) var(--s-5);
+    overflow-y: auto;
   }
-  .nav-link {
-    font-size: var(--text-base);
-    padding: var(--s-3) 0;
+  .nav-menu > li {
+    width: 100%;
     border-bottom: 1px solid var(--border);
   }
+  .nav-menu > li:last-child { border-bottom: none; }
+  .nav-link {
+    display: block;
+    font-size: var(--text-base);
+    padding: var(--s-3) 0;
+    width: 100%;
+  }
+
+  /* Mobile dropdown (Home → About/Services/Contact) expands inline */
+  .nav-dropdown-menu {
+    position: static !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 0 var(--s-3) var(--s-4) !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+  .nav-caret { display: none; }
+
+  /* Language switcher + cart badge alignment */
+  .nav-menu .lang-switcher,
+  .nav-menu #nav-cart,
+  .nav-menu #nav-auth-slot { padding: var(--s-3) 0; }
 }
 
 /* ── PORTAL LAYOUT (two-column with sidebar) ─── */
