@@ -43,5 +43,20 @@
   HM.router.otherwise(function () { HM.router.navigate('#/'); });
   HM.router.start();
 
+  // ── Sidebar tab badges ──
+  if (HM.badges) {
+    var phCounts = {};
+    async function refreshPharmCounts() {
+      try { var res = await HM.api.notification.badges(); phCounts = res.counts || {}; } catch (_) {}
+    }
+    HM.badges.register([
+      { route: '#/orders',        count: function () { return phCounts.orders || 0; } },
+      { route: '#/inbox',         count: function () { return phCounts.inbox || 0; } },
+      { route: '#/notifications', count: function () { return phCounts.notifications || 0; } },
+    ]);
+    refreshPharmCounts().then(function () { HM.badges.start(60000); });
+    setInterval(refreshPharmCounts, 60000);
+  }
+
   console.log('[HansMed] Pharmacy portal ready');
 })();

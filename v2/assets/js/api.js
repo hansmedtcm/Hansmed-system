@@ -288,6 +288,7 @@
     unreadCount: function () { return api.get('/notifications/unread-count'); },
     markRead:    function (id) { return api.post('/notifications/' + id + '/read'); },
     markAllRead: function () { return api.post('/notifications/read-all'); },
+    badges:      function () { return api.get('/badges'); },
   };
 
   // ── Chat (all roles) ──

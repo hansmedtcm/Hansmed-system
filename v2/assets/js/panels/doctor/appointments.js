@@ -4,34 +4,72 @@
 (function () {
   'use strict';
   HM.doctorPanels = HM.doctorPanels || {};
-  var currentFilter = '';
+  var state = { dateFilter: 'today', statusFilter: '', visitFilter: '' };
+
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
 
   async function render(el) {
     el.innerHTML = '<div class="page-header">' +
       '<div class="page-header-label">Appointments · 預約</div>' +
       '<h1 class="page-title">All Appointments</h1>' +
       '</div>' +
-      '<div class="filter-bar">' +
-      chip('', 'All · 全部') +
-      chip('confirmed', 'Confirmed · 已確認') +
-      chip('in_progress', 'In Progress · 進行中') +
-      chip('completed', 'Completed · 已完成') +
-      chip('cancelled', 'Cancelled · 已取消') +
-      '</div><div id="appt-list"></div>';
 
-    document.querySelectorAll('.filter-chip').forEach(function (c) {
-      c.addEventListener('click', function () {
-        document.querySelectorAll('.filter-chip').forEach(function (x) { x.classList.remove('is-active'); });
-        c.classList.add('is-active');
-        currentFilter = c.getAttribute('data-filter');
-        load();
-      });
-    });
+      '<div class="text-label mb-2">Date · 日期</div>' +
+      '<div class="filter-bar mb-3" id="d-date-filter">' +
+      chip('date', 'today',    '📅 Today · 今日', true) +
+      chip('date', 'week',     'This Week · 本週') +
+      chip('date', 'upcoming', 'Upcoming · 未來') +
+      chip('date', 'past',     'Past · 過去') +
+      chip('date', 'all',      'All · 全部') +
+      '</div>' +
+
+      '<div class="text-label mb-2">Status · 狀態</div>' +
+      '<div class="filter-bar mb-3" id="d-status-filter">' +
+      chip('status', '',           'All · 全部', true) +
+      chip('status', 'confirmed',  'Confirmed · 已確認') +
+      chip('status', 'in_progress','In Progress · 進行中') +
+      chip('status', 'completed',  'Completed · 已完成') +
+      chip('status', 'cancelled',  'Cancelled · 已取消') +
+      '</div>' +
+
+      '<div class="text-label mb-2">Visit Type · 就診方式</div>' +
+      '<div class="filter-bar mb-4" id="d-visit-filter">' +
+      chip('visit', '',        'All · 全部', true) +
+      chip('visit', 'walk_in', '🏥 Walk-in · 臨診') +
+      chip('visit', 'online',  '📹 Teleconsult · 線上') +
+      '</div>' +
+
+      '<div class="flex-between mb-3">' +
+      '<div id="d-appt-summary" class="text-sm text-muted"></div>' +
+      '<button class="btn btn--ghost btn--sm" id="d-appt-refresh">↻ Refresh</button>' +
+      '</div>' +
+
+      '<div id="appt-list"></div>';
+
+    wireFilter('d-date-filter', function (v) { state.dateFilter = v; load(); });
+    wireFilter('d-status-filter', function (v) { state.statusFilter = v; load(); });
+    wireFilter('d-visit-filter', function (v) { state.visitFilter = v; load(); });
+    document.getElementById('d-appt-refresh').addEventListener('click', load);
     await load();
   }
 
-  function chip(filter, label) {
-    return '<button class="filter-chip ' + (filter === currentFilter ? 'is-active' : '') + '" data-filter="' + filter + '">' + label + '</button>';
+  function chip(group, value, label, active) {
+    return '<button class="filter-chip' + (active ? ' is-active' : '') + '" data-group="' + group + '" data-value="' + value + '">' + label + '</button>';
+  }
+
+  function wireFilter(containerId, onChange) {
+    var c = document.getElementById(containerId);
+    if (!c) return;
+    c.querySelectorAll('.filter-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        c.querySelectorAll('.filter-chip').forEach(function (x) { x.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        onChange(btn.getAttribute('data-value'));
+      });
+    });
   }
 
   function visitTypeBadge(type) {
@@ -43,13 +81,36 @@
 
   async function load() {
     var container = document.getElementById('appt-list');
+    var summary = document.getElementById('d-appt-summary');
     HM.state.loading(container);
     try {
-      var res = await HM.api.doctor.listAppointments(currentFilter ? 'status=' + currentFilter : '');
+      var qs = [];
+      if (state.statusFilter) qs.push('status=' + state.statusFilter);
+      if (state.dateFilter === 'today') qs.push('date=' + todayISO());
+      var res = await HM.api.doctor.listAppointments(qs.join('&'));
       var items = res.data || [];
 
+      // Client-side date refinement
+      if (state.dateFilter !== 'today' && state.dateFilter !== 'all') {
+        items = items.filter(function (a) {
+          var when = new Date(a.scheduled_start);
+          var now = new Date();
+          if (state.dateFilter === 'upcoming') return when >= now;
+          if (state.dateFilter === 'past')     return when < now;
+          if (state.dateFilter === 'week') {
+            var weekOut = new Date(now.getTime() + 7 * 86400000);
+            return when >= now && when <= weekOut;
+          }
+          return true;
+        });
+      }
+      if (state.visitFilter) {
+        items = items.filter(function (a) { return (a.visit_type || 'online') === state.visitFilter; });
+      }
+      if (summary) summary.textContent = items.length + ' appointment' + (items.length === 1 ? '' : 's');
+
       if (!items.length) {
-        HM.state.empty(container, { icon: '📅', title: 'No appointments', text: 'Matching appointments will appear here' });
+        HM.state.empty(container, { icon: '📅', title: 'No appointments', text: 'Adjust the filters above to see more.' });
         return;
       }
 

@@ -26,14 +26,14 @@
   var waMsg = encodeURIComponent(waCfg.whatsappMessage || 'Hi HansMed, I would like to book an appointment.');
   var waUrl = waNum ? ('https://wa.me/' + waNum + '?text=' + waMsg) : null;
 
-  // Wire the hero CTA button + the floating FAB
+  // Wire the hero CTA + the floating FAB — set href so the OS opens WhatsApp directly
   var heroWa = document.getElementById('hero-whatsapp');
   if (heroWa) {
     if (waUrl) {
-      heroWa.addEventListener('click', function () { window.open(waUrl, '_blank', 'noopener'); });
-    } else {
-      heroWa.style.display = 'none';
-    }
+      heroWa.setAttribute('href', waUrl);
+      heroWa.setAttribute('target', '_blank');
+      heroWa.setAttribute('rel', 'noopener');
+    } else heroWa.style.display = 'none';
   }
   var fab = document.getElementById('hm-whatsapp-fab');
   if (fab) {

@@ -60,6 +60,23 @@
   pollNotifications();
   pollTimer = setInterval(pollNotifications, 60000);
 
+  // ── Sidebar tab badges (per-tab unread/pending counts) ──
+  if (HM.badges) {
+    var pCounts = {};
+    async function refreshPatientCounts() {
+      try { var res = await HM.api.notification.badges(); pCounts = res.counts || {}; } catch (_) {}
+    }
+    HM.badges.register([
+      { route: '#/appointments',  count: function () { return pCounts.appointments || 0; } },
+      { route: '#/prescriptions', count: function () { return pCounts.prescriptions || 0; } },
+      { route: '#/orders',        count: function () { return pCounts.orders || 0; } },
+      { route: '#/messages',      count: function () { return pCounts.messages || 0; } },
+      { route: '#/notifications', count: function () { return pCounts.notifications || 0; } },
+    ]);
+    refreshPatientCounts().then(function () { HM.badges.start(60000); });
+    setInterval(refreshPatientCounts, 60000);
+  }
+
   // ── Cart badge sync ──
   function updateCartBadge() {
     var count = (HM.cart && HM.cart.count) ? HM.cart.count() : 0;

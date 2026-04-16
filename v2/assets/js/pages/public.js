@@ -44,15 +44,14 @@
     if (waUrl) fab.setAttribute('href', waUrl);
     else fab.style.display = 'none';
   }
-  // Page-specific WhatsApp buttons (hero-whatsapp on index, services-whatsapp, etc.)
+  // Page-specific WhatsApp links — set href so the browser handles the click natively
   ['hero-whatsapp', 'services-whatsapp', 'contact-whatsapp'].forEach(function (id) {
     var el = document.getElementById(id);
-    if (el && waUrl) {
-      el.addEventListener('click', function (e) {
-        e.preventDefault();
-        window.open(waUrl, '_blank', 'noopener');
-      });
-    }
+    if (!el) return;
+    if (!waUrl) { el.style.display = 'none'; return; }
+    el.setAttribute('href', waUrl);
+    el.setAttribute('target', '_blank');
+    el.setAttribute('rel', 'noopener');
   });
 
   // ── Auth slot (Sign In vs My Portal) ──

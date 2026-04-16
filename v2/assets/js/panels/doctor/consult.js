@@ -143,6 +143,9 @@
     var fileInput = document.getElementById('cr-files');
     if (fileInput) fileInput.addEventListener('change', handleFileUpload);
 
+    // Body diagram
+    initBodyDiagram();
+
     // Treatments: preset add buttons
     document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
       btn.addEventListener('click', function () { addTreatment(btn.getAttribute('data-tx-add')); });
@@ -274,7 +277,83 @@
       '<div class="field"><label class="field-label">Doctor\'s Instructions · 醫囑</label>' +
       '<textarea id="cr-inst" class="field-input" rows="2" placeholder="Diet, rest, follow-up timing, warnings"></textarea></div>' +
 
-      uploadBlock;
+      uploadBlock +
+
+      // Body diagram with drawing tool
+      '<div class="field mt-4">' +
+      '<label class="field-label">🖊️ Body Diagram · 人體圖（標記疼痛/瘀青/針灸位置）</label>' +
+      '<div class="text-xs text-muted mb-2">Mark pain points, bruising, acupuncture sites, etc. Use coloured pens to differentiate. ' +
+      '<span style="font-family: var(--font-zh);">標記疼痛、瘀青、針灸點等。可選擇不同顏色筆。</span></div>' +
+      bodyDiagramMarkup() +
+      '</div>';
+  }
+
+  // ── Body diagram (front + back silhouette + canvas overlay) ──
+  function bodyDiagramMarkup() {
+    return '<div class="body-diagram-wrap">' +
+      '<div class="body-diagram-toolbar">' +
+        '<div class="body-tool-group" id="body-pens">' +
+          '<button type="button" class="body-pen body-pen--blue is-active" data-color="#1f6fb2" title="Blue pen"></button>' +
+          '<button type="button" class="body-pen body-pen--red" data-color="#c0392b" title="Red pen"></button>' +
+          '<button type="button" class="body-pen body-pen--green" data-color="#2e8b57" title="Green pen"></button>' +
+          '<button type="button" class="body-pen body-pen--erase" data-color="erase" title="Eraser">✎̶</button>' +
+        '</div>' +
+        '<div class="body-tool-group">' +
+          '<label class="body-thickness-label">Thickness · 粗細</label>' +
+          '<input type="range" id="body-thickness" min="1" max="12" value="3" step="1">' +
+          '<span class="body-thickness-value" id="body-thickness-value">3px</span>' +
+        '</div>' +
+        '<div class="body-tool-group" style="margin-left:auto;">' +
+          '<button type="button" class="btn btn--ghost btn--sm" id="body-clear">🗑 Clear · 清除</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="body-diagram-stage">' +
+        // FRONT view
+        '<div class="body-side">' +
+          '<div class="body-side-label">Front · 前面</div>' +
+          '<div class="body-canvas-wrap" data-side="front">' +
+            bodySvg('front') +
+            '<canvas class="body-canvas" data-side="front" width="280" height="600"></canvas>' +
+          '</div>' +
+        '</div>' +
+        // BACK view
+        '<div class="body-side">' +
+          '<div class="body-side-label">Back · 背面</div>' +
+          '<div class="body-canvas-wrap" data-side="back">' +
+            bodySvg('back') +
+            '<canvas class="body-canvas" data-side="back" width="280" height="600"></canvas>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  // Inline body silhouette (front and back share the same outline; back has spine line)
+  function bodySvg(side) {
+    var spineLine = side === 'back'
+      ? '<line x1="140" y1="125" x2="140" y2="350" stroke="#999" stroke-width="0.6" stroke-dasharray="2 3"/>'
+      : '';
+    return '<svg viewBox="0 0 280 600" class="body-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      // Head
+      '<circle cx="140" cy="60" r="38" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      // Neck
+      '<path d="M125 95 L125 115 L155 115 L155 95" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      // Shoulders + torso
+      '<path d="M70 130 Q90 118 125 117 L155 117 Q190 118 210 130 L205 240 Q205 290 195 340 L165 350 L160 360 L120 360 L115 350 L85 340 Q75 290 75 240 Z" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      // Arms
+      '<path d="M70 130 Q55 180 50 240 Q48 290 55 340 Q58 360 62 380" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      '<path d="M210 130 Q225 180 230 240 Q232 290 225 340 Q222 360 218 380" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      // Hands (simple)
+      '<ellipse cx="58" cy="395" rx="14" ry="20" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      '<ellipse cx="222" cy="395" rx="14" ry="20" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      // Legs
+      '<path d="M115 360 L105 510 L100 580 L120 580 L128 510 L138 360" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      '<path d="M165 360 L175 510 L180 580 L160 580 L152 510 L142 360" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      // Feet
+      '<ellipse cx="108" cy="585" rx="14" ry="6" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      '<ellipse cx="172" cy="585" rx="14" ry="6" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      spineLine +
+      '</svg>';
   }
 
   // ── Treatments panel ─────────────────────────────────────
@@ -361,9 +440,116 @@
       fileInput.addEventListener('change', handleFileUpload);
     }
 
+    // Body diagram drawing (always present in case record)
+    initBodyDiagram();
+
     renderRxList();
     renderTreatments();
     renderDocuments();
+  }
+
+  // ── Body diagram drawing ─────────────────────────────────
+  var bodyDiagramState = { color: '#1f6fb2', thickness: 3, drawing: false, lastX: 0, lastY: 0 };
+
+  function initBodyDiagram() {
+    var pens = document.querySelectorAll('#body-pens .body-pen');
+    pens.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        pens.forEach(function (b) { b.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        bodyDiagramState.color = btn.getAttribute('data-color');
+      });
+    });
+
+    var thickInput = document.getElementById('body-thickness');
+    var thickVal   = document.getElementById('body-thickness-value');
+    if (thickInput) {
+      thickInput.addEventListener('input', function () {
+        bodyDiagramState.thickness = parseInt(thickInput.value, 10) || 3;
+        if (thickVal) thickVal.textContent = bodyDiagramState.thickness + 'px';
+      });
+    }
+
+    document.querySelectorAll('canvas.body-canvas').forEach(function (canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // Restore any saved data for this side (e.g. when toggling visit type)
+      var side = canvas.getAttribute('data-side');
+      var savedKey = 'body_' + side;
+      if (state.caseRecord && state.caseRecord[savedKey]) {
+        var img = new Image();
+        img.onload = function () { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+        img.src = state.caseRecord[savedKey];
+      }
+
+      function pos(e) {
+        var rect = canvas.getBoundingClientRect();
+        var x = (e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX)) - rect.left;
+        var y = (e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY)) - rect.top;
+        // Scale CSS coords to canvas coords (in case canvas is sized via CSS)
+        return [x * (canvas.width / rect.width), y * (canvas.height / rect.height)];
+      }
+      function start(e) {
+        e.preventDefault();
+        bodyDiagramState.drawing = true;
+        var p = pos(e);
+        bodyDiagramState.lastX = p[0]; bodyDiagramState.lastY = p[1];
+      }
+      function draw(e) {
+        if (!bodyDiagramState.drawing) return;
+        e.preventDefault();
+        var p = pos(e);
+        ctx.lineWidth = bodyDiagramState.thickness * (bodyDiagramState.color === 'erase' ? 4 : 1);
+        if (bodyDiagramState.color === 'erase') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.strokeStyle = 'rgba(0,0,0,1)';
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = bodyDiagramState.color;
+        }
+        ctx.beginPath();
+        ctx.moveTo(bodyDiagramState.lastX, bodyDiagramState.lastY);
+        ctx.lineTo(p[0], p[1]);
+        ctx.stroke();
+        bodyDiagramState.lastX = p[0]; bodyDiagramState.lastY = p[1];
+      }
+      function end() { bodyDiagramState.drawing = false; }
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', end);
+      canvas.addEventListener('mouseleave', end);
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove',  draw,  { passive: false });
+      canvas.addEventListener('touchend',   end);
+    });
+
+    var clearBtn = document.getElementById('body-clear');
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      if (!confirm('Clear all body markings? · 清除所有標記？')) return;
+      document.querySelectorAll('canvas.body-canvas').forEach(function (canvas) {
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
+    });
+  }
+
+  function captureBodyDiagrams() {
+    var out = {};
+    document.querySelectorAll('canvas.body-canvas').forEach(function (canvas) {
+      var side = canvas.getAttribute('data-side');
+      try {
+        // Only save if there's anything drawn (cheap check: any non-transparent pixel)
+        var ctx = canvas.getContext('2d');
+        var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        var hasInk = false;
+        for (var i = 3; i < imgData.length; i += 4) { if (imgData[i] > 0) { hasInk = true; break; } }
+        if (hasInk) out['body_' + side] = canvas.toDataURL('image/png');
+      } catch (_) {}
+    });
+    return out;
   }
 
   // ── Medical Document uploads ─────────────────────────────
@@ -685,6 +871,10 @@
       caseRecord.inquiry      = val('cr-inquiry');
     }
 
+    // Body diagrams (front + back) — saved as PNG data URLs only when drawn
+    var bodyDiagrams = captureBodyDiagrams();
+    Object.keys(bodyDiagrams).forEach(function (k) { caseRecord[k] = bodyDiagrams[k]; });
+
     // Clean up Rx items — drop any row missing drug_name or quantity
     var cleanRx = state.rxItems.filter(function (it) { return it.drug_name && (it.quantity > 0); });
     if (withRx && !cleanRx.length) {
@@ -832,7 +1022,25 @@
       '.rx-dosage-sep{font-family:var(--font-display);font-size:var(--text-xl);color:var(--gold);font-weight:300;}' +
       '.rx-dosage-hint{margin-left:8px;font-size:var(--text-xs);color:var(--stone);}' +
       // Total summary box
-      '.rx-total-box{margin-top:var(--s-4);padding:var(--s-3) var(--s-4);background:var(--washi);border-radius:var(--r-md);border:1px solid var(--border);}';
+      '.rx-total-box{margin-top:var(--s-4);padding:var(--s-3) var(--s-4);background:var(--washi);border-radius:var(--r-md);border:1px solid var(--border);}' +
+      // Body diagram + drawing tool
+      '.body-diagram-wrap{border:1px solid var(--border);border-radius:var(--r-md);background:#fff;overflow:hidden;}' +
+      '.body-diagram-toolbar{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-2) var(--s-3);background:var(--washi);border-bottom:1px solid var(--border);flex-wrap:wrap;}' +
+      '.body-tool-group{display:flex;align-items:center;gap:6px;}' +
+      '.body-pen{width:28px;height:28px;border-radius:50%;border:2px solid #ddd;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#888;background:#fff;}' +
+      '.body-pen.is-active{border-color:var(--ink);transform:scale(1.1);box-shadow:0 0 0 2px rgba(184,150,90,.25);}' +
+      '.body-pen--blue{background:#1f6fb2;}' +
+      '.body-pen--red{background:#c0392b;}' +
+      '.body-pen--green{background:#2e8b57;}' +
+      '.body-pen--erase{background:#fff;color:#666;}' +
+      '.body-thickness-label{font-size:11px;color:var(--stone);letter-spacing:.06em;}' +
+      '.body-thickness-value{font-size:11px;color:var(--stone);font-family:var(--font-mono);min-width:32px;}' +
+      '.body-diagram-stage{display:flex;gap:var(--s-3);padding:var(--s-3);justify-content:center;flex-wrap:wrap;background:#fafafa;}' +
+      '.body-side{display:flex;flex-direction:column;align-items:center;gap:6px;}' +
+      '.body-side-label{font-size:11px;color:var(--stone);letter-spacing:.1em;text-transform:uppercase;}' +
+      '.body-canvas-wrap{position:relative;width:140px;height:300px;}' +
+      '.body-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}' +
+      '.body-canvas{position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;touch-action:none;}';
     document.head.appendChild(s);
   }
 

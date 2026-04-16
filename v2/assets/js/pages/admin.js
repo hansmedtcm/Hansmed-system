@@ -37,5 +37,20 @@
   HM.router.otherwise(function () { HM.router.navigate('#/'); });
   HM.router.start();
 
+  // ── Sidebar tab badges ──
+  if (HM.badges) {
+    var aCounts = {};
+    async function refreshAdminCounts() {
+      try { var res = await HM.api.notification.badges(); aCounts = res.counts || {}; } catch (_) {}
+    }
+    HM.badges.register([
+      { route: '#/verifications', count: function () { return aCounts.verifications || 0; } },
+      { route: '#/withdrawals',   count: function () { return aCounts.withdrawals || 0; } },
+      { route: '#/appointments',  count: function () { return aCounts.appointments || 0; } },
+    ]);
+    refreshAdminCounts().then(function () { HM.badges.start(60000); });
+    setInterval(refreshAdminCounts, 60000);
+  }
+
   console.log('[HansMed] Admin console ready');
 })();

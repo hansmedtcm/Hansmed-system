@@ -57,5 +57,22 @@
   HM.router.otherwise(function () { HM.router.navigate('#/'); });
   HM.router.start();
 
+  // ── Sidebar tab badges ──
+  if (HM.badges) {
+    var dCounts = {};
+    async function refreshDoctorCounts() {
+      try { var res = await HM.api.notification.badges(); dCounts = res.counts || {}; } catch (_) {}
+    }
+    HM.badges.register([
+      { route: '#/queue',         count: function () { return dCounts.queue || 0; } },
+      { route: '#/appointments',  count: function () { return dCounts.queue || 0; } },
+      { route: '#/reviews',       count: function () { return (dCounts.tongue_reviews || 0) + (dCounts.constitution_reviews || 0); } },
+      { route: '#/messages',      count: function () { return dCounts.messages || 0; } },
+      { route: '#/notifications', count: function () { return dCounts.notifications || 0; } },
+    ]);
+    refreshDoctorCounts().then(function () { HM.badges.start(60000); });
+    setInterval(refreshDoctorCounts, 60000);
+  }
+
   console.log('[HansMed] Doctor portal ready');
 })();

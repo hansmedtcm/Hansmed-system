@@ -52,6 +52,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/change-password', [\App\Http\Controllers\Auth\SecurityController::class, 'changePassword']);
     Route::post('/auth/delete-account',  [\App\Http\Controllers\Auth\SecurityController::class, 'deleteAccount']);
 
+    // Sidebar tab badge counts (per role)
+    Route::get('/badges', [\App\Http\Controllers\BadgeController::class, 'index']);
+
     // Notifications (all roles)
     Route::get('/notifications',              [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);

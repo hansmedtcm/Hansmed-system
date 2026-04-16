@@ -34,7 +34,8 @@
       "Bash(curl -s -X POST https://hansmed-system-production.up.railway.app/api/auth/login -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"email\":\"audit-dr-1776144110@test.com\",\"password\":\"test1234\"}')",
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(grep -n \"services-whatsapp\\\\|hero-whatsapp\\\\|contact-whatsapp\" E:/Hansmed-system/v2/*.html)"
     ]
   }
 }
