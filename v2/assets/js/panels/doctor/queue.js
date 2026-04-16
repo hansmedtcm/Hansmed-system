@@ -109,10 +109,15 @@
     var picked = !!a.doctor_id;
     var concernBadge = a.concern_label ? '<span class="badge">' + HM.format.esc(a.concern_label) + '</span>' : '';
     var specBadge = a.recommended_specialty ? '<span class="badge badge--gold" style="margin-left:6px;">🎯 ' + HM.format.esc(a.recommended_specialty) + '</span>' : '';
+    var visitBadge = (a.visit_type === 'walk_in')
+      ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);border:1px solid rgba(184,150,90,.35);">🏥 Walk-in · 臨診</span>'
+      : '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;border:1px solid rgba(74,144,217,.35);">📹 Teleconsult · 線上</span>';
 
     card.innerHTML = '<div class="flex-between">' +
       '<div>' +
-      '<div class="text-label text-gold mb-1">' + HM.format.time(a.scheduled_start) + ' · ' + HM.format.date(a.scheduled_start) + '</div>' +
+      '<div class="flex flex-gap-2 mb-1" style="align-items:center;flex-wrap:wrap;">' + visitBadge +
+      '<span class="text-label text-gold">' + HM.format.time(a.scheduled_start) + ' · ' + HM.format.date(a.scheduled_start) + '</span>' +
+      '</div>' +
       '<div class="card-title">Patient #' + a.patient_id + '</div>' +
       '<div class="mt-2">' + concernBadge + specBadge + '</div>' +
       (a.notes ? '<div class="text-sm text-muted mt-2" style="max-width: 520px;">"' + HM.format.esc(a.notes) + '"</div>' : '') +

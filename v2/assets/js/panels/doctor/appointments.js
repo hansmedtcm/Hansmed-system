@@ -34,6 +34,13 @@
     return '<button class="filter-chip ' + (filter === currentFilter ? 'is-active' : '') + '" data-filter="' + filter + '">' + label + '</button>';
   }
 
+  function visitTypeBadge(type) {
+    if (type === 'walk_in') {
+      return '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);border:1px solid rgba(184,150,90,.35);">🏥 Walk-in · 臨診</span>';
+    }
+    return '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;border:1px solid rgba(74,144,217,.35);">📹 Teleconsult · 線上</span>';
+  }
+
   async function load() {
     var container = document.getElementById('appt-list');
     HM.state.loading(container);
@@ -56,6 +63,7 @@
           status_badge: HM.format.statusBadge(a.status),
           fee_formatted: HM.format.money(a.fee),
           can_consult: ['confirmed','in_progress'].indexOf(a.status) >= 0,
+          visit_badge: visitTypeBadge(a.visit_type),
         };
         var node = HM.render.fromTemplate('tpl-consult-card', data);
         var consultBtn = node.querySelector('[data-action="consult"]');

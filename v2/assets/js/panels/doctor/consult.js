@@ -28,6 +28,7 @@
     rxItems: [],
     treatments: [],
     caseRecord: {},
+    documents: [],   // [{ name, size, type, data_url }]
     treatmentTypes: DEFAULT_TREATMENT_TYPES,
   };
 
@@ -53,6 +54,7 @@
       state.rxItems = [];
       state.treatments = [];
       state.caseRecord = {};
+      state.documents = [];
 
       // 2. Start the appointment
       try { await HM.api.doctor.startAppointment(appointmentId); } catch (_) {}
@@ -149,13 +151,55 @@
   }
 
   // ── Case Record template ──────────────────────────────────
+  // Walk-in visits use a lean template: no duration, no inspection/
+  // auscultation/inquiry, but adds vitals + file upload.
   function caseRecordMarkup() {
-    return '<div class="field-grid field-grid--2">' +
-      '<div class="field"><label class="field-label">Chief Complaint · 主訴</label>' +
-      '<textarea id="cr-chief" class="field-input" rows="2" placeholder="Primary reason for visit"></textarea></div>' +
-      '<div class="field"><label class="field-label">Duration · 病程</label>' +
-      '<input id="cr-duration" class="field-input field-input--boxed" placeholder="e.g. 3 days, 2 weeks"></div>' +
-      '</div>' +
+    var isWalkIn = state.isWalkIn;
+
+    var topRow = isWalkIn
+      ? '<div class="field-grid field-grid--3">' +
+        '<div class="field" style="grid-column: span 2;"><label class="field-label">Chief Complaint · 主訴</label>' +
+        '<textarea id="cr-chief" class="field-input" rows="2" placeholder="Primary reason for visit"></textarea></div>' +
+        '<div class="field"><label class="field-label">Blood Pressure · 血壓</label>' +
+        '<input id="cr-bp" class="field-input field-input--boxed" placeholder="e.g. 120/80"></div>' +
+        '</div>'
+      : '<div class="field-grid field-grid--2">' +
+        '<div class="field"><label class="field-label">Chief Complaint · 主訴</label>' +
+        '<textarea id="cr-chief" class="field-input" rows="2" placeholder="Primary reason for visit"></textarea></div>' +
+        '<div class="field"><label class="field-label">Duration · 病程</label>' +
+        '<input id="cr-duration" class="field-input field-input--boxed" placeholder="e.g. 3 days, 2 weeks"></div>' +
+        '</div>';
+
+    // Online visits get the full 四診 block; walk-ins only get pulse (they're
+    // doing inspection/inquiry face-to-face and don't need text echo).
+    var fourExam = isWalkIn
+      ? '<div class="field"><label class="field-label">切 Pulse · 脈診</label>' +
+        '<input id="cr-pulse" class="field-input field-input--boxed" placeholder="e.g. 左:弦 / 右:滑 Left: wiry / Right: slippery"></div>'
+      : '<div class="text-label mt-3 mb-2">四診 · Four Examinations</div>' +
+        '<div class="field-grid field-grid--2">' +
+        '<div class="field"><label class="field-label">望 Inspection · 望</label>' +
+        '<textarea id="cr-inspect" class="field-input" rows="2" placeholder="Tongue, complexion, spirit, body shape"></textarea></div>' +
+        '<div class="field"><label class="field-label">聞 Auscultation · 聞</label>' +
+        '<textarea id="cr-listen" class="field-input" rows="2" placeholder="Voice, breathing, smells"></textarea></div>' +
+        '<div class="field"><label class="field-label">問 Inquiry · 問</label>' +
+        '<textarea id="cr-inquiry" class="field-input" rows="2" placeholder="Sleep, appetite, bowels, urination, thirst, sweating"></textarea></div>' +
+        '<div class="field"><label class="field-label">切 Pulse · 切 (脈診)</label>' +
+        '<input id="cr-pulse" class="field-input field-input--boxed" placeholder="e.g. 左:弦 / 右:滑"></div>' +
+        '</div>';
+
+    // Document upload only appears for walk-in (in-person you often have
+    // paper reports the patient brings in — lab, imaging, BP logs, etc.)
+    var uploadBlock = isWalkIn
+      ? '<div class="field mt-3">' +
+        '<label class="field-label">📎 Medical Documents · 醫療文件</label>' +
+        '<div class="text-xs text-muted mb-2">Upload lab reports, imaging, prescriptions from other clinics, etc. Photos or PDFs. ' +
+        '<span style="font-family: var(--font-zh);">上傳化驗單、影像、外院處方等。</span></div>' +
+        '<input type="file" id="cr-files" class="field-input field-input--boxed" multiple accept="image/*,.pdf,.doc,.docx" style="padding: 6px;">' +
+        '<div id="cr-files-list" class="mt-2"></div>' +
+        '</div>'
+      : '';
+
+    return topRow +
 
       '<div class="field"><label class="field-label">Present Illness · 現病史</label>' +
       '<textarea id="cr-present" class="field-input" rows="3" placeholder="Onset, progression, aggravating/relieving factors"></textarea></div>' +
@@ -163,17 +207,7 @@
       '<div class="field"><label class="field-label">Past History · 既往史</label>' +
       '<textarea id="cr-past" class="field-input" rows="2" placeholder="Previous illnesses, surgeries, allergies, current meds"></textarea></div>' +
 
-      '<div class="text-label mt-3 mb-2">四診 · Four Examinations</div>' +
-      '<div class="field-grid field-grid--2">' +
-      '<div class="field"><label class="field-label">望 Inspection · 望</label>' +
-      '<textarea id="cr-inspect" class="field-input" rows="2" placeholder="Tongue, complexion, spirit, body shape"></textarea></div>' +
-      '<div class="field"><label class="field-label">聞 Auscultation · 聞</label>' +
-      '<textarea id="cr-listen" class="field-input" rows="2" placeholder="Voice, breathing, smells"></textarea></div>' +
-      '<div class="field"><label class="field-label">問 Inquiry · 問</label>' +
-      '<textarea id="cr-inquiry" class="field-input" rows="2" placeholder="Sleep, appetite, bowels, urination, thirst, sweating"></textarea></div>' +
-      '<div class="field"><label class="field-label">切 Pulse · 切 (脈診)</label>' +
-      '<input id="cr-pulse" class="field-input field-input--boxed" placeholder="e.g. 左:弦 / 右:滑 Left: wiry / Right: slippery"></div>' +
-      '</div>' +
+      fourExam +
 
       '<div class="field-grid field-grid--2 mt-3">' +
       '<div class="field"><label class="field-label">Pattern Diagnosis · 辨證</label>' +
@@ -186,21 +220,32 @@
       '<input id="cr-principle" class="field-input field-input--boxed" placeholder="e.g. 補氣養血 Tonify Qi and nourish Blood"></div>' +
 
       '<div class="field"><label class="field-label">Doctor\'s Instructions · 醫囑</label>' +
-      '<textarea id="cr-inst" class="field-input" rows="2" placeholder="Diet, rest, follow-up timing, warnings"></textarea></div>';
+      '<textarea id="cr-inst" class="field-input" rows="2" placeholder="Diet, rest, follow-up timing, warnings"></textarea></div>' +
+
+      uploadBlock;
   }
 
   // ── Treatments panel ─────────────────────────────────────
   function treatmentsMarkup() {
-    return '<div class="text-xs text-muted mb-3">Log any treatments you perform today. Add multiple if applicable. ' +
-      '<span style="font-family: var(--font-zh);">記錄本次所執行的治療項目，可多項。</span></div>' +
+    return '<div class="text-xs text-muted mb-3">Log any treatments you perform today. Multiple treatments per visit supported. ' +
+      '<span style="font-family: var(--font-zh);">記錄本次所執行的治療項目，可多項，每項可設定費用。</span></div>' +
 
       '<div id="tx-list"></div>' +
 
-      '<div class="flex gap-2 flex-wrap mt-3" id="tx-add-row">' +
+      '<div class="text-label mt-4 mb-2">+ Add from Presets · 從預設新增</div>' +
+      '<div class="flex gap-2 flex-wrap" id="tx-add-row">' +
       state.treatmentTypes.map(function (t) {
-        return '<button type="button" class="btn btn--outline btn--sm" data-tx-add="' + t.key + '">+ ' + t.icon + ' ' + t.name + ' · ' + t.name_zh + '</button>';
+        return '<button type="button" class="btn btn--outline btn--sm" data-tx-add="' + t.key + '">' + t.icon + ' ' + t.name + ' · ' + t.name_zh + '</button>';
       }).join('') +
-      '</div>';
+      '</div>' +
+
+      '<div class="text-label mt-4 mb-2">+ Or Add Custom · 自訂治療</div>' +
+      '<div class="flex gap-2" style="align-items: stretch;">' +
+      '<input id="tx-custom-name" class="field-input field-input--boxed" placeholder="Name (e.g. Bloodletting · 放血)" style="flex: 1; margin: 0;">' +
+      '<input id="tx-custom-icon" class="field-input field-input--boxed" placeholder="Icon" value="💉" style="width: 70px; margin: 0; text-align: center;">' +
+      '<button type="button" class="btn btn--primary btn--sm" id="tx-add-custom">+ Add</button>' +
+      '</div>' +
+      '<div class="text-xs text-muted mt-2">For treatments not in the preset list. These stay in this record only — to make one a preset for all future visits, ask admin to add it in Settings.</div>';
   }
 
   // ── Prescription panel ───────────────────────────────────
@@ -231,21 +276,94 @@
       });
     });
 
-    // Treatment add buttons
+    // Treatment add buttons (presets)
     document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         addTreatment(btn.getAttribute('data-tx-add'));
       });
     });
 
+    // Treatment add — custom
+    var customAddBtn = document.getElementById('tx-add-custom');
+    if (customAddBtn) {
+      customAddBtn.addEventListener('click', function () {
+        var nameInput = document.getElementById('tx-custom-name');
+        var iconInput = document.getElementById('tx-custom-icon');
+        var name = (nameInput.value || '').trim();
+        if (!name) { HM.ui.toast('Please enter a treatment name', 'warning'); return; }
+        var icon = (iconInput.value || '').trim() || '💉';
+        addCustomTreatment(name, icon);
+        nameInput.value = '';
+        iconInput.value = '💉';
+      });
+    }
+
     // Prescription add row
     document.getElementById('rx-add-row').addEventListener('click', function () {
-      state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g', frequency: '', specification: '' });
+      state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g' });
       renderRxList();
     });
 
+    // File upload handler (walk-in only)
+    var fileInput = document.getElementById('cr-files');
+    if (fileInput) {
+      fileInput.addEventListener('change', handleFileUpload);
+    }
+
     renderRxList();
     renderTreatments();
+    renderDocuments();
+  }
+
+  // ── Medical Document uploads ─────────────────────────────
+  function handleFileUpload(e) {
+    var files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    files.forEach(function (f) {
+      // Cap per-file size at ~5 MB so the base64 payload stays manageable
+      if (f.size > 5 * 1024 * 1024) {
+        HM.ui.toast(f.name + ' is too large (max 5MB)', 'warning');
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        state.documents.push({
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          data_url: ev.target.result,
+        });
+        renderDocuments();
+      };
+      reader.readAsDataURL(f);
+    });
+    e.target.value = ''; // reset so re-uploading same file still fires change
+  }
+
+  function renderDocuments() {
+    var host = document.getElementById('cr-files-list');
+    if (!host) return;
+    if (!state.documents.length) {
+      host.innerHTML = '<p class="text-xs text-muted" style="margin:6px 0;">No files attached yet.</p>';
+      return;
+    }
+    host.innerHTML = state.documents.map(function (doc, i) {
+      var icon = doc.type && doc.type.indexOf('image') === 0 ? '🖼️'
+               : doc.type === 'application/pdf' ? '📄'
+               : '📎';
+      var sizeKb = (doc.size / 1024).toFixed(0);
+      return '<div class="flex-between" style="padding:6px 10px;background:var(--washi);border-radius:var(--r-sm);margin-bottom:4px;font-size:var(--text-xs);">' +
+        '<span>' + icon + ' ' + HM.format.esc(doc.name) + ' <span class="text-muted">(' + sizeKb + ' KB)</span></span>' +
+        '<button type="button" class="btn btn--ghost btn--sm" data-doc-remove="' + i + '" style="padding:2px 8px;">✕</button>' +
+        '</div>';
+    }).join('');
+    host.querySelectorAll('[data-doc-remove]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var i = parseInt(btn.getAttribute('data-doc-remove'), 10);
+        state.documents.splice(i, 1);
+        renderDocuments();
+      });
+    });
   }
 
   // ── Treatment log rendering / editing ────────────────────
@@ -257,8 +375,25 @@
       name: t.name,
       name_zh: t.name_zh,
       icon: t.icon,
+      has_points: !!t.has_points,
       points: '',
       duration_min: 20,
+      fee: 0,
+      notes: '',
+    });
+    renderTreatments();
+  }
+
+  function addCustomTreatment(name, icon) {
+    state.treatments.push({
+      type: 'custom',
+      name: name,
+      name_zh: '',
+      icon: icon || '💉',
+      has_points: true,   // allow the doctor to enter points/sites for any custom therapy
+      points: '',
+      duration_min: 20,
+      fee: 0,
       notes: '',
     });
     renderTreatments();
@@ -268,28 +403,40 @@
     var host = document.getElementById('tx-list');
     if (!host) return;
     if (!state.treatments.length) {
-      host.innerHTML = '<div class="card" style="padding: var(--s-3);"><p class="text-muted text-xs text-center">No treatments logged yet. Click a button below to add. · 尚未記錄治療，請點擊下方按鈕新增。</p></div>';
+      host.innerHTML = '<div class="card" style="padding: var(--s-3);"><p class="text-muted text-xs text-center">No treatments logged yet. Add from the presets below or create a custom one. · 尚未記錄治療。</p></div>';
       return;
     }
-    host.innerHTML = '';
+
+    // Running total for this visit
+    var total = state.treatments.reduce(function (sum, t) { return sum + (parseFloat(t.fee) || 0); }, 0);
+    var totalHtml = total > 0
+      ? '<div class="flex-between" style="padding: var(--s-2) var(--s-3); background: var(--washi); border-radius: var(--r-sm); margin-bottom: var(--s-3); font-size: var(--text-sm);">' +
+        '<span class="text-muted">Treatments total · 治療合計</span>' +
+        '<strong style="color: var(--gold);">' + HM.format.money(total) + '</strong>' +
+        '</div>'
+      : '';
+
+    host.innerHTML = totalHtml;
+
     state.treatments.forEach(function (t, idx) {
-      var meta = state.treatmentTypes.find(function (x) { return x.key === t.type; }) || {};
       var card = document.createElement('div');
       card.className = 'card mb-2';
       card.style.padding = 'var(--s-3)';
-      card.innerHTML = '<div class="flex-between mb-2">' +
-        '<strong>' + (t.icon || meta.icon || '💉') + ' ' + HM.format.esc(t.name) + ' · ' + HM.format.esc(t.name_zh || '') + '</strong>' +
+      card.innerHTML = '<div class="flex-between mb-2" style="align-items:center;">' +
+        '<strong>' + (t.icon || '💉') + ' ' + HM.format.esc(t.name) + (t.name_zh ? ' · ' + HM.format.esc(t.name_zh) : '') + (t.type === 'custom' ? ' <span class="badge" style="font-size:9px;background:rgba(122,140,114,.15);color:var(--sage);">custom</span>' : '') + '</strong>' +
         '<button type="button" class="btn btn--ghost btn--sm" data-tx-remove="' + idx + '">✕</button>' +
         '</div>' +
-        (meta.has_points ?
+        (t.has_points ?
           '<div class="field" style="margin-bottom: 6px;"><label class="text-xs text-muted">Points / Sites · 穴位/部位</label>' +
           '<input data-tx-field="points" data-tx-idx="' + idx + '" class="field-input field-input--boxed" value="' + HM.format.esc(t.points || '') + '" placeholder="e.g. ST36 足三里, LI4 合谷, Ren6 氣海" style="margin:0;padding:6px 10px;"></div>'
           : '') +
-        '<div class="field-grid field-grid--2" style="gap: 6px;">' +
+        '<div class="field-grid field-grid--3" style="gap: 6px;">' +
         '<div><label class="text-xs text-muted">Duration (min) · 時長</label>' +
         '<input data-tx-field="duration_min" data-tx-idx="' + idx + '" type="number" class="field-input field-input--boxed" value="' + (t.duration_min || 20) + '" style="margin:0;padding:6px 10px;"></div>' +
+        '<div><label class="text-xs text-muted">Fee (RM) · 費用</label>' +
+        '<input data-tx-field="fee" data-tx-idx="' + idx + '" type="number" step="0.01" min="0" class="field-input field-input--boxed" value="' + (t.fee || 0) + '" style="margin:0;padding:6px 10px;"></div>' +
         '<div><label class="text-xs text-muted">Notes · 備註</label>' +
-        '<input data-tx-field="notes" data-tx-idx="' + idx + '" class="field-input field-input--boxed" value="' + HM.format.esc(t.notes || '') + '" placeholder="Technique, response, anything noteworthy" style="margin:0;padding:6px 10px;"></div>' +
+        '<input data-tx-field="notes" data-tx-idx="' + idx + '" class="field-input field-input--boxed" value="' + HM.format.esc(t.notes || '') + '" placeholder="Technique, response" style="margin:0;padding:6px 10px;"></div>' +
         '</div>';
 
       card.querySelector('[data-tx-remove]').addEventListener('click', function () {
@@ -298,12 +445,15 @@
       });
 
       card.querySelectorAll('[data-tx-field]').forEach(function (inp) {
-        inp.addEventListener('input', function (e) {
+        inp.addEventListener('input', function () {
           var i = parseInt(inp.getAttribute('data-tx-idx'), 10);
           var field = inp.getAttribute('data-tx-field');
           var val = inp.value;
           if (field === 'duration_min') val = parseInt(val, 10) || 0;
+          else if (field === 'fee')     val = parseFloat(val) || 0;
           state.treatments[i][field] = val;
+          // Re-render just to update the running total up top
+          if (field === 'fee') renderTreatments();
         });
       });
 
@@ -311,7 +461,7 @@
     });
   }
 
-  // ── Rx list rendering with INLINE editing ────────────────
+  // ── Rx list rendering with INLINE editing (simplified) ──
   function renderRxList() {
     var container = document.getElementById('rx-items-list');
     if (!container) return;
@@ -319,22 +469,20 @@
       container.innerHTML = '<div class="card" style="padding: var(--s-3);"><p class="text-muted text-xs text-center">No herbs added. Click "+ Add Herb" below. · 尚未新增藥材。</p></div>';
       return;
     }
+
+    // Compact one-line rows — just drug · qty · unit · ✕
     container.innerHTML = '';
+    var wrap = document.createElement('div');
+    wrap.className = 'rx-list-wrap';
     state.rxItems.forEach(function (it, idx) {
       var row = document.createElement('div');
-      row.className = 'card mb-2';
-      row.style.padding = 'var(--s-3)';
+      row.className = 'rx-line';
       row.innerHTML =
-        '<div class="flex gap-2" style="align-items:center;">' +
-        '<input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="field-input field-input--boxed" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '" style="flex:2;margin:0;padding:6px 10px;">' +
-        '<input data-rx-field="quantity" data-rx-idx="' + idx + '" type="number" step="0.1" class="field-input field-input--boxed" placeholder="Qty" value="' + (it.quantity || '') + '" style="width:70px;margin:0;padding:6px 10px;">' +
-        '<input data-rx-field="unit" data-rx-idx="' + idx + '" class="field-input field-input--boxed" placeholder="Unit" value="' + HM.format.esc(it.unit || 'g') + '" style="width:60px;margin:0;padding:6px 10px;">' +
-        '<button type="button" class="btn btn--ghost btn--sm" data-rx-remove="' + idx + '">✕</button>' +
-        '</div>' +
-        '<div class="flex gap-2 mt-2">' +
-        '<input data-rx-field="specification" data-rx-idx="' + idx + '" class="field-input field-input--boxed" placeholder="Specification · 規格 (optional)" value="' + HM.format.esc(it.specification || '') + '" style="flex:1;margin:0;padding:6px 10px;">' +
-        '<input data-rx-field="frequency" data-rx-idx="' + idx + '" class="field-input field-input--boxed" placeholder="Frequency · 用法 (optional)" value="' + HM.format.esc(it.frequency || '') + '" style="flex:1;margin:0;padding:6px 10px;">' +
-        '</div>';
+        '<span class="rx-line-num">' + (idx + 1) + '</span>' +
+        '<input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '">' +
+        '<input data-rx-field="quantity" data-rx-idx="' + idx + '" type="number" step="0.1" class="rx-line-qty" placeholder="Qty" value="' + (it.quantity || '') + '">' +
+        '<input data-rx-field="unit" data-rx-idx="' + idx + '" class="rx-line-unit" placeholder="Unit" value="' + HM.format.esc(it.unit || 'g') + '">' +
+        '<button type="button" class="rx-line-remove" data-rx-remove="' + idx + '" title="Remove">✕</button>';
 
       row.querySelector('[data-rx-remove]').addEventListener('click', function () {
         state.rxItems.splice(idx, 1);
@@ -351,8 +499,9 @@
         });
       });
 
-      container.appendChild(row);
+      wrap.appendChild(row);
     });
+    container.appendChild(wrap);
   }
 
   // ── Footer action buttons ────────────────────────────────
@@ -371,19 +520,27 @@
   // ── Complete ──────────────────────────────────────────────
   async function completeConsult(withRx) {
     var caseRecord = {
-      chief_complaint:    val('cr-chief'),
-      duration:           val('cr-duration'),
-      present_illness:    val('cr-present'),
-      past_history:       val('cr-past'),
-      inspection:         val('cr-inspect'),
-      auscultation:       val('cr-listen'),
-      inquiry:            val('cr-inquiry'),
-      pulse:              val('cr-pulse'),
-      pattern_diagnosis:  val('cr-pattern'),
-      western_diagnosis:  val('cr-western'),
+      chief_complaint:     val('cr-chief'),
+      present_illness:     val('cr-present'),
+      past_history:        val('cr-past'),
+      pulse:               val('cr-pulse'),
+      pattern_diagnosis:   val('cr-pattern'),
+      western_diagnosis:   val('cr-western'),
       treatment_principle: val('cr-principle'),
       doctor_instructions: val('cr-inst'),
     };
+
+    if (state.isWalkIn) {
+      // Walk-in-only fields
+      caseRecord.blood_pressure = val('cr-bp');
+      caseRecord.documents      = state.documents;
+    } else {
+      // Online-only fields (hidden on walk-in)
+      caseRecord.duration     = val('cr-duration');
+      caseRecord.inspection   = val('cr-inspect');
+      caseRecord.auscultation = val('cr-listen');
+      caseRecord.inquiry      = val('cr-inquiry');
+    }
 
     // Clean up Rx items — drop any row missing drug_name or quantity
     var cleanRx = state.rxItems.filter(function (it) { return it.drug_name && (it.quantity > 0); });
@@ -446,8 +603,20 @@
     s.textContent =
       '.consult-layout--online{display:grid;grid-template-columns:1fr 460px;gap:var(--s-4);}' +
       '@media (max-width: 980px){.consult-layout--online{grid-template-columns:1fr;}}' +
-      '.consult-layout--walkin{max-width:900px;}' +
-      '.consult-video{aspect-ratio:16/9;background:var(--ink);border-radius:var(--r-md);overflow:hidden;}';
+      '.consult-layout--walkin{max-width:960px;}' +
+      '.consult-video{aspect-ratio:16/9;background:var(--ink);border-radius:var(--r-md);overflow:hidden;}' +
+      // Compact Rx lines — single row each, no extra fields
+      '.rx-list-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;}' +
+      '.rx-line{display:grid;grid-template-columns:28px 1fr 80px 70px 34px;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);}' +
+      '.rx-line:last-child{border-bottom:none;}' +
+      '.rx-line:hover{background:var(--washi);}' +
+      '.rx-line-num{font-family:var(--font-mono);font-size:11px;color:var(--stone);text-align:right;}' +
+      '.rx-line-name,.rx-line-qty,.rx-line-unit{border:1px solid transparent;border-radius:var(--r-sm);padding:5px 8px;font-size:var(--text-sm);background:transparent;font-family:inherit;color:var(--ink);}' +
+      '.rx-line-name:focus,.rx-line-qty:focus,.rx-line-unit:focus{border-color:var(--gold);background:#fff;outline:none;}' +
+      '.rx-line-qty{text-align:right;}' +
+      '.rx-line-unit{text-align:center;}' +
+      '.rx-line-remove{background:none;border:none;color:var(--stone);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:var(--r-sm);}' +
+      '.rx-line-remove:hover{color:var(--red-seal);background:rgba(192,57,43,.08);}';
     document.head.appendChild(s);
   }
 

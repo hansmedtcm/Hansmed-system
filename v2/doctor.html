@@ -97,7 +97,10 @@
   <div class="card mb-3" data-id="">
     <div class="flex-between">
       <div>
-        <div class="text-label text-gold mb-1" data-bind="scheduled_start" data-format="datetime"></div>
+        <div class="flex flex-gap-2 mb-1" style="align-items:center;flex-wrap:wrap;">
+          <div data-bind="visit_badge" data-unsafe></div>
+          <div class="text-label text-gold" data-bind="scheduled_start" data-format="datetime"></div>
+        </div>
         <div class="card-title" data-bind="patient_name"></div>
         <div class="text-muted text-sm mt-1" data-bind="notes"></div>
       </div>

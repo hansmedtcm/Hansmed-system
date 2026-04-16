@@ -269,10 +269,14 @@
     content += '<div class="text-label mt-4 mb-2">Appointments · 當日預約</div>';
     if (appts.length) {
       content += appts.map(function (a) {
+        var visitBadge = (a.visit_type === 'walk_in')
+          ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);font-size:10px;">🏥 Walk-in</span>'
+          : '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;font-size:10px;">📹 Online</span>';
         return '<div class="card mb-2" style="padding: var(--s-2) var(--s-3);">' +
-          '<div class="flex-between">' +
+          '<div class="flex-between" style="align-items:center;">' +
           '<div><strong>' + HM.format.time(a.scheduled_start) + '</strong> · Patient #' + a.patient_id +
-          (a.concern_label ? ' · ' + HM.format.esc(a.concern_label) : '') + '</div>' +
+          (a.concern_label ? ' · ' + HM.format.esc(a.concern_label) : '') +
+          ' ' + visitBadge + '</div>' +
           '<div>' + HM.format.statusBadge(a.status) + '</div>' +
           '</div></div>';
       }).join('');
