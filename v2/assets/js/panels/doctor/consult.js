@@ -96,20 +96,68 @@
     wireActions();
   }
 
-  // ── WALK-IN view (no video, full-width case record) ────────
+  // ── WALK-IN view (no video) ─────────────────────────────
+  // Split layout: Case Record (sticky on the left) + Prescription on top-right,
+  // Treatments below it. All three panels visible simultaneously — no tabs —
+  // so the doctor can refer to the case record while prescribing.
   function renderWalkIn(el) {
     el.innerHTML = header() +
       '<div class="alert alert--info mb-3"><div class="alert-icon">🏥</div><div class="alert-body">' +
-      '<strong>Walk-in Visit · 臨診</strong> — In-person consultation. Video is not needed; record your findings in the case record below and log any treatments you perform.' +
+      '<strong>Walk-in Visit · 臨診</strong> — In-person consultation. Refer to the case record on the left while prescribing. ' +
+      '<span style="font-family: var(--font-zh);">可同時參考左側病歷，於右側開處方並記錄治療。</span>' +
       '</div></div>' +
-      '<div class="consult-layout consult-layout--walkin">' +
-      '<div id="consult-side">' + sidebarMarkup() + '</div>' +
+
+      '<div class="consult-layout consult-layout--split">' +
+
+      // LEFT — Case Record (sticky)
+      '<div class="split-left">' +
+      '<div class="card card--pad-lg split-case">' +
+      '<div class="split-section-head">📋 Case Record · 病歷</div>' +
+      caseRecordMarkup() +
+      '</div>' +
+      '</div>' +
+
+      // RIGHT — Prescription on top, Treatments below
+      '<div class="split-right">' +
+      '<div class="card card--pad-lg mb-4">' +
+      '<div class="split-section-head">💊 Prescription · 處方</div>' +
+      prescriptionMarkup() +
+      '</div>' +
+      '<div class="card card--pad-lg">' +
+      '<div class="split-section-head">💉 Treatments · 治療</div>' +
+      treatmentsMarkup() +
+      '</div>' +
+      '</div>' +
+
       '</div>' +
       footerActions();
 
     injectStyle();
-    wireSidebar();
+    wireSplitPanels();
     wireActions();
+  }
+
+  // Wire handlers for the split view (no tabs — everything visible)
+  function wireSplitPanels() {
+    // Case Record: file upload
+    var fileInput = document.getElementById('cr-files');
+    if (fileInput) fileInput.addEventListener('change', handleFileUpload);
+
+    // Treatments: preset add buttons
+    document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
+      btn.addEventListener('click', function () { addTreatment(btn.getAttribute('data-tx-add')); });
+    });
+
+    // Prescription: add-row button
+    var addRow = document.getElementById('rx-add-row');
+    if (addRow) addRow.addEventListener('click', function () {
+      state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g' });
+      renderRxList();
+    });
+
+    renderRxList();
+    renderTreatments();
+    renderDocuments();
   }
 
   // ── Header ─────────────────────────────────────────────────
@@ -653,7 +701,12 @@
     s.textContent =
       '.consult-layout--online{display:grid;grid-template-columns:1fr 460px;gap:var(--s-4);}' +
       '@media (max-width: 980px){.consult-layout--online{grid-template-columns:1fr;}}' +
-      '.consult-layout--walkin{max-width:960px;}' +
+      // Walk-in split layout: case record left, Rx + treatments right
+      '.consult-layout--split{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4);align-items:start;}' +
+      '@media (max-width: 1100px){.consult-layout--split{grid-template-columns:1fr;}}' +
+      '.split-left{position:sticky;top:calc(var(--nav-height) + var(--s-3));max-height:calc(100vh - var(--nav-height) - var(--s-6));overflow-y:auto;}' +
+      '@media (max-width: 1100px){.split-left{position:static;max-height:none;overflow:visible;}}' +
+      '.split-section-head{font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:var(--s-4);padding-bottom:var(--s-2);border-bottom:1px solid var(--border);}' +
       '.consult-video{aspect-ratio:16/9;background:var(--ink);border-radius:var(--r-md);overflow:hidden;}' +
       // Compact Rx lines — single row each, no extra fields
       '.rx-list-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;}' +

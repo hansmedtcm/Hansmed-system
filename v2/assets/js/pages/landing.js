@@ -20,6 +20,27 @@
     auth.refresh().catch(function () { /* token invalid: ignore, nav will show Sign In */ });
   }
 
+  // ── Build WhatsApp URL from config ──
+  var waCfg = (HM.config && HM.config.CLINIC) || {};
+  var waNum = (waCfg.whatsapp || '').replace(/\D/g, '');
+  var waMsg = encodeURIComponent(waCfg.whatsappMessage || 'Hi HansMed, I would like to book an appointment.');
+  var waUrl = waNum ? ('https://wa.me/' + waNum + '?text=' + waMsg) : null;
+
+  // Wire the hero CTA button + the floating FAB
+  var heroWa = document.getElementById('hero-whatsapp');
+  if (heroWa) {
+    if (waUrl) {
+      heroWa.addEventListener('click', function () { window.open(waUrl, '_blank', 'noopener'); });
+    } else {
+      heroWa.style.display = 'none';
+    }
+  }
+  var fab = document.getElementById('hm-whatsapp-fab');
+  if (fab) {
+    if (waUrl) fab.setAttribute('href', waUrl);
+    else fab.style.display = 'none';
+  }
+
   // ── Session expired message ──
   if (location.search.indexOf('expired') >= 0) {
     setTimeout(function () {

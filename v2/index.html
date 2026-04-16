@@ -170,6 +170,138 @@
     color: var(--stone);
   }
 
+  /* ── Trust: pharmacy partners + certifications ── */
+  .trust-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--stone);
+    text-align: center;
+    margin-bottom: var(--s-4);
+  }
+  .trust-label--gold { color: var(--gold); }
+  .trust-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: var(--s-8) 0;
+  }
+  .cert-row {
+    display: flex;
+    gap: var(--s-4);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--s-2);
+  }
+  .cert-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--s-4);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  @media (max-width: 768px) {
+    .cert-grid { grid-template-columns: repeat(2, 1fr); max-width: 420px; }
+  }
+  .cert-logo {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-3);
+    transition: transform .2s, box-shadow .2s;
+    min-width: 140px;
+  }
+  .cert-logo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26, 22, 18, 0.08);
+  }
+  .cert-logo svg { width: 78px; height: auto; }
+  .cert-row .cert-logo svg { width: 120px; }
+  .cert-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-align: center;
+    color: var(--stone);
+    line-height: 1.4;
+  }
+  .cert-quote {
+    text-align: center;
+    margin-top: var(--s-8);
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    color: var(--stone);
+    font-style: italic;
+    line-height: 1.8;
+  }
+  .cert-quote-zh {
+    font-family: var(--font-kaiti);
+    font-style: normal;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    font-size: 0.92rem;
+  }
+
+  /* Hero sub-actions (text links under the main CTA buttons) */
+  .hero-sub-actions {
+    margin-top: var(--s-4);
+    display: flex;
+    gap: var(--s-3);
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: var(--text-sm);
+  }
+  .hero-sub-actions a {
+    color: var(--stone);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--border);
+    padding-bottom: 2px;
+    transition: color .2s, border-color .2s;
+  }
+  .hero-sub-actions a:hover { color: var(--gold); border-color: var(--gold); }
+  .hero-sub-dot { color: var(--stone); opacity: .5; }
+
+  /* Floating WhatsApp button */
+  #hm-whatsapp-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #25d366;
+    color: #fff;
+    padding: 14px 22px 14px 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4), 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform .2s ease, box-shadow .2s ease;
+    z-index: 99;
+  }
+  #hm-whatsapp-fab:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(37, 211, 102, 0.5), 0 4px 10px rgba(0, 0, 0, 0.15);
+    color: #fff;
+  }
+  #hm-whatsapp-fab svg { flex-shrink: 0; }
+  @media (max-width: 640px) {
+    #hm-whatsapp-fab {
+      bottom: 16px;
+      right: 16px;
+      padding: 12px 14px;
+    }
+    #hm-whatsapp-fab .hm-whatsapp-label { display: none; }
+  }
+
   /* Nav dropdown */
   .nav-dropdown { position: relative; }
   .nav-dropdown-trigger { cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
@@ -232,6 +364,14 @@
 
 <a href="#main" class="skip-link">Skip to main content</a>
 
+<!-- Floating WhatsApp button — always visible on public landing -->
+<a id="hm-whatsapp-fab" href="#" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
+    <path d="M20.52 3.48A11.84 11.84 0 0012.06 0C5.48 0 .13 5.35.13 11.93a11.84 11.84 0 001.64 6.02L0 24l6.22-1.63a11.93 11.93 0 005.84 1.49h.01c6.58 0 11.93-5.35 11.93-11.93 0-3.19-1.24-6.19-3.48-8.45zM12.07 21.8h-.01a9.86 9.86 0 01-5.02-1.37l-.36-.21-3.69.97.99-3.6-.24-.37a9.84 9.84 0 01-1.51-5.3c0-5.44 4.43-9.87 9.87-9.87 2.64 0 5.11 1.03 6.98 2.9a9.82 9.82 0 012.89 6.97c0 5.44-4.43 9.87-9.9 9.87zm5.42-7.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48a9.05 9.05 0 01-1.67-2.07c-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.22 3.08.15.2 2.1 3.22 5.1 4.52.71.31 1.27.5 1.7.64.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.4.25-.7.25-1.28.17-1.4-.07-.12-.27-.2-.57-.35z"/>
+  </svg>
+  <span class="hm-whatsapp-label">Book via WhatsApp</span>
+</a>
+
 <!-- ══════════════ NAV ══════════════ -->
 <nav class="nav" id="nav">
   <a href="index.html" class="nav-brand">
@@ -292,23 +432,24 @@
     <div class="eyebrow"><span class="font-kaiti">傳統智慧</span> · MODERN CARE</div>
     <h1>Healing Begins <em>with Harmony</em></h1>
     <p class="hero-tagline">
-      Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.
-      Book consultations, receive herbal prescriptions, and order medicines from trusted pharmacies.
-      <br><br>
+      Licensed Traditional Chinese Medicine, from anywhere in Malaysia.
+      <br>
       <span style="font-family: var(--font-zh); font-size: .95rem;">
-        持證中醫師線上問診 · 草本處方 · 藥房配送
+        持證中醫師 · 線上或臨診預約
       </span>
     </p>
     <div class="hero-cta">
       <button class="btn btn--primary btn--lg" onclick="location.href='portal.html#/book'">
-        Book Appointment · 預約
+        📅 Book Appointment · 預約
       </button>
-      <button class="btn btn--outline btn--lg" onclick="location.href='portal.html#/ai-diagnosis'">
-        AI Diagnosis · AI 診斷
+      <button class="btn btn--outline btn--lg" id="hero-whatsapp">
+        💬 WhatsApp Us · 聯絡我們
       </button>
-      <button class="btn btn--ghost btn--lg" onclick="location.href='portal.html#/shop'">
-        Browse Shop · 逛商店 →
-      </button>
+    </div>
+    <div class="hero-sub-actions">
+      <a href="portal.html#/ai-diagnosis">AI Diagnosis · AI 診斷</a>
+      <span class="hero-sub-dot">·</span>
+      <a href="portal.html#/shop">Shop · 商店</a>
     </div>
   </div>
   <div class="hero-visual">
@@ -842,6 +983,107 @@
   </div>
   <div class="text-center mt-6">
     <button class="btn btn--outline" onclick="location.href='portal.html#/shop'">Browse Full Shop · 逛全店 →</button>
+  </div>
+</section>
+
+<!-- ══════════════ PARTNERS + CERTIFICATIONS ══════════════ -->
+<section id="trust" class="section bg-washi">
+  <div class="container" style="max-width: 980px;">
+
+    <!-- Pharmacy partners -->
+    <div class="trust-label">合作藥局夥伴 · Pharmacy Partners</div>
+    <div class="cert-row">
+      <div class="cert-logo">
+        <svg viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="140" height="60" rx="3" fill="white"/>
+          <path d="M18 28 C18 22 26 20 26 28 C26 20 34 22 34 28 C34 34 26 40 26 40 C26 40 18 34 18 28Z" fill="#e74c3c"/>
+          <text x="44" y="26" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#1a6b4a" letter-spacing=".3">Caring</text>
+          <text x="44" y="40" font-family="Arial,sans-serif" font-size="9.5" fill="#2e8b57" letter-spacing=".5">PHARMACY</text>
+          <text x="44" y="53" font-family="Arial,sans-serif" font-size="6" fill="#7f8c8d" letter-spacing=".2">We Care For You</text>
+        </svg>
+        <span class="cert-label">CARING PHARMACY</span>
+      </div>
+      <div class="cert-logo">
+        <svg viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="140" height="60" rx="3" fill="white"/>
+          <rect x="6" y="8" width="36" height="44" rx="3" fill="#c0392b"/>
+          <text x="24" y="36" font-family="Arial,sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">B</text>
+          <text x="56" y="27" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#1a1612" letter-spacing=".2">BIG</text>
+          <text x="56" y="40" font-family="Arial,sans-serif" font-size="9" fill="#c0392b" letter-spacing="1">PHARMACY</text>
+          <text x="56" y="53" font-family="Arial,sans-serif" font-size="6" fill="#7f8c8d" letter-spacing=".2">Health &amp; Wellness</text>
+        </svg>
+        <span class="cert-label">BIG PHARMACY</span>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="trust-divider"></div>
+
+    <!-- Certifications -->
+    <div class="trust-label trust-label--gold">認證與監管 · Certified &amp; Regulated</div>
+    <div class="cert-grid">
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 90 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="45" cy="32" r="28" fill="none" stroke="#1a5276" stroke-width="2.5"/>
+          <circle cx="45" cy="32" r="22" fill="#1a5276"/>
+          <path d="M45 14 A18 18 0 1 1 28 42 A12 12 0 1 0 45 14Z" fill="#f4d03f"/>
+          <rect x="12" y="60" width="66" height="16" rx="2" fill="#1a5276"/>
+          <text x="45" y="72" font-family="Arial,sans-serif" font-size="7.5" font-weight="bold" fill="white" text-anchor="middle" letter-spacing=".5">KKM MALAYSIA</text>
+        </svg>
+        <span class="cert-label">KEMENTERIAN KESIHATAN MALAYSIA</span>
+      </div>
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 90 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="45" cy="36" r="30" fill="#27ae60"/>
+          <circle cx="45" cy="36" r="25" fill="none" stroke="white" stroke-width="1.2"/>
+          <text x="45" y="30" font-family="Arial,sans-serif" font-size="8" fill="white" text-anchor="middle" font-weight="bold" letter-spacing="1">حلال</text>
+          <text x="45" y="42" font-family="Arial,sans-serif" font-size="10" fill="white" text-anchor="middle" font-weight="bold" letter-spacing="2">HALAL</text>
+          <text x="45" y="54" font-family="Arial,sans-serif" font-size="6" fill="rgba(255,255,255,.75)" text-anchor="middle">MALAYSIA</text>
+          <rect x="9" y="66" width="72" height="12" rx="2" fill="#1e8449"/>
+          <text x="45" y="75" font-family="Arial,sans-serif" font-size="6.5" fill="white" text-anchor="middle" letter-spacing=".3">JAKIM CERTIFIED</text>
+        </svg>
+        <span class="cert-label">HALAL CERTIFIED JAKIM MALAYSIA</span>
+      </div>
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="4" width="100" height="58" rx="4" fill="#1a3a5c"/>
+          <line x1="40" y1="12" x2="40" y2="54" stroke="#f4d03f" stroke-width="2.5"/>
+          <path d="M33 20 Q40 16 47 20 Q40 24 33 20Z" fill="none" stroke="#27ae60" stroke-width="1.5"/>
+          <path d="M33 30 Q40 26 47 30 Q40 34 33 30Z" fill="none" stroke="#27ae60" stroke-width="1.5"/>
+          <circle cx="40" cy="12" r="3" fill="#f4d03f"/>
+          <text x="62" y="26" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="1">NPRA</text>
+          <text x="62" y="38" font-family="Arial,sans-serif" font-size="5.5" fill="#aed6f1" text-anchor="middle" letter-spacing=".3">National Pharmaceutical</text>
+          <text x="62" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#aed6f1" text-anchor="middle" letter-spacing=".3">Regulatory Agency</text>
+          <rect x="5" y="62" width="100" height="16" rx="2" fill="#f4d03f"/>
+          <text x="55" y="73" font-family="Arial,sans-serif" font-size="7" fill="#1a3a5c" text-anchor="middle" font-weight="bold" letter-spacing=".5">APPROVED · 批准</text>
+        </svg>
+        <span class="cert-label">NPRA APPROVED MALAYSIA</span>
+      </div>
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 90 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="80" height="60" rx="4" fill="#6c3483"/>
+          <circle cx="30" cy="28" r="16" fill="none" stroke="#e8daef" stroke-width="2"/>
+          <text x="30" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">R</text>
+          <text x="60" y="22" font-family="Arial,sans-serif" font-size="7" fill="white" text-anchor="middle" font-weight="bold">REGISTERED</text>
+          <text x="60" y="32" font-family="Arial,sans-serif" font-size="6" fill="#d7bde2" text-anchor="middle">TCM CLINIC</text>
+          <text x="60" y="42" font-family="Arial,sans-serif" font-size="5.5" fill="#d7bde2" text-anchor="middle">登記中醫診所</text>
+          <rect x="5" y="65" width="80" height="13" rx="2" fill="#5b2c6f"/>
+          <text x="45" y="74.5" font-family="Arial,sans-serif" font-size="6.5" fill="white" text-anchor="middle" letter-spacing=".3">MOH MALAYSIA</text>
+        </svg>
+        <span class="cert-label">MOH REGISTERED TCM CLINIC</span>
+      </div>
+
+    </div>
+
+    <p class="cert-quote">
+      <em>Practising with full regulatory compliance &amp; professional accountability</em><br>
+      <span class="cert-quote-zh">依法執業 · 專業負責</span>
+    </p>
+
   </div>
 </section>
 
