@@ -12,10 +12,29 @@
     var data = {};
     formEl.querySelectorAll('[name]').forEach(function (el) {
       var name = el.getAttribute('name');
-      var val = el.type === 'checkbox' ? el.checked :
-                el.type === 'number' ? (el.value ? parseFloat(el.value) : null) :
-                el.value;
-      data[name] = val;
+      // Radio: only the checked one contributes the field's value.
+      if (el.type === 'radio') {
+        if (el.checked) data[name] = el.value;
+        else if (!(name in data)) data[name] = undefined;
+        return;
+      }
+      // Checkbox: if there are multiple with the same name collect an array,
+      // otherwise return the boolean checked state.
+      if (el.type === 'checkbox') {
+        var group = formEl.querySelectorAll('input[type="checkbox"][name="' + name + '"]');
+        if (group.length > 1) {
+          if (!Array.isArray(data[name])) data[name] = [];
+          if (el.checked) data[name].push(el.value);
+          return;
+        }
+        data[name] = el.checked;
+        return;
+      }
+      if (el.type === 'number') {
+        data[name] = el.value ? parseFloat(el.value) : null;
+        return;
+      }
+      data[name] = el.value;
     });
     return data;
   }

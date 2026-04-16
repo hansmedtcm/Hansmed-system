@@ -177,6 +177,8 @@
     createSchedule: function (d) { return api.post('/doctor/schedules', d); },
     deleteSchedule: function (id) { return api.delete('/doctor/schedules/' + id); },
 
+    drugCatalog:    function ()  { return api.get('/doctor/drug-catalog'); },
+
     listOffDays:    function ()  { return api.get('/doctor/off-days'); },
     toggleOffDay:   function (d) { return api.post('/doctor/off-days', { date: d }); },
     setDayOverride: function (d, type, start, end) {

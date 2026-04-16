@@ -160,6 +160,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/withdrawals',      [DoctorEarningsController::class, 'withdrawals']);
         Route::post('/withdrawals',     [DoctorEarningsController::class, 'requestWithdrawal']);
 
+        // Drug catalog (for Rx autocomplete + stock check)
+        Route::get('/drug-catalog', [\App\Http\Controllers\Doctor\DrugCatalogController::class, 'index']);
+
         // Off-days (ad-hoc days off on top of the weekly schedule)
         Route::get('/off-days',  [\App\Http\Controllers\Doctor\OffDayController::class, 'index']);
         Route::post('/off-days', [\App\Http\Controllers\Doctor\OffDayController::class, 'toggle']);

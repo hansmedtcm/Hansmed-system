@@ -30,13 +30,15 @@
     caseRecord: {},
     documents: [],   // [{ name, size, type, data_url }]
     treatmentTypes: DEFAULT_TREATMENT_TYPES,
+    drugCatalog: [], // [{ name, specification, unit, total_stock, pharmacy_count }]
   };
 
   async function render(el, appointmentId) {
     HM.state.loading(el);
     try {
-      // Load treatment types config (falls back to defaults if unavailable)
+      // Load treatment types + drug catalog in the background
       loadTreatmentTypes();
+      loadDrugCatalog();
 
       // 1. Load the appointment. For pool appointments the getAppointment
       //    endpoint may 404 — in that case claim it first.
@@ -115,12 +117,14 @@
     var visitBadge = state.isWalkIn
       ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);">🏥 Walk-in · 臨診</span>'
       : '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;">📹 Online · 線上</span>';
+    var toggleLabel = state.isWalkIn ? 'Switch to Online · 改為線上' : 'Switch to Walk-in · 改為臨診';
     return '<div class="page-header">' +
       '<button class="btn btn--ghost" onclick="HM.doctorPanels.consult._back()">← Back</button>' +
       '<h1 class="page-title mt-2">Consultation — Patient #' + state.appt.patient_id + '</h1>' +
-      '<div class="flex gap-2 mt-1" style="align-items:center;">' +
+      '<div class="flex gap-2 mt-1" style="align-items:center;flex-wrap:wrap;">' +
       visitBadge +
       '<span class="text-sm text-muted">' + HM.format.datetime(state.appt.scheduled_start) + '</span>' +
+      '<button class="btn btn--ghost btn--sm" id="toggle-visit" style="margin-left:auto;">' + toggleLabel + '</button>' +
       '</div></div>';
   }
 
@@ -227,25 +231,20 @@
 
   // ── Treatments panel ─────────────────────────────────────
   function treatmentsMarkup() {
-    return '<div class="text-xs text-muted mb-3">Log any treatments you perform today. Multiple treatments per visit supported. ' +
+    return '<div class="text-xs text-muted mb-3">Log any treatments you perform today. Multiple treatments per visit supported, each with adjustable fee. ' +
       '<span style="font-family: var(--font-zh);">記錄本次所執行的治療項目，可多項，每項可設定費用。</span></div>' +
 
       '<div id="tx-list"></div>' +
 
-      '<div class="text-label mt-4 mb-2">+ Add from Presets · 從預設新增</div>' +
+      '<div class="text-label mt-4 mb-2">+ Add Treatment · 新增治療</div>' +
       '<div class="flex gap-2 flex-wrap" id="tx-add-row">' +
       state.treatmentTypes.map(function (t) {
         return '<button type="button" class="btn btn--outline btn--sm" data-tx-add="' + t.key + '">' + t.icon + ' ' + t.name + ' · ' + t.name_zh + '</button>';
       }).join('') +
       '</div>' +
 
-      '<div class="text-label mt-4 mb-2">+ Or Add Custom · 自訂治療</div>' +
-      '<div class="flex gap-2" style="align-items: stretch;">' +
-      '<input id="tx-custom-name" class="field-input field-input--boxed" placeholder="Name (e.g. Bloodletting · 放血)" style="flex: 1; margin: 0;">' +
-      '<input id="tx-custom-icon" class="field-input field-input--boxed" placeholder="Icon" value="💉" style="width: 70px; margin: 0; text-align: center;">' +
-      '<button type="button" class="btn btn--primary btn--sm" id="tx-add-custom">+ Add</button>' +
-      '</div>' +
-      '<div class="text-xs text-muted mt-2">For treatments not in the preset list. These stay in this record only — to make one a preset for all future visits, ask admin to add it in Settings.</div>';
+      '<div class="text-xs text-muted mt-3">Need a new treatment type? Ask admin to add it in System Settings → Walk-in Treatments. ' +
+      '<span style="font-family: var(--font-zh);">需新增治療類型，請聯絡管理員於系統設定中新增。</span></div>';
   }
 
   // ── Prescription panel ───────────────────────────────────
@@ -258,7 +257,12 @@
       '</div>' +
 
       '<div class="text-label mt-3 mb-2">Herb Items · 藥材清單</div>' +
+      '<div class="text-xs text-muted mb-2">Start typing — suggestions come from pharmacy stock. ' +
+      '<span style="color: var(--sage);">● in stock</span> · ' +
+      '<span style="color: var(--red-seal);">● out of stock</span> · ' +
+      '<span style="color: var(--stone);">? not in catalog</span></div>' +
       '<div id="rx-items-list" class="mb-3"></div>' +
+      '<datalist id="rx-catalog"></datalist>' +
 
       '<button class="btn btn--outline btn--sm" id="rx-add-row">+ Add Herb · 新增藥材</button>';
   }
@@ -276,27 +280,12 @@
       });
     });
 
-    // Treatment add buttons (presets)
+    // Treatment add buttons (presets only — custom is admin-managed)
     document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         addTreatment(btn.getAttribute('data-tx-add'));
       });
     });
-
-    // Treatment add — custom
-    var customAddBtn = document.getElementById('tx-add-custom');
-    if (customAddBtn) {
-      customAddBtn.addEventListener('click', function () {
-        var nameInput = document.getElementById('tx-custom-name');
-        var iconInput = document.getElementById('tx-custom-icon');
-        var name = (nameInput.value || '').trim();
-        if (!name) { HM.ui.toast('Please enter a treatment name', 'warning'); return; }
-        var icon = (iconInput.value || '').trim() || '💉';
-        addCustomTreatment(name, icon);
-        nameInput.value = '';
-        iconInput.value = '💉';
-      });
-    }
 
     // Prescription add row
     document.getElementById('rx-add-row').addEventListener('click', function () {
@@ -384,20 +373,6 @@
     renderTreatments();
   }
 
-  function addCustomTreatment(name, icon) {
-    state.treatments.push({
-      type: 'custom',
-      name: name,
-      name_zh: '',
-      icon: icon || '💉',
-      has_points: true,   // allow the doctor to enter points/sites for any custom therapy
-      points: '',
-      duration_min: 20,
-      fee: 0,
-      notes: '',
-    });
-    renderTreatments();
-  }
 
   function renderTreatments() {
     var host = document.getElementById('tx-list');
@@ -423,7 +398,7 @@
       card.className = 'card mb-2';
       card.style.padding = 'var(--s-3)';
       card.innerHTML = '<div class="flex-between mb-2" style="align-items:center;">' +
-        '<strong>' + (t.icon || '💉') + ' ' + HM.format.esc(t.name) + (t.name_zh ? ' · ' + HM.format.esc(t.name_zh) : '') + (t.type === 'custom' ? ' <span class="badge" style="font-size:9px;background:rgba(122,140,114,.15);color:var(--sage);">custom</span>' : '') + '</strong>' +
+        '<strong>' + (t.icon || '💉') + ' ' + HM.format.esc(t.name) + (t.name_zh ? ' · ' + HM.format.esc(t.name_zh) : '') + '</strong>' +
         '<button type="button" class="btn btn--ghost btn--sm" data-tx-remove="' + idx + '">✕</button>' +
         '</div>' +
         (t.has_points ?
@@ -470,16 +445,36 @@
       return;
     }
 
-    // Compact one-line rows — just drug · qty · unit · ✕
+    // Compact one-line rows — just drug · qty · unit · ✕, with stock pill
     container.innerHTML = '';
     var wrap = document.createElement('div');
     wrap.className = 'rx-list-wrap';
     state.rxItems.forEach(function (it, idx) {
+      var match = catalogLookup(it.drug_name);
+      var stockPill;
+      if (!it.drug_name) {
+        stockPill = '<span class="rx-stock" title="Enter drug name" style="color:var(--stone);">—</span>';
+      } else if (!match) {
+        stockPill = '<span class="rx-stock" title="Not in pharmacy catalog — patient may need to source elsewhere" style="color:var(--stone);">?</span>';
+      } else {
+        var stock = parseFloat(match.total_stock) || 0;
+        var need = parseFloat(it.quantity) || 0;
+        var shortOfNeed = stock < need;
+        if (stock <= 0) {
+          stockPill = '<span class="rx-stock" title="Out of stock in all pharmacies" style="color:var(--red-seal);">●</span>';
+        } else if (shortOfNeed) {
+          stockPill = '<span class="rx-stock" title="Total stock ' + stock + ' ' + match.unit + ' — less than prescribed ' + need + '" style="color:var(--gold);">●</span>';
+        } else {
+          stockPill = '<span class="rx-stock" title="In stock: ' + stock + ' ' + match.unit + ' across ' + match.pharmacy_count + ' pharmacies" style="color:var(--sage);">●</span>';
+        }
+      }
+
       var row = document.createElement('div');
       row.className = 'rx-line';
       row.innerHTML =
         '<span class="rx-line-num">' + (idx + 1) + '</span>' +
-        '<input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '">' +
+        '<input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '" list="rx-catalog" autocomplete="off">' +
+        stockPill +
         '<input data-rx-field="quantity" data-rx-idx="' + idx + '" type="number" step="0.1" class="rx-line-qty" placeholder="Qty" value="' + (it.quantity || '') + '">' +
         '<input data-rx-field="unit" data-rx-idx="' + idx + '" class="rx-line-unit" placeholder="Unit" value="' + HM.format.esc(it.unit || 'g') + '">' +
         '<button type="button" class="rx-line-remove" data-rx-remove="' + idx + '" title="Remove">✕</button>';
@@ -496,12 +491,30 @@
           var val = inp.value;
           if (field === 'quantity') val = parseFloat(val) || 0;
           state.rxItems[i][field] = val;
+          // Auto-fill unit from catalog when picking a known drug
+          if (field === 'drug_name') {
+            var m = catalogLookup(val);
+            if (m && m.unit) state.rxItems[i].unit = m.unit;
+          }
         });
+        // Re-render on blur to refresh the stock pill / unit cell
+        inp.addEventListener('change', function () { renderRxList(); });
+        inp.addEventListener('blur',   function () { renderRxList(); });
       });
 
       wrap.appendChild(row);
     });
     container.appendChild(wrap);
+
+    // Keep the datalist populated from current catalog
+    var dl = document.getElementById('rx-catalog');
+    if (dl && state.drugCatalog.length) {
+      dl.innerHTML = state.drugCatalog.map(function (d) {
+        return '<option value="' + HM.format.esc(d.name) + '">' +
+          HM.format.esc((d.specification ? d.specification + ' · ' : '') + 'stock: ' + (parseFloat(d.total_stock) || 0) + d.unit) +
+          '</option>';
+      }).join('');
+    }
   }
 
   // ── Footer action buttons ────────────────────────────────
@@ -515,6 +528,15 @@
   function wireActions() {
     document.getElementById('issue-only').addEventListener('click', function () { completeConsult(false); });
     document.getElementById('issue-rx').addEventListener('click', function () { completeConsult(true); });
+
+    var toggleBtn = document.getElementById('toggle-visit');
+    if (toggleBtn) toggleBtn.addEventListener('click', function () {
+      state.isWalkIn = !state.isWalkIn;
+      state.appt.visit_type = state.isWalkIn ? 'walk_in' : 'online';
+      var root = document.getElementById('panel-container');
+      if (state.isWalkIn) renderWalkIn(root);
+      else renderOnline(root, state.appt.id);
+    });
   }
 
   // ── Complete ──────────────────────────────────────────────
@@ -583,6 +605,34 @@
     return el ? (el.value || '').trim() : '';
   }
 
+  // ── Load drug catalog (for Rx autocomplete + stock check) ──
+  async function loadDrugCatalog() {
+    try {
+      var res = await HM.api.doctor.drugCatalog();
+      state.drugCatalog = res.data || [];
+      // Inject the catalog into the <datalist> the moment it's available
+      var dl = document.getElementById('rx-catalog');
+      if (dl) {
+        dl.innerHTML = state.drugCatalog.map(function (d) {
+          return '<option value="' + HM.format.esc(d.name) + '">' +
+            HM.format.esc((d.specification || '') + ' · stock: ' + (parseFloat(d.total_stock) || 0) + d.unit) +
+            '</option>';
+        }).join('');
+      }
+      // If there are already rendered rows, re-render so stock warnings show
+      if (document.getElementById('rx-items-list')) renderRxList();
+    } catch (_) { state.drugCatalog = []; }
+  }
+
+  function catalogLookup(name) {
+    if (!name) return null;
+    var lc = name.toLowerCase().trim();
+    for (var i = 0; i < state.drugCatalog.length; i++) {
+      if ((state.drugCatalog[i].name || '').toLowerCase() === lc) return state.drugCatalog[i];
+    }
+    return null;
+  }
+
   // ── Load treatment types from admin config (fallback to defaults) ──
   async function loadTreatmentTypes() {
     try {
@@ -607,7 +657,7 @@
       '.consult-video{aspect-ratio:16/9;background:var(--ink);border-radius:var(--r-md);overflow:hidden;}' +
       // Compact Rx lines — single row each, no extra fields
       '.rx-list-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;}' +
-      '.rx-line{display:grid;grid-template-columns:28px 1fr 80px 70px 34px;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);}' +
+      '.rx-line{display:grid;grid-template-columns:28px 1fr 18px 80px 70px 34px;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);}' +
       '.rx-line:last-child{border-bottom:none;}' +
       '.rx-line:hover{background:var(--washi);}' +
       '.rx-line-num{font-family:var(--font-mono);font-size:11px;color:var(--stone);text-align:right;}' +
@@ -615,6 +665,7 @@
       '.rx-line-name:focus,.rx-line-qty:focus,.rx-line-unit:focus{border-color:var(--gold);background:#fff;outline:none;}' +
       '.rx-line-qty{text-align:right;}' +
       '.rx-line-unit{text-align:center;}' +
+      '.rx-stock{font-size:14px;text-align:center;cursor:help;user-select:none;}' +
       '.rx-line-remove{background:none;border:none;color:var(--stone);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:var(--r-sm);}' +
       '.rx-line-remove:hover{color:var(--red-seal);background:rgba(192,57,43,.08);}';
     document.head.appendChild(s);
