@@ -1,82 +1,189 @@
 /**
- * Admin Finance — revenue, payouts, platform fees
+ * Admin Finance — overview + per-doctor breakdown with date range filter
  */
 (function () {
   'use strict';
   HM.adminPanels = HM.adminPanels || {};
 
+  var state = { from: null, to: null, preset: 'month' };
+
+  function ymd(d) {
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  function applyPreset(preset) {
+    var n = new Date();
+    if (preset === 'today') {
+      state.from = ymd(n); state.to = ymd(n);
+    } else if (preset === 'week') {
+      // start of week (Monday)
+      var dow = (n.getDay() + 6) % 7;
+      var start = new Date(n); start.setDate(n.getDate() - dow);
+      var end   = new Date(start); end.setDate(start.getDate() + 6);
+      state.from = ymd(start); state.to = ymd(end);
+    } else if (preset === 'month') {
+      state.from = ymd(new Date(n.getFullYear(), n.getMonth(), 1));
+      state.to   = ymd(new Date(n.getFullYear(), n.getMonth() + 1, 0));
+    } else if (preset === 'year') {
+      state.from = ymd(new Date(n.getFullYear(), 0, 1));
+      state.to   = ymd(new Date(n.getFullYear(), 11, 31));
+    } else if (preset === 'all') {
+      state.from = null; state.to = null;
+    }
+    state.preset = preset;
+  }
+
   async function render(el) {
+    applyPreset('month'); // default
+
     el.innerHTML = '<div class="page-header flex-between">' +
       '<div><div class="page-header-label">Finance · 財務</div>' +
       '<h1 class="page-title">Financial Overview</h1></div>' +
       '<div>' +
       '<button class="btn btn--outline mr-2" onclick="HM.adminPanels.finance._export(\'orders\')">📊 Orders CSV</button>' +
-      '<button class="btn btn--outline" onclick="HM.adminPanels.finance._export(\'appointments\')">📊 Appointments CSV</button>' +
+      '<button class="btn btn--outline" onclick="HM.adminPanels.finance._export(\'appointments\')">📊 Appts CSV</button>' +
       '</div></div>' +
-      '<div id="fin-body"></div>';
 
-    var body = document.getElementById('fin-body');
-    HM.state.loading(body);
+      // Date range filter
+      '<div class="card mb-4" style="padding: var(--s-4);">' +
+      '<div class="text-label mb-2">Date Range · 日期區間</div>' +
+      '<div class="filter-bar mb-3" id="fin-presets">' +
+      preset('today',  '📅 Today · 今日') +
+      preset('week',   'This Week · 本週') +
+      preset('month',  'This Month · 本月', true) +
+      preset('year',   'This Year · 今年') +
+      preset('all',    'All-time · 全部') +
+      preset('custom', '🗓 Custom · 自訂') +
+      '</div>' +
+      '<div id="fin-custom" style="display:none;" class="flex gap-2 flex-wrap" style="align-items:end;">' +
+      '<div><label class="text-xs text-muted">From · 起</label><input type="date" id="fin-from" class="field-input field-input--boxed" style="margin:0;padding:6px 10px;"></div>' +
+      '<div><label class="text-xs text-muted">To · 迄</label><input type="date" id="fin-to" class="field-input field-input--boxed" style="margin:0;padding:6px 10px;"></div>' +
+      '<button class="btn btn--primary btn--sm" id="fin-apply">Apply · 套用</button>' +
+      '</div>' +
+      '<div class="text-xs text-muted mt-2" id="fin-range-label"></div>' +
+      '</div>' +
+
+      '<div id="fin-summary"></div>' +
+      '<div id="fin-doctors" class="mt-6"></div>';
+
+    // Wire preset buttons
+    document.querySelectorAll('#fin-presets .filter-chip').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('#fin-presets .filter-chip').forEach(function (x) { x.classList.remove('is-active'); });
+        b.classList.add('is-active');
+        var p = b.getAttribute('data-preset');
+        if (p === 'custom') {
+          document.getElementById('fin-custom').style.display = 'flex';
+        } else {
+          document.getElementById('fin-custom').style.display = 'none';
+          applyPreset(p);
+          load();
+        }
+      });
+    });
+    document.getElementById('fin-apply').addEventListener('click', function () {
+      var from = document.getElementById('fin-from').value;
+      var to   = document.getElementById('fin-to').value;
+      if (!from || !to) { HM.ui.toast('Pick both from and to dates', 'warning'); return; }
+      if (from > to)    { HM.ui.toast('From must be before To', 'warning'); return; }
+      state.from = from; state.to = to; state.preset = 'custom';
+      load();
+    });
+
+    await load();
+  }
+
+  function preset(value, label, active) {
+    return '<button class="filter-chip' + (active ? ' is-active' : '') + '" data-preset="' + value + '">' + label + '</button>';
+  }
+
+  async function load() {
+    var summaryEl = document.getElementById('fin-summary');
+    var doctorsEl = document.getElementById('fin-doctors');
+    var rangeLbl  = document.getElementById('fin-range-label');
+    HM.state.loading(summaryEl);
+    doctorsEl.innerHTML = '';
+
+    rangeLbl.textContent = state.from || state.to
+      ? 'Showing: ' + (state.from || 'beginning') + ' → ' + (state.to || 'today')
+      : 'Showing: all-time';
+
+    var qs = [];
+    if (state.from) qs.push('from=' + state.from);
+    if (state.to)   qs.push('to=' + state.to);
+    var qsStr = qs.join('&');
+
     try {
-      var res = await HM.api.admin.financeOverview();
-      var d = res || {};
-      var rev = d.revenue || {};
-      var payouts = d.payouts || {};
-      var fees = d.fees || {};
+      var results = await Promise.allSettled([
+        HM.api.admin.financeOverview(qsStr),
+        HM.api.admin.financeDoctorBreakdown(qsStr),
+      ]);
+      var ov  = results[0].status === 'fulfilled' ? results[0].value : {};
+      var bd  = results[1].status === 'fulfilled' ? results[1].value : {};
 
-      body.innerHTML =
-        '<div class="stats-grid mb-6">' +
-        stat(HM.format.money(rev.total || 0), 'Total Revenue · 總收入') +
-        stat(HM.format.money(rev.last_30d || 0), 'Revenue 30 Days · 近30天') +
-        stat(HM.format.money(fees.platform_total || 0), 'Platform Fees · 平台費') +
-        stat(HM.format.money(payouts.total || 0), 'Paid to Staff · 已支付') +
-        '</div>' +
+      // Summary cards
+      summaryEl.innerHTML =
+        '<div class="stats-grid mb-4">' +
+        statCard(HM.format.money(ov.total_revenue || 0),       'Total Revenue · 總收入', 'var(--gold)') +
+        statCard(HM.format.money(ov.appointment_revenue || 0), 'Consultations · 問診', '#4a90d9') +
+        statCard(HM.format.money(ov.order_revenue || 0),       'Orders · 訂單', 'var(--sage)') +
+        statCard(HM.format.money(ov.pending_withdrawals || 0), 'Pending Payouts · 待付', 'var(--red-seal)') +
+        '</div>';
 
-        '<div class="grid-2 mb-6">' +
-        '<div><div class="text-label mb-3">Revenue Breakdown · 收入明細</div>' +
-        '<div class="card">' +
-        row('Consultations', HM.format.money(rev.consultations || 0)) +
-        row('Orders', HM.format.money(rev.orders || 0)) +
-        row('POS Sales', HM.format.money(rev.pos || 0)) +
-        row('Total', HM.format.money(rev.total || 0), true) +
-        '</div></div>' +
-
-        '<div><div class="text-label mb-3">Platform Fees · 平台費用</div>' +
-        '<div class="card">' +
-        row('Doctor Fees (15%)', HM.format.money(fees.doctor || 0)) +
-        row('Pharmacy Fees (8%)', HM.format.money(fees.pharmacy || 0)) +
-        row('Total Fees', HM.format.money(fees.platform_total || 0), true) +
-        '</div></div>' +
-        '</div>' +
-
-        '<div class="text-label mb-3">Recent Transactions · 近期交易</div>' +
-        '<div class="card" id="fin-recent"></div>';
-
-      var recent = d.recent || [];
-      var recentEl = document.getElementById('fin-recent');
-      if (!recent.length) {
-        recentEl.innerHTML = '<div class="text-center text-muted p-4">No recent transactions</div>';
-      } else {
-        var html = '<div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Type</th><th>Description</th><th style="text-align:right;">Amount</th></tr></thead><tbody>';
-        recent.forEach(function (t) {
-          html += '<tr><td>' + HM.format.date(t.created_at) + '</td>' +
-            '<td><span class="badge">' + (t.type || '') + '</span></td>' +
-            '<td>' + HM.format.esc(t.description || '') + '</td>' +
-            '<td style="text-align:right;">' + HM.format.money(t.amount || 0) + '</td></tr>';
-        });
-        html += '</tbody></table></div>';
-        recentEl.innerHTML = html;
-      }
-    } catch (e) { HM.state.error(body, e); }
+      // Doctor breakdown
+      renderDoctorTable(doctorsEl, bd);
+    } catch (e) {
+      summaryEl.innerHTML = '';
+      HM.state.error(doctorsEl, e);
+    }
   }
 
-  function stat(num, label) {
-    return '<div class="stat-card"><div class="stat-number" style="font-size: var(--text-2xl);">' + num + '</div><div class="stat-label">' + label + '</div></div>';
+  function renderDoctorTable(host, bd) {
+    var doctors = (bd && bd.doctors) || [];
+    var summary = (bd && bd.summary) || {};
+
+    var summaryRow =
+      '<div class="flex-between mb-3" style="align-items: end;">' +
+      '<div><div class="text-label">By Doctor · 按醫師統計</div>' +
+      '<div class="text-xs text-muted mt-1">' + (summary.doctor_count || 0) + ' active doctor(s) · ' +
+      (summary.visit_count || 0) + ' completed visit(s)</div></div>' +
+      '<div style="text-align:right;">' +
+      '<div class="text-xs text-muted">Total · 總計</div>' +
+      '<div style="font-size: var(--text-xl); font-weight: 500; color: var(--gold);">' + HM.format.money(summary.total_revenue || 0) + '</div>' +
+      '</div></div>';
+
+    if (!doctors.length) {
+      host.innerHTML = summaryRow + '<div class="card"><p class="text-muted text-center" style="padding: var(--s-5);">No completed appointments in this date range.</p></div>';
+      return;
+    }
+
+    var rows = doctors.map(function (d, idx) {
+      return '<tr>' +
+        '<td data-label="Rank" style="font-family: var(--font-mono); color: var(--stone);">#' + (idx + 1) + '</td>' +
+        '<td data-label="Doctor"><strong>' + HM.format.esc(d.doctor_name || ('#' + d.doctor_id)) + '</strong></td>' +
+        '<td data-label="Visits" style="text-align: right;">' + d.visit_count + '</td>' +
+        '<td data-label="Walk-in / Online" style="font-size: var(--text-xs); color: var(--stone);">🏥 ' + (d.walk_in_count || 0) + ' · 📹 ' + (d.online_count || 0) + '</td>' +
+        '<td data-label="Consultation" style="text-align: right;">' + HM.format.money(d.consultation_revenue || 0) + '</td>' +
+        '<td data-label="Treatments" style="text-align: right;">' + HM.format.money(d.treatment_revenue || 0) + '</td>' +
+        '<td data-label="Total" style="text-align: right; font-weight: 600; color: var(--gold);">' + HM.format.money(d.total_revenue || 0) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    host.innerHTML = summaryRow +
+      '<div class="card" style="padding: 0;">' +
+      '<div class="table-wrap"><table class="table table--responsive">' +
+      '<thead><tr><th>#</th><th>Doctor</th><th style="text-align:right;">Visits</th><th>Walk-in / Online</th><th style="text-align:right;">Consultation</th><th style="text-align:right;">Treatments</th><th style="text-align:right;">Total</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table></div>' +
+      '</div>';
   }
 
-  function row(label, value, bold) {
-    return '<div class="flex-between" style="padding: var(--s-2) 0; border-bottom: 1px solid var(--border); font-size: var(--text-sm);' + (bold ? 'font-weight:600;' : '') + '">' +
-      '<span class="' + (bold ? '' : 'text-muted') + '">' + label + '</span><span>' + value + '</span></div>';
+  function statCard(num, label, color) {
+    return '<div class="stat-card" style="border-left: 3px solid ' + (color || 'var(--gold)') + ';">' +
+      '<div class="stat-number" style="font-size: var(--text-xl); color: ' + (color || 'var(--ink)') + ';">' + num + '</div>' +
+      '<div class="stat-label">' + label + '</div></div>';
   }
 
   HM.adminPanels.finance = {

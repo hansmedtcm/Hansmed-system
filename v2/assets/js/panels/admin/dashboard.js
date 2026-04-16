@@ -109,10 +109,15 @@
           var visitLbl = (a.visit_type === 'walk_in')
             ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);font-size:10px;">🏥 Walk-in</span>'
             : '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;font-size:10px;">📹 Online</span>';
+          var patientName = a.patient_name || a.patient_email || ('Patient #' + a.patient_id);
+          var doctorName  = a.doctor_id
+            ? (a.doctor_name || a.doctor_email || ('Doctor #' + a.doctor_id))
+            : '<span class="text-muted">— pool</span>';
           return '<tr>' +
             '<td data-label="Time"><strong>' + HM.format.time(a.scheduled_start) + '</strong></td>' +
-            '<td data-label="Patient">#' + a.patient_id + (a.concern_label ? ' · ' + HM.format.esc(a.concern_label) : '') + '</td>' +
-            '<td data-label="Doctor">' + (a.doctor_id ? '#' + a.doctor_id : '<span class="text-muted">— pool</span>') + '</td>' +
+            '<td data-label="Patient"><strong>' + HM.format.esc(patientName) + '</strong>' +
+            (a.concern_label ? '<div class="text-xs text-muted">' + HM.format.esc(a.concern_label) + '</div>' : '') + '</td>' +
+            '<td data-label="Doctor">' + (a.doctor_id ? HM.format.esc(doctorName) : doctorName) + '</td>' +
             '<td data-label="Visit">' + visitLbl + '</td>' +
             '<td data-label="Status">' + HM.format.statusBadge(a.status) + '</td>' +
             '</tr>';

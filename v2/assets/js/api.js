@@ -255,7 +255,8 @@
     listAppointments:   function (q) { return api.get('/admin/appointments' + (q ? '?' + q : '')); },
     createAppointment:  function (d) { return api.post('/admin/appointments', d); },
 
-    financeOverview:    function () { return api.get('/admin/finance/overview'); },
+    financeOverview:    function (qs) { return api.get('/admin/finance/overview' + (qs ? '?' + qs : '')); },
+    financeDoctorBreakdown: function (qs) { return api.get('/admin/finance/doctor-breakdown' + (qs ? '?' + qs : '')); },
     pendingWithdrawals: function () { return api.get('/admin/finance/withdrawals/pending'); },
     reviewWithdrawal:   function (id, d) { return api.post('/admin/finance/withdrawals/' + id + '/review', d); },
     listOrders:         function (q) { return api.get('/admin/finance/orders' + (q ? '?' + q : '')); },

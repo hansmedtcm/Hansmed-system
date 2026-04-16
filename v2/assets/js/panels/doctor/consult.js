@@ -313,7 +313,7 @@
           '<div class="body-side-label">Front · 前面</div>' +
           '<div class="body-canvas-wrap" data-side="front">' +
             bodySvg('front') +
-            '<canvas class="body-canvas" data-side="front" width="280" height="600"></canvas>' +
+            '<canvas class="body-canvas" data-side="front" width="280" height="612"></canvas>' +
           '</div>' +
         '</div>' +
         // BACK view
@@ -321,38 +321,77 @@
           '<div class="body-side-label">Back · 背面</div>' +
           '<div class="body-canvas-wrap" data-side="back">' +
             bodySvg('back') +
-            '<canvas class="body-canvas" data-side="back" width="280" height="600"></canvas>' +
+            '<canvas class="body-canvas" data-side="back" width="280" height="612"></canvas>' +
           '</div>' +
         '</div>' +
       '</div>' +
       '</div>';
   }
 
-  // Inline body silhouette (front and back share the same outline; back has spine line)
+  // Anatomical body silhouette — single continuous outline path per view.
+  // Matches the medical-chart reference: smooth shoulders, tapered waist,
+  // clear quad/calf separation, anatomically-positioned hands.
   function bodySvg(side) {
-    var spineLine = side === 'back'
-      ? '<line x1="140" y1="125" x2="140" y2="350" stroke="#999" stroke-width="0.6" stroke-dasharray="2 3"/>'
+    // Front and back share the head/torso/limb silhouette.
+    // The back view adds a centre dashed spine line + a subtle gluteal curve.
+    var pathFront =
+      // Head + neck (rounded oval head, neck taper into trapezius)
+      'M140 22 ' +
+      'C158 22 173 36 173 56 ' +
+      'C173 72 167 84 159 92 ' +
+      'L162 105 ' +
+      // Right shoulder + arm + hand
+      'C190 110 215 125 222 145 ' +
+      'L235 220 L240 270 L240 320 ' +
+      'L237 360 L235 395 ' +
+      // Right hand (thumb + fingers gently curled)
+      'C238 405 244 412 244 422 ' +
+      'C244 430 240 438 234 440 ' +
+      'C228 442 222 438 220 430 ' +
+      'L218 410 ' +
+      // Right leg (hip → quad → knee → calf → ankle)
+      'L210 360 L200 420 L188 510 L182 575 ' +
+      'L168 590 L156 590 L150 575 ' +
+      'L155 500 L153 410 ' +
+      // Crotch
+      'L145 365 L135 365 ' +
+      'L133 410 L131 500 ' +
+      // Left leg (mirror)
+      'L136 575 L130 590 L118 590 L104 575 ' +
+      'L98 510 L86 420 L76 360 ' +
+      // Left arm + hand
+      'L73 395 L71 410 ' +
+      'L69 430 ' +
+      'C67 438 61 442 55 440 ' +
+      'C49 438 45 430 45 422 ' +
+      'C45 412 51 405 54 395 ' +
+      'L52 360 L49 320 ' +
+      'L49 270 L54 220 L67 145 ' +
+      'C74 125 99 110 127 105 ' +
+      'L130 92 ' +
+      'C122 84 116 72 116 56 ' +
+      'C116 36 130 22 140 22 Z';
+
+    var spine = '';
+    var glutealCurve = '';
+    if (side === 'back') {
+      spine = '<line x1="140" y1="115" x2="140" y2="370" stroke="#aaa" stroke-width="0.7" stroke-dasharray="3 4"/>';
+      // Subtle gluteal cleft (the small V at the lower back / top of buttocks in the reference image)
+      glutealCurve = '<path d="M132 365 Q140 372 148 365" fill="none" stroke="#aaa" stroke-width="0.7"/>';
+    }
+
+    // Subtle facial features only on the front (gentle suggestion of a face)
+    var face = side === 'front'
+      ? '<g opacity="0.35" stroke="#888" stroke-width="0.5" fill="none">' +
+        // Faint jawline / chin shading (skip — keeps it abstract)
+        '</g>'
       : '';
-    return '<svg viewBox="0 0 280 600" class="body-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-      // Head
-      '<circle cx="140" cy="60" r="38" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      // Neck
-      '<path d="M125 95 L125 115 L155 115 L155 95" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      // Shoulders + torso
-      '<path d="M70 130 Q90 118 125 117 L155 117 Q190 118 210 130 L205 240 Q205 290 195 340 L165 350 L160 360 L120 360 L115 350 L85 340 Q75 290 75 240 Z" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      // Arms
-      '<path d="M70 130 Q55 180 50 240 Q48 290 55 340 Q58 360 62 380" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      '<path d="M210 130 Q225 180 230 240 Q232 290 225 340 Q222 360 218 380" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      // Hands (simple)
-      '<ellipse cx="58" cy="395" rx="14" ry="20" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      '<ellipse cx="222" cy="395" rx="14" ry="20" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      // Legs
-      '<path d="M115 360 L105 510 L100 580 L120 580 L128 510 L138 360" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      '<path d="M165 360 L175 510 L180 580 L160 580 L152 510 L142 360" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      // Feet
-      '<ellipse cx="108" cy="585" rx="14" ry="6" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      '<ellipse cx="172" cy="585" rx="14" ry="6" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>' +
-      spineLine +
+
+    return '<svg viewBox="0 0 280 612" class="body-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<path d="' + pathFront + '" fill="rgba(255,255,255,0.85)" stroke="#2a2a2a" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>' +
+      spine +
+      glutealCurve +
+      face +
       '</svg>';
   }
 
@@ -1038,7 +1077,8 @@
       '.body-diagram-stage{display:flex;gap:var(--s-3);padding:var(--s-3);justify-content:center;flex-wrap:wrap;background:#fafafa;}' +
       '.body-side{display:flex;flex-direction:column;align-items:center;gap:6px;}' +
       '.body-side-label{font-size:11px;color:var(--stone);letter-spacing:.1em;text-transform:uppercase;}' +
-      '.body-canvas-wrap{position:relative;width:140px;height:300px;}' +
+      '.body-canvas-wrap{position:relative;width:160px;height:350px;}' +
+      '@media (min-width: 768px){.body-canvas-wrap{width:200px;height:430px;}}' +
       '.body-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}' +
       '.body-canvas{position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;touch-action:none;}';
     document.head.appendChild(s);

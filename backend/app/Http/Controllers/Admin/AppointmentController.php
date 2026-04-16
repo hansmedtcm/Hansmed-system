@@ -5,26 +5,38 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
     public function index(Request $request)
     {
-        $q = Appointment::query();
+        $q = DB::table('appointments as a')
+            ->leftJoin('patient_profiles as pp', 'pp.user_id', '=', 'a.patient_id')
+            ->leftJoin('users as pu', 'pu.id', '=', 'a.patient_id')
+            ->leftJoin('doctor_profiles as dp', 'dp.user_id', '=', 'a.doctor_id')
+            ->leftJoin('users as du', 'du.id', '=', 'a.doctor_id')
+            ->select(
+                'a.*',
+                'pp.full_name as patient_name',
+                'pp.phone as patient_phone',
+                'pu.email as patient_email',
+                'dp.full_name as doctor_name',
+                'du.email as doctor_email'
+            )
+            ->orderByDesc('a.scheduled_start');
 
         if ($status = $request->query('status')) {
-            $q->where('status', $status);
+            $q->where('a.status', $status);
         }
         if ($date = $request->query('date')) {
-            $q->whereDate('scheduled_start', $date);
+            $q->whereDate('a.scheduled_start', $date);
         }
         if ($doctorId = $request->query('doctor_id')) {
-            $q->where('doctor_id', $doctorId);
+            $q->where('a.doctor_id', $doctorId);
         }
 
-        return response()->json(
-            $q->orderByDesc('scheduled_start')->paginate(30)
-        );
+        return response()->json(['data' => $q->limit(200)->get()]);
     }
 
     // Admin creates an appointment on behalf of a patient (walk-in or online).

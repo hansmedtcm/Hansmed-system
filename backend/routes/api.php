@@ -228,6 +228,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Finance (M-08)
         Route::get('/finance/overview',                 [FinanceController::class, 'overview']);
+        Route::get('/finance/doctor-breakdown',         [FinanceController::class, 'doctorBreakdown']);
         Route::get('/finance/withdrawals/pending',      [FinanceController::class, 'pendingWithdrawals']);
         Route::post('/finance/withdrawals/{id}/review', [FinanceController::class, 'reviewWithdrawal']);
         Route::get('/finance/orders',                   [FinanceController::class, 'orders']);
