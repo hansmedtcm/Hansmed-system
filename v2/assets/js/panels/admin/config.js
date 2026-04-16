@@ -12,9 +12,11 @@
       '</div>' +
       '<div id="cfg-body"></div>' +
       // Migrations always render so admins can use them even if getConfigs fails
-      '<div id="cfg-migrations"></div>';
+      '<div id="cfg-migrations"></div>' +
+      '<div id="cfg-catalog"></div>';
 
     renderMigrations();
+    renderCatalogImport();
 
     var body = document.getElementById('cfg-body');
     HM.state.loading(body);
@@ -185,6 +187,7 @@
       '<button class="btn btn--outline" data-migration="doctor-off-days">Run: Doctor Off-Days Schema · 執行醫師假期升級</button>' +
       '<button class="btn btn--outline" data-migration="rx-from-review">Run: Prescribe from AI Review · 執行審核開方升級</button>' +
       '<button class="btn btn--outline" data-migration="walk-in-support">Run: Walk-in Support · 執行臨診支援升級</button>' +
+      '<button class="btn btn--outline" data-migration="medicine-catalog">Run: Medicine Catalog Schema · 執行藥材目錄升級</button>' +
       '</div>' +
       '<div id="migration-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
       '</div>';
@@ -213,6 +216,93 @@
           btn.textContent = label;
         }
       });
+    });
+  }
+
+  function renderCatalogImport() {
+    var host = document.getElementById('cfg-catalog');
+    if (!host) return;
+    host.innerHTML = '<div class="card mt-6" style="border-left: 3px solid var(--sage);">' +
+      '<div class="card-title">🌿 Medicine Catalog · 藥材目錄 <span class="chip chip--sage" style="margin-left:8px;">Timing Herbs Mar-2026</span></div>' +
+      '<p class="text-sm text-muted mb-3">Import the Timing Herbs SDN. BHD. monthly price list. Once seeded, every doctor sees these medicines in their prescription autocomplete with current reference prices. Safe to re-run — existing entries are updated in place.</p>' +
+      '<div class="flex gap-2 flex-wrap">' +
+      '<button class="btn btn--primary" id="cat-import-btn">📥 Import Mar-2026 Price List · 匯入藥材價格表</button>' +
+      '<button class="btn btn--outline" id="cat-list-btn">📋 View Catalog · 查看目錄</button>' +
+      '</div>' +
+      '<div id="cat-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
+      '<div id="cat-list" class="mt-4"></div>' +
+      '</div>';
+
+    document.getElementById('cat-import-btn').addEventListener('click', async function () {
+      var btn = this;
+      var out = document.getElementById('cat-output');
+      btn.disabled = true;
+      var originalText = btn.textContent;
+      btn.textContent = 'Importing… · 匯入中…';
+      out.style.display = 'block';
+      out.textContent = 'Step 1/2: Creating table if needed…';
+      try {
+        var mig = await HM.api.admin.migrateMedicineCatalog();
+        out.textContent = '[migrate]\n' + (mig.log || []).map(function (l) { return '  · ' + l; }).join('\n');
+        out.textContent += '\n\nStep 2/2: Importing price list…';
+        var res = await HM.api.admin.seedMedicineCatalog();
+        out.textContent += '\n\n[seed]\n' +
+          '  · Total rows:       ' + res.total_rows + '\n' +
+          '  · Single herbs (单方): ' + res.singles_count + '\n' +
+          '  · Compound formulas (复方): ' + res.formulas_count + '\n' +
+          '  · Inserted:         ' + res.inserted + '\n' +
+          '  · Updated:          ' + res.updated + '\n' +
+          '  · Price month:      ' + res.month + '\n' +
+          '\n✓ Import complete. Doctors will now see these medicines in their prescription autocomplete.';
+        HM.ui.toast('Imported ' + res.total_rows + ' medicines', 'success');
+      } catch (e) {
+        out.textContent += '\n\n✗ Import failed: ' + (e.message || 'unknown error');
+        HM.ui.toast('Import failed: ' + (e.message || ''), 'danger');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+
+    document.getElementById('cat-list-btn').addEventListener('click', async function () {
+      var list = document.getElementById('cat-list');
+      HM.state.loading(list);
+      try {
+        var res = await HM.api.admin.listMedicineCatalog('');
+        var rows = res.data || [];
+        if (!rows.length) {
+          list.innerHTML = '<p class="text-sm text-muted">No catalog entries yet. Click "Import Mar-2026 Price List" to populate.</p>';
+          return;
+        }
+        var singles = rows.filter(function (r) { return r.type === 'single'; });
+        var compounds = rows.filter(function (r) { return r.type === 'compound'; });
+        list.innerHTML =
+          '<div class="flex gap-4 text-sm text-muted mb-2">' +
+          '<div>📦 Total: <strong>' + rows.length + '</strong></div>' +
+          '<div>🌿 单方 Single herbs: <strong>' + singles.length + '</strong></div>' +
+          '<div>⚗️ 复方 Compound formulas: <strong>' + compounds.length + '</strong></div>' +
+          '</div>' +
+          '<div class="table-wrap" style="max-height: 400px; overflow-y: auto;">' +
+          '<table class="table table--compact"><thead><tr>' +
+          '<th>Code</th><th>中文</th><th>Pinyin</th><th>Type</th><th style="text-align:right;">Price (RM/100g)</th>' +
+          '</tr></thead><tbody>' +
+          rows.map(function (r) {
+            var price = r.unit_price == null
+              ? '<span class="text-muted">询价 · inquire</span>'
+              : HM.format.money(r.unit_price);
+            var typeBadge = r.type === 'compound'
+              ? '<span class="chip chip--gold">复方 compound</span>'
+              : '<span class="chip chip--sage">单方 single</span>';
+            return '<tr>' +
+              '<td style="font-family: var(--font-mono); color: var(--stone);">' + HM.format.esc(r.code) + '</td>' +
+              '<td><strong>' + HM.format.esc(r.name_zh) + '</strong></td>' +
+              '<td>' + HM.format.esc(r.name_pinyin) + '</td>' +
+              '<td>' + typeBadge + '</td>' +
+              '<td style="text-align:right;">' + price + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>';
+      } catch (e) { HM.state.error(list, e); }
     });
   }
 

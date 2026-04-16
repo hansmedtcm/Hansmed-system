@@ -219,6 +219,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/doctor-off-days',    [\App\Http\Controllers\Admin\MigrationController::class, 'doctorOffDays']);
         Route::post('/migrate/rx-from-review',     [\App\Http\Controllers\Admin\MigrationController::class, 'rxFromReview']);
         Route::post('/migrate/walk-in-support',    [\App\Http\Controllers\Admin\MigrationController::class, 'walkInSupport']);
+        Route::post('/migrate/medicine-catalog',   [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'migrate']);
+
+        // Medicine catalogue (Timing Herbs master price list)
+        Route::get ('/medicine-catalog',           [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'index']);
+        Route::post('/medicine-catalog/seed',      [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'seed']);
 
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);

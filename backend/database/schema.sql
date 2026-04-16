@@ -231,6 +231,27 @@ CREATE TABLE prescription_items (
 -- =========================================================
 -- 5. PRODUCTS / INVENTORY (per pharmacy)
 -- =========================================================
+-- Master TCM medicine catalogue (shared price list, not pharmacy-scoped).
+-- Seeded from Timing Herbs SDN. BHD. monthly price sheet (单方 + 复方).
+CREATE TABLE medicine_catalog (
+  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code          VARCHAR(20) NOT NULL UNIQUE,          -- e.g. 5610 or B0206
+  name_zh       VARCHAR(120) NOT NULL,                -- 艾叶 / 八正散
+  name_pinyin   VARCHAR(160) NOT NULL,                -- Ai Ye / Ba Zheng Shan
+  type          ENUM('single','compound') NOT NULL,   -- 单方 / 复方
+  category      VARCHAR(10) NULL,                     -- A / B / C (first letter of pinyin)
+  unit          VARCHAR(20) NOT NULL DEFAULT 'per 100g',
+  unit_price    DECIMAL(10,2) NULL,                   -- NULL = 询 (inquire)
+  source        VARCHAR(80) NOT NULL DEFAULT 'Timing Herbs',
+  price_month   VARCHAR(20) NULL,                     -- e.g. 2026-03
+  is_active     TINYINT(1) NOT NULL DEFAULT 1,
+  notes         TEXT NULL,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_mc_type (type, is_active),
+  KEY idx_mc_name (name_zh)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE products (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   pharmacy_id     BIGINT UNSIGNED NOT NULL,

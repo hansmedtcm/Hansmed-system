@@ -289,6 +289,9 @@
   }
 
   // ── Body diagram (front + back silhouette + canvas overlay) ──
+  // The silhouettes load from /v2/assets/img/body-front.(png|svg) and
+  // body-back.(png|svg). Doctors/admins can swap these images to match
+  // any reference chart they prefer — just replace the file.
   function bodyDiagramMarkup() {
     return '<div class="body-diagram-wrap">' +
       '<div class="body-diagram-toolbar">' +
@@ -312,7 +315,7 @@
         '<div class="body-side">' +
           '<div class="body-side-label">Front · 前面</div>' +
           '<div class="body-canvas-wrap" data-side="front">' +
-            bodySvg('front') +
+            bodyImg('front') +
             '<canvas class="body-canvas" data-side="front" width="280" height="612"></canvas>' +
           '</div>' +
         '</div>' +
@@ -320,79 +323,34 @@
         '<div class="body-side">' +
           '<div class="body-side-label">Back · 背面</div>' +
           '<div class="body-canvas-wrap" data-side="back">' +
-            bodySvg('back') +
+            bodyImg('back') +
             '<canvas class="body-canvas" data-side="back" width="280" height="612"></canvas>' +
           '</div>' +
         '</div>' +
       '</div>' +
+      '<div class="text-xs text-muted mt-2" style="text-align:center;">' +
+        'To customise the body chart, drop your reference image at ' +
+        '<code>v2/assets/img/body-front.png</code> and <code>body-back.png</code>. ' +
+        '<span style="font-family: var(--font-zh);">如需替換人體圖，可將參考圖片放置於上述路徑。</span>' +
+      '</div>' +
       '</div>';
   }
 
-  // Anatomical body silhouette — single continuous outline path per view.
-  // Matches the medical-chart reference: smooth shoulders, tapered waist,
-  // clear quad/calf separation, anatomically-positioned hands.
-  function bodySvg(side) {
-    // Front and back share the head/torso/limb silhouette.
-    // The back view adds a centre dashed spine line + a subtle gluteal curve.
-    var pathFront =
-      // Head + neck (rounded oval head, neck taper into trapezius)
-      'M140 22 ' +
-      'C158 22 173 36 173 56 ' +
-      'C173 72 167 84 159 92 ' +
-      'L162 105 ' +
-      // Right shoulder + arm + hand
-      'C190 110 215 125 222 145 ' +
-      'L235 220 L240 270 L240 320 ' +
-      'L237 360 L235 395 ' +
-      // Right hand (thumb + fingers gently curled)
-      'C238 405 244 412 244 422 ' +
-      'C244 430 240 438 234 440 ' +
-      'C228 442 222 438 220 430 ' +
-      'L218 410 ' +
-      // Right leg (hip → quad → knee → calf → ankle)
-      'L210 360 L200 420 L188 510 L182 575 ' +
-      'L168 590 L156 590 L150 575 ' +
-      'L155 500 L153 410 ' +
-      // Crotch
-      'L145 365 L135 365 ' +
-      'L133 410 L131 500 ' +
-      // Left leg (mirror)
-      'L136 575 L130 590 L118 590 L104 575 ' +
-      'L98 510 L86 420 L76 360 ' +
-      // Left arm + hand
-      'L73 395 L71 410 ' +
-      'L69 430 ' +
-      'C67 438 61 442 55 440 ' +
-      'C49 438 45 430 45 422 ' +
-      'C45 412 51 405 54 395 ' +
-      'L52 360 L49 320 ' +
-      'L49 270 L54 220 L67 145 ' +
-      'C74 125 99 110 127 105 ' +
-      'L130 92 ' +
-      'C122 84 116 72 116 56 ' +
-      'C116 36 130 22 140 22 Z';
-
-    var spine = '';
-    var glutealCurve = '';
-    if (side === 'back') {
-      spine = '<line x1="140" y1="115" x2="140" y2="370" stroke="#aaa" stroke-width="0.7" stroke-dasharray="3 4"/>';
-      // Subtle gluteal cleft (the small V at the lower back / top of buttocks in the reference image)
-      glutealCurve = '<path d="M132 365 Q140 372 148 365" fill="none" stroke="#aaa" stroke-width="0.7"/>';
-    }
-
-    // Subtle facial features only on the front (gentle suggestion of a face)
-    var face = side === 'front'
-      ? '<g opacity="0.35" stroke="#888" stroke-width="0.5" fill="none">' +
-        // Faint jawline / chin shading (skip — keeps it abstract)
-        '</g>'
-      : '';
-
-    return '<svg viewBox="0 0 280 612" class="body-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-      '<path d="' + pathFront + '" fill="rgba(255,255,255,0.85)" stroke="#2a2a2a" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>' +
-      spine +
-      glutealCurve +
-      face +
-      '</svg>';
+  // Load the body image — prefer PNG (user-supplied), fall back to shipped SVG.
+  // Both the front and back assets sit in /v2/assets/img/ and can be swapped
+  // by replacing the file on disk. No JS change needed.
+  function bodyImg(side) {
+    // Relative to the HTML page — the doctor dashboard lives at /v2/doctor.html,
+    // so assets resolve against /v2/assets/img/.
+    var pngPath = 'assets/img/body-' + side + '.png';
+    var svgPath = 'assets/img/body-' + side + '.svg';
+    // <img> tries PNG first; onerror swaps to the SVG fallback so the page
+    // always has an outline to draw on even before the user uploads theirs.
+    return '<img class="body-svg body-img" ' +
+      'src="' + pngPath + '" ' +
+      'onerror="if(this.dataset.fb!=\'1\'){this.dataset.fb=\'1\';this.src=\'' + svgPath + '\';}" ' +
+      'alt="Body chart — ' + side + '" ' +
+      'data-side="' + side + '">';
   }
 
   // ── Treatments panel ─────────────────────────────────────

@@ -281,6 +281,11 @@
     deleteContent:  function (slug) { return api.delete('/admin/content/' + slug); },
 
     exportCsv:      function (entity) { return api.get('/admin/reports/export/' + entity); },
+
+    // Medicine catalogue (Timing Herbs master price list)
+    migrateMedicineCatalog: function () { return api.post('/admin/migrate/medicine-catalog'); },
+    seedMedicineCatalog:    function () { return api.post('/admin/medicine-catalog/seed'); },
+    listMedicineCatalog:    function (qs) { return api.get('/admin/medicine-catalog' + (qs ? '?' + qs : '')); },
   };
 
   // ── Notifications (all roles) ──

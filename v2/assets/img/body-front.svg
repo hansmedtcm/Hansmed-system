@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HansMed body chart — anterior (front) view.
+  Standard medical pain-assessment silhouette.
+  Proportions follow 8-head human canon. Single outline with subtle
+  internal hint lines for neck, chest centreline, and groin crease.
+  To replace with a custom reference image, drop a PNG named
+  body-front.png into this directory — the consult panel picks it
+  up automatically.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 612" aria-hidden="true">
+  <defs>
+    <linearGradient id="skin-f" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fefdfa"/>
+      <stop offset="1" stop-color="#f5f0e7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full body silhouette (head + neck + torso + arms + legs + hands + feet) -->
+  <path fill="url(#skin-f)" stroke="#2a2a2a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" d="
+    M140 18
+    C160 18 177 34 177 58
+    C177 72 173 82 168 89
+    L166 102
+    C166 108 168 112 173 115
+    L188 121
+    C206 127 222 138 230 154
+    L244 188 L252 228 L257 268
+    L257 300 L254 326
+    C254 336 258 346 262 352
+    C266 358 268 366 266 374
+    C264 382 256 388 248 386
+    C240 384 236 376 236 368
+    L234 340
+    L228 306 L222 270 L214 234
+    L210 262 L208 298 L210 332
+    C210 354 208 372 204 388
+    L198 430 L192 484 L188 540
+    L184 572
+    C186 582 184 588 178 592
+    L172 598
+    C168 602 162 602 158 598
+    L154 592
+    C152 588 150 582 152 572
+    L152 540
+    L148 478 L144 420 L140 362
+    L136 420 L132 478 L128 540
+    L128 572
+    C130 582 128 588 126 592
+    L122 598
+    C118 602 112 602 108 598
+    L102 592
+    C96 588 94 582 96 572
+    L92 540 L88 484 L82 430 L76 388
+    C72 372 70 354 70 332
+    L72 298 L70 262 L66 234
+    L58 270 L52 306 L46 340
+    L44 368
+    C44 376 40 384 32 386
+    C24 388 16 382 14 374
+    C12 366 14 358 18 352
+    C22 346 26 336 26 326
+    L23 300 L23 268
+    L28 228 L36 188 L50 154
+    C58 138 74 127 92 121
+    L107 115
+    C112 112 114 108 114 102
+    L112 89
+    C107 82 103 72 103 58
+    C103 34 120 18 140 18 Z
+  "/>
+
+  <!-- Internal hint lines: very subtle, for orientation only -->
+  <g opacity="0.22" stroke="#5a5a5a" stroke-width="0.8" fill="none" stroke-linecap="round">
+    <!-- Neck notch / collar -->
+    <path d="M118 116 Q140 126 162 116"/>
+    <!-- Chest centreline -->
+    <line x1="140" y1="130" x2="140" y2="250"/>
+    <!-- Pectoral curves -->
+    <path d="M108 146 Q128 170 140 170"/>
+    <path d="M172 146 Q152 170 140 170"/>
+    <!-- Rib cage lower margin -->
+    <path d="M110 216 Q140 232 170 216"/>
+    <!-- Navel -->
+    <circle cx="140" cy="252" r="1.2" fill="#5a5a5a"/>
+    <!-- Hip / iliac crest hint -->
+    <path d="M98 300 Q140 316 182 300"/>
+    <!-- Groin crease -->
+    <path d="M118 338 Q140 352 162 338"/>
+    <!-- Quadriceps separation hint -->
+    <line x1="116" y1="378" x2="122" y2="452"/>
+    <line x1="164" y1="378" x2="158" y2="452"/>
+    <!-- Kneecaps -->
+    <ellipse cx="120" cy="464" rx="6" ry="4"/>
+    <ellipse cx="160" cy="464" rx="6" ry="4"/>
+    <!-- Deltoid caps -->
+    <path d="M82 138 Q90 126 108 124"/>
+    <path d="M198 138 Q190 126 172 124"/>
+    <!-- Biceps curve -->
+    <path d="M56 198 Q60 220 64 244"/>
+    <path d="M224 198 Q220 220 216 244"/>
+    <!-- Wrist creases -->
+    <path d="M22 368 Q28 372 34 368"/>
+    <path d="M246 368 Q252 372 258 368"/>
+  </g>
+
+  <!-- Facial features (very subtle) -->
+  <g opacity="0.3" stroke="#5a5a5a" stroke-width="0.8" fill="none" stroke-linecap="round">
+    <!-- Eyes -->
+    <path d="M126 52 Q131 50 136 52"/>
+    <path d="M144 52 Q149 50 154 52"/>
+    <!-- Nose bridge -->
+    <line x1="140" y1="58" x2="140" y2="68"/>
+    <!-- Mouth -->
+    <path d="M133 78 Q140 81 147 78"/>
+  </g>
+</svg>
