@@ -147,13 +147,14 @@ class MedicineCatalogController extends Controller
         ]);
     }
 
-    /** List catalogue entries (optionally filtered). */
+    /** List catalogue entries (optionally filtered). Returns active+inactive. */
     public function index(Request $request)
     {
         if (! Schema::hasTable('medicine_catalog')) {
             return response()->json(['data' => [], 'total' => 0]);
         }
-        $q = DB::table('medicine_catalog')->where('is_active', 1);
+        $q = DB::table('medicine_catalog');
+        if ($request->query('active_only')) $q->where('is_active', 1);
         if ($type = $request->query('type'))     $q->where('type', $type);
         if ($search = $request->query('q')) {
             $q->where(function ($w) use ($search) {
@@ -164,6 +165,85 @@ class MedicineCatalogController extends Controller
         }
         $rows = $q->orderBy('type')->orderBy('name_pinyin')->limit(2000)->get();
         return response()->json(['data' => $rows, 'total' => $rows->count()]);
+    }
+
+    /** Create a single medicine row (manual entry outside the bulk seeder). */
+    public function store(Request $request)
+    {
+        $this->ensureTable();
+        $data = $request->validate([
+            'code'        => ['required', 'string', 'max:20', 'unique:medicine_catalog,code'],
+            'name_zh'     => ['required', 'string', 'max:120'],
+            'name_pinyin' => ['required', 'string', 'max:160'],
+            'type'        => ['required', 'in:single,compound'],
+            'unit'        => ['nullable', 'string', 'max:20'],
+            'unit_price'  => ['nullable', 'numeric', 'min:0'],
+            'notes'       => ['nullable', 'string', 'max:1000'],
+            'is_active'   => ['nullable', 'boolean'],
+        ]);
+        $data['source']      = $data['source']      ?? 'Manual';
+        $data['category']    = substr($data['name_pinyin'], 0, 1);
+        $data['unit']        = $data['unit']        ?? 'per 100g';
+        $data['is_active']   = $data['is_active']   ?? 1;
+        $data['created_at']  = now();
+        $data['updated_at']  = now();
+        $id = DB::table('medicine_catalog')->insertGetId($data);
+        return response()->json(['id' => $id, 'data' => $data], 201);
+    }
+
+    /** Update a medicine row by id. */
+    public function update(Request $request, int $id)
+    {
+        $this->ensureTable();
+        $data = $request->validate([
+            'code'        => ['nullable', 'string', 'max:20'],
+            'name_zh'     => ['nullable', 'string', 'max:120'],
+            'name_pinyin' => ['nullable', 'string', 'max:160'],
+            'type'        => ['nullable', 'in:single,compound'],
+            'unit'        => ['nullable', 'string', 'max:20'],
+            'unit_price'  => ['nullable', 'numeric', 'min:0'],
+            'notes'       => ['nullable', 'string', 'max:1000'],
+            'is_active'   => ['nullable', 'boolean'],
+        ]);
+
+        $existing = DB::table('medicine_catalog')->where('id', $id)->first();
+        if (! $existing) return response()->json(['message' => 'Not found'], 404);
+
+        // Block code collisions
+        if (!empty($data['code']) && $data['code'] !== $existing->code) {
+            if (DB::table('medicine_catalog')->where('code', $data['code'])->where('id', '!=', $id)->exists()) {
+                return response()->json(['errors' => ['code' => ['Code already in use']]], 422);
+            }
+        }
+
+        $data = array_filter($data, fn($v) => $v !== null);
+        if (!empty($data['name_pinyin'])) $data['category'] = substr($data['name_pinyin'], 0, 1);
+        $data['updated_at'] = now();
+
+        DB::table('medicine_catalog')->where('id', $id)->update($data);
+        return response()->json(['data' => DB::table('medicine_catalog')->where('id', $id)->first()]);
+    }
+
+    /** Soft-delete = set is_active=0. Hard-delete via ?force=1. */
+    public function destroy(Request $request, int $id)
+    {
+        $this->ensureTable();
+        if ($request->query('force')) {
+            DB::table('medicine_catalog')->where('id', $id)->delete();
+            return response()->json(['deleted' => true, 'hard' => true]);
+        }
+        DB::table('medicine_catalog')->where('id', $id)->update([
+            'is_active' => 0,
+            'updated_at' => now(),
+        ]);
+        return response()->json(['deleted' => true, 'hard' => false]);
+    }
+
+    private function ensureTable(): void
+    {
+        if (! Schema::hasTable('medicine_catalog')) {
+            abort(response()->json(['message' => 'medicine_catalog table missing — run the migrate step first.'], 400));
+        }
     }
 
     /**

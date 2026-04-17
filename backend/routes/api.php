@@ -226,8 +226,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/medicine-catalog',   [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'migrate']);
 
         // Medicine catalogue (Timing Herbs master price list)
-        Route::get ('/medicine-catalog',           [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'index']);
-        Route::post('/medicine-catalog/seed',      [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'seed']);
+        Route::get   ('/medicine-catalog',         [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'index']);
+        Route::post  ('/medicine-catalog',         [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'store']);
+        Route::patch ('/medicine-catalog/{id}',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'update']);
+        Route::delete('/medicine-catalog/{id}',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'destroy']);
+        Route::post  ('/medicine-catalog/seed',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'seed']);
 
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);
@@ -238,6 +241,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Finance (M-08)
         Route::get('/finance/overview',                 [FinanceController::class, 'overview']);
         Route::get('/finance/doctor-breakdown',         [FinanceController::class, 'doctorBreakdown']);
+        Route::get('/finance/revenue-by-source',        [FinanceController::class, 'revenueBySource']);
+        Route::get('/finance/pharmacy-breakdown',       [FinanceController::class, 'pharmacyBreakdown']);
         Route::get('/finance/withdrawals/pending',      [FinanceController::class, 'pendingWithdrawals']);
         Route::post('/finance/withdrawals/{id}/review', [FinanceController::class, 'reviewWithdrawal']);
         Route::get('/finance/orders',                   [FinanceController::class, 'orders']);

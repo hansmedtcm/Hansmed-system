@@ -27,6 +27,7 @@
   HM.router.on('#/prescriptions', function () { HM.adminPanels.prescriptions.render(panel()); });
   HM.router.on('#/orders', function () { HM.adminPanels.orders.render(panel()); });
   HM.router.on('#/shop-catalog', function () { HM.adminPanels.shopCatalog.render(panel()); });
+  HM.router.on('#/medicine-catalog', function () { HM.adminPanels.medicineCatalog.render(panel()); });
   HM.router.on('#/finance', function () { HM.adminPanels.finance.render(panel()); });
   HM.router.on('#/withdrawals', function () { HM.adminPanels.withdrawals.render(panel()); });
   HM.router.on('#/content', function () { HM.adminPanels.content.render(panel()); });

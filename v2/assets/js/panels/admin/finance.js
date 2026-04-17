@@ -66,7 +66,9 @@
       '</div>' +
 
       '<div id="fin-summary"></div>' +
-      '<div id="fin-doctors" class="mt-6"></div>';
+      '<div id="fin-sources" class="mt-6"></div>' +
+      '<div id="fin-doctors" class="mt-6"></div>' +
+      '<div id="fin-pharmacies" class="mt-6"></div>';
 
     // Wire preset buttons
     document.querySelectorAll('#fin-presets .filter-chip').forEach(function (b) {
@@ -101,10 +103,14 @@
 
   async function load() {
     var summaryEl = document.getElementById('fin-summary');
+    var sourcesEl = document.getElementById('fin-sources');
     var doctorsEl = document.getElementById('fin-doctors');
+    var pharmsEl  = document.getElementById('fin-pharmacies');
     var rangeLbl  = document.getElementById('fin-range-label');
     HM.state.loading(summaryEl);
+    sourcesEl.innerHTML = '';
     doctorsEl.innerHTML = '';
+    pharmsEl.innerHTML  = '';
 
     rangeLbl.textContent = state.from || state.to
       ? 'Showing: ' + (state.from || 'beginning') + ' → ' + (state.to || 'today')
@@ -116,28 +122,152 @@
     var qsStr = qs.join('&');
 
     try {
+      // Pull all four reports in parallel — each is independently useful,
+      // and allSettled means a single endpoint failure doesn't blank the page.
       var results = await Promise.allSettled([
         HM.api.admin.financeOverview(qsStr),
         HM.api.admin.financeDoctorBreakdown(qsStr),
+        HM.api.admin.financeRevenueBySource(qsStr),
+        HM.api.admin.financePharmacyBreakdown(qsStr),
       ]);
       var ov  = results[0].status === 'fulfilled' ? results[0].value : {};
       var bd  = results[1].status === 'fulfilled' ? results[1].value : {};
+      var src = results[2].status === 'fulfilled' ? results[2].value : {};
+      var ph  = results[3].status === 'fulfilled' ? results[3].value : {};
 
-      // Summary cards
+      // Headline summary cards — use the source total as the authoritative
+      // grand total since it covers teleconsult + walk-in + treatments + orders + POS.
+      var grandTotal = src.total_revenue != null ? src.total_revenue : (ov.total_revenue || 0);
       summaryEl.innerHTML =
         '<div class="stats-grid mb-4">' +
-        statCard(HM.format.money(ov.total_revenue || 0),       'Total Revenue · 總收入', 'var(--gold)') +
-        statCard(HM.format.money(ov.appointment_revenue || 0), 'Consultations · 問診', '#4a90d9') +
-        statCard(HM.format.money(ov.order_revenue || 0),       'Orders · 訂單', 'var(--sage)') +
+        statCard(HM.format.money(grandTotal),                  'Total Revenue · 總收入', 'var(--gold)') +
+        statCard(HM.format.money(ov.appointment_revenue || 0), 'Consultations · 問診',   '#4a90d9') +
+        statCard(HM.format.money(ov.order_revenue || 0),       'Orders · 訂單',          'var(--sage)') +
         statCard(HM.format.money(ov.pending_withdrawals || 0), 'Pending Payouts · 待付', 'var(--red-seal)') +
         '</div>';
 
-      // Doctor breakdown
+      renderSourceBreakdown(sourcesEl, src);
       renderDoctorTable(doctorsEl, bd);
+      renderPharmacyTable(pharmsEl, ph);
     } catch (e) {
       summaryEl.innerHTML = '';
       HM.state.error(doctorsEl, e);
     }
+  }
+
+  // ── Revenue by income source ─────────────────────────────────────
+  // Cards per source + horizontal stacked bar so the admin can see at
+  // a glance which channel drives the most revenue.
+  function renderSourceBreakdown(host, src) {
+    var sources = (src && src.sources) || [];
+    var total = (src && src.total_revenue) || 0;
+    if (!sources.length) return;
+
+    // Color per source key so the legend/bar stay consistent
+    var palette = {
+      teleconsult:  '#4a90d9',
+      walkin:       'var(--gold)',
+      treatments:   'var(--red-seal)',
+      rx_orders:    'var(--sage)',
+      shop_orders:  '#9b6bc8',
+      pos:          '#e08e45',
+    };
+
+    // Stacked bar segments
+    var bar = total > 0
+      ? '<div class="fin-stackbar">' +
+        sources.filter(function (s) { return s.amount > 0; }).map(function (s) {
+          return '<div class="fin-stackbar-seg" style="width:' + s.pct + '%;background:' + (palette[s.key] || 'var(--stone)') + ';" ' +
+            'title="' + HM.format.esc(s.label) + ' · ' + HM.format.money(s.amount) + ' (' + s.pct + '%)"></div>';
+        }).join('') +
+        '</div>'
+      : '';
+
+    // Cards per source
+    var cards = sources.map(function (s) {
+      var color = palette[s.key] || 'var(--stone)';
+      return '<div class="fin-src-card" style="border-left-color:' + color + ';">' +
+        '<div class="flex-between" style="align-items:start;">' +
+          '<div>' +
+            '<div class="fin-src-icon">' + s.icon + '</div>' +
+            '<div class="fin-src-label">' + HM.format.esc(s.label) + '</div>' +
+            '<div class="fin-src-label-zh" style="font-family: var(--font-zh);">' + HM.format.esc(s.label_zh) + '</div>' +
+          '</div>' +
+          '<div class="fin-src-pct" style="color:' + color + ';">' + s.pct + '%</div>' +
+        '</div>' +
+        '<div class="fin-src-amount" style="color:' + color + ';">' + HM.format.money(s.amount) + '</div>' +
+        '<div class="fin-src-count text-xs text-muted">' + s.count + ' transaction' + (s.count === 1 ? '' : 's') + '</div>' +
+        '</div>';
+    }).join('');
+
+    host.innerHTML =
+      '<div class="flex-between mb-3"><div>' +
+      '<div class="text-label">By Income Source · 按收入來源</div>' +
+      '<div class="text-xs text-muted mt-1">Breakdown across teleconsult, walk-in, treatments, orders, and pharmacy POS.</div>' +
+      '</div></div>' +
+      bar +
+      '<div class="fin-src-grid">' + cards + '</div>';
+
+    injectSourceStyles();
+  }
+
+  // ── Pharmacy breakdown (cashier / POS sales per pharmacy) ──
+  function renderPharmacyTable(host, ph) {
+    var rows = (ph && ph.pharmacies) || [];
+    var summary = (ph && ph.summary) || {};
+
+    var summaryRow =
+      '<div class="flex-between mb-3" style="align-items: end;">' +
+      '<div><div class="text-label">By Pharmacy · 按藥房統計</div>' +
+      '<div class="text-xs text-muted mt-1">' + (summary.pharmacy_count || 0) + ' pharmacy · ' +
+      (summary.sale_count || 0) + ' POS sale(s) · POS acts as the cashier for walk-in + prescription dispensing.</div></div>' +
+      '<div style="text-align:right;">' +
+      '<div class="text-xs text-muted">Total · 總計</div>' +
+      '<div style="font-size: var(--text-xl); font-weight: 500; color: var(--gold);">' + HM.format.money(summary.total_revenue || 0) + '</div>' +
+      '</div></div>';
+
+    if (!rows.length) {
+      host.innerHTML = summaryRow + '<div class="card"><p class="text-muted text-center" style="padding: var(--s-5);">No POS sales in this date range. If the pos_sales table isn\'t created yet, pharmacy cashier data will appear once the first sale is made.</p></div>';
+      return;
+    }
+
+    var body = rows.map(function (r, idx) {
+      return '<tr>' +
+        '<td data-label="Rank" style="font-family: var(--font-mono); color: var(--stone);">#' + (idx + 1) + '</td>' +
+        '<td data-label="Pharmacy"><strong>' + HM.format.esc(r.pharmacy_name || ('#' + r.pharmacy_id)) + '</strong></td>' +
+        '<td data-label="POS Sales" style="text-align: right;">' + r.sale_count + '</td>' +
+        '<td data-label="Walk-in / Rx" style="font-size: var(--text-xs); color: var(--stone);">🛒 ' + (r.walk_in_count || 0) + ' · 💊 ' + (r.rx_count || 0) + '</td>' +
+        '<td data-label="POS Revenue" style="text-align: right;">' + HM.format.money(r.pos_revenue || 0) + '</td>' +
+        '<td data-label="Online Orders" style="text-align: right;">' + HM.format.money(r.online_revenue || 0) + '</td>' +
+        '<td data-label="Total" style="text-align: right; font-weight: 600; color: var(--gold);">' + HM.format.money(r.total_revenue || 0) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    host.innerHTML = summaryRow +
+      '<div class="card" style="padding: 0;">' +
+      '<div class="table-wrap"><table class="table table--responsive">' +
+      '<thead><tr><th>#</th><th>Pharmacy</th><th style="text-align:right;">POS</th><th>Walk-in / Rx</th><th style="text-align:right;">POS Revenue</th><th style="text-align:right;">Online Orders</th><th style="text-align:right;">Total</th></tr></thead>' +
+      '<tbody>' + body + '</tbody>' +
+      '</table></div></div>';
+  }
+
+  function injectSourceStyles() {
+    if (document.getElementById('fin-src-style')) return;
+    var s = document.createElement('style');
+    s.id = 'fin-src-style';
+    s.textContent =
+      '.fin-stackbar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--border);margin-bottom:var(--s-4);}' +
+      '.fin-stackbar-seg{height:100%;transition:opacity .15s ease;}' +
+      '.fin-stackbar-seg:hover{opacity:.8;}' +
+      '.fin-src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--s-3);}' +
+      '.fin-src-card{background:var(--washi);border:1px solid var(--border);border-left:3px solid var(--stone);border-radius:var(--r-md);padding:var(--s-4);}' +
+      '.fin-src-icon{font-size:1.4rem;}' +
+      '.fin-src-label{font-weight:600;font-size:var(--text-sm);margin-top:4px;}' +
+      '.fin-src-label-zh{font-size:var(--text-xs);color:var(--stone);}' +
+      '.fin-src-amount{font-size:var(--text-xl);font-weight:500;margin-top:var(--s-2);line-height:1;}' +
+      '.fin-src-count{margin-top:4px;}' +
+      '.fin-src-pct{font-family:var(--font-mono);font-size:var(--text-base);font-weight:600;}';
+    document.head.appendChild(s);
   }
 
   function renderDoctorTable(host, bd) {

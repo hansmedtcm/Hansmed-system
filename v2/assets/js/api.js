@@ -288,6 +288,13 @@
     migrateMedicineCatalog: function () { return api.post('/admin/migrate/medicine-catalog'); },
     seedMedicineCatalog:    function () { return api.post('/admin/medicine-catalog/seed'); },
     listMedicineCatalog:    function (qs) { return api.get('/admin/medicine-catalog' + (qs ? '?' + qs : '')); },
+    createMedicine:         function (d) { return api.post('/admin/medicine-catalog', d); },
+    updateMedicine:         function (id, d) { return api.patch('/admin/medicine-catalog/' + id, d); },
+    deleteMedicine:         function (id, force) { return api.delete('/admin/medicine-catalog/' + id + (force ? '?force=1' : '')); },
+
+    // Finance: revenue by source + pharmacy breakdown
+    financeRevenueBySource:  function (qs) { return api.get('/admin/finance/revenue-by-source' + (qs ? '?' + qs : '')); },
+    financePharmacyBreakdown: function (qs) { return api.get('/admin/finance/pharmacy-breakdown' + (qs ? '?' + qs : '')); },
   };
 
   // ── Notifications (all roles) ──
