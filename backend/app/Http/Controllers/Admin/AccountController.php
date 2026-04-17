@@ -107,4 +107,134 @@ class AccountController extends Controller
         $user->update(['status' => $user->status === 'active' ? 'suspended' : 'active']);
         return response()->json(['user' => $user->fresh()]);
     }
+
+    /**
+     * Reset the password for any user account (patient, doctor, pharmacy,
+     * or fellow admin). Typically used when someone forgot their password
+     * and there's no self-serve reset flow yet.
+     *
+     * The admin supplies a new password; the user is force-logged-out by
+     * revoking all existing tokens so the old session can't keep working
+     * with a stale password.
+     */
+    public function resetPassword(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'max:128'],
+        ]);
+
+        $user = User::findOrFail($id);
+        $actor = $request->user();
+
+        // Only another admin can reset another admin's password
+        if ($user->role === 'admin' && $user->id !== $actor->id && $actor->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $user->update(['password_hash' => Hash::make($data['password'])]);
+        // Kick all of this user's API tokens so the old password stops working.
+        try { $user->tokens()->delete(); } catch (\Throwable $e) { /* Sanctum not set up? ignore */ }
+
+        DB::table('audit_logs')->insert([
+            'user_id'     => $actor->id,
+            'action'      => 'account.password_reset',
+            'target_type' => 'user',
+            'target_id'   => $user->id,
+            'created_at'  => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Password reset for ' . $user->email,
+            'user'    => ['id' => $user->id, 'email' => $user->email, 'role' => $user->role],
+        ]);
+    }
+
+    /**
+     * Update account-level fields (email + status) and role-specific
+     * profile fields (name, phone, license, etc). Works for any role.
+     * The password is NOT changed here — use resetPassword for that.
+     */
+    public function updateAccount(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'email'  => ['nullable', 'email', 'max:190'],
+            'status' => ['nullable', 'in:active,pending,suspended'],
+            'name'   => ['nullable', 'string', 'max:160'],
+            // Doctor-specific
+            'specialties'      => ['nullable', 'string', 'max:500'],
+            'license_no'       => ['nullable', 'string', 'max:120'],
+            'bio'              => ['nullable', 'string', 'max:2000'],
+            'consultation_fee' => ['nullable', 'numeric', 'min:0'],
+            // Pharmacy-specific
+            'address_line' => ['nullable', 'string', 'max:255'],
+            'city'         => ['nullable', 'string', 'max:80'],
+            'state'        => ['nullable', 'string', 'max:80'],
+            'country'      => ['nullable', 'string', 'max:80'],
+            'phone'        => ['nullable', 'string', 'max:40'],
+            // Patient-specific (on patient_profiles)
+            'nickname'   => ['nullable', 'string', 'max:60'],
+            'gender'     => ['nullable', 'string', 'max:20'],
+            'birth_date' => ['nullable', 'date'],
+        ]);
+
+        $user = User::findOrFail($id);
+
+        return DB::transaction(function () use ($data, $user, $request) {
+            // Reject email collisions
+            if (!empty($data['email']) && $data['email'] !== $user->email) {
+                if (User::where('email', $data['email'])->where('id', '!=', $user->id)->exists()) {
+                    abort(response()->json(['errors' => ['email' => ['Email already in use']]], 422));
+                }
+                $user->email = $data['email'];
+            }
+            if (!empty($data['status'])) {
+                $user->status = $data['status'];
+            }
+            $user->save();
+
+            // Role-specific profile updates
+            if ($user->role === 'doctor') {
+                $profile = $user->doctorProfile()->firstOrCreate([], ['full_name' => '']);
+                $profile->fill(array_filter([
+                    'full_name'        => $data['name'] ?? null,
+                    'specialties'      => $data['specialties'] ?? null,
+                    'license_no'       => $data['license_no'] ?? null,
+                    'bio'              => $data['bio'] ?? null,
+                    'consultation_fee' => $data['consultation_fee'] ?? null,
+                ], fn($v) => $v !== null))->save();
+            } elseif ($user->role === 'pharmacy') {
+                $profile = $user->pharmacyProfile()->firstOrCreate([], ['name' => '']);
+                $profile->fill(array_filter([
+                    'name'         => $data['name']         ?? null,
+                    'license_no'   => $data['license_no']   ?? null,
+                    'address_line' => $data['address_line'] ?? null,
+                    'city'         => $data['city']         ?? null,
+                    'state'        => $data['state']        ?? null,
+                    'country'      => $data['country']      ?? null,
+                    'phone'        => $data['phone']        ?? null,
+                ], fn($v) => $v !== null))->save();
+            } elseif ($user->role === 'patient' && method_exists($user, 'patientProfile')) {
+                $profile = $user->patientProfile()->firstOrCreate([]);
+                $profile->fill(array_filter([
+                    'nickname'   => $data['nickname']   ?? $data['name'] ?? null,
+                    'gender'     => $data['gender']     ?? null,
+                    'birth_date' => $data['birth_date'] ?? null,
+                    'phone'      => $data['phone']      ?? null,
+                ], fn($v) => $v !== null))->save();
+            }
+
+            DB::table('audit_logs')->insert([
+                'user_id'     => $request->user()->id,
+                'action'      => 'account.update.' . $user->role,
+                'target_type' => 'user',
+                'target_id'   => $user->id,
+                'created_at'  => now(),
+            ]);
+
+            return response()->json([
+                'message' => 'Account updated',
+                'user'    => $user->fresh()->load(['doctorProfile', 'pharmacyProfile', 'patientProfile']),
+            ]);
+        });
+    }
 }

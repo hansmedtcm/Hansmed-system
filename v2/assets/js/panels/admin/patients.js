@@ -37,7 +37,15 @@
           '<td data-label="IC">' + HM.format.esc(p.ic_number || '—') + '</td>' +
           '<td data-label="Phone">' + HM.format.esc(p.phone || '—') + '</td>' +
           '<td data-label="Status">' + HM.format.statusBadge(u.status) + '</td>' +
-          '<td data-label="Actions"><button class="btn btn--outline btn--sm" onclick="location.hash=\'#/patients/' + u.id + '\'">View · 查看</button></td>';
+          '<td data-label="Actions" style="white-space:nowrap;">' +
+            '<button class="btn btn--ghost btn--sm" data-act="pw">🔑 Password</button> ' +
+            '<button class="btn btn--outline btn--sm" data-act="view">View · 查看</button>' +
+          '</td>';
+        tr.querySelector('[data-act="view"]').addEventListener('click', function () { location.hash = '#/patients/' + u.id; });
+        tr.querySelector('[data-act="pw"]').addEventListener('click', function () {
+          // Reuse the accounts-panel reset modal — same backend endpoint works for every role.
+          HM.adminPanels.accounts.showResetPassword(u);
+        });
         tbody.appendChild(tr);
       });
     } catch (e) { HM.state.error(container, e); }
@@ -52,7 +60,10 @@
 
       el.innerHTML = '<div class="page-header">' +
         '<button class="btn btn--ghost" onclick="location.hash=\'#/patients\'">← Back</button>' +
+        '<div class="flex-between" style="align-items:center;flex-wrap:wrap;gap:var(--s-2);">' +
         '<h1 class="page-title mt-2">' + HM.format.esc(p.full_name || user.email) + '</h1>' +
+        '<button class="btn btn--ghost" id="pt-reset-pw">🔑 Reset Password · 重設密碼</button>' +
+        '</div>' +
         '</div>' +
         '<form id="pt-form" class="card card--pad-lg" style="max-width: 900px;">' +
         '<div class="alert alert--warning"><div class="alert-body">You are editing a locked patient profile. Changes are logged to audit.</div></div>' +
@@ -72,6 +83,11 @@
         '<div class="field"><label class="field-label">Current Medications</label><textarea name="current_medications" class="field-input" rows="2">' + HM.format.esc(p.current_medications || '') + '</textarea></div>' +
         '<button type="submit" class="btn btn--primary">Save Changes</button>' +
         '</form>';
+
+      var pwBtn = document.getElementById('pt-reset-pw');
+      if (pwBtn) pwBtn.addEventListener('click', function () {
+        HM.adminPanels.accounts.showResetPassword(user);
+      });
 
       document.getElementById('pt-form').addEventListener('submit', async function (e) {
         e.preventDefault();

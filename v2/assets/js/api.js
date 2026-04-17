@@ -238,6 +238,8 @@
     listAccounts:       function (q) { return api.get('/admin/accounts' + (q ? '?' + q : '')); },
     createAccount:      function (d) { return api.post('/admin/accounts', d); },
     toggleAccount:      function (id) { return api.post('/admin/accounts/' + id + '/toggle'); },
+    updateAccount:      function (id, d) { return api.patch('/admin/accounts/' + id, d); },
+    resetAccountPassword: function (id, password) { return api.post('/admin/accounts/' + id + '/reset-password', { password: password }); },
 
     listPatients:       function (q) { return api.get('/admin/patients' + (q ? '?' + q : '')); },
     getPatient:         function (id) { return api.get('/admin/patients/' + id); },

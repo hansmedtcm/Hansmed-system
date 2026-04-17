@@ -285,6 +285,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/accounts',             [\App\Http\Controllers\Admin\AccountController::class, 'index']);
         Route::post('/accounts',            [\App\Http\Controllers\Admin\AccountController::class, 'store']);
         Route::post('/accounts/{id}/toggle',[\App\Http\Controllers\Admin\AccountController::class, 'toggleStatus']);
+        Route::patch('/accounts/{id}',      [\App\Http\Controllers\Admin\AccountController::class, 'updateAccount']);
+        Route::post('/accounts/{id}/reset-password', [\App\Http\Controllers\Admin\AccountController::class, 'resetPassword']);
 
         // Doctor management (full CRUD — admin creates doctor accounts)
         Route::get('/doctors',              [DoctorManagementController::class, 'index']);
