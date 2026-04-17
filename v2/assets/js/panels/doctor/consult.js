@@ -206,53 +206,34 @@
   }
 
   // ── Case Record template ──────────────────────────────────
-  // Walk-in visits use a lean template: no duration, no inspection/
-  // auscultation/inquiry, but adds vitals + file upload.
+  // Unified template — the same walk-in layout is used for both walk-in
+  // and teleconsult visits. The doctor gets a consistent form regardless
+  // of visit type: Chief Complaint + BP + Pulse + file upload + body
+  // diagram. (Inspection/Auscultation/Inquiry happens face-to-face or
+  // via the video call — no need for separate text boxes online.)
   function caseRecordMarkup() {
-    var isWalkIn = state.isWalkIn;
+    var topRow =
+      '<div class="field-grid field-grid--3">' +
+      '<div class="field" style="grid-column: span 2;"><label class="field-label">Chief Complaint · 主訴</label>' +
+      '<textarea id="cr-chief" class="field-input" rows="2" placeholder="Primary reason for visit"></textarea></div>' +
+      '<div class="field"><label class="field-label">Blood Pressure · 血壓</label>' +
+      '<input id="cr-bp" class="field-input field-input--boxed" placeholder="e.g. 120/80"></div>' +
+      '</div>';
 
-    var topRow = isWalkIn
-      ? '<div class="field-grid field-grid--3">' +
-        '<div class="field" style="grid-column: span 2;"><label class="field-label">Chief Complaint · 主訴</label>' +
-        '<textarea id="cr-chief" class="field-input" rows="2" placeholder="Primary reason for visit"></textarea></div>' +
-        '<div class="field"><label class="field-label">Blood Pressure · 血壓</label>' +
-        '<input id="cr-bp" class="field-input field-input--boxed" placeholder="e.g. 120/80"></div>' +
-        '</div>'
-      : '<div class="field-grid field-grid--2">' +
-        '<div class="field"><label class="field-label">Chief Complaint · 主訴</label>' +
-        '<textarea id="cr-chief" class="field-input" rows="2" placeholder="Primary reason for visit"></textarea></div>' +
-        '<div class="field"><label class="field-label">Duration · 病程</label>' +
-        '<input id="cr-duration" class="field-input field-input--boxed" placeholder="e.g. 3 days, 2 weeks"></div>' +
-        '</div>';
+    var fourExam =
+      '<div class="field"><label class="field-label">切 Pulse · 脈診</label>' +
+      '<input id="cr-pulse" class="field-input field-input--boxed" placeholder="e.g. 左:弦 / 右:滑 Left: wiry / Right: slippery"></div>';
 
-    // Online visits get the full 四診 block; walk-ins only get pulse (they're
-    // doing inspection/inquiry face-to-face and don't need text echo).
-    var fourExam = isWalkIn
-      ? '<div class="field"><label class="field-label">切 Pulse · 脈診</label>' +
-        '<input id="cr-pulse" class="field-input field-input--boxed" placeholder="e.g. 左:弦 / 右:滑 Left: wiry / Right: slippery"></div>'
-      : '<div class="text-label mt-3 mb-2">四診 · Four Examinations</div>' +
-        '<div class="field-grid field-grid--2">' +
-        '<div class="field"><label class="field-label">望 Inspection · 望</label>' +
-        '<textarea id="cr-inspect" class="field-input" rows="2" placeholder="Tongue, complexion, spirit, body shape"></textarea></div>' +
-        '<div class="field"><label class="field-label">聞 Auscultation · 聞</label>' +
-        '<textarea id="cr-listen" class="field-input" rows="2" placeholder="Voice, breathing, smells"></textarea></div>' +
-        '<div class="field"><label class="field-label">問 Inquiry · 問</label>' +
-        '<textarea id="cr-inquiry" class="field-input" rows="2" placeholder="Sleep, appetite, bowels, urination, thirst, sweating"></textarea></div>' +
-        '<div class="field"><label class="field-label">切 Pulse · 切 (脈診)</label>' +
-        '<input id="cr-pulse" class="field-input field-input--boxed" placeholder="e.g. 左:弦 / 右:滑"></div>' +
-        '</div>';
-
-    // Document upload only appears for walk-in (in-person you often have
-    // paper reports the patient brings in — lab, imaging, BP logs, etc.)
-    var uploadBlock = isWalkIn
-      ? '<div class="field mt-3">' +
-        '<label class="field-label">📎 Medical Documents · 醫療文件</label>' +
-        '<div class="text-xs text-muted mb-2">Upload lab reports, imaging, prescriptions from other clinics, etc. Photos or PDFs. ' +
-        '<span style="font-family: var(--font-zh);">上傳化驗單、影像、外院處方等。</span></div>' +
-        '<input type="file" id="cr-files" class="field-input field-input--boxed" multiple accept="image/*,.pdf,.doc,.docx" style="padding: 6px;">' +
-        '<div id="cr-files-list" class="mt-2"></div>' +
-        '</div>'
-      : '';
+    // Document upload available for both visit types — teleconsult patients
+    // may still share lab reports, imaging, or external prescriptions.
+    var uploadBlock =
+      '<div class="field mt-3">' +
+      '<label class="field-label">📎 Medical Documents · 醫療文件</label>' +
+      '<div class="text-xs text-muted mb-2">Upload lab reports, imaging, prescriptions from other clinics, etc. Photos or PDFs. ' +
+      '<span style="font-family: var(--font-zh);">上傳化驗單、影像、外院處方等。</span></div>' +
+      '<input type="file" id="cr-files" class="field-input field-input--boxed" multiple accept="image/*,.pdf,.doc,.docx" style="padding: 6px;">' +
+      '<div id="cr-files-list" class="mt-2"></div>' +
+      '</div>';
 
     return topRow +
 
@@ -288,10 +269,10 @@
       '</div>';
   }
 
-  // ── Body diagram (front + back silhouette + canvas overlay) ──
-  // The silhouettes load from /v2/assets/img/body-front.(png|svg) and
-  // body-back.(png|svg). Doctors/admins can swap these images to match
-  // any reference chart they prefer — just replace the file.
+  // ── Body diagram (front + back PNG + canvas overlay) ──
+  // Uses the user-supplied anatomical drawings at /v2/assets/img/front.png
+  // and /v2/assets/img/back.png. Two separate drawable canvases — one for
+  // each view — so doctors can annotate pain / acupuncture sites on either.
   function bodyDiagramMarkup() {
     return '<div class="body-diagram-wrap">' +
       '<div class="body-diagram-toolbar">' +
@@ -311,46 +292,24 @@
         '</div>' +
       '</div>' +
       '<div class="body-diagram-stage">' +
-        // FRONT view
+        // FRONT
         '<div class="body-side">' +
           '<div class="body-side-label">Front · 前面</div>' +
           '<div class="body-canvas-wrap" data-side="front">' +
-            bodyImg('front') +
-            '<canvas class="body-canvas" data-side="front" width="280" height="612"></canvas>' +
+            '<img class="body-chart-img" src="assets/img/front.png" alt="Body chart — front view">' +
+            '<canvas class="body-canvas" data-side="front" width="470" height="1024"></canvas>' +
           '</div>' +
         '</div>' +
-        // BACK view
+        // BACK
         '<div class="body-side">' +
           '<div class="body-side-label">Back · 背面</div>' +
           '<div class="body-canvas-wrap" data-side="back">' +
-            bodyImg('back') +
-            '<canvas class="body-canvas" data-side="back" width="280" height="612"></canvas>' +
+            '<img class="body-chart-img" src="assets/img/back.png" alt="Body chart — back view">' +
+            '<canvas class="body-canvas" data-side="back" width="470" height="1024"></canvas>' +
           '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="text-xs text-muted mt-2" style="text-align:center;">' +
-        'To customise the body chart, drop your reference image at ' +
-        '<code>v2/assets/img/body-front.png</code> and <code>body-back.png</code>. ' +
-        '<span style="font-family: var(--font-zh);">如需替換人體圖，可將參考圖片放置於上述路徑。</span>' +
-      '</div>' +
       '</div>';
-  }
-
-  // Load the body image — prefer PNG (user-supplied), fall back to shipped SVG.
-  // Both the front and back assets sit in /v2/assets/img/ and can be swapped
-  // by replacing the file on disk. No JS change needed.
-  function bodyImg(side) {
-    // Relative to the HTML page — the doctor dashboard lives at /v2/doctor.html,
-    // so assets resolve against /v2/assets/img/.
-    var pngPath = 'assets/img/body-' + side + '.png';
-    var svgPath = 'assets/img/body-' + side + '.svg';
-    // <img> tries PNG first; onerror swaps to the SVG fallback so the page
-    // always has an outline to draw on even before the user uploads theirs.
-    return '<img class="body-svg body-img" ' +
-      'src="' + pngPath + '" ' +
-      'onerror="if(this.dataset.fb!=\'1\'){this.dataset.fb=\'1\';this.src=\'' + svgPath + '\';}" ' +
-      'alt="Body chart — ' + side + '" ' +
-      'data-side="' + side + '">';
   }
 
   // ── Treatments panel ─────────────────────────────────────
@@ -856,17 +815,9 @@
       doctor_instructions: val('cr-inst'),
     };
 
-    if (state.isWalkIn) {
-      // Walk-in-only fields
-      caseRecord.blood_pressure = val('cr-bp');
-      caseRecord.documents      = state.documents;
-    } else {
-      // Online-only fields (hidden on walk-in)
-      caseRecord.duration     = val('cr-duration');
-      caseRecord.inspection   = val('cr-inspect');
-      caseRecord.auscultation = val('cr-listen');
-      caseRecord.inquiry      = val('cr-inquiry');
-    }
+    // Unified fields — captured for both walk-in and teleconsult visits.
+    caseRecord.blood_pressure = val('cr-bp');
+    caseRecord.documents      = state.documents;
 
     // Body diagrams (front + back) — saved as PNG data URLs only when drawn
     var bodyDiagrams = captureBodyDiagrams();

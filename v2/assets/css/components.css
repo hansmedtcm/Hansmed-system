@@ -625,6 +625,7 @@ select.field-input {
 .body-thickness-value { font-size: var(--text-xs); color: var(--stone); font-family: var(--font-mono); min-width: 32px; }
 #body-thickness { width: 110px; accent-color: var(--gold); }
 
+/* Two-side layout — front + back PNG charts side-by-side */
 .body-diagram-stage {
   display: flex;
   gap: var(--s-4);
@@ -644,41 +645,39 @@ select.field-input {
   letter-spacing: 1px;
   font-family: var(--font-zh);
 }
-/* The wrap is the positioning root for img + canvas overlay */
+/* Positioning root for img + canvas overlay */
 .body-canvas-wrap {
   position: relative;
   width: 280px;
-  height: 612px;
+  aspect-ratio: 470 / 1024;
   max-width: 100%;
-  background: #fafaf6;
+  background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   overflow: hidden;
 }
-/* The body outline (img or inline svg). Sits behind the canvas. */
-.body-svg,
-.body-img {
+.body-chart-img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
   display: block;
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
 }
-/* The transparent drawing surface on top. Captures pointer events. */
 .body-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  touch-action: none;           /* prevent page scroll while drawing on mobile */
+  touch-action: none;
   cursor: crosshair;
   background: transparent;
 }
 
 @media (max-width: 640px) {
-  .body-canvas-wrap { width: 240px; height: 524px; }
+  .body-canvas-wrap { width: 240px; }
 }
 

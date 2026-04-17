@@ -349,54 +349,129 @@
   font-weight: 300;
 }
 
-/* Mobile: sidebar becomes bottom nav */
+/* ──────────────────────────────────────────────────────────────
+   Mobile: sidebar becomes a slide-in drawer with a hamburger toggle
+   and a backdrop. Menu items stay full-width with labels visible —
+   no more horizontal squeeze of 14 links jammed into one bottom bar.
+   ────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .portal-layout {
     grid-template-columns: 1fr;
   }
+  /* Hidden by default; slides in from the left when .is-open is set. */
   .sidebar {
     position: fixed;
+    top: var(--nav-height);
     bottom: 0;
     left: 0;
-    right: 0;
-    top: auto;
-    height: auto;
-    flex-direction: row;
-    padding: 0.5rem;
-    gap: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    border-top: 1px solid rgba(245, 240, 232, 0.1);
-    z-index: var(--z-sticky);
-    scrollbar-width: none;
+    width: 82vw;
+    max-width: 320px;
+    height: calc(100vh - var(--nav-height));
+    padding: var(--s-5) var(--s-3);
+    gap: var(--s-1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1200;
+    transform: translateX(-100%);
+    transition: transform 220ms cubic-bezier(.4, 0, .2, 1);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+    scrollbar-width: thin;
   }
-  .sidebar::-webkit-scrollbar { display: none; }
-  .sidebar-user,
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  /* Full user card + section labels stay visible in the drawer */
+  .sidebar-user {
+    display: block;
+    padding: var(--s-3) var(--s-2) var(--s-4);
+  }
   .sidebar-section {
-    display: none;
+    display: block;
+    padding: var(--s-3) var(--s-2) var(--s-1);
   }
   .sidebar-divider {
-    display: none;
+    display: block;
   }
+
+  /* Menu items get proper size & readable labels */
   .sidebar-link {
-    flex-direction: column;
-    gap: 2px;
-    padding: 0.5rem 0.5rem;
-    min-width: 64px;
-    font-size: 0.55rem;
-    text-align: center;
-    white-space: nowrap;
+    flex-direction: row;
+    gap: 0.75rem;
+    padding: 0.85rem 0.85rem;
+    min-width: 0;
+    font-size: 0.8rem;
+    text-align: left;
+    white-space: normal;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
   }
   .sidebar-link-icon {
     font-size: 1.2rem;
+    width: 24px;
   }
   .sidebar-link-label {
-    font-size: 0.55rem;
-    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
   }
+
+  /* Backdrop shown when drawer is open */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1100;
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+  .sidebar-backdrop.is-visible {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Hamburger toggle button (injected into top-nav by portal-menu.js) */
+  .portal-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 0;
+    margin-right: 4px;
+    position: relative;
+  }
+  .portal-menu-btn svg { width: 22px; height: 22px; }
+  .portal-menu-btn-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 9px;
+    height: 9px;
+    background: var(--red-seal);
+    border-radius: 50%;
+    display: none;
+  }
+  .portal-menu-btn-badge.is-visible { display: block; }
+
   .main {
     padding: var(--s-4);
-    padding-bottom: 6rem; /* space for bottom nav */
+    padding-bottom: var(--s-5);
+  }
+}
+
+/* Hamburger + backdrop only appear on mobile */
+@media (min-width: 769px) {
+  .portal-menu-btn,
+  .sidebar-backdrop {
+    display: none !important;
   }
 }
 

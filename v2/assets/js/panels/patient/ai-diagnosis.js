@@ -187,65 +187,192 @@
   var state = { answers: {}, dims: {}, followUpAlerts: [], qIndex: 0 };
 
   async function render(el) {
-    state = { answers: {}, dims: {}, followUpAlerts: [], qIndex: 0 };
+    state = {
+      answers: {}, dims: {}, followUpAlerts: [], qIndex: 0,
+      tongueId: null, tongueReport: null, skippedTongue: false,
+    };
     renderIntro(el);
   }
 
+  // Single-session intro — no more separate tongue vs quiz buttons.
+  // One "Start" button kicks off: tongue photo → 10 questions → combined report.
   function renderIntro(el) {
     el.innerHTML = '<div class="page-header">' +
       '<div class="page-header-label">AI Diagnosis · AI 智能診斷</div>' +
-      '<h1 class="page-title">Tongue Scan &amp; Constitution Assessment</h1>' +
-      '<p class="text-muted mt-1">Two AI tools that together map your full TCM picture — upload a tongue photo, answer 10 constitution questions, and a licensed doctor reviews both. ' +
-      '<span style="font-family: var(--font-zh);">舌診 + 體質測評雙管齊下，最後由中醫師審核確認。</span></p>' +
+      '<h1 class="page-title">Full TCM Assessment · 完整體質評估</h1>' +
+      '<p class="text-muted mt-1">One guided session covering both tongue diagnosis and the 10-dimension constitution quiz. ' +
+      'Your combined results go to a licensed TCM doctor for review and personalised advice. ' +
+      '<span style="font-family: var(--font-zh);">一次性完成舌診與 10 維體質問卷，結果送交中醫師審核，獲取個人化建議。</span></p>' +
       '</div>' +
 
-      // ── Action cards ──
-      '<div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: var(--s-5);">' +
-
-      // Tongue scan card
-      '<div class="card card--pad-lg aid-action-card" id="aid-action-tongue">' +
-      '<div style="font-size: 3rem; margin-bottom: var(--s-3);">👅</div>' +
-      '<h3 class="mb-2">Tongue Scan · 舌診</h3>' +
-      '<p class="text-sm text-muted mb-3">Upload a clear tongue photo. AI analyses colour, coating, shape and moisture, then sends the result to a doctor for review. ' +
-      '<span style="font-family: var(--font-zh);">上傳舌頭照片，AI 分析舌色、舌苔、舌形，醫師審核建議。</span></p>' +
-      '<button class="btn btn--primary" onclick="location.hash=\'#/tongue\'">📷 Start Tongue Scan · 開始舌診 →</button>' +
+      // Flow explainer
+      '<div class="card card--pad-lg mb-4">' +
+      '<div class="grid-2" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--s-3);">' +
+      aidStepCard('1', '👅', 'Tongue Photo', '舌頭照片', 'Upload a clear photo') +
+      aidStepCard('2', '📝', '10 Questions', '10 題問卷', 'Bilingual TCM quiz') +
+      aidStepCard('3', '🗺️', 'Constitution Map', '體質地圖', 'Radar + 10 dimensions') +
+      aidStepCard('4', '🩺', 'Doctor Review', '醫師審核', 'Personalised plan') +
       '</div>' +
-
-      // Constitution card
-      '<div class="card card--pad-lg aid-action-card" id="aid-action-constitution">' +
-      '<div style="font-size: 3rem; margin-bottom: var(--s-3);">🧭</div>' +
-      '<h3 class="mb-2">Constitution Quiz · 體質測評</h3>' +
-      '<p class="text-sm text-muted mb-3">Answer 10 bilingual questions to map your TCM constitution across energy, circulation, temperature, moisture, sleep and immunity. ' +
-      '<span style="font-family: var(--font-zh);">10 題測評，AI 繪製 10 維體質地圖。</span></p>' +
-      '<button class="btn btn--primary" id="aid-start">📝 Start Questionnaire · 開始測評 →</button>' +
+      '<div class="flex gap-2 mt-4 flex-wrap">' +
+      '<button class="btn btn--primary btn--lg" id="aid-start-combined">🚀 Start Full Assessment · 開始完整評估 →</button>' +
+      '<button class="btn btn--outline" id="aid-skip-tongue">Skip tongue, quiz only · 跳過舌診，只做問卷</button>' +
       '</div>' +
-
+      '<p class="text-xs text-muted mt-3">Takes about 3–5 minutes. All data stays encrypted and only shared with the reviewing doctor. ' +
+      '<span style="font-family: var(--font-zh);">約需 3–5 分鐘，資料加密保護。</span></p>' +
       '</div>' +
-
-      // Safety notice
-      '<div class="alert alert--info mt-4">' +
-      '<div class="alert-icon">🩺</div>' +
-      '<div class="alert-body">' +
-      '<strong>How it works · 使用流程</strong><br>' +
-      '1. Run either or both assessments · 可做其一或兩者都做<br>' +
-      '2. Results sent to a licensed TCM doctor for review · 送交醫師審核<br>' +
-      '3. Doctor personalises your advice, may prescribe medicine · 醫師批准後提供個人化建議<br>' +
-      '4. Final report appears on this page with doctor\'s approved plan · 審核後顯示完整報告' +
-      '</div></div>' +
 
       // Combined history
-      '<div class="mt-8">' +
+      '<div class="mt-6">' +
       '<div class="text-label mb-3">📜 My Past Records · 過往記錄</div>' +
       '<div id="aid-past">Loading…</div>' +
       '</div>';
 
-    document.getElementById('aid-start').addEventListener('click', function () {
+    injectStyle();
+    document.getElementById('aid-start-combined').addEventListener('click', function () {
+      state.skippedTongue = false;
+      renderTongueStep(el);
+    });
+    document.getElementById('aid-skip-tongue').addEventListener('click', function () {
+      state.skippedTongue = true;
       state.qIndex = 0;
       renderQuestion(el);
     });
 
     // Load combined history
     loadPastReports();
+  }
+
+  function aidStepCard(n, icon, en, zh, desc) {
+    return '<div class="aid-step-card">' +
+      '<div class="aid-step-num">' + n + '</div>' +
+      '<div class="aid-step-icon">' + icon + '</div>' +
+      '<div class="aid-step-en">' + en + '</div>' +
+      '<div class="aid-step-zh">' + zh + '</div>' +
+      '<div class="aid-step-desc">' + desc + '</div>' +
+      '</div>';
+  }
+
+  // ── Step 1/11 — tongue photo ───────────────────────────────
+  // Uploads the photo, polls for AI analysis, then transitions to the
+  // 10-question quiz. The returned diagnosis id is kept in state so the
+  // questionnaire submit can reference it as a single session.
+  function renderTongueStep(el) {
+    el.innerHTML = '<div class="page-header">' +
+      '<div class="page-header-label">Step 1 of 11 · 第 1 / 11 步</div>' +
+      '<h1 class="page-title">👅 Tongue Photo · 舌頭照片</h1>' +
+      '<div class="aid-progress"><div class="aid-progress-fill" style="width: 9%;"></div></div>' +
+      '</div>' +
+
+      '<div class="card card--pad-lg" style="max-width: 700px;">' +
+      '<p class="text-sm text-muted mb-4"><strong>Tips for best results · 最佳效果小貼士：</strong><br>' +
+      '• Natural lighting, no filter · 自然光線，不使用濾鏡<br>' +
+      '• Extend tongue fully, relaxed · 舌頭完全伸出，放鬆<br>' +
+      '• Clean tongue (not right after eating) · 乾淨舌面（勿剛進食後）<br>' +
+      '• Phone camera, 30–60 cm away · 手機距離 30–60 公分</p>' +
+
+      '<label class="btn btn--primary btn--lg btn--block" style="cursor: pointer;">' +
+      '📷 Upload Tongue Photo · 上傳舌頭照片' +
+      '<input type="file" accept="image/*" capture="environment" id="aid-tongue-file" style="display:none;">' +
+      '</label>' +
+
+      '<div id="aid-tongue-status" style="display:none; margin-top: var(--s-4);"></div>' +
+
+      '<div class="flex gap-2 mt-4">' +
+      '<button class="btn btn--ghost" id="aid-tongue-back">← Back · 返回</button>' +
+      '<button class="btn btn--outline" id="aid-tongue-skip">Skip this step · 跳過此步驟</button>' +
+      '<button class="btn btn--primary" id="aid-tongue-next" style="margin-left:auto; display:none;">Continue to Questions · 繼續問卷 →</button>' +
+      '</div>' +
+      '</div>';
+
+    injectStyle();
+    document.getElementById('aid-tongue-back').addEventListener('click', function () { renderIntro(el); });
+    document.getElementById('aid-tongue-skip').addEventListener('click', function () {
+      state.skippedTongue = true;
+      state.qIndex = 0;
+      renderQuestion(el);
+    });
+    document.getElementById('aid-tongue-next').addEventListener('click', function () {
+      state.qIndex = 0;
+      renderQuestion(el);
+    });
+    document.getElementById('aid-tongue-file').addEventListener('change', handleTongueUpload);
+  }
+
+  async function handleTongueUpload(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    var box = document.getElementById('aid-tongue-status');
+    box.style.display = 'block';
+    box.innerHTML =
+      '<div class="flex gap-3" style="align-items:center;">' +
+      '<img id="aid-tongue-preview" style="width:80px;height:80px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);">' +
+      '<div><strong>✓ Photo uploaded · 照片已上傳</strong>' +
+      '<div class="text-muted text-sm mt-1"><span class="spinner"></span> AI analysing… · AI 分析中…</div></div>' +
+      '</div>';
+
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      var img = document.getElementById('aid-tongue-preview');
+      if (img) img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      var res = await HM.api.patient.uploadTongue(file);
+      var diag = res.diagnosis;
+      state.tongueId = diag.id;
+      pollTongueAnalysis(diag.id, box);
+    } catch (err) {
+      box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">' +
+        (err.message || 'Upload failed') +
+        ' — you can skip this step and continue with the quiz only.' +
+        '</div></div>';
+    }
+  }
+
+  function pollTongueAnalysis(id, box) {
+    var attempts = 0;
+    var iv = setInterval(async function () {
+      attempts++;
+      try {
+        var r = await HM.api.patient.getDiagnosis(id);
+        var d = r.diagnosis;
+        if (d.status === 'completed') {
+          clearInterval(iv);
+          state.tongueReport = d;
+          showTongueComplete(d, box);
+        } else if (d.status === 'failed' || attempts > 30) {
+          clearInterval(iv);
+          box.innerHTML = '<div class="alert alert--warning"><div class="alert-body">' +
+            'AI analysis took too long — you can still continue to the quiz. A doctor will see your photo. ' +
+            '<span style="font-family: var(--font-zh);">AI 分析逾時，仍可繼續問卷，醫師會看到您的照片。</span>' +
+            '</div></div>';
+          document.getElementById('aid-tongue-next').style.display = 'inline-flex';
+        }
+      } catch (_) {}
+    }, 3000);
+  }
+
+  function showTongueComplete(d, box) {
+    var report = d.constitution_report || {};
+    var c = report.constitution || {};
+    var score = d.health_score;
+    var scoreColor = score == null ? 'var(--stone)' : score >= 80 ? 'var(--sage)' : score >= 60 ? 'var(--gold)' : 'var(--red-seal)';
+    box.innerHTML =
+      '<div class="card card--bordered" style="border-left:3px solid var(--sage);">' +
+      '<div class="flex-between mb-2"><strong>✓ AI analysis complete · AI 分析完成</strong>' +
+      (score != null ? '<span style="font-weight:600;color:' + scoreColor + ';">Score: ' + score + '/100</span>' : '') +
+      '</div>' +
+      (c.name_en
+        ? '<div class="text-sm">Initial constitution: <strong>' + HM.format.esc(c.name_en) + '</strong>' +
+          (c.name_zh ? ' · <span style="font-family:var(--font-zh);">' + HM.format.esc(c.name_zh) + '</span>' : '') +
+          '</div>'
+        : '') +
+      '<p class="text-xs text-muted mt-2">The quiz below will refine this with symptom-based dimensions. ' +
+      '<span style="font-family:var(--font-zh);">下方問卷將進一步補充症狀資訊。</span></p>' +
+      '</div>';
+    document.getElementById('aid-tongue-next').style.display = 'inline-flex';
   }
 
   // ── Combined history: tongue scans + constitution reports, chronological ──
@@ -355,12 +482,15 @@
     var q = QS[state.qIndex];
     var step = state.qIndex + 1;
     var total = QS.length;
-    var pct = Math.round((step / (total + 1)) * 100);
+    // Overall progress includes the tongue step (unless skipped) + 10 Qs + review
+    var totalSteps = state.skippedTongue ? (total + 1) : (total + 2);
+    var currentStep = state.skippedTongue ? step : step + 1;
+    var pct = Math.round((currentStep / totalSteps) * 100);
 
     el.innerHTML = '<div class="page-header">' +
       '<div class="page-header-label">' + q.mod + '</div>' +
       '<div class="flex-between mt-2">' +
-      '<div class="text-sm text-muted">Question ' + step + ' of ' + total + ' · 第 ' + step + ' / ' + total + ' 題</div>' +
+      '<div class="text-sm text-muted">Step ' + currentStep + ' of ' + totalSteps + ' · Question ' + step + ' / ' + total + '</div>' +
       '<div class="text-sm text-muted">' + pct + '%</div>' +
       '</div>' +
       '<div class="aid-progress"><div class="aid-progress-fill" style="width: ' + pct + '%;"></div></div>' +
@@ -663,14 +793,49 @@
         '</div></div>';
     }
 
+    // Tongue section — shown when this report was submitted as part of a
+    // combined session (tongue photo → questions → one submission).
+    var tongueSection = '';
+    if (report.tongue_diagnosis_id || report.tongue_image_url || report.tongue_constitution) {
+      var tc = report.tongue_constitution || {};
+      var tScore = report.tongue_health_score;
+      var tColor = tScore == null ? 'var(--stone)' : tScore >= 80 ? 'var(--sage)' : tScore >= 60 ? 'var(--gold)' : 'var(--red-seal)';
+      tongueSection =
+        '<div class="card card--pad-lg mb-4" style="border-left:3px solid var(--gold);">' +
+        '<div class="text-label mb-3">👅 Tongue Diagnosis · 舌診結果</div>' +
+        '<div class="flex gap-4" style="align-items:center;flex-wrap:wrap;">' +
+        (report.tongue_image_url
+          ? '<img src="' + HM.format.esc(report.tongue_image_url) + '" style="width:110px;height:110px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);">'
+          : '<div style="width:110px;height:110px;border-radius:var(--r-md);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:3rem;">👅</div>') +
+        '<div style="flex:1;min-width:200px;">' +
+        (tc.name_en
+          ? '<div style="font-weight:600;">' + HM.format.esc(tc.name_en) + '</div>'
+          : '') +
+        (tc.name_zh
+          ? '<div style="font-family:var(--font-zh);color:var(--stone);">' + HM.format.esc(tc.name_zh) + '</div>'
+          : '') +
+        (tScore != null
+          ? '<div class="mt-2">Health Score: <strong style="font-size:1.3rem;color:' + tColor + ';">' + tScore + '</strong>/100</div>'
+          : '') +
+        (report.tongue_diagnosis_id
+          ? '<a href="#/tongue/' + report.tongue_diagnosis_id + '" class="btn btn--ghost btn--sm mt-2">View tongue details · 詳細舌診 →</a>'
+          : '') +
+        '</div>' +
+        '</div>' +
+        '</div>';
+    }
+
     el.innerHTML = '<div class="page-header">' +
       '<button class="btn btn--ghost" onclick="location.hash=\'#/ai-diagnosis\'">← New Assessment · 新測評</button>' +
-      '<h1 class="page-title mt-2">Constitution Report · 體質報告</h1>' +
+      '<h1 class="page-title mt-2">Full TCM Report · 完整體質報告</h1>' +
+      '<p class="text-muted mt-1">Combined tongue diagnosis and 10-dimension constitution assessment · 舌診與體質問卷綜合報告</p>' +
       '</div>' +
 
       banner +
 
       (alerts.length ? renderAlerts(alerts) : '') +
+
+      tongueSection +
 
       // Constitution pills — always shown
       '<div class="card card--pad-lg mb-4">' +
@@ -931,6 +1096,14 @@
         patterns:      types,
         safety_alerts: alerts,
         submitted_at:  new Date().toISOString(),
+        // Link this questionnaire to the tongue scan from the same session
+        // so the reviewing doctor sees both sides of the assessment together.
+        tongue_diagnosis_id:     state.tongueId || null,
+        tongue_health_score:     state.tongueReport ? state.tongueReport.health_score : null,
+        tongue_constitution:     state.tongueReport && state.tongueReport.constitution_report
+          ? state.tongueReport.constitution_report.constitution || null
+          : null,
+        tongue_image_url:        state.tongueReport ? state.tongueReport.image_url : null,
       },
     };
     try {
@@ -1005,7 +1178,14 @@
       // Tips
       '.aid-tips{display:flex;flex-direction:column;gap:var(--s-2);}' +
       '.aid-tip{display:flex;gap:var(--s-3);align-items:flex-start;background:var(--washi);padding:var(--s-3) var(--s-4);border:1px solid var(--border);border-radius:var(--r-md);font-size:var(--text-sm);line-height:1.5;}' +
-      '.aid-tip-icon{font-size:1.3rem;flex-shrink:0;}';
+      '.aid-tip-icon{font-size:1.3rem;flex-shrink:0;}' +
+      // Step cards (intro flow)
+      '.aid-step-card{position:relative;padding:var(--s-4);border:1px solid var(--border);border-radius:var(--r-md);background:var(--washi);text-align:center;}' +
+      '.aid-step-num{position:absolute;top:-10px;left:var(--s-3);background:var(--gold);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}' +
+      '.aid-step-icon{font-size:2.2rem;margin-bottom:var(--s-2);}' +
+      '.aid-step-en{font-weight:600;font-size:var(--text-sm);color:var(--ink);}' +
+      '.aid-step-zh{font-family:var(--font-zh);font-size:var(--text-xs);color:var(--stone);margin-bottom:4px;}' +
+      '.aid-step-desc{font-size:var(--text-xs);color:var(--stone);}';
     document.head.appendChild(s);
   }
 
