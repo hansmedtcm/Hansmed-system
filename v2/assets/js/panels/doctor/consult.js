@@ -269,10 +269,12 @@
       '</div>';
   }
 
-  // ── Body diagram (front + back PNG + canvas overlay) ──
-  // Uses the user-supplied anatomical drawings at /v2/assets/img/front.png
-  // and /v2/assets/img/back.png. Two separate drawable canvases — one for
-  // each view — so doctors can annotate pain / acupuncture sites on either.
+  // ── Body diagram (front + back PNG + single giant canvas overlay) ──
+  // One canvas spans the entire card including the margins between and
+  // around the two images. Doctors can annotate on the silhouette, in
+  // the gap between front & back, or in the whitespace at the edges —
+  // anywhere inside the card is drawable. The two images sit behind
+  // the canvas via pointer-events:none.
   function bodyDiagramMarkup() {
     return '<div class="body-diagram-wrap">' +
       '<div class="body-diagram-toolbar">' +
@@ -291,23 +293,18 @@
           '<button type="button" class="btn btn--ghost btn--sm" id="body-clear">🗑 Clear · 清除</button>' +
         '</div>' +
       '</div>' +
-      '<div class="body-diagram-stage">' +
-        // FRONT
-        '<div class="body-side">' +
-          '<div class="body-side-label">Front · 前面</div>' +
-          '<div class="body-canvas-wrap" data-side="front">' +
-            '<img class="body-chart-img" src="assets/img/front.png" alt="Body chart — front view">' +
-            '<canvas class="body-canvas" data-side="front" width="560" height="934"></canvas>' +
-          '</div>' +
+
+      '<div class="body-combined-labels">' +
+        '<span>FRONT · 前面</span>' +
+        '<span>BACK · 背面</span>' +
+      '</div>' +
+
+      '<div class="body-combined-stage" data-side="combined">' +
+        '<div class="body-combined-silhouettes">' +
+          '<img class="body-combined-img" src="assets/img/front.png" alt="Body chart — front view">' +
+          '<img class="body-combined-img" src="assets/img/back.png" alt="Body chart — back view">' +
         '</div>' +
-        // BACK
-        '<div class="body-side">' +
-          '<div class="body-side-label">Back · 背面</div>' +
-          '<div class="body-canvas-wrap" data-side="back">' +
-            '<img class="body-chart-img" src="assets/img/back.png" alt="Body chart — back view">' +
-            '<canvas class="body-canvas" data-side="back" width="560" height="934"></canvas>' +
-          '</div>' +
-        '</div>' +
+        '<canvas class="body-canvas" data-side="combined" width="1400" height="1600"></canvas>' +
       '</div>' +
       '</div>';
   }
