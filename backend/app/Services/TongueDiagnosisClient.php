@@ -26,11 +26,21 @@ class TongueDiagnosisClient
 
     /**
      * Analyze a tongue image and return flat DB fields + rich constitution report.
+     *
+     * Routing:
+     *   TONGUE_API_URL=anthropic  → route to Claude Vision (AnthropicTongueClient)
+     *   TONGUE_API_URL=<https...>  → generic third-party endpoint (original code path)
+     *   empty/unset              → deterministic dev stub (4 rotating fixtures)
      */
     public function analyze(string $imageUrl): array
     {
         $endpoint = config('services.tongue_diagnosis.endpoint');
         $key      = config('services.tongue_diagnosis.key');
+
+        // Short-circuit to Anthropic Claude Vision when configured.
+        if (is_string($endpoint) && strtolower(trim($endpoint)) === 'anthropic') {
+            return app(\App\Services\AnthropicTongueClient::class)->analyze($imageUrl);
+        }
 
         if (! $endpoint) {
             return $this->stubResponse($imageUrl);
