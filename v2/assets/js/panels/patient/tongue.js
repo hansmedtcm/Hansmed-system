@@ -20,22 +20,26 @@
       '• Extend tongue fully, relaxed · 舌頭完全伸出，放鬆<br>' +
       '• Clean tongue (not right after eating) · 乾淨舌面（勿剛進食後）<br>' +
       '• Phone camera, 1-2 feet away · 手機距離 30-60 公分</p>' +
-      '<label class="btn btn--primary btn--lg btn--block" style="cursor: pointer;">' +
-      '📷 Upload Tongue Photo · 上傳舌頭照片' +
-      '<input type="file" accept="image/*" capture="environment" id="tongue-file" style="display:none;">' +
-      '</label>' +
+      '<button type="button" class="btn btn--primary btn--lg btn--block" id="tongue-open">' +
+      '📷 Open Tongue Camera · 開啟舌頭相機' +
+      '</button>' +
+      '<p class="text-xs text-muted mt-2" style="text-align:center;">A guided frame will help you align your tongue for the best reading. ' +
+      '<span style="font-family: var(--font-zh);">引導框可協助您對準舌頭以獲得最佳分析。</span></p>' +
       '<div id="tongue-analyzing" style="display:none; margin-top: var(--s-4);"></div>' +
       '</div>' +
 
       '<div class="text-label mb-3">Scan History · 舌診歷史記錄</div>' +
       '<div id="tongue-list"></div>';
 
-    document.getElementById('tongue-file').addEventListener('change', handleUpload);
+    document.getElementById('tongue-open').addEventListener('click', function () {
+      HM.tongueCapture.open({
+        onCapture: function (file) { handleUpload(file); },
+      });
+    });
     await loadHistory();
   }
 
-  async function handleUpload(e) {
-    var file = e.target.files[0];
+  async function handleUpload(file) {
     if (!file) return;
 
     var box = document.getElementById('tongue-analyzing');

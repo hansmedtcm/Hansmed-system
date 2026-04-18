@@ -217,21 +217,27 @@
   async function openConstitutionModal(id, patientId) {
     var loading = HM.ui.modal({ size: 'xl', title: 'Loading…', content: '<div class="state state--loading"><div class="state-icon"></div></div>' });
 
-    var res, tongueRes;
+    var res, tongueRes, patientRes;
     try {
-      // Fetch the report + related tongue scans for context in parallel.
+      // Fetch the report + related tongue scans + patient profile (for DOB-
+      // based Wuyun Liuqi analysis) in parallel.
       var results = await Promise.all([
         HM.api.doctor.getConstitutionReview(id),
         HM.api.doctor.patientTongue(patientId).catch(function () { return { data: [] }; }),
+        HM.api.doctor.patientConsults(patientId).catch(function () { return { patient: null }; }),
       ]);
       res = results[0];
       tongueRes = results[1];
+      patientRes = results[2];
     } catch (e) {
       loading.close();
       HM.ui.toast(e.message || 'Failed to load', 'danger');
       return;
     }
     loading.close();
+
+    var patientProfile = (patientRes && patientRes.patient && patientRes.patient.patient_profile) || {};
+    var patientDob = patientProfile.birth_date || null;
 
     var qRow = res.questionnaire;
     var report = qRow.report || {};
@@ -253,7 +259,13 @@
     // Build the tongue-context sidebar from the patient's recent tongue scans
     var tongueScans = (tongueRes && tongueRes.data) ? tongueRes.data.slice(0, 3) : [];
 
-    var content = '<div class="grid-2" style="gap: var(--s-5); align-items: start;">' +
+    var content =
+      // Wuyun Liuqi slot — populated after the modal is mounted so the
+      // DOB-based analysis + today's environmental qi sit above the
+      // review form for immediate clinical context.
+      '<div id="rvw-wyl-const" class="mb-4"></div>' +
+
+      '<div class="grid-2" style="gap: var(--s-5); align-items: start;">' +
 
       // ─── LEFT — patient report + tongue context ───
       '<div>' +
@@ -349,6 +361,12 @@
       content: content,
     });
 
+    // Mount the Wuyun Liuqi dual card (innate + today's environmental qi)
+    // inside the modal. Silently renders nothing if DOB isn't on file.
+    if (window.HM && HM.wuyunLiuqi) {
+      HM.wuyunLiuqi.mountDual(m.element.querySelector('#rvw-wyl-const'), patientDob);
+    }
+
     var form = m.element.querySelector('#cr-form');
 
     m.element.querySelector('#cr-add-tip').addEventListener('click', function () {
@@ -409,20 +427,25 @@
   async function openTongueModal(id, patientId) {
     var loading = HM.ui.modal({ size: 'xl', title: 'Loading…', content: '<div class="state state--loading"><div class="state-icon"></div></div>' });
 
-    var res, constRes;
+    var res, constRes, patientRes;
     try {
       var results = await Promise.all([
         HM.api.doctor.getTongueReview(id),
         HM.api.doctor.patientConstitutionReports(patientId).catch(function () { return { data: [] }; }),
+        HM.api.doctor.patientConsults(patientId).catch(function () { return { patient: null }; }),
       ]);
       res = results[0];
       constRes = results[1];
+      patientRes = results[2];
     } catch (e) {
       loading.close();
       HM.ui.toast(e.message || 'Failed to load', 'danger');
       return;
     }
     loading.close();
+
+    var patientProfile = (patientRes && patientRes.patient && patientRes.patient.patient_profile) || {};
+    var patientDob = patientProfile.birth_date || null;
 
     var d = res.diagnosis;
     var report = d.constitution_report || {};
@@ -432,7 +455,10 @@
     var existingMeds = d.medicine_suggestions || [];
     var constReports = (constRes && constRes.data) ? constRes.data.slice(0, 3) : [];
 
-    var content = '<div class="grid-2" style="gap: var(--s-5); align-items: start;">' +
+    var content =
+      '<div id="rvw-wyl-tongue" class="mb-4"></div>' +
+
+      '<div class="grid-2" style="gap: var(--s-5); align-items: start;">' +
 
       // ─── LEFT — tongue result + constitution context ───
       '<div>' +
@@ -495,6 +521,10 @@
       '</div>';
 
     var m = HM.ui.modal({ size: 'xl', title: 'Review Tongue Diagnosis · 審核舌診', content: content });
+
+    if (window.HM && HM.wuyunLiuqi) {
+      HM.wuyunLiuqi.mountDual(m.element.querySelector('#rvw-wyl-tongue'), patientDob);
+    }
 
     var form = m.element.querySelector('#tr-form');
 

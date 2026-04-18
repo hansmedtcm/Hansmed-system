@@ -384,7 +384,21 @@
       '@media (max-width:520px){.wyl-rx{grid-template-columns:1fr;}}' +
       '.wyl-rx-list{margin:0;padding-left:18px;font-size:var(--text-xs);line-height:1.6;color:#2a1f0a;}' +
       '.wyl-rx-list li{margin-bottom:3px;}' +
-      '.wyl-footer{font-size:10px;color:#8b7355;font-style:italic;text-align:center;margin-top:var(--s-3);padding-top:var(--s-2);border-top:1px dashed rgba(139,69,19,0.2);}';
+      '.wyl-footer{font-size:10px;color:#8b7355;font-style:italic;text-align:center;margin-top:var(--s-3);padding-top:var(--s-2);border-top:1px dashed rgba(139,69,19,0.2);}' +
+      // Dual-card layout (innate DOB vs today's environmental qi)
+      '.wyl-dual{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3);}' +
+      '@media (max-width:880px){.wyl-dual{grid-template-columns:1fr;}}' +
+      '.wyl-dual-col{display:flex;flex-direction:column;}' +
+      '.wyl-dual-banner{display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:var(--text-xs);letter-spacing:.04em;border-radius:var(--r-sm) var(--r-sm) 0 0;font-family:var(--font-body);}' +
+      '.wyl-dual-banner--innate{background:linear-gradient(90deg,#e7c77a,#d9a94a);color:#402a08;}' +
+      '.wyl-dual-banner--today{background:linear-gradient(90deg,#9bb7c4,#6f9bb0);color:#0d2a36;}' +
+      '.wyl-dual-banner strong{font-family:var(--font-zh);}' +
+      '.wyl-dual-icon{font-size:1.05rem;}' +
+      '.wyl-dual-date{font-family:var(--font-mono);font-size:11px;margin-left:6px;opacity:0.8;}' +
+      '.wyl-dual-col .wyl-card{border-top-left-radius:0;border-top-right-radius:0;border-top:none;margin-bottom:0;}' +
+      '.wyl-interaction{margin-top:var(--s-3);padding:var(--s-3) var(--s-4);background:linear-gradient(135deg,rgba(201,146,42,0.09),rgba(45,106,79,0.06));border:1px solid rgba(201,146,42,0.3);border-radius:var(--r-md);font-size:var(--text-xs);line-height:1.6;color:#2a1f0a;}' +
+      '.wyl-interaction-label{font-size:10px;letter-spacing:.14em;color:#8a621c;font-weight:600;margin-bottom:8px;text-transform:uppercase;}' +
+      '.wyl-interaction-line{margin-bottom:4px;}';
     document.head.appendChild(s);
   }
 
@@ -405,10 +419,112 @@
     return a;
   }
 
+  /**
+   * Dual-analysis mount: renders BOTH the patient's innate constitution
+   * (from DOB) AND the current environmental qi (from today's date),
+   * side-by-side on desktop and stacked on mobile. Helps the practitioner
+   * weigh how the current season / year qi might aggravate or balance
+   * the patient's inherent tendencies.
+   *
+   * Today's analysis reuses the same algorithm — just passes `new Date()`
+   * so `analyze()` returns the current year's ganzhi, da yun, sitian /
+   * zaiquan, birth step, and the constitution profile of the
+   * environment right now.
+   */
+  function mountDual(container, dob) {
+    if (!container) return null;
+    var innate = analyze(dob);
+    var today  = analyze(new Date());
+    if (!innate && !today) {
+      container.innerHTML = '';
+      return null;
+    }
+    injectStyles();
+
+    var parts = [];
+    if (innate) {
+      parts.push(
+        '<div class="wyl-dual-col">' +
+          '<div class="wyl-dual-banner wyl-dual-banner--innate">' +
+            '<span class="wyl-dual-icon">🪷</span>' +
+            '<span><strong>Innate · 本命</strong> — Patient\'s inborn constitution from DOB</span>' +
+          '</div>' +
+          renderCard(innate) +
+        '</div>'
+      );
+    }
+    if (today) {
+      parts.push(
+        '<div class="wyl-dual-col">' +
+          '<div class="wyl-dual-banner wyl-dual-banner--today">' +
+            '<span class="wyl-dual-icon">🌤️</span>' +
+            '<span><strong>Today · 當下流年</strong> — Current environmental qi ' +
+            '<span class="wyl-dual-date">' + todayLabel() + '</span></span>' +
+          '</div>' +
+          renderCard(today) +
+        '</div>'
+      );
+    }
+
+    // Add a short interaction note when both are present
+    var interaction = '';
+    if (innate && today) {
+      interaction = buildInteractionNote(innate, today);
+    }
+
+    container.innerHTML =
+      '<div class="wyl-dual">' + parts.join('') + '</div>' +
+      (interaction ? '<div class="wyl-interaction">' + interaction + '</div>' : '');
+    return { innate: innate, today: today };
+  }
+
+  function todayLabel() {
+    var d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  /**
+   * Short plain-language note comparing the patient's innate constitution
+   * with the current environmental qi — highlights where the two align
+   * (amplification risk) or oppose (mitigation opportunity).
+   */
+  function buildInteractionNote(innate, today) {
+    var sameNature = innate.liuqi.nature === today.liuqi.nature;
+    var sameDayunElement = innate.dayun.element === today.dayun.element;
+    var bits = [];
+
+    if (sameNature) {
+      bits.push('Both the patient\'s innate constitution and the current environmental qi share the <strong>' +
+        escapeHtml(innate.liuqi.nature) + '</strong> nature — patterns may be <strong>amplified</strong> this period. Consider extra protective measures.');
+    } else {
+      bits.push('Patient innate: <strong>' + escapeHtml(innate.liuqi.nature) + '</strong> · Current environment: <strong>' +
+        escapeHtml(today.liuqi.nature) + '</strong> — the two differ, so today\'s qi may <strong>moderate or stress</strong> the patient\'s baseline. Weigh pattern-differentiation accordingly.');
+    }
+
+    if (sameDayunElement) {
+      bits.push('Da-yun element match (<strong>' + escapeHtml(innate.dayun.element) + '</strong>): the ' + escapeHtml(innate.dayun.organ) + '-related dynamics are reinforced.');
+    }
+
+    // Organ overlap: a patient-strong organ also appearing in today's dayun =
+    // heightened activity; a patient-weak organ hitting today's strong phase
+    // may either rebound or be strained.
+    var innateStrong = (innate.organs.strong || []).join('/');
+    var innateWeak = (innate.organs.weak || []).join('/');
+    var todayStrong = (today.organs.strong || []).join('/');
+    var todayWeak = (today.organs.weak || []).join('/');
+    bits.push('Organ axis — innate strong: <strong>' + escapeHtml(innateStrong || '—') + '</strong>, weak: <strong>' + escapeHtml(innateWeak || '—') + '</strong>. Today strong: <strong>' + escapeHtml(todayStrong || '—') + '</strong>, weak: <strong>' + escapeHtml(todayWeak || '—') + '</strong>.');
+
+    return '<div class="wyl-interaction-label">🔗 Innate × Today — Clinical Interaction</div>' +
+      bits.map(function (b) { return '<div class="wyl-interaction-line">' + b + '</div>'; }).join('');
+  }
+
   HM.wuyunLiuqi = {
     analyze:       analyze,
     renderCard:    renderCard,
     injectStyles:  injectStyles,
     mount:         mount,
+    mountDual:     mountDual,
   };
 })();

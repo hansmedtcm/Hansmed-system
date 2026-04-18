@@ -137,9 +137,10 @@
 
       el.innerHTML = html;
 
-      // Mount Wuyun Liuqi card if DOB is known. Quietly skips otherwise.
-      if (pp.birth_date && window.HM && HM.wuyunLiuqi) {
-        HM.wuyunLiuqi.mount(document.getElementById('wyl-mount-patient'), pp.birth_date);
+      // Mount dual Wuyun Liuqi card — innate constitution from DOB plus
+      // today's environmental qi so the doctor can weigh both at review time.
+      if (window.HM && HM.wuyunLiuqi) {
+        HM.wuyunLiuqi.mountDual(document.getElementById('wyl-mount-patient'), pp.birth_date || null);
       }
     } catch (e) { HM.state.error(el, e); }
   }

@@ -85,8 +85,8 @@
         '</form>' +
         '<div id="wyl-mount-admin" class="mt-4" style="max-width: 900px;"></div>';
 
-      if (p.birth_date && window.HM && HM.wuyunLiuqi) {
-        HM.wuyunLiuqi.mount(document.getElementById('wyl-mount-admin'), p.birth_date);
+      if (window.HM && HM.wuyunLiuqi) {
+        HM.wuyunLiuqi.mountDual(document.getElementById('wyl-mount-admin'), p.birth_date || null);
       }
 
       var pwBtn = document.getElementById('pt-reset-pw');

@@ -440,10 +440,12 @@
     }
 
     if (!dob) {
-      slot.innerHTML = '';
+      // Still render today's environmental analysis even without DOB —
+      // useful context for walk-in patients without complete profiles.
+      HM.wuyunLiuqi.mountDual(slot, null);
       return;
     }
-    HM.wuyunLiuqi.mount(slot, dob);
+    HM.wuyunLiuqi.mountDual(slot, dob);
   }
 
   // ── Body diagram drawing ─────────────────────────────────
