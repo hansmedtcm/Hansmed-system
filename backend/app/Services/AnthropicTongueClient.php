@@ -227,11 +227,17 @@ class AnthropicTongueClient
         // Normalise leading slashes
         $path = ltrim($path, '/');
 
-        // If the path starts with "storage/", the actual file is at
-        // storage/app/public/<rest>
-        $relative = str_starts_with($path, 'storage/')
-            ? substr($path, strlen('storage/'))
-            : $path;
+        // Map common URL prefixes back to the on-disk location.
+        //   /api/uploads/tongue/abc.jpg → storage/app/public/tongue/abc.jpg
+        //   /storage/tongue/abc.jpg     → storage/app/public/tongue/abc.jpg
+        $relative = $path;
+        if (str_starts_with($relative, 'api/uploads/')) {
+            $relative = substr($relative, strlen('api/uploads/'));
+        } elseif (str_starts_with($relative, 'uploads/')) {
+            $relative = substr($relative, strlen('uploads/'));
+        } elseif (str_starts_with($relative, 'storage/')) {
+            $relative = substr($relative, strlen('storage/'));
+        }
 
         return array_unique([
             storage_path('app/public/' . $relative),

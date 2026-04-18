@@ -30,7 +30,11 @@ class TongueDiagnosisController extends Controller
         @set_time_limit(120);
 
         $path = $request->file('image')->store('tongue', 'public');
-        $url  = Storage::disk('public')->url($path);
+
+        // Serve images through our own API route so the URL works from any
+        // frontend host. Storage::url() returns paths relative to APP_URL
+        // which isn't reliable on Railway's split frontend/backend setup.
+        $url = url('/api/uploads/' . $path);
 
         $diag = TongueDiagnosis::create([
             'patient_id' => $request->user()->id,

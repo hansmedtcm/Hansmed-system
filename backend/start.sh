@@ -32,5 +32,8 @@ if [ "$USER_COUNT" -eq "0" ]; then
   php artisan db:seed --force 2>/dev/null || echo "Seeding skipped"
 fi
 
+echo "Ensuring storage symlink exists..."
+php artisan storage:link --force 2>/dev/null || true
+
 echo "Starting server on port ${PORT:-8080}..."
 php artisan serve --host=0.0.0.0 --port=${PORT:-8080}

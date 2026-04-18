@@ -188,6 +188,7 @@
       '<button class="btn btn--outline" data-migration="rx-from-review">Run: Prescribe from AI Review · 執行審核開方升級</button>' +
       '<button class="btn btn--outline" data-migration="walk-in-support">Run: Walk-in Support · 執行臨診支援升級</button>' +
       '<button class="btn btn--outline" data-migration="medicine-catalog">Run: Medicine Catalog Schema · 執行藥材目錄升級</button>' +
+      '<button class="btn btn--outline" data-migration="fix-tongue-image-urls">Run: Fix Legacy Tongue Image URLs · 修復舌診圖片連結</button>' +
       '</div>' +
       '<div id="migration-output" class="mt-3" style="display:none; padding: var(--s-3); background: var(--washi); border-radius: var(--r-md); font-family: var(--font-mono); font-size: var(--text-xs); white-space: pre-wrap;"></div>' +
       '</div>';

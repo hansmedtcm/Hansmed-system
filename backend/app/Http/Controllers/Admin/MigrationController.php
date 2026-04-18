@@ -199,4 +199,40 @@ class MigrationController extends Controller
             'errors'  => $errors,
         ]);
     }
+
+    /**
+     * Rewrite legacy tongue image URLs so they route through the new
+     * /api/uploads/ path. Converts any stored URL that points at
+     * /storage/tongue/... or a bare tongue/... path into the absolute
+     * API URL the frontend can actually reach.
+     */
+    public function fixTongueImageUrls(Request $request)
+    {
+        $log = [];
+        $rows = DB::table('tongue_diagnoses')->select('id', 'image_url')->get();
+        $base = rtrim(url('/api/uploads'), '/');
+        $updated = 0;
+        foreach ($rows as $r) {
+            if (empty($r->image_url)) continue;
+            $u = $r->image_url;
+            // Already pointing at new route
+            if (strpos($u, '/api/uploads/') !== false) continue;
+            $path = null;
+            if (preg_match('#/storage/(.+)$#', $u, $m)) $path = $m[1];
+            elseif (strpos($u, 'tongue/') === 0)       $path = $u;
+            elseif (preg_match('#^https?://[^/]+/storage/(.+)$#', $u, $m)) $path = $m[1];
+            if (! $path) continue;
+            DB::table('tongue_diagnoses')->where('id', $r->id)->update([
+                'image_url'  => $base . '/' . ltrim($path, '/'),
+                'updated_at' => now(),
+            ]);
+            $updated++;
+        }
+        $log[] = "rewrote {$updated} tongue image_url(s)";
+        return response()->json([
+            'success' => true,
+            'log'     => $log,
+            'errors'  => [],
+        ]);
+    }
 }

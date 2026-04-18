@@ -27,6 +27,22 @@ use App\Http\Controllers\Pharmacy\ReconciliationController as PharmacyReconContr
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
+// Public — uploaded files (tongue photos, medical docs) served through the
+// API backend so the frontend can load them regardless of which domain it's
+// hosted on (GitHub Pages / custom domain / localhost). Filenames use
+// random-hashed paths so discovering another patient's URL is infeasible.
+Route::get('/uploads/{path}', function (string $path) {
+    // Block directory traversal and symlink escapes
+    if (str_contains($path, '..')) abort(404);
+    $file = storage_path('app/public/' . $path);
+    if (! is_file($file)) abort(404);
+    $mime = function_exists('mime_content_type') ? (mime_content_type($file) ?: 'application/octet-stream') : 'application/octet-stream';
+    return response()->file($file, [
+        'Content-Type'   => $mime,
+        'Cache-Control'  => 'private, max-age=86400',
+    ]);
+})->where('path', '.*');
+
 // Public
 Route::post('/auth/register',         [AuthController::class, 'register']);
 Route::post('/auth/login',            [AuthController::class, 'login']);
@@ -229,6 +245,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/doctor-off-days',    [\App\Http\Controllers\Admin\MigrationController::class, 'doctorOffDays']);
         Route::post('/migrate/rx-from-review',     [\App\Http\Controllers\Admin\MigrationController::class, 'rxFromReview']);
         Route::post('/migrate/walk-in-support',    [\App\Http\Controllers\Admin\MigrationController::class, 'walkInSupport']);
+        Route::post('/migrate/fix-tongue-image-urls', [\App\Http\Controllers\Admin\MigrationController::class, 'fixTongueImageUrls']);
         Route::post('/migrate/medicine-catalog',   [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'migrate']);
 
         // Medicine catalogue (Timing Herbs master price list)
