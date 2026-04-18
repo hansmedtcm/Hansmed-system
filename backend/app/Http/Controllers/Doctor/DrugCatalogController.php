@@ -46,10 +46,15 @@ class DrugCatalogController extends Controller
 
         // 2. Master Timing Herbs catalogue (reference prices + canonical names)
         $catalog = collect();
+        $hasPackGrams = false;
         if (Schema::hasTable('medicine_catalog')) {
+            $hasPackGrams = Schema::hasColumn('medicine_catalog', 'pack_grams');
+            $cols = $hasPackGrams
+                ? ['code', 'name_zh', 'name_pinyin', 'type', 'unit_price', 'unit', 'pack_grams']
+                : ['code', 'name_zh', 'name_pinyin', 'type', 'unit_price', 'unit'];
             $catalog = DB::table('medicine_catalog')
                 ->where('is_active', 1)
-                ->select('code', 'name_zh', 'name_pinyin', 'type', 'unit_price', 'unit')
+                ->select($cols)
                 ->orderBy('type')->orderBy('name_pinyin')
                 ->limit(2000)
                 ->get();
@@ -60,6 +65,10 @@ class DrugCatalogController extends Controller
         $byName = [];
         foreach ($catalog as $c) {
             $display = $c->name_zh . ' · ' . $c->name_pinyin;
+            // Convert pack price to per-gram so the doctor UI can multiply
+            // directly by the dose in grams.
+            $packGrams = $hasPackGrams && !empty($c->pack_grams) ? (float) $c->pack_grams : 100;
+            $perGram = $c->unit_price !== null ? (float) $c->unit_price / max($packGrams, 0.01) : null;
             $byName[mb_strtolower($display)] = (object) [
                 'name'           => $display,
                 'name_zh'        => $c->name_zh,
@@ -67,9 +76,11 @@ class DrugCatalogController extends Controller
                 'code'           => $c->code,
                 'type'           => $c->type,           // single | compound
                 'specification'  => $c->type === 'compound' ? '浓缩细粒 复方' : '浓缩细粒',
-                'unit'           => $c->unit,
-                'min_price'      => $c->unit_price,
-                'max_price'      => $c->unit_price,
+                'unit'           => 'g',                // always per gram for Rx
+                'pack_grams'     => $packGrams,
+                'pack_price'     => $c->unit_price !== null ? (float) $c->unit_price : null,
+                'min_price'      => $perGram,
+                'max_price'      => $perGram,
                 'total_stock'    => 0,
                 'pharmacy_count' => 0,
                 'source'         => 'catalog',

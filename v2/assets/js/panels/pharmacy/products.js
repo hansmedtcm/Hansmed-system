@@ -49,82 +49,36 @@
     } catch (e) { HM.state.error(container, e); }
   }
 
-  // Add-product form uses the bulk-pack pricing model: pharmacies buy
-  // herbs in bags with a known weight (grams per pack) and a known
-  // bag price, so the unit cost per gram is computed automatically
-  // as price_per_pack / grams_per_pack. The unit_price stored on the
-  // product row is always "per 1 g" so doctor prescriptions can
-  // multiply grams × unit_price to get the total.
+  // Simple pharmacy product form. The pharmacy tracks physical stock
+  // in grams; pack-based pricing (grams-per-unit + cost-per-gram) lives
+  // on the admin Medicine Catalog instead — that's the source of truth
+  // for what a herb costs across the network.
   function showAddForm() {
     var m = HM.ui.modal({
       title: 'Add Product · 新增產品',
       content: '<form id="np-form">' +
         '<div class="field"><label class="field-label" data-required>Name · 名稱</label>' +
         '<input name="name" class="field-input field-input--boxed" required></div>' +
-
-        '<div class="field"><label class="field-label">Specification · 規格</label>' +
-        '<input name="specification" class="field-input field-input--boxed" placeholder="e.g. 濃縮細粒 / Granules"></div>' +
-
-        '<div class="text-label mt-3 mb-2">Pack Pricing · 套裝計價</div>' +
-        '<div class="field-grid field-grid--3">' +
-          '<div class="field"><label class="field-label" data-required>Grams per Unit · 每單位克數</label>' +
-          '<input name="pack_grams" id="np-grams" type="number" step="1" min="1" class="field-input field-input--boxed" value="100" required>' +
-          '<div class="field-hint">How many grams per bag / jar?</div></div>' +
-
-          '<div class="field"><label class="field-label" data-required>Total Price (RM) · 套裝總價</label>' +
-          '<input name="pack_price" id="np-pack-price" type="number" step="0.01" min="0" class="field-input field-input--boxed" required>' +
-          '<div class="field-hint">What does one unit cost?</div></div>' +
-
-          '<div class="field"><label class="field-label">Cost per 1 g · 每克成本 (auto)</label>' +
-          '<input name="unit_price" id="np-unit-price" type="number" step="0.0001" class="field-input field-input--boxed" readonly style="background:var(--washi);font-weight:600;color:var(--gold);">' +
-          '<div class="field-hint">Auto-calculated. Used for prescriptions.</div></div>' +
-        '</div>' +
-
         '<div class="field-grid field-grid--2">' +
-          '<div class="field"><label class="field-label">Unit · 單位</label>' +
-          '<input name="unit" class="field-input field-input--boxed" value="g" readonly style="background:var(--washi);"></div>' +
-          '<div class="field"><label class="field-label">SKU · 貨號</label>' +
-          '<input name="sku" class="field-input field-input--boxed"></div>' +
+        '<div class="field"><label class="field-label" data-required>Unit Price (RM / g) · 每克單價</label>' +
+        '<input name="unit_price" type="number" step="0.0001" min="0" class="field-input field-input--boxed" required>' +
+        '<div class="field-hint">Cost per 1 g — match the admin Medicine Catalog for consistency.</div></div>' +
+        '<div class="field"><label class="field-label">Unit · 單位</label>' +
+        '<input name="unit" class="field-input field-input--boxed" value="g"></div>' +
+        '<div class="field"><label class="field-label">SKU · 貨號</label>' +
+        '<input name="sku" class="field-input field-input--boxed"></div>' +
+        '<div class="field"><label class="field-label">Initial Stock (g) · 初始庫存</label>' +
+        '<input name="initial_stock" type="number" step="1" min="0" class="field-input field-input--boxed" value="0"></div>' +
         '</div>' +
-
-        '<div class="field"><label class="field-label">Initial Stock (grams) · 初始庫存（克）</label>' +
-        '<input name="initial_stock" type="number" step="1" min="0" class="field-input field-input--boxed" value="0">' +
-        '<div class="field-hint">Total grams on hand — e.g. 5 bags × 100 g = 500</div></div>' +
-
+        '<div class="field"><label class="field-label">Specification · 規格</label>' +
+        '<input name="specification" class="field-input field-input--boxed" placeholder="e.g. 濃縮細粒"></div>' +
         '<button type="submit" class="btn btn--primary btn--block">Create · 建立</button>' +
         '</form>',
     });
-    var form = m.element.querySelector('#np-form');
-    var grams = form.querySelector('#np-grams');
-    var packPrice = form.querySelector('#np-pack-price');
-    var unitPrice = form.querySelector('#np-unit-price');
-
-    function recalc() {
-      var g = parseFloat(grams.value) || 0;
-      var p = parseFloat(packPrice.value) || 0;
-      if (g > 0 && p >= 0) {
-        unitPrice.value = (p / g).toFixed(4);
-      } else {
-        unitPrice.value = '';
-      }
-    }
-    grams.addEventListener('input', recalc);
-    packPrice.addEventListener('input', recalc);
-
-    form.addEventListener('submit', async function (e) {
+    m.element.querySelector('#np-form').addEventListener('submit', async function (e) {
       e.preventDefault();
-      var d = HM.form.serialize(form);
-      if (!d.unit_price || parseFloat(d.unit_price) <= 0) {
-        HM.ui.toast('Enter grams per unit and total price to compute cost per gram', 'warning');
-        return;
-      }
+      var d = HM.form.serialize(e.target);
       try {
-        // Store cost per 1 g on products.unit_price and tuck the pack
-        // metadata into specification so we can re-display it later.
-        var packSuffix = d.pack_grams + ' g / RM ' + parseFloat(d.pack_price).toFixed(2) + ' per unit';
-        d.specification = d.specification
-          ? d.specification + ' · ' + packSuffix
-          : packSuffix;
         await HM.api.pharmacy.createProduct(d);
         m.close();
         HM.ui.toast('Product added · 已新增', 'success');

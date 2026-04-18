@@ -35,6 +35,7 @@ class MedicineCatalogController extends Controller
                         type          ENUM('single','compound') NOT NULL,
                         category      VARCHAR(10) NULL,
                         unit          VARCHAR(20) NOT NULL DEFAULT 'per 100g',
+                        pack_grams    DECIMAL(10,2) NOT NULL DEFAULT 100,
                         unit_price    DECIMAL(10,2) NULL,
                         source        VARCHAR(80) NOT NULL DEFAULT 'Timing Herbs',
                         price_month   VARCHAR(20) NULL,
@@ -52,6 +53,19 @@ class MedicineCatalogController extends Controller
             }
         } else {
             $log[] = 'medicine_catalog already exists, skipped';
+            // Backfill pack_grams column for existing installs
+            if (! Schema::hasColumn('medicine_catalog', 'pack_grams')) {
+                try {
+                    DB::statement("ALTER TABLE medicine_catalog ADD COLUMN pack_grams DECIMAL(10,2) NOT NULL DEFAULT 100 AFTER unit");
+                    // Existing rows had prices labelled "per 100g" — seed pack_grams=100 for them.
+                    DB::statement("UPDATE medicine_catalog SET pack_grams = 100 WHERE pack_grams IS NULL OR pack_grams = 0");
+                    $log[] = 'added column pack_grams (default 100)';
+                } catch (\Throwable $e) {
+                    $errors[] = 'add pack_grams: ' . $e->getMessage();
+                }
+            } else {
+                $log[] = 'column pack_grams already exists, skipped';
+            }
         }
 
         return response()->json([
@@ -177,13 +191,15 @@ class MedicineCatalogController extends Controller
             'name_pinyin' => ['required', 'string', 'max:160'],
             'type'        => ['required', 'in:single,compound'],
             'unit'        => ['nullable', 'string', 'max:20'],
+            'pack_grams'  => ['nullable', 'numeric', 'min:0.01'],
             'unit_price'  => ['nullable', 'numeric', 'min:0'],
             'notes'       => ['nullable', 'string', 'max:1000'],
             'is_active'   => ['nullable', 'boolean'],
         ]);
         $data['source']      = $data['source']      ?? 'Manual';
         $data['category']    = substr($data['name_pinyin'], 0, 1);
-        $data['unit']        = $data['unit']        ?? 'per 100g';
+        $data['pack_grams']  = $data['pack_grams']  ?? 100;
+        $data['unit']        = $data['unit']        ?? ('per ' . ((int) $data['pack_grams']) . 'g');
         $data['is_active']   = $data['is_active']   ?? 1;
         $data['created_at']  = now();
         $data['updated_at']  = now();
@@ -201,6 +217,7 @@ class MedicineCatalogController extends Controller
             'name_pinyin' => ['nullable', 'string', 'max:160'],
             'type'        => ['nullable', 'in:single,compound'],
             'unit'        => ['nullable', 'string', 'max:20'],
+            'pack_grams'  => ['nullable', 'numeric', 'min:0.01'],
             'unit_price'  => ['nullable', 'numeric', 'min:0'],
             'notes'       => ['nullable', 'string', 'max:1000'],
             'is_active'   => ['nullable', 'boolean'],

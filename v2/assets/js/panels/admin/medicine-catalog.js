@@ -100,15 +100,25 @@
       host.innerHTML = '<div class="table-wrap"><table class="table">' +
         '<thead><tr>' +
           '<th>Code</th><th>中文</th><th>Pinyin</th><th>Type</th>' +
-          '<th style="text-align:right;">Price (RM/100g)</th>' +
+          '<th style="text-align:right;">Pack</th>' +
+          '<th style="text-align:right;">Pack Price</th>' +
+          '<th style="text-align:right;">Cost / 1 g</th>' +
           '<th>Status</th><th></th>' +
         '</tr></thead><tbody></tbody></table></div>';
       var tbody = host.querySelector('tbody');
 
       rows.forEach(function (r) {
+        var packGrams = parseFloat(r.pack_grams) || 100;
+        var pricePerGram = r.unit_price != null
+          ? (parseFloat(r.unit_price) / packGrams)
+          : null;
+        var packCell = packGrams + ' g';
         var priceCell = r.unit_price == null
-          ? '<span class="text-muted">询价 inquire</span>'
+          ? '<span class="text-muted">询价</span>'
           : HM.format.money(r.unit_price);
+        var perGramCell = pricePerGram == null
+          ? '<span class="text-muted">—</span>'
+          : '<span style="font-family: var(--font-mono); color: var(--gold);">RM ' + pricePerGram.toFixed(4) + '</span>';
         var typeBadge = r.type === 'compound'
           ? '<span class="chip chip--gold">复方</span>'
           : '<span class="chip chip--sage">单方</span>';
@@ -122,7 +132,9 @@
           '<td><strong>' + HM.format.esc(r.name_zh) + '</strong></td>' +
           '<td>' + HM.format.esc(r.name_pinyin) + '</td>' +
           '<td>' + typeBadge + '</td>' +
+          '<td style="text-align:right; font-family: var(--font-mono); color: var(--stone);">' + packCell + '</td>' +
           '<td style="text-align:right;">' + priceCell + '</td>' +
+          '<td style="text-align:right;">' + perGramCell + '</td>' +
           '<td>' + statusBadge + '</td>' +
           '<td style="white-space:nowrap;">' +
             '<button class="btn btn--ghost btn--sm" data-act="edit">✎ Edit</button> ' +
@@ -135,9 +147,19 @@
     } catch (e) { HM.state.error(host, e); }
   }
 
+  // Pack-based pricing model for medicines:
+  //   • Grams per Unit — how many grams are in one bag/jar (e.g. 100)
+  //   • Total Price per Unit — what one pack costs (e.g. RM 47.00)
+  //   • Cost per 1 g — AUTO = total_price / grams. Shown read-only.
+  // The cost-per-gram is what doctors see in Rx autocomplete so they
+  // can multiply directly by a patient's per-dose grams.
   function showEditModal(row) {
     var isNew = !row;
-    row = row || { code: '', name_zh: '', name_pinyin: '', type: 'single', unit_price: '', unit: 'per 100g', notes: '', is_active: 1 };
+    row = row || {
+      code: '', name_zh: '', name_pinyin: '', type: 'single',
+      unit_price: '', pack_grams: 100, unit: 'per 100g',
+      notes: '', is_active: 1,
+    };
 
     var m = HM.ui.modal({
       size: 'md',
@@ -156,15 +178,33 @@
           '<input name="name_zh" class="field-input field-input--boxed" required value="' + HM.format.esc(row.name_zh || '') + '"></div>' +
           '<div class="field"><label class="field-label" data-required>Pinyin · 拼音</label>' +
           '<input name="name_pinyin" class="field-input field-input--boxed" required value="' + HM.format.esc(row.name_pinyin || '') + '"></div>' +
-          '<div class="field"><label class="field-label">Price (RM / 100g)</label>' +
-          '<input name="unit_price" type="number" step="0.01" class="field-input field-input--boxed" value="' + HM.format.esc(row.unit_price != null ? row.unit_price : '') + '" placeholder="Leave blank for 询价"></div>' +
-          '<div class="field"><label class="field-label">Unit · 單位</label>' +
-          '<input name="unit" class="field-input field-input--boxed" value="' + HM.format.esc(row.unit || 'per 100g') + '"></div>' +
-          '<div class="field" style="grid-column: span 2;"><label class="field-label">Notes · 備註</label>' +
-          '<textarea name="notes" class="field-input field-input--boxed" rows="2">' + HM.format.esc(row.notes || '') + '</textarea></div>' +
-          '<div class="field" style="grid-column: span 2;"><label class="flex gap-2" style="align-items:center;">' +
-          '<input type="checkbox" name="is_active" ' + (row.is_active ? 'checked' : '') + '> Active · 有效 (show to doctors in prescription autocomplete)</label></div>' +
         '</div>' +
+
+        '<div class="text-label mt-4 mb-2">Pack Pricing · 套裝計價</div>' +
+        '<div class="field-grid field-grid--3">' +
+          '<div class="field"><label class="field-label" data-required>Grams per Unit · 每單位克數</label>' +
+          '<input name="pack_grams" id="mc-grams" type="number" step="1" min="1" class="field-input field-input--boxed" value="' + HM.format.esc(row.pack_grams != null ? row.pack_grams : 100) + '" required>' +
+          '<div class="field-hint">Grams per bag / jar (e.g. 100)</div></div>' +
+
+          '<div class="field"><label class="field-label">Total Price (RM) · 套裝總價</label>' +
+          '<input name="unit_price" id="mc-pack-price" type="number" step="0.01" min="0" class="field-input field-input--boxed" value="' + HM.format.esc(row.unit_price != null ? row.unit_price : '') + '" placeholder="Leave blank for 询价">' +
+          '<div class="field-hint">Cost of one pack</div></div>' +
+
+          '<div class="field"><label class="field-label">Cost per 1 g · 每克成本</label>' +
+          '<input id="mc-per-gram" type="text" class="field-input field-input--boxed" readonly style="background:var(--washi);font-weight:600;color:var(--gold);">' +
+          '<div class="field-hint">Auto-calculated</div></div>' +
+        '</div>' +
+
+        '<div class="field-grid field-grid--2 mt-2">' +
+          '<div class="field"><label class="field-label">Unit Label · 單位</label>' +
+          '<input name="unit" class="field-input field-input--boxed" value="' + HM.format.esc(row.unit || 'per 100g') + '"></div>' +
+          '<div class="field"><label class="flex gap-2" style="align-items:center;margin-top:26px;">' +
+          '<input type="checkbox" name="is_active" ' + (row.is_active ? 'checked' : '') + '> Active · 有效</label></div>' +
+        '</div>' +
+
+        '<div class="field"><label class="field-label">Notes · 備註</label>' +
+        '<textarea name="notes" class="field-input field-input--boxed" rows="2">' + HM.format.esc(row.notes || '') + '</textarea></div>' +
+
         '<div data-general-error class="alert alert--danger mt-3" style="display:none;"></div>' +
         '<div class="flex gap-2 mt-4">' +
         '<button type="submit" class="btn btn--primary" style="margin-left:auto;">' + (isNew ? 'Create' : 'Save') + '</button>' +
@@ -173,12 +213,30 @@
     });
 
     var form = m.element.querySelector('#mc-form');
+    var gramsInp = form.querySelector('#mc-grams');
+    var priceInp = form.querySelector('#mc-pack-price');
+    var perGramEl = form.querySelector('#mc-per-gram');
+
+    function recalc() {
+      var g = parseFloat(gramsInp.value) || 0;
+      var p = parseFloat(priceInp.value);
+      if (g > 0 && !isNaN(p) && p >= 0) {
+        perGramEl.value = 'RM ' + (p / g).toFixed(4) + ' / g';
+      } else {
+        perGramEl.value = '—';
+      }
+    }
+    gramsInp.addEventListener('input', recalc);
+    priceInp.addEventListener('input', recalc);
+    recalc();
+
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       var d = HM.form.serialize(form);
-      // Normalise: empty price → null; checkbox → 1/0
+      // Normalise: empty price → null; checkbox → 1/0; numeric pack_grams
       if (d.unit_price === '' || d.unit_price === undefined) d.unit_price = null;
       else d.unit_price = parseFloat(d.unit_price);
+      d.pack_grams = parseFloat(d.pack_grams) || 100;
       d.is_active = form.querySelector('[name="is_active"]').checked ? 1 : 0;
 
       HM.form.setLoading(form, true);
