@@ -26,4 +26,6 @@ class Appointment extends Model
 
     public function patient() { return $this->belongsTo(User::class, 'patient_id'); }
     public function doctor()  { return $this->belongsTo(User::class, 'doctor_id'); }
+    public function prescription() { return $this->hasOne(Prescription::class, 'appointment_id'); }
+    public function consultation() { return $this->hasOne(Consultation::class, 'appointment_id'); }
 }
