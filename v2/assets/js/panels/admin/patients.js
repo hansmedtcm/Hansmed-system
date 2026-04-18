@@ -82,7 +82,12 @@
         '<div class="field"><label class="field-label">Medical History</label><textarea name="medical_history" class="field-input" rows="2">' + HM.format.esc(p.medical_history || '') + '</textarea></div>' +
         '<div class="field"><label class="field-label">Current Medications</label><textarea name="current_medications" class="field-input" rows="2">' + HM.format.esc(p.current_medications || '') + '</textarea></div>' +
         '<button type="submit" class="btn btn--primary">Save Changes</button>' +
-        '</form>';
+        '</form>' +
+        '<div id="wyl-mount-admin" class="mt-4" style="max-width: 900px;"></div>';
+
+      if (p.birth_date && window.HM && HM.wuyunLiuqi) {
+        HM.wuyunLiuqi.mount(document.getElementById('wyl-mount-admin'), p.birth_date);
+      }
 
       var pwBtn = document.getElementById('pt-reset-pw');
       if (pwBtn) pwBtn.addEventListener('click', function () {

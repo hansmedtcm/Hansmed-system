@@ -146,6 +146,9 @@
     // Body diagram
     initBodyDiagram();
 
+    // Wuyun Liuqi analysis (practitioner-only clinical aide)
+    mountWuyunLiuqi();
+
     // Treatments: preset add buttons
     document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
       btn.addEventListener('click', function () { addTreatment(btn.getAttribute('data-tx-add')); });
@@ -235,7 +238,11 @@
       '<div id="cr-files-list" class="mt-2"></div>' +
       '</div>';
 
-    return topRow +
+    // Wuyun Liuqi (五運六氣) analysis slot — populated after render once
+    // the patient profile arrives. Doctor-only; patients never see this.
+    var wuyunSlot = '<div id="wyl-mount" class="mb-3"></div>';
+
+    return wuyunSlot + topRow +
 
       '<div class="field"><label class="field-label">Present Illness · 現病史</label>' +
       '<textarea id="cr-present" class="field-input" rows="3" placeholder="Onset, progression, aggravating/relieving factors"></textarea></div>' +
@@ -396,9 +403,47 @@
     // Body diagram drawing (always present in case record)
     initBodyDiagram();
 
+    // Wuyun Liuqi analysis (practitioner-only clinical aide)
+    mountWuyunLiuqi();
+
     renderRxList();
     renderTreatments();
     renderDocuments();
+  }
+
+  // Looks up the patient's DOB from the appointment response (if the
+  // endpoint already returned patient.patientProfile) or fetches it
+  // separately, then hands it to HM.wuyunLiuqi to render. Silent no-op
+  // if DOB is missing.
+  async function mountWuyunLiuqi() {
+    var slot = document.getElementById('wyl-mount');
+    if (!slot || !window.HM || !HM.wuyunLiuqi) return;
+
+    // Prefer the DOB embedded in the appointment response
+    var dob = null;
+    try {
+      var appt = state.appt || {};
+      dob = (appt.patient && appt.patient.patient_profile && appt.patient.patient_profile.birth_date)
+         || (appt.patient_profile && appt.patient_profile.birth_date)
+         || appt.patient_birth_date
+         || null;
+    } catch (_) { dob = null; }
+
+    // Fall back to hitting /doctor/patients/:id so this works even if the
+    // appointment payload doesn't embed the profile.
+    if (!dob && state.appt && state.appt.patient_id && HM.api.doctor && HM.api.doctor.patientConsults) {
+      try {
+        var res = await HM.api.doctor.patientConsults(state.appt.patient_id);
+        var pp = res && res.patient && res.patient.patient_profile;
+        if (pp && pp.birth_date) dob = pp.birth_date;
+      } catch (_) { /* ignore — just skip the analysis */ }
+    }
+
+    if (!dob) {
+      slot.innerHTML = '';
+      return;
+    }
+    HM.wuyunLiuqi.mount(slot, dob);
   }
 
   // ── Body diagram drawing ─────────────────────────────────

@@ -90,11 +90,16 @@
         '</div>' +
         '</div>' +
         '<div class="grid-4 grid-auto mt-4" style="gap: var(--s-3);">' +
+        summaryCell('Date of Birth', pp.birth_date ? String(pp.birth_date).substring(0, 10) : '—') +
         summaryCell('Blood Type', pp.blood_type || '—') +
         summaryCell('Height / Weight', (pp.height_cm ? pp.height_cm + 'cm' : '—') + ' / ' + (pp.weight_kg ? pp.weight_kg + 'kg' : '—')) +
         summaryCell('Allergies', pp.allergies || 'None') +
         summaryCell('Medical History', HM.format.truncate(pp.medical_history || 'None', 50)) +
-        '</div></div>';
+        '</div></div>' +
+
+        // Wuyun Liuqi clinical analysis (doctor-only aide, hidden from patient).
+        // Renders only when patient has a birth_date on file.
+        '<div id="wyl-mount-patient" class="mb-6"></div>';
 
       // Tongue scans
       if (tongues.length) {
@@ -131,6 +136,11 @@
       }
 
       el.innerHTML = html;
+
+      // Mount Wuyun Liuqi card if DOB is known. Quietly skips otherwise.
+      if (pp.birth_date && window.HM && HM.wuyunLiuqi) {
+        HM.wuyunLiuqi.mount(document.getElementById('wyl-mount-patient'), pp.birth_date);
+      }
     } catch (e) { HM.state.error(el, e); }
   }
 
