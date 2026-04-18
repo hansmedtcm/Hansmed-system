@@ -305,6 +305,12 @@
     createMedicine:         function (d) { return api.post('/admin/medicine-catalog', d); },
     updateMedicine:         function (id, d) { return api.patch('/admin/medicine-catalog/' + id, d); },
     deleteMedicine:         function (id, force) { return api.delete('/admin/medicine-catalog/' + id + (force ? '?force=1' : '')); },
+    adjustMedicineStock:    function (id, d) { return api.post('/admin/medicine-catalog/' + id + '/adjust-stock', d); },
+
+    // Medicine purchase orders (stock-in log)
+    listMedicinePurchases:  function (qs) { return api.get('/admin/medicine-purchases' + (qs ? '?' + qs : '')); },
+    createMedicinePurchase: function (d) { return api.post('/admin/medicine-purchases', d); },
+    deleteMedicinePurchase: function (id) { return api.delete('/admin/medicine-purchases/' + id); },
 
     // Finance: revenue by source + pharmacy breakdown
     financeRevenueBySource:  function (qs) { return api.get('/admin/finance/revenue-by-source' + (qs ? '?' + qs : '')); },

@@ -57,7 +57,6 @@ class MedicineCatalogController extends Controller
             if (! Schema::hasColumn('medicine_catalog', 'pack_grams')) {
                 try {
                     DB::statement("ALTER TABLE medicine_catalog ADD COLUMN pack_grams DECIMAL(10,2) NOT NULL DEFAULT 100 AFTER unit");
-                    // Existing rows had prices labelled "per 100g" — seed pack_grams=100 for them.
                     DB::statement("UPDATE medicine_catalog SET pack_grams = 100 WHERE pack_grams IS NULL OR pack_grams = 0");
                     $log[] = 'added column pack_grams (default 100)';
                 } catch (\Throwable $e) {
@@ -68,10 +67,111 @@ class MedicineCatalogController extends Controller
             }
         }
 
+        // Stock tracking columns — decimal grams on hand + timestamp of the
+        // most recent stock movement (purchase, adjustment, dispense…).
+        if (Schema::hasTable('medicine_catalog') && ! Schema::hasColumn('medicine_catalog', 'stock_grams')) {
+            try {
+                DB::statement("ALTER TABLE medicine_catalog ADD COLUMN stock_grams DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER unit_price");
+                DB::statement("ALTER TABLE medicine_catalog ADD COLUMN reorder_threshold DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER stock_grams");
+                DB::statement("ALTER TABLE medicine_catalog ADD COLUMN stock_updated_at DATETIME NULL AFTER reorder_threshold");
+                $log[] = 'added columns stock_grams + reorder_threshold + stock_updated_at';
+            } catch (\Throwable $e) {
+                $errors[] = 'add stock columns: ' . $e->getMessage();
+            }
+        } else if (Schema::hasTable('medicine_catalog')) {
+            $log[] = 'stock columns already exist, skipped';
+        }
+
+        // Purchase-order log — every stock-in transaction from a supplier.
+        // Creating a row here automatically bumps medicine_catalog.stock_grams
+        // (handled in MedicinePurchaseController::store).
+        if (! Schema::hasTable('medicine_purchases')) {
+            try {
+                DB::statement("
+                    CREATE TABLE medicine_purchases (
+                        id                 BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        medicine_id        BIGINT UNSIGNED NOT NULL,
+                        invoice_no         VARCHAR(80) NULL,
+                        supplier_name      VARCHAR(160) NOT NULL,
+                        purchase_date      DATE NOT NULL,
+                        quantity_grams     DECIMAL(12,2) NOT NULL,
+                        pack_grams         DECIMAL(10,2) NULL,
+                        pack_count         DECIMAL(10,2) NULL,
+                        total_cost         DECIMAL(12,2) NULL,
+                        unit_cost_per_gram DECIMAL(12,4) NULL,
+                        notes              TEXT NULL,
+                        created_by         BIGINT UNSIGNED NULL,
+                        created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        KEY idx_mp_med     (medicine_id, purchase_date),
+                        KEY idx_mp_inv     (invoice_no),
+                        KEY idx_mp_sup     (supplier_name),
+                        CONSTRAINT fk_mp_med FOREIGN KEY (medicine_id) REFERENCES medicine_catalog(id) ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                ");
+                $log[] = 'created table medicine_purchases';
+            } catch (\Throwable $e) {
+                $errors[] = 'create medicine_purchases: ' . $e->getMessage();
+            }
+        } else {
+            $log[] = 'medicine_purchases already exists, skipped';
+        }
+
         return response()->json([
             'success' => empty($errors),
             'log'     => $log,
             'errors'  => $errors,
+        ]);
+    }
+
+    /**
+     * Manual stock adjustment — set / add / subtract grams on a medicine.
+     * Used for corrections, stocktake write-offs, initial opening balance.
+     * Purchase orders go through MedicinePurchaseController instead.
+     */
+    public function adjustStock(Request $request, int $id)
+    {
+        $this->ensureTable();
+        $data = $request->validate([
+            'mode'       => ['required', 'in:set,add,subtract'],
+            'amount'     => ['required', 'numeric', 'min:0'],
+            'notes'      => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $med = DB::table('medicine_catalog')->where('id', $id)->first();
+        if (! $med) return response()->json(['message' => 'Medicine not found'], 404);
+
+        $current = (float) ($med->stock_grams ?? 0);
+        $delta = (float) $data['amount'];
+        $new = match ($data['mode']) {
+            'set'      => $delta,
+            'add'      => $current + $delta,
+            'subtract' => max(0, $current - $delta),
+        };
+
+        DB::table('medicine_catalog')->where('id', $id)->update([
+            'stock_grams'       => $new,
+            'stock_updated_at'  => now(),
+            'updated_at'        => now(),
+        ]);
+
+        DB::table('audit_logs')->insert([
+            'user_id'     => $request->user()->id,
+            'action'      => 'medicine.stock_adjust.' . $data['mode'],
+            'target_type' => 'medicine_catalog',
+            'target_id'   => $id,
+            'payload'     => json_encode([
+                'previous' => $current,
+                'new'      => $new,
+                'amount'   => $delta,
+                'notes'    => $data['notes'] ?? null,
+            ]),
+            'created_at'  => now(),
+        ]);
+
+        return response()->json([
+            'id'          => $id,
+            'previous'    => $current,
+            'stock_grams' => $new,
         ]);
     }
 
@@ -186,15 +286,17 @@ class MedicineCatalogController extends Controller
     {
         $this->ensureTable();
         $data = $request->validate([
-            'code'        => ['required', 'string', 'max:20', 'unique:medicine_catalog,code'],
-            'name_zh'     => ['required', 'string', 'max:120'],
-            'name_pinyin' => ['required', 'string', 'max:160'],
-            'type'        => ['required', 'in:single,compound'],
-            'unit'        => ['nullable', 'string', 'max:20'],
-            'pack_grams'  => ['nullable', 'numeric', 'min:0.01'],
-            'unit_price'  => ['nullable', 'numeric', 'min:0'],
-            'notes'       => ['nullable', 'string', 'max:1000'],
-            'is_active'   => ['nullable', 'boolean'],
+            'code'              => ['required', 'string', 'max:20', 'unique:medicine_catalog,code'],
+            'name_zh'           => ['required', 'string', 'max:120'],
+            'name_pinyin'       => ['required', 'string', 'max:160'],
+            'type'              => ['required', 'in:single,compound'],
+            'unit'              => ['nullable', 'string', 'max:20'],
+            'pack_grams'        => ['nullable', 'numeric', 'min:0.01'],
+            'unit_price'        => ['nullable', 'numeric', 'min:0'],
+            'stock_grams'       => ['nullable', 'numeric', 'min:0'],
+            'reorder_threshold' => ['nullable', 'numeric', 'min:0'],
+            'notes'             => ['nullable', 'string', 'max:1000'],
+            'is_active'         => ['nullable', 'boolean'],
         ]);
         $data['source']      = $data['source']      ?? 'Manual';
         $data['category']    = substr($data['name_pinyin'], 0, 1);
@@ -212,15 +314,17 @@ class MedicineCatalogController extends Controller
     {
         $this->ensureTable();
         $data = $request->validate([
-            'code'        => ['nullable', 'string', 'max:20'],
-            'name_zh'     => ['nullable', 'string', 'max:120'],
-            'name_pinyin' => ['nullable', 'string', 'max:160'],
-            'type'        => ['nullable', 'in:single,compound'],
-            'unit'        => ['nullable', 'string', 'max:20'],
-            'pack_grams'  => ['nullable', 'numeric', 'min:0.01'],
-            'unit_price'  => ['nullable', 'numeric', 'min:0'],
-            'notes'       => ['nullable', 'string', 'max:1000'],
-            'is_active'   => ['nullable', 'boolean'],
+            'code'              => ['nullable', 'string', 'max:20'],
+            'name_zh'           => ['nullable', 'string', 'max:120'],
+            'name_pinyin'       => ['nullable', 'string', 'max:160'],
+            'type'              => ['nullable', 'in:single,compound'],
+            'unit'              => ['nullable', 'string', 'max:20'],
+            'pack_grams'        => ['nullable', 'numeric', 'min:0.01'],
+            'unit_price'        => ['nullable', 'numeric', 'min:0'],
+            'stock_grams'       => ['nullable', 'numeric', 'min:0'],
+            'reorder_threshold' => ['nullable', 'numeric', 'min:0'],
+            'notes'             => ['nullable', 'string', 'max:1000'],
+            'is_active'         => ['nullable', 'boolean'],
         ]);
 
         $existing = DB::table('medicine_catalog')->where('id', $id)->first();

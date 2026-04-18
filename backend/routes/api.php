@@ -237,6 +237,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch ('/medicine-catalog/{id}',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'update']);
         Route::delete('/medicine-catalog/{id}',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'destroy']);
         Route::post  ('/medicine-catalog/seed',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'seed']);
+        Route::post  ('/medicine-catalog/{id}/adjust-stock', [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'adjustStock']);
+
+        // Medicine purchase orders (stock-in log)
+        Route::get   ('/medicine-purchases',       [\App\Http\Controllers\Admin\MedicinePurchaseController::class, 'index']);
+        Route::post  ('/medicine-purchases',       [\App\Http\Controllers\Admin\MedicinePurchaseController::class, 'store']);
+        Route::delete('/medicine-purchases/{id}',  [\App\Http\Controllers\Admin\MedicinePurchaseController::class, 'destroy']);
 
         // Verification (M-03/M-04)
         Route::get('/doctors/pending',                 [VerificationController::class, 'pendingDoctors']);
