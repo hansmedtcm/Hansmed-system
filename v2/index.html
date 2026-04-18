@@ -1126,10 +1126,10 @@
     <!-- Login panel -->
     <form class="tab-panel" data-panel="login">
       <h2 style="text-align:center; margin-bottom: var(--s-2);">Welcome Back · 歡迎回來</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in to your HansMed account · 登入您的帳號</p>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in with your email or phone · 以電郵或手機號碼登入</p>
       <div class="field">
-        <label class="field-label" data-required>Email · 電郵</label>
-        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <label class="field-label" data-required>Email or Phone · 電郵或手機</label>
+        <input type="text" name="identifier" class="field-input" required autocomplete="username" placeholder="you@example.com  或  +60 12-345 6789">
         <div class="field-error"></div>
       </div>
       <div class="field">
@@ -1137,8 +1137,19 @@
         <input type="password" name="password" class="field-input" required autocomplete="current-password">
         <div class="field-error"></div>
       </div>
+      <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+      </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+
+      <!-- WhatsApp fallback — lets patients book without signing in -->
+      <div style="text-align:center; margin-top: var(--s-5); margin-bottom: var(--s-2); color: var(--stone); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;">
+        Or Book via WhatsApp · 或以 WhatsApp 預約
+      </div>
+      <a href="#" data-action="whatsapp-book" class="btn btn--block" style="background:#25D366; color:#fff; border-color:#25D366;" target="_blank" rel="noopener">
+        <span style="font-size: 1.1rem; margin-right: 6px;">💬</span> Chat with us on WhatsApp
+      </a>
     </form>
 
     <!-- Register panel -->
@@ -1151,6 +1162,12 @@
         <div class="field-error"></div>
       </div>
       <div class="field">
+        <label class="field-label" data-required>Phone Number · 手機號碼</label>
+        <input type="tel" name="phone" class="field-input" required autocomplete="tel" placeholder="+60 12-345 6789">
+        <div class="field-hint">We'll use this to contact you about appointments. · 預約聯絡用。</div>
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
         <label class="field-label" data-required>Email · 電郵</label>
         <input type="email" name="email" class="field-input" required autocomplete="email">
         <div class="field-error"></div>
@@ -1158,7 +1175,7 @@
       <div class="field">
         <label class="field-label" data-required>Password · 密碼</label>
         <input type="password" name="password" class="field-input" required autocomplete="new-password" minlength="8">
-        <div class="field-hint">Minimum 8 characters · 至少8個字元</div>
+        <div class="field-hint">Minimum 8 characters, with at least 1 uppercase letter and 1 number. · 至少8位，須含 1 個大寫字母及 1 個數字。</div>
         <div class="field-error"></div>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
@@ -1170,19 +1187,39 @@
       </p>
     </form>
 
+    <!-- Forgot-password panel (hidden by default; opened via "Forgot password?" link) -->
+    <form class="tab-panel" data-panel="forgot">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-5); font-size: var(--text-sm);">Enter your email and we'll send you a reset link. · 輸入電郵，我們將寄出重設連結。</p>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Send Reset Link · 寄送連結</button>
+      <div style="text-align:center; margin-top: var(--s-4);">
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+      </div>
+    </form>
+
     <!-- Professional login -->
     <form class="tab-panel" data-panel="professional">
       <h2 style="text-align:center; margin-bottom: var(--s-2);">Professional Sign In · 專業人員登入</h2>
       <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">For doctors, pharmacies, and administrators · 醫師 / 藥房 / 管理員登入</p>
       <div class="field">
         <label class="field-label" data-required>Email · 電郵</label>
-        <input type="email" name="email" class="field-input" required>
+        <input type="email" name="identifier" class="field-input" required>
         <div class="field-error"></div>
       </div>
       <div class="field">
         <label class="field-label" data-required>Password · 密碼</label>
         <input type="password" name="password" class="field-input" required>
         <div class="field-error"></div>
+      </div>
+      <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>

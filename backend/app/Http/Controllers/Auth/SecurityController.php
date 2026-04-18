@@ -13,7 +13,12 @@ class SecurityController extends Controller
     {
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'new_password'     => ['required', 'string', 'min:8', 'max:128', 'confirmed'],
+            'new_password'     => array_merge(
+                \App\Http\Controllers\Auth\AuthController::passwordRules(),
+                ['confirmed']
+            ),
+        ], [
+            'new_password.regex' => 'Password must contain at least one uppercase letter and one number.',
         ]);
 
         $user = $request->user();

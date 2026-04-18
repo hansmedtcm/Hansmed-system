@@ -94,11 +94,19 @@
     return res;
   }
 
-  async function authLogin(email, password) {
-    var res = await api.post('/auth/login', { email: email, password: password });
+  // identifier can be email or phone number
+  async function authLogin(identifier, password) {
+    var res = await api.post('/auth/login', { identifier: identifier, password: password });
     setToken(res.token);
     setUser(res.user);
     return res;
+  }
+
+  async function authForgotPassword(email) {
+    return await api.post('/auth/forgot-password', { email: email });
+  }
+  async function authResetPassword(email, token, password) {
+    return await api.post('/auth/reset-password', { email: email, token: token, password: password });
   }
 
   async function authLogout() {
@@ -359,6 +367,8 @@
     authLogin: authLogin,
     authLogout: authLogout,
     authMe: authMe,
+    authForgotPassword: authForgotPassword,
+    authResetPassword: authResetPassword,
 
     patient: patient,
     doctor: doctor,

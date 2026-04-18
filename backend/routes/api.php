@@ -28,9 +28,11 @@ use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 // Public
-Route::post('/auth/register',   [AuthController::class, 'register']);
-Route::post('/auth/login',      [AuthController::class, 'login']);
-Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
+Route::post('/auth/register',         [AuthController::class, 'register']);
+Route::post('/auth/login',            [AuthController::class, 'login']);
+Route::post('/auth/forgot-password',  [AuthController::class, 'forgotPassword']);
+Route::post('/auth/reset-password',   [AuthController::class, 'resetPassword']);
+Route::post('/webhooks/stripe',       [StripeWebhookController::class, 'handle']);
 
 // Emergency admin bootstrap — gated by ADMIN_BOOTSTRAP_SECRET env var.
 // Disabled (returns 503) unless the env var is set on the server.

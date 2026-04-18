@@ -195,16 +195,21 @@
     });
     showTab(initialTab || 'login');
 
-    // Login submit
+    // Shared password-complexity check: ≥8, ≥1 uppercase, ≥1 number.
+    function passwordOk(pw) {
+      return typeof pw === 'string' && pw.length >= 8 && /[A-Z]/.test(pw) && /\d/.test(pw);
+    }
+
+    // Login submit — identifier can be email OR phone
     activeModal.element.querySelector('[data-panel="login"]').addEventListener('submit', async function (e) {
       e.preventDefault();
       var formEl = e.target;
-      if (!form.validate(formEl, { email: ['required', 'email'], password: ['required'] })) return;
+      if (!form.validate(formEl, { identifier: ['required'], password: ['required'] })) return;
       form.setLoading(formEl, true);
       form.clearGeneralError(formEl);
       try {
         var data = form.serialize(formEl);
-        var res = await auth.login(data.email, data.password);
+        var res = await auth.login(data.identifier, data.password);
         ui.toast('Welcome back · 歡迎回來', 'success');
         setTimeout(function () { auth.redirectToPortal(); }, 500);
       } catch (err) {
@@ -217,15 +222,67 @@
       }
     });
 
-    // Register submit
+    // WhatsApp fallback button — opens the clinic chat in a new tab
+    var waBtn = activeModal.element.querySelector('[data-action="whatsapp-book"]');
+    if (waBtn) {
+      var waNumber = (HM.config && HM.config.CLINIC && HM.config.CLINIC.whatsapp) || '';
+      var waMsg = encodeURIComponent('Hi HansMed, I\'d like to book an appointment.');
+      var waHref = waNumber
+        ? 'https://wa.me/' + String(waNumber).replace(/[^\d]/g, '') + '?text=' + waMsg
+        : 'https://wa.me/?text=' + waMsg;
+      waBtn.setAttribute('href', waHref);
+    }
+
+    // "Forgot password?" links — show the forgot panel
+    activeModal.element.querySelectorAll('[data-action="forgot"]').forEach(function (link) {
+      link.addEventListener('click', function (e) { e.preventDefault(); showTab('forgot'); });
+    });
+    var backLink = activeModal.element.querySelector('[data-action="back-to-login"]');
+    if (backLink) backLink.addEventListener('click', function (e) { e.preventDefault(); showTab('login'); });
+
+    // Forgot-password submit
+    var forgotPanel = activeModal.element.querySelector('[data-panel="forgot"]');
+    if (forgotPanel) forgotPanel.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var formEl = e.target;
+      if (!form.validate(formEl, { email: ['required', 'email'] })) return;
+      form.setLoading(formEl, true);
+      form.clearGeneralError(formEl);
+      var successEl = formEl.querySelector('[data-general-success]');
+      if (successEl) successEl.style.display = 'none';
+      try {
+        var data = form.serialize(formEl);
+        var res = await HM.api.authForgotPassword(data.email);
+        form.setLoading(formEl, false);
+        if (successEl) {
+          successEl.textContent = res.message || 'If that email is registered, a reset link has been sent.';
+          successEl.style.display = 'block';
+        }
+        formEl.querySelector('input[name="email"]').value = '';
+      } catch (err) {
+        form.setLoading(formEl, false);
+        form.showGeneralError(formEl, (err && err.message) || 'Could not send reset link.');
+      }
+    });
+
+    // Register submit — now requires phone & enforces password complexity
     activeModal.element.querySelector('[data-panel="register"]').addEventListener('submit', async function (e) {
       e.preventDefault();
       var formEl = e.target;
-      if (!form.validate(formEl, { nickname: ['required'], email: ['required', 'email'], password: ['required', 'min:8'] })) return;
+      if (!form.validate(formEl, {
+        nickname: ['required'],
+        phone:    ['required'],
+        email:    ['required', 'email'],
+        password: ['required', 'min:8'],
+      })) return;
+      var data = form.serialize(formEl);
+      if (!passwordOk(data.password)) {
+        form.showErrors(formEl, { password: ['Password must be at least 8 characters and include 1 uppercase letter and 1 number.'] });
+        return;
+      }
       form.setLoading(formEl, true);
       form.clearGeneralError(formEl);
       try {
-        var data = form.serialize(formEl);
         data.role = 'patient';
         await auth.register(data);
         ui.toast('Account created · 帳號已建立', 'success');
@@ -244,11 +301,11 @@
     activeModal.element.querySelector('[data-panel="professional"]').addEventListener('submit', async function (e) {
       e.preventDefault();
       var formEl = e.target;
-      if (!form.validate(formEl, { email: ['required', 'email'], password: ['required'] })) return;
+      if (!form.validate(formEl, { identifier: ['required'], password: ['required'] })) return;
       form.setLoading(formEl, true);
       try {
         var data = form.serialize(formEl);
-        var res = await auth.login(data.email, data.password);
+        var res = await auth.login(data.identifier, data.password);
         if (res.user.role === 'patient') {
           form.setLoading(formEl, false);
           form.showGeneralError(formEl, 'This is a patient account. Please use the Sign In tab.');
@@ -272,7 +329,94 @@
   router.on('#/login', function () { openAuthModal('login'); });
   router.on('#/register', function () { openAuthModal('register'); });
   router.on('#/professional', function () { openAuthModal('professional'); });
+  router.on('#/reset-password', function () { openResetPasswordModal(); });
   router.start();
+
+  // ── Auto-popup sign-in on landing ──
+  // First-time visitors (not logged in, no deep link) see the sign-in
+  // modal automatically to encourage account creation. We remember
+  // the dismissal in sessionStorage so it doesn't pop back up while
+  // the user is browsing the site.
+  (function autoPopup() {
+    if (auth.isAuthenticated()) return;           // already signed in
+    if (location.hash && location.hash !== '#/' && location.hash !== '') return;  // deep-linked elsewhere
+    if (sessionStorage.getItem('hm_auth_dismissed') === '1') return;  // already closed it this session
+
+    // Small delay so the page has painted first
+    setTimeout(function () {
+      if (activeModal) return;
+      openAuthModal('login');
+      // Mark dismissed as soon as it's closed so we don't re-popup
+      var prevOnClose = activeModal && activeModal.element && activeModal.element._onClose;
+      // The modal API already tracks onClose; we piggy-back via DOM event
+      activeModal.element.addEventListener('hm-modal-close', function () {
+        sessionStorage.setItem('hm_auth_dismissed', '1');
+      }, { once: true });
+      // Fallback — observe removal from DOM
+      var mo = new MutationObserver(function () {
+        if (!document.body.contains(activeModal && activeModal.element)) {
+          sessionStorage.setItem('hm_auth_dismissed', '1');
+          mo.disconnect();
+        }
+      });
+      mo.observe(document.body, { childList: true, subtree: false });
+    }, 600);
+  })();
+
+  // ── Reset-password page modal (opened via #/reset-password?email=…&token=…) ──
+  function openResetPasswordModal() {
+    if (activeModal) activeModal.close();
+    // Pull token + email from the URL query (before the hash router strips it)
+    var qs = location.search || '';
+    var email = (qs.match(/[?&]email=([^&]+)/) || [])[1] || '';
+    var token = (qs.match(/[?&]token=([^&]+)/) || [])[1] || '';
+    email = decodeURIComponent(email); token = decodeURIComponent(token);
+
+    activeModal = ui.modal({
+      size: 'md',
+      content:
+        '<h2 style="text-align:center; margin-bottom: var(--s-2);">Set New Password · 設定新密碼</h2>' +
+        '<p style="text-align:center; color: var(--stone); margin-bottom: var(--s-5); font-size: var(--text-sm);">Enter a new password for your account. · 為帳號設定新密碼。</p>' +
+        '<form id="rp-form">' +
+        '<input type="hidden" name="email" value="' + fmt.esc(email) + '">' +
+        '<input type="hidden" name="token" value="' + fmt.esc(token) + '">' +
+        '<div class="field"><label class="field-label" data-required>Email</label>' +
+          '<input type="email" class="field-input" value="' + fmt.esc(email) + '" readonly></div>' +
+        '<div class="field"><label class="field-label" data-required>New Password · 新密碼</label>' +
+          '<input type="password" name="password" class="field-input" required minlength="8" autocomplete="new-password">' +
+          '<div class="field-hint">Minimum 8 characters, with at least 1 uppercase letter and 1 number.</div>' +
+          '<div class="field-error"></div></div>' +
+        '<div class="field"><label class="field-label" data-required>Confirm Password · 確認密碼</label>' +
+          '<input type="password" name="password_confirm" class="field-input" required minlength="8">' +
+          '<div class="field-error"></div></div>' +
+        '<div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-3);"></div>' +
+        '<button type="submit" class="btn btn--primary btn--block">Set New Password</button>' +
+        '</form>',
+    });
+
+    var rpForm = activeModal.element.querySelector('#rp-form');
+    rpForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var d = form.serialize(rpForm);
+      if (d.password !== d.password_confirm) {
+        form.showGeneralError(rpForm, 'Passwords do not match.'); return;
+      }
+      if (d.password.length < 8 || !/[A-Z]/.test(d.password) || !/\d/.test(d.password)) {
+        form.showGeneralError(rpForm, 'Password must be at least 8 characters with 1 uppercase letter and 1 number.'); return;
+      }
+      form.setLoading(rpForm, true);
+      try {
+        await HM.api.authResetPassword(d.email, d.token, d.password);
+        ui.toast('Password reset · 密碼已重設', 'success');
+        activeModal.close();
+        setTimeout(function () { openAuthModal('login'); }, 400);
+      } catch (err) {
+        form.setLoading(rpForm, false);
+        if (err.data && err.data.errors) form.showErrors(rpForm, err.data.errors);
+        else form.showGeneralError(rpForm, (err && err.message) || 'Reset failed.');
+      }
+    });
+  }
 
   // ── Content pages (privacy, terms, FAQ) ──
   window.showPage = async function (slug) {
