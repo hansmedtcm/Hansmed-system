@@ -97,6 +97,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [PatientProfileController::class, 'update']);
         Route::post('/profile/complete-registration', [PatientProfileController::class, 'completeRegistration']);
 
+        // Invoices (paid payments only — both appointments + orders)
+        Route::get('/invoices',      [\App\Http\Controllers\Patient\InvoiceController::class, 'index']);
+        Route::get('/invoices/{id}', [\App\Http\Controllers\Patient\InvoiceController::class, 'show']);
+
         // Everything below requires completed registration
         Route::middleware('registration.complete')->group(function () {
             Route::apiResource('addresses', AddressController::class)->except(['show']);

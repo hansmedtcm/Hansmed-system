@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   HM.doctorPanels = HM.doctorPanels || {};
-  var state = { dateFilter: 'today', statusFilter: '', visitFilter: '' };
+  var state = { dateFilter: 'today', statusFilter: '', visitFilter: '', customFrom: '', customTo: '' };
 
   function todayISO() {
     var d = new Date();
@@ -24,6 +24,12 @@
       chip('date', 'upcoming', 'Upcoming · 未來') +
       chip('date', 'past',     'Past · 過去') +
       chip('date', 'all',      'All · 全部') +
+      chip('date', 'custom',   '🗓 Custom · 自訂') +
+      '</div>' +
+      '<div id="d-date-custom" class="flex gap-2 flex-wrap mb-3" style="align-items:end; display:none;">' +
+        '<div><label class="text-xs text-muted">From · 起</label><input type="date" id="d-date-from" class="field-input field-input--boxed" style="margin:0;padding:6px 10px;"></div>' +
+        '<div><label class="text-xs text-muted">To · 迄</label><input type="date" id="d-date-to" class="field-input field-input--boxed" style="margin:0;padding:6px 10px;"></div>' +
+        '<button class="btn btn--primary btn--sm" id="d-date-apply">Apply · 套用</button>' +
       '</div>' +
 
       '<div class="text-label mb-2">Status · 狀態</div>' +
@@ -49,10 +55,23 @@
 
       '<div id="appt-list"></div>';
 
-    wireFilter('d-date-filter', function (v) { state.dateFilter = v; load(); });
+    wireFilter('d-date-filter', function (v) {
+      state.dateFilter = v;
+      var box = document.getElementById('d-date-custom');
+      if (box) box.style.display = v === 'custom' ? 'flex' : 'none';
+      if (v !== 'custom') load();
+    });
     wireFilter('d-status-filter', function (v) { state.statusFilter = v; load(); });
     wireFilter('d-visit-filter', function (v) { state.visitFilter = v; load(); });
     document.getElementById('d-appt-refresh').addEventListener('click', load);
+    document.getElementById('d-date-apply').addEventListener('click', function () {
+      var from = document.getElementById('d-date-from').value;
+      var to   = document.getElementById('d-date-to').value;
+      if (!from || !to) { HM.ui.toast('Pick both from and to dates', 'warning'); return; }
+      if (from > to)    { HM.ui.toast('From must be before To', 'warning'); return; }
+      state.customFrom = from; state.customTo = to;
+      load();
+    });
     await load();
   }
 
@@ -100,6 +119,11 @@
           if (state.dateFilter === 'week') {
             var weekOut = new Date(now.getTime() + 7 * 86400000);
             return when >= now && when <= weekOut;
+          }
+          if (state.dateFilter === 'custom' && state.customFrom && state.customTo) {
+            var from = new Date(state.customFrom + 'T00:00:00');
+            var to   = new Date(state.customTo   + 'T23:59:59');
+            return when >= from && when <= to;
           }
           return true;
         });

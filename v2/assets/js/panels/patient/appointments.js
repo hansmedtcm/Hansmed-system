@@ -6,6 +6,7 @@
   HM.patientPanels = HM.patientPanels || {};
 
   var currentFilter = '';
+  var customFrom = '', customTo = '';
 
   async function render(el) {
     el.innerHTML = '<div class="page-header">' +
@@ -17,6 +18,12 @@
       chip('confirmed', 'Upcoming · 即將') +
       chip('completed', 'Past · 過去') +
       chip('cancelled', 'Cancelled · 已取消') +
+      chip('custom', '🗓 Custom · 自訂') +
+      '</div>' +
+      '<div id="p-date-custom" class="flex gap-2 flex-wrap mb-3" style="align-items:end; display:none;">' +
+        '<div><label class="text-xs text-muted">From · 起</label><input type="date" id="p-date-from" class="field-input field-input--boxed" style="margin:0;padding:6px 10px;"></div>' +
+        '<div><label class="text-xs text-muted">To · 迄</label><input type="date" id="p-date-to" class="field-input field-input--boxed" style="margin:0;padding:6px 10px;"></div>' +
+        '<button class="btn btn--primary btn--sm" id="p-date-apply">Apply · 套用</button>' +
       '</div>' +
       '<div id="appt-list"></div>' +
       '<div class="text-center mt-6"><button class="btn btn--primary" onclick="location.hash=\'#/book\'">+ Book New · 新預約</button></div>';
@@ -26,8 +33,18 @@
         document.querySelectorAll('.filter-chip').forEach(function (x) { x.classList.remove('is-active'); });
         c.classList.add('is-active');
         currentFilter = c.getAttribute('data-filter');
-        load();
+        var box = document.getElementById('p-date-custom');
+        if (box) box.style.display = currentFilter === 'custom' ? 'flex' : 'none';
+        if (currentFilter !== 'custom') load();
       });
+    });
+    document.getElementById('p-date-apply').addEventListener('click', function () {
+      var from = document.getElementById('p-date-from').value;
+      var to   = document.getElementById('p-date-to').value;
+      if (!from || !to) { HM.ui.toast('Pick both from and to dates', 'warning'); return; }
+      if (from > to)    { HM.ui.toast('From must be before To', 'warning'); return; }
+      customFrom = from; customTo = to;
+      load();
     });
 
     await load();
@@ -46,7 +63,14 @@
       if (currentFilter) {
         if (currentFilter === 'confirmed') {
           items = items.filter(function (a) { return ['confirmed','pending_payment','in_progress'].indexOf(a.status) >= 0; });
-        } else {
+        } else if (currentFilter === 'custom' && customFrom && customTo) {
+          var from = new Date(customFrom + 'T00:00:00');
+          var to   = new Date(customTo   + 'T23:59:59');
+          items = items.filter(function (a) {
+            var when = new Date(a.scheduled_start);
+            return when >= from && when <= to;
+          });
+        } else if (currentFilter !== 'custom') {
           items = items.filter(function (a) { return a.status === currentFilter; });
         }
       }

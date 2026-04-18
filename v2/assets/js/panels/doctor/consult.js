@@ -297,7 +297,7 @@
           '<div class="body-side-label">Front · 前面</div>' +
           '<div class="body-canvas-wrap" data-side="front">' +
             '<img class="body-chart-img" src="assets/img/front.png" alt="Body chart — front view">' +
-            '<canvas class="body-canvas" data-side="front" width="470" height="1024"></canvas>' +
+            '<canvas class="body-canvas" data-side="front" width="560" height="934"></canvas>' +
           '</div>' +
         '</div>' +
         // BACK
@@ -305,7 +305,7 @@
           '<div class="body-side-label">Back · 背面</div>' +
           '<div class="body-canvas-wrap" data-side="back">' +
             '<img class="body-chart-img" src="assets/img/back.png" alt="Body chart — back view">' +
-            '<canvas class="body-canvas" data-side="back" width="470" height="1024"></canvas>' +
+            '<canvas class="body-canvas" data-side="back" width="560" height="934"></canvas>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -640,7 +640,11 @@
     });
   }
 
-  // ── Rx list rendering with INLINE editing (simplified) ──
+  // ── Rx list rendering — table layout with per-gram pricing ──
+  // Columns: Herb · Qty (per dose, g) · Cost per 1g (RM) · Total Qty (g) · Total Cost (RM)
+  //
+  // Pharmacies store unit_price as "RM per 1 g" so Total Cost is simply
+  // totalQty × unit_price. totalQty = perDoseQty × packs × times × days.
   function renderRxList() {
     var container = document.getElementById('rx-items-list');
     if (!container) return;
@@ -657,26 +661,37 @@
 
     var totalPrice = 0;
     var totalWeight = 0;
-    var totalUnit = '';
 
     container.innerHTML = '';
-    var wrap = document.createElement('div');
-    wrap.className = 'rx-list-wrap';
+
+    // Build the table shell once
+    var table = document.createElement('table');
+    table.className = 'rx-table';
+    table.innerHTML =
+      '<thead><tr>' +
+        '<th class="rx-col-num">#</th>' +
+        '<th class="rx-col-herb">Herb · 藥材</th>' +
+        '<th class="rx-col-stock" title="Stock status">●</th>' +
+        '<th class="rx-col-qty">Qty / dose<div class="rx-col-sub">每次 (g)</div></th>' +
+        '<th class="rx-col-price">Cost / 1 g<div class="rx-col-sub">每克 (RM)</div></th>' +
+        '<th class="rx-col-total-qty">Total Qty<div class="rx-col-sub">總量 (g)</div></th>' +
+        '<th class="rx-col-total">Total Cost<div class="rx-col-sub">總金額</div></th>' +
+        '<th class="rx-col-remove"></th>' +
+      '</tr></thead><tbody></tbody>';
+    var tbody = table.querySelector('tbody');
+
     state.rxItems.forEach(function (it, idx) {
       var match = catalogLookup(it.drug_name);
-      var price = match ? (parseFloat(match.min_price) || 0) : 0;
+      // Backend provides unit_price as cost per 1 g (products.unit_price is
+      // stored that way — the pharmacy enters grams-per-unit & pack price
+      // and we auto-divide). Catalog min_price is also per-gram now.
+      var unitPrice = match ? (parseFloat(match.min_price) || 0) : 0;
       var perDose = parseFloat(it.quantity) || 0;
       var courseQty = perDose * multiplier;
-      var lineTotal = price * courseQty;
+      var lineTotal = unitPrice * courseQty;
 
       totalPrice += lineTotal;
-      if (match && match.unit) {
-        if (!totalUnit) totalUnit = match.unit;
-        if (match.unit === totalUnit) totalWeight += courseQty;
-      } else if (!totalUnit && it.unit) {
-        totalUnit = it.unit;
-        totalWeight += courseQty;
-      }
+      totalWeight += courseQty;
 
       var stockPill;
       if (!it.drug_name) {
@@ -688,49 +703,43 @@
         if (stock <= 0) {
           stockPill = '<span class="rx-stock" title="Out of stock · 缺貨" style="color:var(--red-seal);">●</span>';
         } else if (stock < courseQty) {
-          stockPill = '<span class="rx-stock" title="Stock ' + stock + ' ' + match.unit + ' — less than course ' + courseQty.toFixed(1) + '" style="color:var(--gold);">●</span>';
+          stockPill = '<span class="rx-stock" title="Stock ' + stock.toFixed(0) + 'g — less than course ' + courseQty.toFixed(1) + 'g" style="color:var(--gold);">●</span>';
         } else {
-          stockPill = '<span class="rx-stock" title="In stock: ' + stock + ' ' + match.unit + ' (' + match.pharmacy_count + ' pharmacies)" style="color:var(--sage);">●</span>';
+          stockPill = '<span class="rx-stock" title="In stock: ' + stock.toFixed(0) + 'g (' + match.pharmacy_count + ' pharmacies)" style="color:var(--sage);">●</span>';
         }
       }
 
-      // Per-row info: total grams over course + line price
-      var infoRow = '';
-      if (perDose > 0) {
-        var totalStr = courseQty.toFixed(1) + (it.unit || match && match.unit || 'g');
-        var priceStr = match ? HM.format.money(lineTotal) : '<span class="text-muted">—</span>';
-        infoRow = '<div class="rx-line-info">' +
-          'Total · 總量 <strong>' + totalStr + '</strong>' +
-          '<span class="rx-line-sep">·</span>' +
-          'Price · 金額 <strong>' + priceStr + '</strong>' +
-          (match ? '<span class="rx-line-sep">·</span>Unit · 單價 ' + HM.format.money(price) + '/' + match.unit : '') +
-          '</div>';
-      }
+      var priceCell = match && unitPrice > 0
+        ? 'RM ' + unitPrice.toFixed(4)
+        : '<span class="text-muted">—</span>';
+      var totalQtyCell = perDose > 0 ? courseQty.toFixed(1) + ' g' : '<span class="text-muted">—</span>';
+      var totalCostCell = (match && perDose > 0)
+        ? '<strong>' + HM.format.money(lineTotal) + '</strong>'
+        : '<span class="text-muted">—</span>';
 
-      var row = document.createElement('div');
-      row.className = 'rx-line-wrap';
-      row.innerHTML = '<div class="rx-line">' +
-        '<span class="rx-line-num">' + (idx + 1) + '</span>' +
-        '<input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '" list="rx-catalog" autocomplete="off">' +
-        stockPill +
-        '<input data-rx-field="quantity" data-rx-idx="' + idx + '" type="number" step="0.1" class="rx-line-qty" placeholder="Qty" value="' + (it.quantity || '') + '">' +
-        '<input data-rx-field="unit" data-rx-idx="' + idx + '" class="rx-line-unit" placeholder="Unit" value="' + HM.format.esc(it.unit || 'g') + '">' +
-        '<button type="button" class="rx-line-remove" data-rx-remove="' + idx + '" title="Remove">✕</button>' +
-        '</div>' + infoRow;
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="rx-col-num">' + (idx + 1) + '</td>' +
+        '<td class="rx-col-herb"><input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '" list="rx-catalog" autocomplete="off"></td>' +
+        '<td class="rx-col-stock">' + stockPill + '</td>' +
+        '<td class="rx-col-qty"><input data-rx-field="quantity" data-rx-idx="' + idx + '" type="number" step="0.1" min="0" class="rx-line-qty" placeholder="0" value="' + (it.quantity || '') + '"></td>' +
+        '<td class="rx-col-price">' + priceCell + '</td>' +
+        '<td class="rx-col-total-qty">' + totalQtyCell + '</td>' +
+        '<td class="rx-col-total">' + totalCostCell + '</td>' +
+        '<td class="rx-col-remove"><button type="button" class="rx-line-remove" data-rx-remove="' + idx + '" title="Remove">✕</button></td>';
 
-      row.querySelector('[data-rx-remove]').addEventListener('click', function () {
+      tr.querySelector('[data-rx-remove]').addEventListener('click', function () {
         state.rxItems.splice(idx, 1);
         renderRxList();
       });
 
-      row.querySelectorAll('[data-rx-field]').forEach(function (inp) {
+      tr.querySelectorAll('[data-rx-field]').forEach(function (inp) {
         inp.addEventListener('input', function () {
           var i = parseInt(inp.getAttribute('data-rx-idx'), 10);
           var field = inp.getAttribute('data-rx-field');
           var val = inp.value;
           if (field === 'quantity') val = parseFloat(val) || 0;
           state.rxItems[i][field] = val;
-          // Auto-fill unit from catalog when picking a known drug
           if (field === 'drug_name') {
             var m = catalogLookup(val);
             if (m && m.unit) state.rxItems[i].unit = m.unit;
@@ -740,9 +749,10 @@
         inp.addEventListener('blur',   function () { renderRxList(); });
       });
 
-      wrap.appendChild(row);
+      tbody.appendChild(tr);
     });
-    container.appendChild(wrap);
+    container.appendChild(table);
+    injectRxTableStyles();
 
     // Wire dosage-pattern inputs (once per render so values persist + totals refresh)
     ['rx-packs', 'rx-times', 'rx-days'].forEach(function (id) {
@@ -762,7 +772,7 @@
       if (state.rxItems.length && totalWeight > 0) {
         totalBox.style.display = 'block';
         totalPriceEl.textContent = HM.format.money(totalPrice);
-        totalWeightEl.textContent = totalWeight.toFixed(1) + (totalUnit || 'g') +
+        totalWeightEl.textContent = totalWeight.toFixed(1) + ' g' +
           ' (over ' + days + ' day' + (days === 1 ? '' : 's') + ')';
       } else {
         totalBox.style.display = 'none';
@@ -930,6 +940,39 @@
       // Use defaults
       state.treatmentTypes = DEFAULT_TREATMENT_TYPES;
     }
+  }
+
+  // CSS for the Herb / Qty / Cost-per-g / Total-Qty / Total-Cost table.
+  function injectRxTableStyles() {
+    if (document.getElementById('rx-table-style')) return;
+    var s = document.createElement('style');
+    s.id = 'rx-table-style';
+    s.textContent =
+      '.rx-table{width:100%;border-collapse:collapse;font-size:var(--text-sm);}' +
+      '.rx-table thead th{text-align:left;font-weight:600;font-size:var(--text-xs);letter-spacing:.04em;color:var(--stone);padding:6px 4px;border-bottom:1px solid var(--border);vertical-align:bottom;}' +
+      '.rx-col-sub{font-family:var(--font-zh);font-weight:400;font-size:10px;color:var(--stone);margin-top:2px;}' +
+      '.rx-table tbody td{padding:4px;border-bottom:1px dashed var(--border);vertical-align:middle;}' +
+      '.rx-col-num{width:28px;color:var(--stone);font-family:var(--font-mono);font-size:var(--text-xs);text-align:center;}' +
+      '.rx-col-herb{min-width:140px;}' +
+      '.rx-col-herb input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:var(--text-sm);background:#fff;}' +
+      '.rx-col-herb input:focus{outline:none;border-color:var(--gold);}' +
+      '.rx-col-stock{width:26px;text-align:center;font-size:1rem;}' +
+      '.rx-col-qty{width:80px;}' +
+      '.rx-col-qty input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:var(--text-sm);text-align:right;background:#fff;}' +
+      '.rx-col-qty input:focus{outline:none;border-color:var(--gold);}' +
+      '.rx-col-price{text-align:right;font-family:var(--font-mono);color:var(--stone);font-size:var(--text-xs);white-space:nowrap;}' +
+      '.rx-col-total-qty{text-align:right;font-family:var(--font-mono);font-size:var(--text-xs);white-space:nowrap;}' +
+      '.rx-col-total{text-align:right;font-family:var(--font-mono);color:var(--gold);white-space:nowrap;}' +
+      '.rx-col-remove{width:32px;text-align:center;}' +
+      '.rx-line-remove{background:none;border:none;color:var(--stone);cursor:pointer;padding:4px 6px;border-radius:var(--r-sm);font-size:var(--text-base);}' +
+      '.rx-line-remove:hover{background:rgba(192,57,43,0.08);color:var(--red-seal);}' +
+      '@media (max-width:640px){' +
+        '.rx-col-sub{display:none;}' +
+        '.rx-table thead th{padding:4px 2px;font-size:10px;}' +
+        '.rx-col-herb{min-width:100px;}' +
+        '.rx-col-qty{width:60px;}' +
+      '}';
+    document.head.appendChild(s);
   }
 
   function injectStyle() {

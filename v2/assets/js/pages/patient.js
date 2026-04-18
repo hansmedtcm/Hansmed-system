@@ -147,6 +147,14 @@
   router.on('#/orders/:id', function (params) {
     HM.patientPanels.orders.renderDetail(panel(), params.id);
   });
+  router.on('#/invoices', function () {
+    HM.patientPanels.invoices.render(panel());
+  });
+  router.on('#/invoices/:id', function (params) {
+    // Deep link directly to a single invoice — render list + pop viewer.
+    HM.patientPanels.invoices.render(panel());
+    HM.patientPanels.invoices.show(params.id);
+  });
   router.on('#/messages', function () {
     HM.patientPanels.messages.render(panel());
   });

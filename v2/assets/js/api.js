@@ -127,6 +127,9 @@
     updateProfile:    function (d) { return api.put('/patient/profile', d); },
     completeRegistration: function (d) { return api.post('/patient/profile/complete-registration', d); },
 
+    listInvoices: function () { return api.get('/patient/invoices'); },
+    getInvoice:   function (id) { return api.get('/patient/invoices/' + id); },
+
     getAddresses:    function () { return api.get('/patient/addresses'); },
     createAddress:   function (d) { return api.post('/patient/addresses', d); },
     updateAddress:   function (id, d) { return api.put('/patient/addresses/' + id, d); },
