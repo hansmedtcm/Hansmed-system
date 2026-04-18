@@ -38,13 +38,13 @@ class AnthropicTongueClient
     {
         $key = config('services.tongue_diagnosis.key');
         if (empty($key)) {
-            return ['status' => 'failed', 'error' => 'TONGUE_API_KEY is not set'];
+            return $this->failureResponse('TONGUE_API_KEY is not set on the server');
         }
 
         // Fetch the image and convert to base64 for the multimodal payload.
         $imageData = $this->fetchImage($imageUrl);
         if (! $imageData) {
-            return ['status' => 'failed', 'error' => 'Could not fetch tongue image from storage'];
+            return $this->failureResponse('Could not fetch tongue image — storage path not found');
         }
 
         $model   = env('TONGUE_API_MODEL', self::DEFAULT_MODEL);
@@ -85,7 +85,7 @@ class AnthropicTongueClient
                 'err' => $e->getMessage(),
                 'url' => $imageUrl,
             ]);
-            return ['status' => 'failed', 'error' => $e->getMessage()];
+            return $this->failureResponse('Anthropic API error: ' . $e->getMessage());
         }
 
         // Extract the assistant's text reply from the messages-API envelope.
@@ -99,10 +99,9 @@ class AnthropicTongueClient
         $parsed = $this->extractJson($text);
         if (! $parsed) {
             Log::warning('anthropic_tongue_unparseable', ['raw' => substr($text, 0, 500)]);
-            return [
-                'status' => 'failed',
-                'error'  => 'Could not parse classifier output. Image may be unclear or not a tongue.',
-            ];
+            return $this->failureResponse('Could not parse classifier output — image may be unclear or not a tongue', [
+                'raw_text' => substr($text, 0, 500),
+            ]);
         }
 
         $normalized = [
@@ -137,27 +136,60 @@ class AnthropicTongueClient
     }
 
     /**
-     * Fetch image bytes and figure out its media type. Supports absolute
-     * HTTP(S) URLs (patient portal uploads) and local storage paths.
+     * Fetch image bytes and figure out its media type.
+     *
+     * Railway deploys often serve uploaded files through Storage::url() —
+     * which returns either a relative path ("/storage/tongue/abc.jpg")
+     * or an absolute URL pointing back at the same container. Hitting
+     * that URL over HTTP from inside the container is flaky (wrong
+     * APP_URL, TLS quirks, storage-link not created). So we try
+     * filesystem reads first, and only fall back to HTTP for genuinely
+     * external URLs (e.g. S3-backed storage).
      */
     private function fetchImage(string $imageUrl): ?array
     {
         try {
-            if (preg_match('#^https?://#i', $imageUrl)) {
-                $res = Http::timeout(15)->get($imageUrl);
-                if (! $res->successful()) return null;
-                $bytes = $res->body();
-                $mime  = $res->header('Content-Type') ?: 'image/jpeg';
-            } else {
-                // Local file path (e.g. storage/app/public/...)
-                $path = base_path($imageUrl);
-                if (! is_file($path)) {
-                    // Try storage_path as a second fallback
-                    $path = storage_path('app/public/' . ltrim($imageUrl, '/'));
+            $bytes = null;
+            $mime  = 'image/jpeg';
+
+            // ── 1. Filesystem-first strategy ─────────────────────────
+            // Try every plausible on-disk location before giving up and
+            // going over the network. This is by far the most reliable
+            // path on Railway's single-container deploy.
+            $candidates = $this->localPathCandidates($imageUrl);
+            foreach ($candidates as $candidate) {
+                if (is_file($candidate)) {
+                    $bytes = file_get_contents($candidate);
+                    if (function_exists('mime_content_type')) {
+                        $mime = mime_content_type($candidate) ?: $mime;
+                    }
+                    break;
                 }
-                if (! is_file($path)) return null;
-                $bytes = file_get_contents($path);
-                $mime  = function_exists('mime_content_type') ? (mime_content_type($path) ?: 'image/jpeg') : 'image/jpeg';
+            }
+
+            // ── 2. HTTP fallback ─────────────────────────────────────
+            // Only bother when the URL is clearly external AND we
+            // couldn't find it on disk.
+            if ($bytes === null && preg_match('#^https?://#i', $imageUrl)) {
+                $res = Http::timeout(15)->get($imageUrl);
+                if ($res->successful()) {
+                    $bytes = $res->body();
+                    $mime  = $res->header('Content-Type') ?: 'image/jpeg';
+                } else {
+                    Log::warning('anthropic_tongue_http_fetch_failed', [
+                        'url'    => $imageUrl,
+                        'status' => $res->status(),
+                        'tried'  => $candidates,
+                    ]);
+                }
+            }
+
+            if ($bytes === null) {
+                Log::warning('anthropic_tongue_image_not_found', [
+                    'url'   => $imageUrl,
+                    'tried' => $candidates,
+                ]);
+                return null;
             }
 
             // Claude Vision supports jpeg / png / gif / webp
@@ -174,6 +206,40 @@ class AnthropicTongueClient
             Log::warning('anthropic_tongue_image_fetch_failed', ['url' => $imageUrl, 'err' => $e->getMessage()]);
             return null;
         }
+    }
+
+    /**
+     * Produce every plausible on-disk path for a given image URL. Handles
+     *   • "/storage/tongue/abc.jpg"         (relative URL from Storage::url)
+     *   • "https://<our-domain>/storage/…"  (absolute URL from Storage::url)
+     *   • "tongue/abc.jpg"                  (raw store() return value)
+     *   • absolute filesystem paths
+     */
+    private function localPathCandidates(string $imageUrl): array
+    {
+        $path = $imageUrl;
+
+        // Strip scheme + host — leaves just the path portion
+        if (preg_match('#^https?://[^/]+(/.*)$#i', $path, $m)) {
+            $path = $m[1];
+        }
+
+        // Normalise leading slashes
+        $path = ltrim($path, '/');
+
+        // If the path starts with "storage/", the actual file is at
+        // storage/app/public/<rest>
+        $relative = str_starts_with($path, 'storage/')
+            ? substr($path, strlen('storage/'))
+            : $path;
+
+        return array_unique([
+            storage_path('app/public/' . $relative),
+            storage_path('app/public/' . $path),
+            public_path($path),
+            public_path('storage/' . $relative),
+            base_path($path),
+        ]);
     }
 
     /**
@@ -247,6 +313,24 @@ PROMPT;
         if (! is_array($decoded)) return null;
         if (isset($decoded['error'])) return null;
         return $decoded;
+    }
+
+    /**
+     * Build a failure response that actually surfaces the reason. Shoves
+     * the error into raw_response (which IS fillable on TongueDiagnosis)
+     * so the doctor review modal can show the real reason instead of an
+     * opaque "failed" status, and admins can debug from the DB.
+     */
+    private function failureResponse(string $message, array $extra = []): array
+    {
+        return [
+            'status'       => 'failed',
+            'raw_response' => array_merge([
+                'provider' => 'anthropic',
+                'error'    => $message,
+                'failed_at' => now()->toIso8601String(),
+            ], $extra),
+        ];
     }
 
     /** Coerce a provider string into one of our known enum values. */

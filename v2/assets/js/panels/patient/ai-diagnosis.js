@@ -334,7 +334,7 @@
         state.tongueReport = diag;
         showTongueComplete(diag, box);
       } else if (diag.status === 'failed') {
-        showTongueFailed(box);
+        showTongueFailed(box, diag);
       } else {
         pollTongueAnalysis(diag.id, box);
       }
@@ -347,10 +347,23 @@
     }
   }
 
-  function showTongueFailed(box) {
+  function showTongueFailed(box, diag) {
+    // Surface the actual reason from raw_response so you can see whether
+    // the failure was image-fetch, API key, parsing, etc. Generic fallback
+    // when no reason is present.
+    var reason = '';
+    try {
+      var raw = diag && diag.raw_response;
+      if (typeof raw === 'string') { raw = JSON.parse(raw); }
+      if (raw && raw.error) reason = raw.error;
+    } catch (_) {}
     box.innerHTML = '<div class="alert alert--warning"><div class="alert-body">' +
-      'AI analysis could not complete — you can still continue, the doctor will see your photo and analyse it manually. ' +
-      '<span style="font-family: var(--font-zh);">AI 分析未能完成，醫師會親自審閱您的照片。</span>' +
+      '<strong>AI analysis could not complete.</strong>' +
+      (reason
+        ? '<div class="text-xs text-muted mt-1" style="font-family: var(--font-mono);">Reason: ' + HM.format.esc(reason) + '</div>'
+        : '') +
+      '<div class="mt-2">You can still continue — the doctor will see your photo and analyse it manually. ' +
+      '<span style="font-family: var(--font-zh);">AI 分析未能完成，醫師會親自審閱您的照片。</span></div>' +
       '</div></div>';
     document.getElementById('aid-tongue-next').style.display = 'inline-flex';
   }
@@ -368,7 +381,7 @@
           showTongueComplete(d, box);
         } else if (d.status === 'failed' || attempts > 40) {
           clearInterval(iv);
-          showTongueFailed(box);
+          showTongueFailed(box, d);
         }
       } catch (_) {}
     }, 3000);
