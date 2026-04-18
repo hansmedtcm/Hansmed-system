@@ -452,6 +452,26 @@
           renderCard(innate) +
         '</div>'
       );
+    } else {
+      // Explicit empty-state card — tells the doctor *why* the innate
+      // analysis is missing and how to fix it (add the DOB to the
+      // patient profile) rather than silently hiding the column.
+      parts.push(
+        '<div class="wyl-dual-col">' +
+          '<div class="wyl-dual-banner wyl-dual-banner--innate">' +
+            '<span class="wyl-dual-icon">🪷</span>' +
+            '<span><strong>Innate · 本命</strong> — DOB required</span>' +
+          '</div>' +
+          '<div class="wyl-card" style="text-align:center; padding: var(--s-5) var(--s-4);">' +
+            '<div style="font-size: 2rem; margin-bottom: var(--s-2); opacity: 0.5;">🗓️</div>' +
+            '<div style="font-weight: 600; color: #6b4413; margin-bottom: var(--s-2);">Patient DOB not on file</div>' +
+            '<p style="font-size: var(--text-xs); color: var(--stone); line-height: 1.6; margin: 0;">' +
+            'Add the patient\'s date of birth via <strong>Admin → Patients → Edit</strong> to see their innate 本命 constitution here. ' +
+            '<span style="font-family: var(--font-zh);">於患者檔案補上出生日期後顯示。</span>' +
+            '</p>' +
+          '</div>' +
+        '</div>'
+      );
     }
     if (today) {
       parts.push(

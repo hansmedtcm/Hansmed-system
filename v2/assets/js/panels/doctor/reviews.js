@@ -236,8 +236,12 @@
     }
     loading.close();
 
-    var patientProfile = (patientRes && patientRes.patient && patientRes.patient.patient_profile) || {};
-    var patientDob = patientProfile.birth_date || null;
+    // Defensive key lookup — different Laravel serialisation configs may
+    // emit either `patient_profile` (snake_case, our default) or
+    // `patientProfile` (camelCase, if SnakeCaseHydration is off).
+    var pRaw = (patientRes && patientRes.patient) || {};
+    var patientProfile = pRaw.patient_profile || pRaw.patientProfile || {};
+    var patientDob = patientProfile.birth_date || patientProfile.dob || null;
 
     var qRow = res.questionnaire;
     var report = qRow.report || {};
@@ -444,8 +448,9 @@
     }
     loading.close();
 
-    var patientProfile = (patientRes && patientRes.patient && patientRes.patient.patient_profile) || {};
-    var patientDob = patientProfile.birth_date || null;
+    var pRaw2 = (patientRes && patientRes.patient) || {};
+    var patientProfile = pRaw2.patient_profile || pRaw2.patientProfile || {};
+    var patientDob = patientProfile.birth_date || patientProfile.dob || null;
 
     var d = res.diagnosis;
     var report = d.constitution_report || {};
