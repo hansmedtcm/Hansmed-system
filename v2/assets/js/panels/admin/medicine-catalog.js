@@ -65,7 +65,11 @@
       '<div class="flex-between mb-3 flex-wrap" style="gap:var(--s-2);">' +
         '<div id="mc-summary" class="text-sm text-muted"></div>' +
         '<div class="flex gap-2 flex-wrap">' +
-          '<button class="btn btn--outline" id="mc-reimport">📥 Re-import Mar-2026</button>' +
+          '<button class="btn btn--outline" id="mc-export">📥 Export CSV · 匯出</button>' +
+          '<label class="btn btn--outline" style="cursor:pointer;margin:0;">' +
+            '📤 Import CSV · 匯入' +
+            '<input type="file" id="mc-import-file" accept=".csv,text/csv" style="display:none;">' +
+          '</label>' +
           '<button class="btn btn--primary" id="mc-add">+ Add Medicine · 新增</button>' +
         '</div>' +
       '</div>' +
@@ -100,7 +104,12 @@
     });
     document.getElementById('mc-lowstock').addEventListener('change', function () { loadStock(); });
     document.getElementById('mc-add').addEventListener('click', function () { showEditModal(null); });
-    document.getElementById('mc-reimport').addEventListener('click', reimport);
+    document.getElementById('mc-export').addEventListener('click', exportCsv);
+    document.getElementById('mc-import-file').addEventListener('change', function (e) {
+      var file = e.target.files && e.target.files[0];
+      if (file) importCsv(file);
+      e.target.value = ''; // allow re-uploading the same filename
+    });
 
     loadStock();
   }
@@ -382,21 +391,70 @@
     });
   }
 
-  async function reimport() {
-    var btn = document.getElementById('mc-reimport');
+  // Download the full catalog as CSV. Triggers a direct browser download
+  // using the streamed response from /admin/medicine-catalog/export.
+  async function exportCsv() {
+    var btn = document.getElementById('mc-export');
     var orig = btn.textContent;
     btn.disabled = true;
-    btn.textContent = 'Importing…';
+    btn.textContent = 'Exporting…';
     try {
-      await HM.api.admin.migrateMedicineCatalog();
-      var res = await HM.api.admin.seedMedicineCatalog();
-      HM.ui.toast('Imported ' + res.total_rows + ' rows (' + res.inserted + ' new, ' + res.updated + ' updated)', 'success', 5000);
-      loadStock();
+      var blob = await HM.api.admin.exportMedicineCsv();
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'medicine-stock-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      HM.ui.toast('CSV exported · 已匯出', 'success');
     } catch (e) {
-      HM.ui.toast('Import failed: ' + (e.message || ''), 'danger');
+      HM.ui.toast('Export failed: ' + (e.message || ''), 'danger');
     } finally {
       btn.disabled = false;
       btn.textContent = orig;
+    }
+  }
+
+  // Upload a CSV and upsert by code. Shows a summary modal of
+  // inserted / updated / skipped rows with the first few error messages
+  // so admin can fix them and re-upload.
+  async function importCsv(file) {
+    var btn = document.querySelector('label[for="mc-import-file"]');
+    try {
+      var res = await HM.api.admin.importMedicineCsv(file);
+      var parts = [];
+      if (res.inserted) parts.push(res.inserted + ' new');
+      if (res.updated)  parts.push(res.updated + ' updated');
+      if (res.skipped)  parts.push(res.skipped + ' skipped');
+      HM.ui.toast(
+        'Import complete · ' + (parts.join(', ') || 'no rows processed'),
+        res.errors && res.errors.length ? 'warning' : 'success',
+        6000
+      );
+
+      if (res.errors && res.errors.length) {
+        HM.ui.modal({
+          size: 'md',
+          title: '⚠ Import completed with warnings',
+          content:
+            '<p class="text-sm text-muted mb-3">' +
+            (res.inserted || 0) + ' row(s) inserted, ' +
+            (res.updated || 0) + ' updated, ' +
+            (res.skipped || 0) + ' skipped. Review the warnings below and re-upload the corrected rows if needed. ' +
+            '<span style="font-family: var(--font-zh);">以下為略過的資料，可修正後再匯入。</span>' +
+            '</p>' +
+            '<div style="max-height: 300px; overflow-y: auto; background: var(--washi); padding: var(--s-3); border-radius: var(--r-sm); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.6;">' +
+            res.errors.slice(0, 50).map(function (e) { return '• ' + HM.format.esc(e); }).join('<br>') +
+            (res.errors.length > 50 ? '<br>… and ' + (res.errors.length - 50) + ' more' : '') +
+            '</div>',
+        });
+      }
+
+      loadStock();
+    } catch (e) {
+      HM.ui.toast('Import failed: ' + (e.message || 'unknown error'), 'danger', 6000);
     }
   }
 

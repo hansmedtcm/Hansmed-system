@@ -368,6 +368,208 @@ class MedicineCatalogController extends Controller
     }
 
     /**
+     * Stream the full catalog as a CSV download. Columns mirror the
+     * fields accepted by importCsv() so round-tripping through a
+     * spreadsheet is lossless — admin can edit prices / stock offline
+     * and re-upload to apply the changes.
+     */
+    public function exportCsv(Request $request)
+    {
+        $this->ensureTable();
+
+        $rows = DB::table('medicine_catalog')
+            ->orderBy('type')
+            ->orderBy('name_pinyin')
+            ->get();
+
+        $filename = 'medicine-stock-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            // UTF-8 BOM so Excel opens Chinese characters correctly
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, [
+                'code', 'name_zh', 'name_pinyin', 'type',
+                'pack_grams', 'unit_price',
+                'stock_grams', 'reorder_threshold',
+                'unit', 'source', 'price_month',
+                'is_active', 'notes',
+            ]);
+            foreach ($rows as $r) {
+                fputcsv($out, [
+                    $r->code,
+                    $r->name_zh,
+                    $r->name_pinyin,
+                    $r->type,
+                    $r->pack_grams        ?? 100,
+                    $r->unit_price        ?? '',
+                    $r->stock_grams       ?? 0,
+                    $r->reorder_threshold ?? 0,
+                    $r->unit              ?? 'per 100g',
+                    $r->source            ?? '',
+                    $r->price_month       ?? '',
+                    $r->is_active ? 1 : 0,
+                    $r->notes             ?? '',
+                ]);
+            }
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
+     * Bulk upsert from a CSV upload. Matches existing rows by `code` —
+     * known codes are updated, unknown ones are inserted. Missing
+     * optional columns are preserved (i.e. we don't clobber stock
+     * with NULL if the CSV left stock_grams empty).
+     *
+     * Returns { inserted, updated, skipped, errors[] } so the admin UI
+     * can show a clear summary. Invalid rows are reported but don't
+     * abort the whole import — the valid rows still go through.
+     */
+    public function importCsv(Request $request)
+    {
+        $this->ensureTable();
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+        ]);
+
+        $inserted = 0;
+        $updated  = 0;
+        $skipped  = 0;
+        $errors   = [];
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (! $handle) {
+            return response()->json(['message' => 'Could not read uploaded file'], 422);
+        }
+
+        // Strip UTF-8 BOM if Excel added one
+        $first = fread($handle, 3);
+        if ($first !== "\xEF\xBB\xBF") rewind($handle);
+
+        $headers = fgetcsv($handle);
+        if (! $headers) {
+            fclose($handle);
+            return response()->json(['message' => 'Empty CSV — header row missing'], 422);
+        }
+        $headers = array_map(function ($h) {
+            return strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', $h)));
+        }, $headers);
+
+        if (! in_array('code', $headers, true)) {
+            fclose($handle);
+            return response()->json(['message' => 'CSV must have a "code" column'], 422);
+        }
+
+        $line = 1;
+        while (($cols = fgetcsv($handle)) !== false) {
+            $line++;
+            if (count(array_filter($cols, fn($v) => $v !== '' && $v !== null)) === 0) continue;
+
+            $row = [];
+            foreach ($headers as $i => $h) {
+                $row[$h] = $cols[$i] ?? null;
+            }
+
+            $code = trim((string) ($row['code'] ?? ''));
+            if ($code === '') {
+                $errors[] = "Line {$line}: missing code — skipped";
+                $skipped++;
+                continue;
+            }
+
+            // Validate type if present
+            $type = trim((string) ($row['type'] ?? ''));
+            if ($type !== '' && ! in_array($type, ['single', 'compound'], true)) {
+                $errors[] = "Line {$line} ({$code}): invalid type '{$type}' — must be 'single' or 'compound'";
+                $skipped++;
+                continue;
+            }
+
+            $existing = DB::table('medicine_catalog')->where('code', $code)->first();
+
+            // Build the payload, honouring "don't clobber with blank" semantics:
+            // a cell left empty on an existing row = keep the current value.
+            $payload = ['updated_at' => now()];
+            $setIfPresent = function ($key, $transform = null) use (&$payload, $row, $existing) {
+                $v = $row[$key] ?? null;
+                if ($v === null) return;
+                $v = is_string($v) ? trim($v) : $v;
+                if ($v === '') {
+                    // Keep existing value on update; for inserts it stays null.
+                    return;
+                }
+                $payload[$key] = $transform ? $transform($v) : $v;
+            };
+
+            $setIfPresent('name_zh');
+            $setIfPresent('name_pinyin');
+            $setIfPresent('type');
+            $setIfPresent('unit');
+            $setIfPresent('source');
+            $setIfPresent('price_month');
+            $setIfPresent('notes');
+            $setIfPresent('pack_grams',        fn($v) => (float) $v);
+            $setIfPresent('unit_price',        fn($v) => (float) $v);
+            $setIfPresent('stock_grams',       fn($v) => (float) $v);
+            $setIfPresent('reorder_threshold', fn($v) => (float) $v);
+            $setIfPresent('is_active',         fn($v) => in_array(strtolower((string) $v), ['1', 'true', 'yes', 'y', 'active'], true) ? 1 : 0);
+
+            // Derive category from pinyin if we can
+            $pinyin = $payload['name_pinyin'] ?? ($existing->name_pinyin ?? '');
+            if ($pinyin) $payload['category'] = mb_substr($pinyin, 0, 1);
+
+            try {
+                if ($existing) {
+                    DB::table('medicine_catalog')->where('id', $existing->id)->update($payload);
+                    $updated++;
+                } else {
+                    // Inserts require the NOT NULL columns to be present.
+                    $required = ['name_zh', 'name_pinyin', 'type'];
+                    foreach ($required as $k) {
+                        if (empty($payload[$k])) {
+                            $errors[] = "Line {$line} ({$code}): new row missing required '{$k}' — skipped";
+                            $skipped++;
+                            continue 2;
+                        }
+                    }
+                    $payload['code']       = $code;
+                    $payload['created_at'] = now();
+                    $payload['pack_grams']  = $payload['pack_grams']  ?? 100;
+                    $payload['unit']        = $payload['unit']        ?? 'per 100g';
+                    $payload['source']      = $payload['source']      ?? 'Manual';
+                    $payload['is_active']   = $payload['is_active']   ?? 1;
+                    DB::table('medicine_catalog')->insert($payload);
+                    $inserted++;
+                }
+            } catch (\Throwable $e) {
+                $errors[] = "Line {$line} ({$code}): " . $e->getMessage();
+                $skipped++;
+            }
+        }
+        fclose($handle);
+
+        DB::table('audit_logs')->insert([
+            'user_id'     => $request->user()->id,
+            'action'      => 'medicine.catalog.import_csv',
+            'target_type' => 'medicine_catalog',
+            'payload'     => json_encode(['inserted' => $inserted, 'updated' => $updated, 'skipped' => $skipped]),
+            'created_at'  => now(),
+        ]);
+
+        return response()->json([
+            'success'  => true,
+            'inserted' => $inserted,
+            'updated'  => $updated,
+            'skipped'  => $skipped,
+            'errors'   => $errors,
+        ]);
+    }
+
+    /**
      * Timing Herbs Mar-2026 单方 (single herb) price list.
      * [code, 中文, Pinyin, price_MYR_per_100g or '询' for inquire]
      */
