@@ -79,9 +79,9 @@
   }
 
   var api = {
-    get:    function (p)    { return request('GET', p); },
-    post:   function (p, b) { return request('POST', p, b); },
-    put:    function (p, b) { return request('PUT', p, b); },
+    get:    function (p, opts)    { return request('GET', p, undefined, opts); },
+    post:   function (p, b, opts) { return request('POST', p, b, opts); },
+    put:    function (p, b, opts) { return request('PUT', p, b, opts); },
     patch:  function (p, b) { return request('PATCH', p, b); },
     delete: function (p)    { return request('DELETE', p); },
   };
@@ -141,7 +141,10 @@
     uploadTongue: function (file) {
       var fd = new FormData();
       fd.append('image', file);
-      return api.post('/patient/tongue-diagnoses', fd);
+      // Backend runs the Claude Vision call inline in this request, so allow
+      // up to 90s — image fetch + AI round-trip usually lands in 10–20s but
+      // slow mobile uploads + cold-start backends can occasionally stretch.
+      return api.post('/patient/tongue-diagnoses', fd, { timeout: 90000 });
     },
 
     saveQuestionnaire:  function (d)  { return api.post('/patient/questionnaires', d); },

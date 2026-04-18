@@ -326,13 +326,33 @@
       var res = await HM.api.patient.uploadTongue(file);
       var diag = res.diagnosis;
       state.tongueId = diag.id;
-      pollTongueAnalysis(diag.id, box);
+
+      // The backend now runs analysis synchronously, so the first response
+      // usually already has a terminal status. Short-circuit when possible
+      // and fall back to polling only if it's still "processing".
+      if (diag.status === 'completed') {
+        state.tongueReport = diag;
+        showTongueComplete(diag, box);
+      } else if (diag.status === 'failed') {
+        showTongueFailed(box);
+      } else {
+        pollTongueAnalysis(diag.id, box);
+      }
     } catch (err) {
       box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">' +
-        (err.message || 'Upload failed') +
+        HM.format.esc(err.message || 'Upload failed') +
         ' — you can skip this step and continue with the quiz only.' +
         '</div></div>';
+      document.getElementById('aid-tongue-next').style.display = 'inline-flex';
     }
+  }
+
+  function showTongueFailed(box) {
+    box.innerHTML = '<div class="alert alert--warning"><div class="alert-body">' +
+      'AI analysis could not complete — you can still continue, the doctor will see your photo and analyse it manually. ' +
+      '<span style="font-family: var(--font-zh);">AI 分析未能完成，醫師會親自審閱您的照片。</span>' +
+      '</div></div>';
+    document.getElementById('aid-tongue-next').style.display = 'inline-flex';
   }
 
   function pollTongueAnalysis(id, box) {
@@ -346,13 +366,9 @@
           clearInterval(iv);
           state.tongueReport = d;
           showTongueComplete(d, box);
-        } else if (d.status === 'failed' || attempts > 30) {
+        } else if (d.status === 'failed' || attempts > 40) {
           clearInterval(iv);
-          box.innerHTML = '<div class="alert alert--warning"><div class="alert-body">' +
-            'AI analysis took too long — you can still continue to the quiz. A doctor will see your photo. ' +
-            '<span style="font-family: var(--font-zh);">AI 分析逾時，仍可繼續問卷，醫師會看到您的照片。</span>' +
-            '</div></div>';
-          document.getElementById('aid-tongue-next').style.display = 'inline-flex';
+          showTongueFailed(box);
         }
       } catch (_) {}
     }, 3000);

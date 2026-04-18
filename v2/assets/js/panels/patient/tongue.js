@@ -59,9 +59,19 @@
     try {
       var res = await HM.api.patient.uploadTongue(file);
       var diag = res.diagnosis;
-      pollForResult(diag.id);
+      // Backend now returns the completed diagnosis directly (sync analysis).
+      // Skip the poll when we already have a terminal status.
+      if (diag.status === 'completed') {
+        showResult(diag, box);
+        loadHistory();
+      } else if (diag.status === 'failed') {
+        box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">Analysis failed. Please try again. · 分析失敗，請重試。</div></div>';
+      } else {
+        pollForResult(diag.id);
+      }
     } catch (err) {
-      box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">' + (err.message || 'Upload failed') + '</div></div>';
+      box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">' +
+        HM.format.esc(err.message || 'Upload failed') + '</div></div>';
     }
   }
 
@@ -76,7 +86,7 @@
           clearInterval(interval);
           showResult(res.diagnosis, box);
           loadHistory();
-        } else if (res.diagnosis.status === 'failed' || attempts > 30) {
+        } else if (res.diagnosis.status === 'failed' || attempts > 40) {
           clearInterval(interval);
           box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">Analysis failed. Please try again. · 分析失敗，請重試。</div></div>';
         }

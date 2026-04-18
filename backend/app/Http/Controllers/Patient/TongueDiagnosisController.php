@@ -11,12 +11,23 @@ use Illuminate\Support\Facades\Storage;
 
 class TongueDiagnosisController extends Controller
 {
-    // C-04: upload tongue image and queue analysis
+    // C-04: upload tongue image and run analysis synchronously.
+    //
+    // Previously this queued a job for a background worker — but the Railway
+    // single-container deploy doesn't run `queue:work`, so jobs piled up in
+    // the DB forever and the frontend polling timed out at 90s.
+    //
+    // Running sync is fine here: Claude Vision typically returns in 5–15s
+    // which sits well inside a normal HTTP window, and the user gets the
+    // result on the very first poll instead of waiting for worker pickup.
     public function store(Request $request)
     {
         $request->validate([
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:8192'],
         ]);
+
+        // Bump PHP's execution ceiling in case the upstream AI call runs long
+        @set_time_limit(120);
 
         $path = $request->file('image')->store('tongue', 'public');
         $url  = Storage::disk('public')->url($path);
@@ -27,9 +38,20 @@ class TongueDiagnosisController extends Controller
             'status'     => 'processing',
         ]);
 
-        AnalyzeTongueDiagnosis::dispatch($diag->id);
+        try {
+            // dispatchSync runs the job inline in this request — no queue
+            // worker required. If the AI provider errors out, the job's
+            // handle() still writes status=failed via $diag->fill()->save()
+            // so the patient sees a clean error instead of an indefinite spinner.
+            AnalyzeTongueDiagnosis::dispatchSync($diag->id);
+        } catch (\Throwable $e) {
+            \Log::error('tongue_analysis_sync_failed', ['id' => $diag->id, 'err' => $e->getMessage()]);
+            TongueDiagnosis::where('id', $diag->id)->update([
+                'status' => 'failed',
+            ]);
+        }
 
-        return response()->json(['diagnosis' => $diag], 202);
+        return response()->json(['diagnosis' => $diag->fresh()], 202);
     }
 
     // C-07: history
