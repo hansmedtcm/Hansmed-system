@@ -197,6 +197,7 @@
     listOrders:    function (q) { return api.get('/patient/orders' + (q ? '?' + q : '')); },
     getOrder:      function (id) { return api.get('/patient/orders/' + id); },
     createOrder:   function (d) { return api.post('/patient/orders', d); },
+    payOrder:      function (id, d) { return api.post('/patient/orders/' + id + '/pay', d || {}); },
   };
 
   // ── Doctor endpoints ──

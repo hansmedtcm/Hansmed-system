@@ -37,10 +37,16 @@
           status_badge: HM.format.statusBadge(o.status),
           total_formatted: HM.format.money(o.total),
           has_shipment: !!o.shipment,
+          can_pay: o.status === 'pending_payment',
         };
         var node = HM.render.fromTemplate('tpl-order-card', data);
         node.querySelector('[data-action="view"]').addEventListener('click', function () {
           location.hash = '#/orders/' + o.id;
+        });
+        var payBtn = node.querySelector('[data-action="pay"]');
+        if (payBtn) payBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          showPaymentModal(o);
         });
         var trackBtn = node.querySelector('[data-action="track"]');
         if (trackBtn) trackBtn.addEventListener('click', function () {
@@ -91,9 +97,78 @@
         html += '<div class="mt-6"><div class="text-label mb-3">Shipping · 物流</div>' + trackingHtml(o.shipment) + '</div>';
       }
 
+      // Pay button — only when the order is still awaiting payment.
+      // Opens a payment-method modal; on confirm, hits /orders/{id}/pay.
+      if (o.status === 'pending_payment') {
+        html += '<div class="mt-6" style="padding-top: var(--s-4); border-top: 1px solid var(--border);">' +
+          '<button class="btn btn--primary btn--block btn--lg" id="pay-btn">' +
+          '💳 Pay ' + HM.format.money(o.total) + ' · 付款' +
+          '</button>' +
+          '<p class="text-xs text-muted text-center mt-2">The pharmacy starts dispensing once payment is confirmed. · 付款後藥房即開始配藥。</p>' +
+          '</div>';
+      }
+
       html += '</div>';
       el.innerHTML = html;
+
+      var payBtn = document.getElementById('pay-btn');
+      if (payBtn) payBtn.addEventListener('click', function () { showPaymentModal(o); });
     } catch (e) { HM.state.error(el, e); }
+  }
+
+  function showPaymentModal(o) {
+    var methods = [
+      { id: 'card',      icon: '💳', label: 'Card' },
+      { id: 'fpx',       icon: '🏦', label: 'FPX' },
+      { id: 'tng',       icon: '🔵', label: "Touch'n Go" },
+      { id: 'grabpay',   icon: '🟢', label: 'GrabPay' },
+      { id: 'shopeepay', icon: '🟠', label: 'ShopeePay' },
+    ];
+    var html = '<p class="mb-3">Choose a payment method · 選擇付款方式</p>' +
+      '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: var(--s-2); margin-bottom: var(--s-5);">' +
+      methods.map(function (pm, idx) {
+        return '<button type="button" data-pm="' + pm.id + '" class="btn btn--outline' + (idx === 0 ? ' is-selected' : '') + '" style="padding: var(--s-3); flex-direction:column; gap: var(--s-1); height:auto; min-height:80px;' +
+          (idx === 0 ? 'border-color: var(--gold);' : '') + '">' +
+          '<span style="font-size: 1.5rem;">' + pm.icon + '</span>' +
+          '<span style="font-size: var(--text-xs);">' + pm.label + '</span>' +
+          '</button>';
+      }).join('') +
+      '</div>' +
+      '<button id="pay-confirm" class="btn btn--primary btn--block btn--lg">Pay ' + HM.format.money(o.total) + ' · 確認付款</button>' +
+      '<p class="text-xs text-muted text-center mt-3">Secured by Stripe Malaysia · 安全支付</p>';
+
+    var m = HM.ui.modal({ title: 'Payment · 付款', content: html });
+
+    // Method picker highlight
+    m.body.querySelectorAll('[data-pm]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        m.body.querySelectorAll('[data-pm]').forEach(function (x) { x.classList.remove('is-selected'); x.style.borderColor = 'var(--border)'; });
+        b.classList.add('is-selected');
+        b.style.borderColor = 'var(--gold)';
+      });
+    });
+
+    m.body.querySelector('#pay-confirm').addEventListener('click', async function () {
+      var selected = m.body.querySelector('[data-pm].is-selected');
+      var method = selected ? selected.getAttribute('data-pm') : 'card';
+      var btn = m.body.querySelector('#pay-confirm');
+      btn.disabled = true;
+      btn.textContent = 'Processing… · 處理中';
+      try {
+        await HM.api.patient.payOrder(o.id, { method: method });
+        m.close();
+        HM.ui.toast('Payment successful — pharmacy notified · 付款成功，藥房已收到', 'success', 5000);
+        // Re-render so the Pay button disappears and the new status shows.
+        setTimeout(function () {
+          var el = document.getElementById('panel-container');
+          if (el) HM.patientPanels.orders.renderDetail(el, o.id);
+        }, 500);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Pay ' + HM.format.money(o.total) + ' · 確認付款';
+        HM.ui.toast(err.message || 'Payment failed · 付款失敗', 'danger');
+      }
+    });
   }
 
   function trackingHtml(s) {

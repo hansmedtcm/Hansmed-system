@@ -139,10 +139,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/appointments',             [PatientAppointmentController::class, 'store']);
             Route::post('/appointments/{id}/cancel', [PatientAppointmentController::class, 'cancel']);
 
-            Route::get('/prescriptions', [PatientOrderController::class, 'prescriptions']);
-            Route::get('/orders',        [PatientOrderController::class, 'index']);
-            Route::post('/orders',       [PatientOrderController::class, 'store']);
-            Route::get('/orders/{id}',   [PatientOrderController::class, 'show']);
+            Route::get('/prescriptions',    [PatientOrderController::class, 'prescriptions']);
+            Route::get('/orders',           [PatientOrderController::class, 'index']);
+            Route::post('/orders',          [PatientOrderController::class, 'store']);
+            Route::get('/orders/{id}',      [PatientOrderController::class, 'show']);
+            Route::post('/orders/{id}/pay', [PatientOrderController::class, 'pay']);
         });
     });
 

@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\PharmacyProfile;
 use App\Models\Prescription;
 use App\Models\Product;
+use App\Services\NotificationService;
 use App\Services\StripeClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,10 @@ use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
-    public function __construct(private StripeClient $stripe) {}
+    public function __construct(
+        private StripeClient $stripe,
+        private NotificationService $notifier,
+    ) {}
 
     // C-12: view own prescriptions
     public function prescriptions(Request $request)
@@ -215,5 +219,59 @@ class OrderController extends Controller
             ->with(['items', 'shipment', 'address', 'prescription.items'])
             ->findOrFail($id);
         return response()->json(['order' => $order]);
+    }
+
+    /**
+     * Mark an order as paid.
+     *
+     * In production this fires after a successful Stripe/PayPal capture
+     * webhook. For the current Malaysia pilot (no live payment gateway
+     * hooked up yet) we expose a direct endpoint so the patient can
+     * confirm a demo/manual payment and move the order forward into
+     * the pharmacy's dispensing queue. Triggers the orderPaid
+     * notification so the pharmacy hears the chime + sees the toast.
+     */
+    public function pay(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'method' => ['nullable', 'string', 'max:30'],
+        ]);
+
+        $order = Order::where('patient_id', $request->user()->id)->findOrFail($id);
+
+        if ($order->status !== 'pending_payment') {
+            return response()->json([
+                'message' => 'Order is not awaiting payment (status: ' . $order->status . ').',
+            ], 422);
+        }
+
+        return DB::transaction(function () use ($order, $data, $request) {
+            $order->update([
+                'status'  => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            // Mark the linked Payment row as succeeded too (raw_payload
+            // records which method the patient tapped — useful for
+            // reconciliation later).
+            if ($order->payment_id) {
+                Payment::where('id', $order->payment_id)->update([
+                    'status'      => 'succeeded',
+                    'raw_payload' => array_merge(
+                        (array) Payment::find($order->payment_id)->raw_payload,
+                        ['method' => $data['method'] ?? 'card', 'demo_paid_at' => now()->toIso8601String()]
+                    ),
+                ]);
+            }
+
+            $this->notifier->orderPaid(
+                $request->user()->id,
+                $order->pharmacy_id,
+                $order->id,
+                $order->order_no
+            );
+
+            return response()->json(['order' => $order->fresh(['items', 'shipment'])]);
+        });
     }
 }
