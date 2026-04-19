@@ -86,6 +86,39 @@
     delete: function (p)    { return request('DELETE', p); },
   };
 
+  /**
+   * Fetch an authed file (PDF etc.) and open it in a new tab. A plain
+   * `<a href>` can't carry the Bearer token, so the backend would 401
+   * if we used the URL directly. We fetch as a blob, create an object
+   * URL, and window.open() that — the browser treats it like a normal
+   * file download/viewer.
+   */
+  async function openAuthedFile(path, filename) {
+    var token = getToken();
+    var res = await fetch(cfg.API_BASE + path, {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+    });
+    if (! res.ok) {
+      var msg = 'Failed to open file (HTTP ' + res.status + ')';
+      try { var j = await res.json(); if (j && j.message) msg = j.message; } catch (_) {}
+      throw new Error(msg);
+    }
+    var blob = await res.blob();
+    var url = URL.createObjectURL(blob);
+    var win = window.open(url, '_blank');
+    // If the popup was blocked, fall back to a download link click.
+    if (! win) {
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    // Free the blob URL after a minute — enough for the new tab to finish loading.
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }
+
   // ── Auth ──
   async function authRegister(data) {
     var res = await api.post('/auth/register', data);
@@ -377,6 +410,7 @@
     put:     api.put,
     patch:   api.patch,
     delete:  api.delete,
+    openAuthedFile: openAuthedFile,
 
     getToken: getToken, setToken: setToken, clearToken: clearToken,
     getUser: getUser, setUser: setUser, clearUser: clearUser,

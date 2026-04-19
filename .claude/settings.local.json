@@ -45,7 +45,11 @@
       "Bash(node --check v2/assets/js/panels/patient/appointments.js)",
       "Bash(node --check v2/assets/js/notification-sound.js)",
       "Bash(node --check v2/assets/js/pages/doctor.js)",
-      "Bash(node --check v2/assets/js/pages/pharmacy.js)"
+      "Bash(node --check v2/assets/js/pages/pharmacy.js)",
+      "Bash(node --check v2/assets/js/panels/doctor/prescriptions.js)",
+      "Bash(node --check v2/assets/js/panels/pharmacy/inbox.js)",
+      "Bash(node --check v2/assets/js/panels/doctor/consult.js)",
+      "Bash(node --check v2/assets/js/api.js)"
     ]
   }
 }

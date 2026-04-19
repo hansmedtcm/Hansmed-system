@@ -349,7 +349,28 @@
       '<span style="font-family: var(--font-zh);">每次服用包數 × 每日次數 × 天數。</span></div>' +
 
       '<div class="field mt-3"><label class="field-label">Usage Notes · 用法備註</label>' +
-      '<input id="rx-usage" class="field-input field-input--boxed" placeholder="e.g. 飯後服用，水煎 After meals, decoct with water"></div>' +
+      // Preset chips — click to insert into the notes field so the
+      // doctor doesn't retype the same phrases every Rx. Multiple
+      // clicks append (comma-separated).
+      '<div id="rx-usage-presets" class="rx-usage-presets">' +
+      [
+        { en: 'After meals',    zh: '飯後服用' },
+        { en: 'Before meals',   zh: '飯前服用' },
+        { en: 'Empty stomach',  zh: '空腹服用' },
+        { en: 'Warm water',     zh: '溫水送服' },
+        { en: 'Decoct in water',zh: '水煎服' },
+        { en: 'Before sleep',   zh: '睡前服用' },
+        { en: 'Morning',        zh: '晨起服用' },
+        { en: 'Avoid cold/raw', zh: '忌生冷' },
+        { en: 'Avoid spicy',    zh: '忌辛辣' },
+      ].map(function (p) {
+        return '<button type="button" class="rx-usage-chip" data-usage="' +
+          HM.format.esc(p.zh + ' ' + p.en) + '">' +
+          '<span style="font-family:var(--font-zh);">' + p.zh + '</span> · ' + p.en +
+          '</button>';
+      }).join('') +
+      '</div>' +
+      '<input id="rx-usage" class="field-input field-input--boxed mt-2" placeholder="e.g. 飯後服用，水煎 After meals, decoct with water"></div>' +
 
       '<div class="text-label mt-4 mb-2">Herb Items · 藥材清單</div>' +
       '<div class="text-xs text-muted mb-2">Type to search pharmacy stock. ' +
@@ -393,6 +414,25 @@
       state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g' });
       renderRxList();
     });
+
+    // Usage-note preset chips — append to the input, comma-separated.
+    // Clicking the same chip twice toggles it off so doctors can
+    // undo without clearing the whole field.
+    var presetsBox = document.getElementById('rx-usage-presets');
+    if (presetsBox) {
+      presetsBox.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('[data-usage]');
+        if (! btn) return;
+        var piece = btn.getAttribute('data-usage');
+        var inp = document.getElementById('rx-usage');
+        if (! inp) return;
+        var parts = (inp.value || '').split(/[,，、；;]\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
+        var idx = parts.indexOf(piece);
+        if (idx >= 0) parts.splice(idx, 1); else parts.push(piece);
+        inp.value = parts.join(', ');
+        inp.focus();
+      });
+    }
 
     // File upload handler (walk-in only)
     var fileInput = document.getElementById('cr-files');
@@ -791,6 +831,41 @@
         });
         inp.addEventListener('change', function () { renderRxList(); });
         inp.addEventListener('blur',   function () { renderRxList(); });
+
+        // Keyboard navigation between qty inputs: ↓ / Enter jumps to
+        // the next row's qty; ↑ jumps to the previous. Auto-adds a
+        // new row if the doctor presses ↓ or Enter on the last line.
+        inp.addEventListener('keydown', function (ev) {
+          if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Enter') return;
+          var field = inp.getAttribute('data-rx-field');
+          var i = parseInt(inp.getAttribute('data-rx-idx'), 10);
+          // Only hijack arrows on the qty field (native ↑/↓ on number
+          // inputs would otherwise step the value). Enter works on
+          // both name and qty for fast data-entry.
+          if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && field !== 'quantity') return;
+          ev.preventDefault();
+
+          var target = i;
+          if (ev.key === 'ArrowUp') {
+            target = Math.max(0, i - 1);
+          } else {
+            // ArrowDown or Enter — next row, auto-create when at end
+            target = i + 1;
+            if (target >= state.rxItems.length) {
+              state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g' });
+              renderRxList();
+              // after re-render the focus target doesn't exist yet —
+              // schedule focus on the new row.
+              setTimeout(function () {
+                var next = document.querySelector('[data-rx-field="' + field + '"][data-rx-idx="' + target + '"]');
+                if (next) { next.focus(); if (next.select) next.select(); }
+              }, 0);
+              return;
+            }
+          }
+          var next = document.querySelector('[data-rx-field="' + field + '"][data-rx-idx="' + target + '"]');
+          if (next) { next.focus(); if (next.select) next.select(); }
+        });
       });
 
       tbody.appendChild(tr);
@@ -1058,6 +1133,12 @@
       '.rx-dosage-hint{margin-left:8px;font-size:var(--text-xs);color:var(--stone);}' +
       // Total summary box
       '.rx-total-box{margin-top:var(--s-4);padding:var(--s-3) var(--s-4);background:var(--washi);border-radius:var(--r-md);border:1px solid var(--border);}' +
+      // Usage-note preset chips
+      '.rx-usage-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}' +
+      '.rx-usage-chip{border:1px solid var(--border);background:#fff;color:var(--ink);padding:5px 11px;' +
+        'border-radius:999px;font-size:var(--text-xs);cursor:pointer;transition:all .15s;}' +
+      '.rx-usage-chip:hover{border-color:var(--gold);background:rgba(201,146,42,.08);}' +
+      '.rx-usage-chip:active{transform:scale(.97);}' +
       // Body diagram + drawing tool
       '.body-diagram-wrap{border:1px solid var(--border);border-radius:var(--r-md);background:#fff;overflow:hidden;}' +
       '.body-diagram-toolbar{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-2) var(--s-3);background:var(--washi);border-bottom:1px solid var(--border);flex-wrap:wrap;}' +

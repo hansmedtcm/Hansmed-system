@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DoctorProfile;
 use App\Models\Notification;
+use App\Models\PharmacyProfile;
 
 /**
  * Central place to fan out in-app notifications on state changes.
@@ -43,6 +44,18 @@ class NotificationService
             'Prescription ready',
             'Your doctor has issued a new prescription.',
             ['prescription_id' => $prescriptionId]);
+
+        // Fan out to every approved pharmacy so they see the Rx in
+        // their inbox + hear the dispense cue, even before the
+        // patient places an order.
+        $pharmacyIds = PharmacyProfile::where('verification_status', 'approved')
+            ->pluck('user_id');
+        foreach ($pharmacyIds as $uid) {
+            $this->notify((int) $uid, 'prescription.incoming',
+                'New prescription in inbox · 新處方進來',
+                'A doctor has just issued a prescription. Check your inbox to pre-check stock.',
+                ['prescription_id' => $prescriptionId, 'route' => '#/inbox']);
+        }
     }
 
     public function orderPaid(int $patientId, int $pharmacyId, int $orderId, string $orderNo): void

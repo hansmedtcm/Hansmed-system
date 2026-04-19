@@ -66,6 +66,7 @@
       dispenseTypes: [
         'order.incoming',
         'prescription.issued',
+        'prescription.incoming',
       ],
       intervalMs: 25000,
     });
