@@ -106,10 +106,25 @@ class OrderController extends Controller
                     $unit = strtolower(trim((string) ($item->unit ?? 'g')));
                     if (! in_array($unit, ['g', 'gram', 'grams', '克'], true)) continue;
 
+                    // Doctors' Rx stores drug_name as the combined display
+                    // string "參苓白朮散 · Shen Ling Bai Zhu San" (see
+                    // DrugCatalogController). Split on " · " and try each
+                    // half against name_zh / name_pinyin / code.
+                    $candidates = [$name];
+                    if (strpos($name, ' · ') !== false) {
+                        foreach (explode(' · ', $name) as $piece) {
+                            $p = trim($piece);
+                            if ($p !== '') $candidates[] = $p;
+                        }
+                    }
                     $row = DB::table('medicine_catalog')
-                        ->where('name_zh', $name)
-                        ->orWhere('name_pinyin', $name)
-                        ->orWhere('code', $name)
+                        ->where(function ($q) use ($candidates) {
+                            foreach ($candidates as $c) {
+                                $q->orWhere('name_zh', $c)
+                                  ->orWhere('name_pinyin', $c)
+                                  ->orWhere('code', $c);
+                            }
+                        })
                         ->first();
                     if (! $row) continue;
 
