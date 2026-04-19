@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Patient;
 
 use App\Http\Controllers\Controller;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class QuestionnaireController extends Controller
 {
+    public function __construct(private NotificationService $notifier) {}
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -25,6 +28,11 @@ class QuestionnaireController extends Controller
             'discomfort_areas' => json_encode($data['discomfort_areas'] ?? []),
             'created_at'      => now(),
         ]);
+
+        // Notify every approved doctor that a new constitution
+        // report is sitting in the review pool — frontend plays the
+        // "review" sound cue on these.
+        $this->notifier->reviewPendingForDoctors('constitution', (int) $id, (int) $request->user()->id);
 
         return response()->json(['questionnaire' => DB::table('questionnaires')->find($id)], 201);
     }

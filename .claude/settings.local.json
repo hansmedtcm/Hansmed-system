@@ -35,7 +35,17 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "Bash(grep -n \"services-whatsapp\\\\|hero-whatsapp\\\\|contact-whatsapp\" E:/Hansmed-system/v2/*.html)"
+      "Bash(grep -n \"services-whatsapp\\\\|hero-whatsapp\\\\|contact-whatsapp\" E:/Hansmed-system/v2/*.html)",
+      "Bash(node -e ' *)",
+      "Bash(node --check v2/assets/js/panels/patient/ai-diagnosis.js)",
+      "Bash(node --check v2/assets/js/panels/patient/tongue.js)",
+      "Bash(node --check v2/assets/js/panels/doctor/reviews.js)",
+      "Bash(php -l backend/app/Services/TongueDiagnosis/AnalysisReport.php)",
+      "Bash(php -l backend/app/Services/AnthropicTongueClient.php)",
+      "Bash(node --check v2/assets/js/panels/patient/appointments.js)",
+      "Bash(node --check v2/assets/js/notification-sound.js)",
+      "Bash(node --check v2/assets/js/pages/doctor.js)",
+      "Bash(node --check v2/assets/js/pages/pharmacy.js)"
     ]
   }
 }

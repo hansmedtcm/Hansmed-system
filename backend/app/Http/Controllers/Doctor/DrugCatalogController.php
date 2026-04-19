@@ -44,14 +44,20 @@ class DrugCatalogController extends Controller
             ->get()
             ->keyBy(fn($r) => mb_strtolower(trim($r->name)));
 
-        // 2. Master Timing Herbs catalogue (reference prices + canonical names)
+        // 2. Master Timing Herbs catalogue (reference prices + canonical names
+        //    + warehouse stock). medicine_catalog.stock_grams is the admin
+        //    warehouse level — the source of truth for what's actually on
+        //    the shelf. Pharmacy-level inventory (products table) layers on
+        //    top so the doctor sees total herbs available network-wide.
         $catalog = collect();
         $hasPackGrams = false;
+        $hasStockGrams = false;
         if (Schema::hasTable('medicine_catalog')) {
-            $hasPackGrams = Schema::hasColumn('medicine_catalog', 'pack_grams');
-            $cols = $hasPackGrams
-                ? ['code', 'name_zh', 'name_pinyin', 'type', 'unit_price', 'unit', 'pack_grams']
-                : ['code', 'name_zh', 'name_pinyin', 'type', 'unit_price', 'unit'];
+            $hasPackGrams  = Schema::hasColumn('medicine_catalog', 'pack_grams');
+            $hasStockGrams = Schema::hasColumn('medicine_catalog', 'stock_grams');
+            $cols = ['code', 'name_zh', 'name_pinyin', 'type', 'unit_price', 'unit'];
+            if ($hasPackGrams)  $cols[] = 'pack_grams';
+            if ($hasStockGrams) $cols[] = 'stock_grams';
             $catalog = DB::table('medicine_catalog')
                 ->where('is_active', 1)
                 ->select($cols)
@@ -69,6 +75,9 @@ class DrugCatalogController extends Controller
             // directly by the dose in grams.
             $packGrams = $hasPackGrams && !empty($c->pack_grams) ? (float) $c->pack_grams : 100;
             $perGram = $c->unit_price !== null ? (float) $c->unit_price / max($packGrams, 0.01) : null;
+            // Seed total_stock from the admin warehouse (medicine_catalog.stock_grams).
+            // Any matching pharmacy inventory is added on top below.
+            $warehouseStock = $hasStockGrams ? (float) ($c->stock_grams ?? 0) : 0;
             $byName[mb_strtolower($display)] = (object) [
                 'name'           => $display,
                 'name_zh'        => $c->name_zh,
@@ -81,7 +90,9 @@ class DrugCatalogController extends Controller
                 'pack_price'     => $c->unit_price !== null ? (float) $c->unit_price : null,
                 'min_price'      => $perGram,
                 'max_price'      => $perGram,
-                'total_stock'    => 0,
+                'warehouse_stock'=> $warehouseStock,
+                'pharmacy_stock' => 0,
+                'total_stock'    => $warehouseStock,
                 'pharmacy_count' => 0,
                 'source'         => 'catalog',
             ];
@@ -95,7 +106,11 @@ class DrugCatalogController extends Controller
                 }
             }
             if ($matched) {
-                $byName[$matched]->total_stock    = (float) $p->total_stock;
+                $byName[$matched]->pharmacy_stock = (float) $p->total_stock;
+                // Warehouse + pharmacy inventory = total herbs available
+                // anywhere in the network for this medicine.
+                $byName[$matched]->total_stock    = (float) $byName[$matched]->warehouse_stock
+                                                  + (float) $p->total_stock;
                 $byName[$matched]->pharmacy_count = (int)   $p->pharmacy_count;
             } else {
                 $byName[mb_strtolower($p->name)] = (object) [

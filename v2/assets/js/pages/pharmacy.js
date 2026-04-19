@@ -58,5 +58,18 @@
     setInterval(refreshPharmCounts, 60000);
   }
 
+  // ── Notification sound cues ──
+  // Bright chime on every new order/prescription that needs dispensing.
+  if (HM.notificationSound) {
+    HM.notificationSound.start({
+      reviewTypes: [],
+      dispenseTypes: [
+        'order.incoming',
+        'prescription.issued',
+      ],
+      intervalMs: 25000,
+    });
+  }
+
   console.log('[HansMed] Pharmacy portal ready');
 })();

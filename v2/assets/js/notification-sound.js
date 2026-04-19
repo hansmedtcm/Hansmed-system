@@ -1,0 +1,178 @@
+/**
+ * HM.notificationSound — polls the notifications API and plays a
+ * short audio cue whenever a new notification arrives.
+ *
+ * Two cue profiles:
+ *   'review'    (sound A) — softer bell. Fires on doctor review-pending
+ *                          (tongue / constitution) and new appointment
+ *                          bookings.
+ *   'dispense'  (sound B) — higher chime. Fires on new incoming orders
+ *                          that a pharmacy must dispense.
+ *
+ * Sounds are synthesised with WebAudio at runtime so we don't ship
+ * any audio assets — this also keeps the first-play latency low
+ * (no network fetch on the first event).
+ *
+ * The watcher remembers the largest notification ID it has seen in
+ * sessionStorage so a page reload doesn't replay old events.
+ *
+ * Start it from a role-bootstrap file, e.g.
+ *   HM.notificationSound.start({
+ *     reviewTypes:   ['review.pending.tongue', 'review.pending.constitution', 'appointment.booked'],
+ *     dispenseTypes: ['order.incoming'],
+ *   });
+ */
+(function () {
+  'use strict';
+  window.HM = window.HM || {};
+
+  var timer = null;
+  var lastSeenId = 0;
+  var config = { reviewTypes: [], dispenseTypes: [] };
+  var audioCtx = null;
+  var started = false;
+  var STORAGE_KEY = 'hm_notif_last_seen_id';
+
+  // ── Audio synthesis ───────────────────────────────────────
+  function ctx() {
+    if (audioCtx) return audioCtx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (! AC) return null;
+      audioCtx = new AC();
+      return audioCtx;
+    } catch (_) { return null; }
+  }
+
+  // Two short tone sequences. Distinct enough to tell apart across
+  // a noisy clinic without being irritating on repeat.
+  function tone(freq, duration, when, gain) {
+    var c = ctx(); if (! c) return;
+    var osc = c.createOscillator();
+    var g = c.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    g.gain.value = 0;
+    osc.connect(g); g.connect(c.destination);
+    var t = c.currentTime + (when || 0);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(gain || 0.12, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    osc.start(t);
+    osc.stop(t + duration + 0.05);
+  }
+
+  function playReview() {
+    // Gentle two-note rise, like a reception bell. (sound A)
+    tone(523, 0.22, 0.00, 0.14);  // C5
+    tone(784, 0.34, 0.18, 0.12);  // G5
+  }
+
+  function playDispense() {
+    // Three-note "ding ding ding", brighter — pharmacy pick-up cue. (sound B)
+    tone(988, 0.15, 0.00, 0.13); // B5
+    tone(988, 0.15, 0.18, 0.13);
+    tone(1319, 0.28, 0.36, 0.13); // E6
+  }
+
+  // ── Notification polling ──────────────────────────────────
+  function matches(type, list) {
+    if (! type || ! list || ! list.length) return false;
+    for (var i = 0; i < list.length; i++) {
+      // Support prefix wildcard: 'review.pending.*' matches any
+      // 'review.pending.X' type so we don't have to enumerate every
+      // future subtype client-side.
+      var t = list[i];
+      if (t.slice(-1) === '*') {
+        if (type.indexOf(t.slice(0, -1)) === 0) return true;
+      } else if (t === type) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async function poll() {
+    if (! HM.api || ! HM.api.notification || ! HM.auth || ! HM.auth.token()) return;
+    try {
+      var res = await HM.api.notification.list();
+      var items = (res && res.data) || [];
+      if (! items.length) return;
+
+      // Find highest id seen this poll.
+      var maxId = lastSeenId;
+      var newItems = [];
+      items.forEach(function (n) {
+        if (n.id > lastSeenId) newItems.push(n);
+        if (n.id > maxId) maxId = n.id;
+      });
+      if (newItems.length) {
+        // Sort oldest→newest so cue ordering feels natural.
+        newItems.sort(function (a, b) { return a.id - b.id; });
+        var playedReview = false, playedDispense = false;
+        newItems.forEach(function (n) {
+          if (matches(n.type, config.dispenseTypes) && ! playedDispense) {
+            playDispense(); playedDispense = true;
+          } else if (matches(n.type, config.reviewTypes) && ! playedReview) {
+            playReview(); playedReview = true;
+          }
+        });
+      }
+      if (maxId > lastSeenId) {
+        lastSeenId = maxId;
+        try { sessionStorage.setItem(STORAGE_KEY, String(maxId)); } catch (_) {}
+      }
+    } catch (_) { /* swallow — try again next tick */ }
+  }
+
+  function start(opts) {
+    if (started) return;
+    started = true;
+    opts = opts || {};
+    config.reviewTypes   = opts.reviewTypes   || [];
+    config.dispenseTypes = opts.dispenseTypes || [];
+
+    // Seed last-seen from session so a reload doesn't replay events.
+    try {
+      var stored = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0', 10);
+      if (! isNaN(stored)) lastSeenId = stored;
+    } catch (_) {}
+
+    // First call establishes the baseline without any sound — we do
+    // NOT want a flood on login.
+    (async function baseline() {
+      try {
+        var res = await HM.api.notification.list();
+        var items = (res && res.data) || [];
+        items.forEach(function (n) { if (n.id > lastSeenId) lastSeenId = n.id; });
+        try { sessionStorage.setItem(STORAGE_KEY, String(lastSeenId)); } catch (_) {}
+      } catch (_) {}
+      timer = setInterval(poll, opts.intervalMs || 25000);
+    })();
+
+    // Browsers block audio until the user interacts. Resume the
+    // context on first click/keydown so subsequent cues are audible.
+    var resume = function () {
+      var c = ctx();
+      if (c && c.state === 'suspended') c.resume();
+      document.removeEventListener('click', resume);
+      document.removeEventListener('keydown', resume);
+    };
+    document.addEventListener('click', resume);
+    document.addEventListener('keydown', resume);
+  }
+
+  function stop() {
+    if (timer) clearInterval(timer);
+    timer = null;
+    started = false;
+  }
+
+  HM.notificationSound = {
+    start: start,
+    stop:  stop,
+    // Exposed for manual testing (e.g. Settings → "Test sound" button):
+    playReview:   playReview,
+    playDispense: playDispense,
+  };
+})();

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\DoctorProfile;
 use App\Models\Notification;
 
 /**
@@ -84,6 +85,41 @@ class NotificationService
                 'Tongue diagnosis — more info needed · 舌診需補充資料',
                 'The reviewing doctor has added notes to your tongue analysis. Please read them and consider booking a consultation. · 醫師已留下備註，請查看。',
                 ['diagnosis_id' => $diagnosisId, 'route' => '#/tongue/' . $diagnosisId]);
+        }
+    }
+
+    /**
+     * Fan out a "new review in the queue" alert to every approved +
+     * accepting doctor so the one who's online picks it up first.
+     * Used when a patient submits a tongue diagnosis or constitution
+     * questionnaire. The frontend plays a sound cue on these.
+     *
+     * $kind: 'tongue' | 'constitution'
+     */
+    public function reviewPendingForDoctors(string $kind, int $refId, int $patientId): void
+    {
+        $title = $kind === 'tongue'
+            ? 'New tongue diagnosis to review · 新舌診待審核'
+            : 'New constitution report to review · 新體質報告待審核';
+        $body  = $kind === 'tongue'
+            ? 'A patient has submitted a tongue analysis for your review.'
+            : 'A patient has submitted a constitution questionnaire for your review.';
+        $type  = 'review.pending.' . $kind;
+        $route = $kind === 'tongue'
+            ? '#/reviews/tongue/' . $refId
+            : '#/reviews/constitution/' . $refId;
+
+        $doctorIds = DoctorProfile::where('verification_status', 'approved')
+            ->where('accepting_appointments', true)
+            ->pluck('user_id');
+
+        foreach ($doctorIds as $uid) {
+            $this->notify((int) $uid, $type, $title, $body, [
+                'ref_id'     => $refId,
+                'patient_id' => $patientId,
+                'kind'       => $kind,
+                'route'      => $route,
+            ]);
         }
     }
 

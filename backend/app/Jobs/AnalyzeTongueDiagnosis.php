@@ -36,6 +36,10 @@ class AnalyzeTongueDiagnosis implements ShouldQueue
                 'Your tongue diagnosis report is available.',
                 ['diagnosis_id' => $diag->id],
             );
+            // Alert every approved doctor that there's a new tongue
+            // diagnosis in the review pool — frontend plays the
+            // "review" sound cue on these notifications.
+            $notifier->reviewPendingForDoctors('tongue', $diag->id, (int) $diag->patient_id);
         }
     }
 

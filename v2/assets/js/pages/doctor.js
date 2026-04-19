@@ -74,5 +74,19 @@
     setInterval(refreshDoctorCounts, 60000);
   }
 
+  // ── Notification sound cues ──
+  // Plays "review" bell on new appointments and new tongue/constitution
+  // reviews in the pool. No dispense types here — that's pharmacy only.
+  if (HM.notificationSound) {
+    HM.notificationSound.start({
+      reviewTypes: [
+        'review.pending.*',
+        'appointment.booked',
+      ],
+      dispenseTypes: [],
+      intervalMs: 25000,
+    });
+  }
+
   console.log('[HansMed] Doctor portal ready');
 })();
