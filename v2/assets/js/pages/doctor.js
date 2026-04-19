@@ -85,7 +85,7 @@
         'appointment.pool.new',
       ],
       dispenseTypes: [],
-      intervalMs: 25000,
+      intervalMs: 3000,
     });
   }
 

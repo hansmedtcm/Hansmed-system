@@ -68,7 +68,7 @@
         'prescription.issued',
         'prescription.incoming',
       ],
-      intervalMs: 25000,
+      intervalMs: 3000,
     });
   }
 
