@@ -111,6 +111,7 @@
           kind: 'constitution',
           id: c.id,
           patient_id: c.patient_id,
+          patient_name: c.patient_name || null,
           patient_email: c.patient_email,
           created_at: c.created_at,
           review_status: c.review_status,
@@ -122,12 +123,14 @@
       });
       tongues.forEach(function (t) {
         var patient = t.patient || {};
+        var pp = patient.patient_profile || {};
         var report = t.constitution_report || {};
         var c = report.constitution || {};
         items.push({
           kind: 'tongue',
           id: t.id,
           patient_id: t.patient_id,
+          patient_name: pp.full_name || null,
           patient_email: patient.email || null,
           created_at: t.created_at,
           review_status: t.review_status,
@@ -183,7 +186,7 @@
         (alerts.length ? ' · <span style="color:var(--red-seal);">⚠️ ' + alerts.length + ' alert(s)</span>' : '');
     }
 
-    var patientLabel = 'Patient #' + it.patient_id + (it.patient_email ? ' · ' + HM.format.esc(it.patient_email) : '');
+    var patientLabel = HM.format.esc(HM.format.patientLabel(it)) + (it.patient_email && !it.patient_name ? ' · ' + HM.format.esc(it.patient_email) : '');
     var imgHtml = (it.kind === 'tongue' && it.extra.image_url)
       ? '<img src="' + HM.format.esc(it.extra.image_url) + '" style="width:70px;height:70px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);flex-shrink:0;">'
       : '<div style="width:70px;height:70px;border-radius:var(--r-md);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;">' + (it.kind === 'tongue' ? '👅' : '🧭') + '</div>';

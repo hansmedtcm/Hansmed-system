@@ -21,7 +21,7 @@ class OrderController extends Controller
     {
         $q = Order::where('pharmacy_id', $request->user()->id)
             ->whereIn('status', ['paid', 'dispensing', 'dispensed', 'shipped', 'delivered', 'completed'])
-            ->with(['items', 'shipment', 'address', 'prescription.items']);
+            ->with(['items', 'shipment', 'address', 'prescription.items', 'patient.patientProfile']);
 
         if ($status = $request->query('status')) {
             $q->where('status', $status);
@@ -32,7 +32,7 @@ class OrderController extends Controller
     public function show(Request $request, int $id)
     {
         $order = Order::where('pharmacy_id', $request->user()->id)
-            ->with(['items', 'shipment', 'address', 'prescription.items', 'prescription.doctor.doctorProfile'])
+            ->with(['items', 'shipment', 'address', 'prescription.items', 'prescription.doctor.doctorProfile', 'patient.patientProfile'])
             ->findOrFail($id);
         return response()->json(['order' => $order]);
     }

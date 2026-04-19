@@ -133,6 +133,45 @@
     return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
   }
 
+  /**
+   * Extract a human-friendly patient label from any object that
+   * carries patient data — appointments, prescriptions, orders,
+   * chat threads, review queue rows. Falls back through the common
+   * shapes we return from the backend (eager-loaded relation, flat
+   * joined columns, or nothing at all).
+   *
+   *   HM.format.patientLabel(appt)  → "Sarah Tan"
+   *   HM.format.patientLabel(rx)    → "Lee Chee Meng"
+   *   HM.format.patientLabel(order) → "Patient #5"  (if no data)
+   */
+  function patientLabel(o) {
+    if (!o) return '';
+    // Nested Eloquent relation shape
+    if (o.patient && o.patient.patient_profile && o.patient.patient_profile.full_name) return o.patient.patient_profile.full_name;
+    if (o.patient_profile && o.patient_profile.full_name) return o.patient_profile.full_name;
+    // Flat joined columns (admin / pharmacy raw queries)
+    if (o.patient_name) return o.patient_name;
+    if (o.patient_full_name) return o.patient_full_name;
+    // Email fallback before giving up entirely
+    if (o.patient && o.patient.email) return o.patient.email;
+    if (o.patient_email) return o.patient_email;
+    if (o.patient_id) return 'Patient #' + o.patient_id;
+    return '—';
+  }
+
+  /** Same for doctor labels — used on patient + pharmacy + admin side. */
+  function doctorLabel(o, prefix) {
+    prefix = prefix == null ? 'Dr. ' : prefix;
+    if (!o) return '';
+    if (o.doctor && o.doctor.doctor_profile && o.doctor.doctor_profile.full_name) return prefix + o.doctor.doctor_profile.full_name;
+    if (o.doctor_profile && o.doctor_profile.full_name) return prefix + o.doctor_profile.full_name;
+    if (o.doctor_name) return prefix + o.doctor_name;
+    if (o.doctor && o.doctor.email) return prefix + o.doctor.email;
+    if (o.doctor_email) return prefix + o.doctor_email;
+    if (o.doctor_id) return 'Doctor #' + o.doctor_id;
+    return '—';
+  }
+
   window.HM.format = {
     money: money,
     moneyShort: moneyShort,
@@ -146,5 +185,7 @@
     esc: esc,
     phone: phone,
     age: age,
+    patientLabel: patientLabel,
+    doctorLabel: doctorLabel,
   };
 })();

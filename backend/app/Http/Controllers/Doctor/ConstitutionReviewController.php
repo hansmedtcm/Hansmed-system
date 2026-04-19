@@ -34,8 +34,10 @@ class ConstitutionReviewController extends Controller
                 'questionnaires.symptoms',
                 'questionnaires.created_at',
                 'users.email as patient_email',
+                'patient_profiles.full_name as patient_name',
             )
             ->leftJoin('users', 'users.id', '=', 'questionnaires.patient_id')
+            ->leftJoin('patient_profiles', 'patient_profiles.user_id', '=', 'questionnaires.patient_id')
             ->orderByDesc('questionnaires.created_at')
             ->limit(200)
             ->get();
@@ -55,6 +57,7 @@ class ConstitutionReviewController extends Controller
             $out[] = [
                 'id'              => $row->id,
                 'patient_id'      => $row->patient_id,
+                'patient_name'    => $row->patient_name,
                 'patient_email'   => $row->patient_email,
                 'created_at'      => $row->created_at,
                 'review_status'   => $status,

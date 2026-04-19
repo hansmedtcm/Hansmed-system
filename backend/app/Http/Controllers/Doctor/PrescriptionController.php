@@ -122,7 +122,7 @@ class PrescriptionController extends Controller
     public function index(Request $request)
     {
         $q = Prescription::where('doctor_id', $request->user()->id)
-            ->with('items')
+            ->with(['items', 'patient.patientProfile'])
             ->orderByDesc('created_at');
 
         // Optional filter — used by the consult view to pre-fill the Rx
@@ -139,7 +139,7 @@ class PrescriptionController extends Controller
     public function show(Request $request, int $id)
     {
         $rx = Prescription::where('doctor_id', $request->user()->id)
-            ->with('items')
+            ->with(['items', 'patient.patientProfile'])
             ->findOrFail($id);
         return response()->json(['prescription' => $rx]);
     }

@@ -63,7 +63,7 @@
             '<div>' +
               '<div class="text-label">' + HM.format.datetime(rx.created_at) + '</div>' +
               '<strong>' + HM.format.esc(rx.diagnosis || 'Prescription #' + rx.id) + '</strong>' +
-              '<div class="text-xs text-muted">Patient #' + rx.patient_id +
+              '<div class="text-xs text-muted">' + HM.format.esc(HM.format.patientLabel(rx)) +
               (rx.duration_days ? ' · ' + rx.duration_days + ' days' : '') + '</div>' +
             '</div>' +
             HM.format.statusBadge(rx.status) +

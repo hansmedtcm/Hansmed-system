@@ -72,7 +72,7 @@
       appts.slice(0, 5).forEach(function (a) {
         html += '<div class="flex-between mb-2" style="padding: var(--s-2) 0; border-bottom: 1px solid var(--border);">' +
           '<div><strong>' + HM.format.time(a.scheduled_start) + '</strong><br>' +
-          '<span class="text-xs text-muted">Patient #' + a.patient_id + '</span></div>' +
+          '<span class="text-xs text-muted">' + HM.format.esc(HM.format.patientLabel(a)) + '</span></div>' +
           HM.format.statusBadge(a.status) +
           '</div>';
       });

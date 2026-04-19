@@ -210,7 +210,7 @@
     var toggleLabel = state.isWalkIn ? 'Switch to Online · 改為線上' : 'Switch to Walk-in · 改為臨診';
     return '<div class="page-header">' +
       '<button class="btn btn--ghost" onclick="HM.doctorPanels.consult._back()">← Back</button>' +
-      '<h1 class="page-title mt-2">Consultation — Patient #' + state.appt.patient_id + '</h1>' +
+      '<h1 class="page-title mt-2">Consultation — ' + HM.format.esc(HM.format.patientLabel(state.appt)) + '</h1>' +
       '<div class="flex gap-2 mt-1" style="align-items:center;flex-wrap:wrap;">' +
       visitBadge +
       '<span class="text-sm text-muted">' + HM.format.datetime(state.appt.scheduled_start) + '</span>' +

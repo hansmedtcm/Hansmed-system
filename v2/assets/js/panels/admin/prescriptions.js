@@ -27,7 +27,7 @@
         card.className = 'card mb-3';
         card.innerHTML = '<div class="flex-between mb-2">' +
           '<div><strong>' + HM.format.esc(rx.diagnosis || 'Prescription #' + rx.id) + '</strong>' +
-          '<div class="text-xs text-muted">Doctor #' + rx.doctor_id + ' → Patient #' + rx.patient_id + ' · ' + HM.format.date(rx.created_at) + '</div></div>' +
+          '<div class="text-xs text-muted">' + HM.format.esc(HM.format.doctorLabel(rx)) + ' → ' + HM.format.esc(HM.format.patientLabel(rx)) + ' · ' + HM.format.date(rx.created_at) + '</div></div>' +
           HM.format.statusBadge(rx.status) + '</div>' +
           '<p class="text-sm text-muted">' + HM.format.esc(drugs) + '</p>' +
           (rx.status === 'issued' ? '<button class="btn btn--outline btn--sm" style="color: var(--red-seal); margin-top: var(--s-2);" data-revoke>Force Revoke</button>' : '');

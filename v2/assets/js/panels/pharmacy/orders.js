@@ -56,7 +56,7 @@
 
         card.innerHTML = '<div class="flex-between mb-2">' +
           '<div><strong>' + HM.format.esc(o.order_no) + '</strong>' +
-          '<div class="text-xs text-muted">Patient #' + o.patient_id + ' · ' + HM.format.date(o.created_at) + '</div></div>' +
+          '<div class="text-xs text-muted">' + HM.format.esc(HM.format.patientLabel(o)) + ' · ' + HM.format.date(o.created_at) + '</div></div>' +
           '<div style="text-align: right;">' + HM.format.statusBadge(o.status) + '<div class="text-lg mt-1"><strong>' + HM.format.money(o.total) + '</strong></div></div>' +
           '</div>' +
           '<p class="text-sm text-muted mb-3">' + HM.format.truncate(HM.format.esc(itemsStr), 100) + '</p>' +
@@ -99,7 +99,8 @@
       var o = res.order;
       var html = '<div class="page-header"><button class="btn btn--ghost" onclick="location.hash=\'#/orders\'">← Back</button></div>' +
         '<div class="card card--pad-lg" style="max-width: 900px;">' +
-        '<div class="flex-between mb-4"><div><div class="text-label">' + HM.format.esc(o.order_no) + '</div><h2>Patient #' + o.patient_id + '</h2></div>' +
+        '<div class="flex-between mb-4"><div><div class="text-label">' + HM.format.esc(o.order_no) + '</div><h2>' + HM.format.esc(HM.format.patientLabel(o)) + '</h2>' +
+        '<div class="text-xs text-muted">Patient #' + o.patient_id + '</div></div>' +
         HM.format.statusBadge(o.status) + '</div>';
       if (o.prescription) {
         var rx = o.prescription;

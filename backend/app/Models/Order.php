@@ -26,4 +26,5 @@ class Order extends Model
     public function shipment()     { return $this->hasOne(Shipment::class); }
     public function prescription() { return $this->belongsTo(Prescription::class); }
     public function address()      { return $this->belongsTo(Address::class); }
+    public function patient()      { return $this->belongsTo(User::class, 'patient_id'); }
 }

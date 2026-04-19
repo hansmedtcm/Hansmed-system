@@ -28,7 +28,7 @@ class TongueReviewController extends Controller
     {
         $filter = $request->query('filter', 'pending');
         $q = TongueDiagnosis::query()
-            ->with('patient:id,email,role')
+            ->with(['patient:id,email,role', 'patient.patientProfile'])
             ->orderByDesc('created_at');
 
         if ($filter === 'pending') {
