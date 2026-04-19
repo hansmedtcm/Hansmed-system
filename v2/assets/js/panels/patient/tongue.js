@@ -255,6 +255,15 @@
         html += '</ul></div></div>';
       }
 
+      // Deep analysis (三焦, 全息圖, 六經, 臨床特徵, 升降) — shown for
+      // everyone since it's grounded in classical TCM rules, not the
+      // raw AI judgement. Only hides the formula direction / caution
+      // boxes unless the doctor has reviewed + approved, so patients
+      // don't self-medicate from a suggestion that wasn't vetted.
+      var report2 = d.constitution_report || {};
+      var isApproved = (reviewStatus === 'approved' || reviewStatus === 'needs_changes');
+      html += renderPatientDeepAnalysis(report2, isApproved);
+
       // Doctor review section
       if (reviewStatus === 'approved' || reviewStatus === 'needs_changes') {
         if (d.doctor_comment) {
@@ -286,6 +295,128 @@
 
       el.innerHTML = html;
     } catch (e) { HM.state.error(el, e); }
+  }
+
+  /**
+   * Patient-facing deep tongue analysis — 三焦 / 全息圖 / 六經 / 臨床特徵 /
+   * 升降. Shows the classical-TCM pattern explanation regardless of review
+   * state (since these are deterministic rules, not raw AI opinion), but
+   * hides the specific formula-direction and treatment-caution boxes
+   * until the doctor has reviewed — those are actionable suggestions
+   * that must be vetted before a patient acts on them.
+   */
+  function renderPatientDeepAnalysis(report, isApproved) {
+    if (! report) return '';
+    var tb = report.three_burner || {};
+    var holo = report.holographic_map || {};
+    var meridians = report.six_meridians || [];
+    var patterns = report.clinical_patterns || [];
+    var ascDesc = report.ascending_descending || {};
+
+    var hasDeep = (tb && (tb.upper_jiao || tb.middle_jiao || tb.lower_jiao))
+               || (holo && (holo.affected || []).length)
+               || meridians.length
+               || patterns.length
+               || (ascDesc && ascDesc.direction && ascDesc.direction !== 'balanced');
+    if (! hasDeep) return '';
+
+    var html = '<div class="mt-6"><div class="text-label mb-3">🔬 Deep Analysis · 深度分析</div>';
+
+    // Three Burners
+    if (tb.upper_jiao || tb.middle_jiao || tb.lower_jiao) {
+      html += '<div class="card mb-3" style="padding: var(--s-4);">' +
+        '<div class="text-label mb-2">三焦辨證 · Three Burners</div>';
+      ['upper_jiao', 'middle_jiao', 'lower_jiao'].forEach(function (k) {
+        var z = tb[k];
+        if (! z) return;
+        var statusColor = {
+          heat: 'var(--red-seal)', damp_heat: '#c04545', dampness: 'var(--gold)',
+          cold_damp: '#4a90b8', deficiency_cold: '#4a90b8', stasis: '#6b2d88',
+          yin_deficiency: '#c04545', normal: 'var(--sage)',
+        }[z.status] || 'var(--stone)';
+        html += '<div style="padding: 8px 0; border-bottom: 1px dashed var(--border);">' +
+          '<div style="font-size: var(--text-sm);">' +
+          '<strong style="font-family: var(--font-zh); color: ' + statusColor + ';">' + HM.format.esc(z.name_zh || '') + '</strong> ' +
+          '<span class="text-muted">(' + HM.format.esc(z.name_en || '') + ')</span> · ' +
+          '<span style="color: ' + statusColor + '; font-weight: 600;">' + HM.format.esc(z.status || 'normal').replace(/_/g, ' ') + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-muted mt-1">' + HM.format.esc(z.explanation || '') + '</div>' +
+          '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Holographic map
+    var affected = (holo && holo.affected) || [];
+    if (affected.length) {
+      html += '<div class="card mb-3" style="padding: var(--s-4);">' +
+        '<div class="text-label mb-2">全息圖 · Body Regions to Watch</div>' +
+        '<ul style="list-style: none; padding: 0; margin: 0;">' +
+        affected.map(function (f) {
+          return '<li style="padding: 6px 0; font-size: var(--text-sm);">' +
+            '<strong>' + HM.format.esc(f.region || '') + '</strong>' +
+            '<div class="text-xs text-muted mt-1">' + HM.format.esc(f.reason || '') + '</div>' +
+            '</li>';
+        }).join('') +
+        '</ul></div>';
+    }
+
+    // Six meridians
+    if (meridians.length) {
+      html += '<div class="card mb-3" style="padding: var(--s-4);">' +
+        '<div class="text-label mb-2">六經辨證 · Six-Meridian Differentiation</div>' +
+        meridians.map(function (m) {
+          return '<div style="padding: 6px 0; border-bottom: 1px dashed var(--border);">' +
+            '<div style="font-size: var(--text-sm); font-weight: 600;">' + HM.format.esc(m.meridian || '') + '</div>' +
+            '<div class="text-xs text-muted">' + HM.format.esc(m.zone || '') + ' — ' + HM.format.esc(m.note || '') + '</div>' +
+            '</div>';
+        }).join('') +
+        '</div>';
+    }
+
+    // Clinical patterns — indication always visible, formula only after doctor approval
+    if (patterns.length) {
+      html += '<div class="card mb-3" style="padding: var(--s-4); border-left: 3px solid var(--gold);">' +
+        '<div class="text-label mb-2">臨床特徵 · Clinical Patterns</div>';
+      patterns.forEach(function (p) {
+        html += '<div style="padding: 8px 0; border-bottom: 1px dashed var(--border);">' +
+          '<div style="font-size: var(--text-sm);">' +
+          '<strong style="font-family: var(--font-zh);">' + HM.format.esc(p.name_zh || '') + '</strong> · ' +
+          HM.format.esc(p.name_en || '') +
+          '</div>' +
+          (p.description ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(p.description) + '</div>' : '') +
+          (p.indication  ? '<div class="text-xs mt-1" style="color: #6b4413;">→ ' + HM.format.esc(p.indication)  + '</div>' : '') +
+          (isApproved && p.formula
+            ? '<div class="text-xs mt-2" style="background: rgba(201,146,42,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--gold);">' +
+              '<strong>💊 Formula direction (doctor-approved):</strong> ' + HM.format.esc(p.formula) + '</div>'
+            : (p.formula ? '<div class="text-xs text-muted mt-2" style="font-style: italic;">(Formula suggestion hidden until doctor review)</div>' : '')) +
+          '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Ascending / descending — only show caution after approval
+    if (ascDesc && ascDesc.direction && ascDesc.direction !== 'balanced') {
+      var isAsc = ascDesc.direction === 'ascending_excess';
+      var borderCol = isAsc ? 'var(--red-seal)' : '#4a90b8';
+      html += '<div class="card mb-3" style="padding: var(--s-4); border-left: 3px solid ' + borderCol + ';">' +
+        '<div class="text-label mb-2">升降辨證 · Ascending / Descending</div>' +
+        '<div style="font-size: var(--text-sm);">' +
+        '<strong style="color: ' + borderCol + '; font-family: var(--font-zh);">' + HM.format.esc(ascDesc.name_zh || '') + '</strong> · ' +
+        HM.format.esc(ascDesc.name_en || '') +
+        '</div>' +
+        (ascDesc.signs ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(ascDesc.signs) + '</div>' : '') +
+        (isApproved && ascDesc.caution
+          ? '<div class="text-xs mt-2" style="background: rgba(192,57,43,0.08); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--red-seal); color: var(--red-seal);"><strong>⚠ Caution:</strong> ' + HM.format.esc(ascDesc.caution) + '</div>'
+          : '') +
+        (isApproved && ascDesc.treatment
+          ? '<div class="text-xs mt-2" style="background: rgba(74,144,184,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid #4a90b8;"><strong>💡 Direction:</strong> ' + HM.format.esc(ascDesc.treatment) + '</div>'
+          : '') +
+        '</div>';
+    }
+
+    html += '</div>';
+    return html;
   }
 
   HM.patientPanels.tongue = { render: render, renderDetail: renderDetail };

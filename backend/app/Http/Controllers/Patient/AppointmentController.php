@@ -123,12 +123,40 @@ class AppointmentController extends Controller
         );
     }
 
+    /**
+     * Patient self-cancel. Two guards:
+     *   1. Status must be pending_payment or confirmed (already-started /
+     *      completed / cancelled bookings can't be cancelled again).
+     *   2. The appointment must be at least 60 minutes away. Inside the
+     *      1-hour window the clinic is already committed — cancel has to
+     *      happen through WhatsApp / phone so the doctor can be notified.
+     *
+     * Walk-in visits (visit_type = walk_in) are exempt from the time gate
+     * since the patient hasn't physically arrived yet.
+     */
     public function cancel(Request $request, int $id)
     {
         $appt = Appointment::where('patient_id', $request->user()->id)->findOrFail($id);
+
         if (! in_array($appt->status, ['pending_payment', 'confirmed'], true)) {
             return response()->json(['message' => 'Cannot cancel in current state.'], 422);
         }
+
+        if (($appt->visit_type ?? 'online') !== 'walk_in') {
+            $start = $appt->scheduled_start;
+            if ($start) {
+                $now = now();
+                $minutesUntil = $now->diffInMinutes($start, false); // signed
+                if ($minutesUntil < 60) {
+                    return response()->json([
+                        'message' => 'Cannot cancel within 1 hour of the appointment. Please contact the clinic via WhatsApp if you need to cancel.',
+                        'message_zh' => '預約前一小時內無法自行取消，請透過 WhatsApp 聯絡診所。',
+                        'minutes_until_start' => (int) $minutesUntil,
+                    ], 422);
+                }
+            }
+        }
+
         $appt->update(['status' => 'cancelled']);
         return response()->json(['appointment' => $appt]);
     }

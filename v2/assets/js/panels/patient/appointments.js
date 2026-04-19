@@ -88,6 +88,16 @@
 
       container.innerHTML = '';
       items.forEach(function (a) {
+        // 1-hour self-cancel rule (walk-ins exempt). We hide the button
+        // when inside the window so patients aren't taunted with a
+        // disabled control — the error toast on the backend still
+        // catches any stale UI.
+        var minutesUntil = null;
+        if (a.scheduled_start) {
+          minutesUntil = Math.round((new Date(a.scheduled_start).getTime() - Date.now()) / 60000);
+        }
+        var isWalkIn = (a.visit_type || 'online') === 'walk_in';
+        var withinHour = !isWalkIn && minutesUntil !== null && minutesUntil < 60 && minutesUntil > -60;
         var data = {
           id: a.id,
           scheduled_start: a.scheduled_start,
@@ -97,7 +107,7 @@
           fee_formatted: HM.format.money(a.fee),
           can_act: true,
           can_video: a.status === 'confirmed' || a.status === 'in_progress',
-          can_cancel: ['confirmed','pending_payment'].indexOf(a.status) >= 0,
+          can_cancel: ['confirmed','pending_payment'].indexOf(a.status) >= 0 && !withinHour,
         };
         var node = HM.render.fromTemplate('tpl-appt-card', data);
         node.querySelector('[data-action="view"]').addEventListener('click', function () {
@@ -109,14 +119,30 @@
         });
         var cancelBtn = node.querySelector('[data-action="cancel"]');
         if (cancelBtn) cancelBtn.addEventListener('click', async function () {
-          var ok = await HM.ui.confirm('Cancel this appointment? · 取消此預約？', { danger: true });
+          var ok = await HM.ui.confirm(
+            'Cancel this appointment? · 取消此預約？\n\nNote: Cancellations must be made at least 1 hour before your appointment time.\n注意：取消須於預約前至少 1 小時進行。',
+            { danger: true }
+          );
           if (!ok) return;
           try {
             await HM.api.patient.cancelAppointment(a.id);
             HM.ui.toast('Appointment cancelled · 已取消', 'success');
             load();
-          } catch (e) { HM.ui.toast(e.message || 'Failed', 'danger'); }
+          } catch (e) {
+            // Backend returns a specific bilingual message for the 1hr rule.
+            HM.ui.toast(e.message || 'Failed to cancel. Please contact the clinic.', 'danger');
+          }
         });
+        // When inside the 1hr window, replace the hidden cancel button
+        // with a small inline hint so the patient knows *why* they
+        // can't self-cancel.
+        if (withinHour && node.querySelector('.appt-actions')) {
+          var hint = document.createElement('div');
+          hint.className = 'text-xs text-muted mt-1';
+          hint.style.cssText = 'font-style:italic;';
+          hint.textContent = 'Within 1 hour — contact clinic via WhatsApp to cancel · 預約前 1 小時內，請透過 WhatsApp 聯絡診所取消';
+          node.querySelector('.appt-actions').appendChild(hint);
+        }
         container.appendChild(node);
       });
     } catch (e) {

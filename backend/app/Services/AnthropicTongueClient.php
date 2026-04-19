@@ -105,6 +105,7 @@ class AnthropicTongueClient
         }
 
         $normalized = [
+            // Whole-tongue classification (primary enums)
             'tongue_color' => $this->normalizeEnum($parsed['tongue_color'] ?? null, array_keys(KnowledgeBase::TONGUE_COLORS)),
             'coating'      => $this->normalizeEnum($parsed['coating']      ?? null, array_keys(KnowledgeBase::TONGUE_COATINGS)),
             'shape'        => $this->normalizeEnum($parsed['shape']        ?? null, array_keys(KnowledgeBase::TONGUE_SHAPES)),
@@ -112,6 +113,35 @@ class AnthropicTongueClient
             'cracks'       => (bool) ($parsed['cracks']      ?? false),
             'moisture'     => $this->normalizeEnum($parsed['moisture']     ?? null, array_keys(KnowledgeBase::TONGUE_MOISTURE)),
             'midline'      => $this->normalizeEnum($parsed['midline']      ?? null, array_keys(KnowledgeBase::MIDLINE_PATTERNS)),
+
+            // ─── Deep analysis fields (Yin Modern Tongue Diagnosis framework) ───
+            // Per-zone colour + coating so AnalysisReport can apply the
+            // three-burner + holographic-map + six-meridian rules properly.
+            'zones' => [
+                'upper_jiao'   => $this->normalizeZone($parsed['zones']['upper_jiao']   ?? null),
+                'middle_jiao'  => $this->normalizeZone($parsed['zones']['middle_jiao']  ?? null),
+                'lower_jiao'   => $this->normalizeZone($parsed['zones']['lower_jiao']   ?? null),
+                'left_edge'    => $this->normalizeZone($parsed['zones']['left_edge']    ?? null),
+                'right_edge'   => $this->normalizeZone($parsed['zones']['right_edge']   ?? null),
+            ],
+            // Specific clinical signs that trigger formula guidance
+            'signs' => [
+                'upper_jiao_red_dots' => $this->normalizeSignExtent($parsed['signs']['upper_jiao_red_dots'] ?? null),
+                'horseshoe_shape'     => (bool) ($parsed['signs']['horseshoe_shape']     ?? false),
+                'root_greasy_coat'    => (bool) ($parsed['signs']['root_greasy_coat']    ?? false),
+                'tip_red_area'        => (bool) ($parsed['signs']['tip_red_area']        ?? false),
+                'heart_zone_depression' => (bool) ($parsed['signs']['heart_zone_depression'] ?? false),
+                'liver_gb_swelling'   => (bool) ($parsed['signs']['liver_gb_swelling']   ?? false),
+                'radiating_cracks'    => (bool) ($parsed['signs']['radiating_cracks']    ?? false),
+                'sublingual_veins_engorged' => (bool) ($parsed['signs']['sublingual_veins_engorged'] ?? false),
+                'petechiae'           => (bool) ($parsed['signs']['petechiae']           ?? false),
+            ],
+            // Ascending / descending indicator — relative tip height
+            'tip_elevation' => $this->normalizeTipElevation($parsed['tip_elevation'] ?? null),
+
+            // Free-form overall impression from the vision model for the
+            // doctor to glance at alongside the structured findings
+            'observations' => isset($parsed['observations']) ? (string) $parsed['observations'] : null,
         ];
 
         $report = $this->report->generate($normalized);
@@ -262,12 +292,13 @@ class AnthropicTongueClient
         $midlines = $this->enumList(array_keys(KnowledgeBase::MIDLINE_PATTERNS));
 
         return <<<PROMPT
-You are a TCM tongue-diagnosis classifier. Analyse the attached tongue photo
-and return a single JSON object matching the schema below. Use ONLY the enum
-values listed — if you are uncertain, pick the closest option.
+You are a TCM tongue-diagnosis classifier applying the Yin Modern Tongue
+Diagnosis framework (殷氏现代舌诊). Analyse the attached tongue photo and
+return a single JSON object matching the schema below. Use ONLY the enum
+values listed — if uncertain, pick the closest option.
 
-If the image is not a tongue, is too blurry, or lighting makes classification
-unsafe, return {"error": "<short reason>"} instead.
+If the image is not a tongue, is too blurry, or lighting makes safe
+classification impossible, return {"error": "<short reason>"} instead.
 
 Required JSON schema:
 {
@@ -278,20 +309,91 @@ Required JSON schema:
   "cracks":       true | false,
   "moisture":     one of [{$moisture}],
   "midline":      one of [{$midlines}],
-  "observations": "2-4 sentence plain-language summary of what you see (English or bilingual)"
+
+  "zones": {
+    "upper_jiao":  { "color": "<color enum>", "coating": "<coating enum>", "notes": "<one-phrase observation>" },
+    "middle_jiao": { "color": "<color enum>", "coating": "<coating enum>", "notes": "<one-phrase observation>" },
+    "lower_jiao":  { "color": "<color enum>", "coating": "<coating enum>", "notes": "<one-phrase observation>" },
+    "left_edge":   { "color": "<color enum>", "notes": "<one-phrase observation of left side>" },
+    "right_edge":  { "color": "<color enum>", "notes": "<one-phrase observation of right side>" }
+  },
+
+  "signs": {
+    "upper_jiao_red_dots":       "none" | "small" | "medium" | "full" | "extending_to_middle",
+    "horseshoe_shape":           true | false,
+    "root_greasy_coat":          true | false,
+    "tip_red_area":              true | false,
+    "heart_zone_depression":     true | false,
+    "liver_gb_swelling":         true | false,
+    "radiating_cracks":          true | false,
+    "sublingual_veins_engorged": true | false,
+    "petechiae":                 true | false
+  },
+
+  "tip_elevation": "level" | "left_higher" | "right_higher",
+
+  "observations": "2-4 sentence overall clinical impression in bilingual English + 中文"
 }
+
+Zone mapping (for the "zones" object):
+- upper_jiao   = tongue tip to ~1/3 from tip (maps to heart, lungs, head, throat)
+- middle_jiao  = middle 1/3 of tongue (maps to spleen, stomach; left edge = liver, right edge = lung/GB)
+- lower_jiao   = posterior 1/3 + root (maps to kidneys, bladder, intestines, pelvis)
+- left_edge / right_edge = bilateral edges across the tongue (liver/GB zone)
+
+Clinical sign detection:
+- upper_jiao_red_dots: red prickles at tip — estimate extent.
+  "small" = few dots on tip only; "medium" = upper 2/3 coverage;
+  "full" = full upper jiao; "extending_to_middle" = into middle third.
+- horseshoe_shape: upper jiao + both edges raised, centre depressed (like a horseshoe).
+- root_greasy_coat: thick greasy coating concentrated specifically at tongue root.
+- tip_red_area: red patch/discolouration at the tongue tip.
+- heart_zone_depression: visible depression in the upper-jiao heart area.
+- liver_gb_swelling: bilateral swelling in the middle-jiao side edges.
+- radiating_cracks: fissures spreading outward like dried cracked earth.
+- sublingual_veins_engorged: not visible unless tongue underside is shown — default false.
+- petechiae: dark purple spots (瘀斑) on the tongue body.
+
+tip_elevation:
+- "left_higher"  = left tip sits higher (liver qi ascending excess)
+- "right_higher" = right tip sits higher (lung qi failing to descend)
+- "level"        = both tips at same height
 
 Classification guidance:
 - tongue_color: judge the body (舌质) colour under the coating, not the coating itself.
 - coating: describe thickness, colour, and texture of the 舌苔 (fur).
-- shape: overall body shape — normal, swollen/puffy, thin, pointed, deviated, or with visible teeth-mark indentations.
-- teeth_marks: indentations along the tongue edges from pressing against teeth.
-- cracks: any visible fissures on the tongue body (excluding a single central fold).
-- moisture: is the surface moist, dry, slippery/wet-looking, or parched.
+- shape: overall body shape.
+- moisture: is the surface moist, dry, slippery/wet, or parched.
 - midline: centre line — centred, shifted left/right, or with local bulges.
 
 Return ONLY the JSON object, no surrounding prose, no markdown code fences.
 PROMPT;
+    }
+
+    /** Normalise a per-zone observation, defaulting missing fields. */
+    private function normalizeZone($zone): array
+    {
+        if (! is_array($zone)) return ['color' => null, 'coating' => null, 'notes' => null];
+        return [
+            'color'   => $this->normalizeEnum($zone['color']   ?? null, array_keys(KnowledgeBase::TONGUE_COLORS)),
+            'coating' => $this->normalizeEnum($zone['coating'] ?? null, array_keys(KnowledgeBase::TONGUE_COATINGS)),
+            'notes'   => isset($zone['notes']) ? (string) $zone['notes'] : null,
+        ];
+    }
+
+    /** Clamp an upper-jiao red-dot extent to the known values. */
+    private function normalizeSignExtent($value): string
+    {
+        $v = strtolower(trim((string) $value));
+        $allowed = ['none', 'small', 'medium', 'full', 'extending_to_middle'];
+        return in_array($v, $allowed, true) ? $v : 'none';
+    }
+
+    /** Clamp tip-elevation to the known values. */
+    private function normalizeTipElevation($value): string
+    {
+        $v = strtolower(trim((string) $value));
+        return in_array($v, ['level', 'left_higher', 'right_higher'], true) ? $v : 'level';
     }
 
     private function enumList(array $keys): string

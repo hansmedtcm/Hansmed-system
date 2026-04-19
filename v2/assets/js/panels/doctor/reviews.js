@@ -405,6 +405,142 @@
     });
   }
 
+  /**
+   * Renders the deep Yin-Modern-Tongue-Diagnosis findings block shown to
+   * the doctor during a tongue review. Surfaces three-burner zone status,
+   * holographic body-region flags, six-meridian pattern notes, detected
+   * clinical sign patterns with formula guidance, and ascending/descending
+   * treatment cautions. Renders nothing if the report lacks these fields
+   * (e.g. pre-upgrade rows analysed before the deep-analysis layer).
+   */
+  function renderDeepTongueAnalysis(report) {
+    if (! report) return '';
+    var tb = report.three_burner || {};
+    var holo = report.holographic_map || {};
+    var meridians = report.six_meridians || [];
+    var patterns = report.clinical_patterns || [];
+    var ascDesc = report.ascending_descending || {};
+
+    // Bail out cleanly if none of the new fields are populated — keeps the
+    // legacy report view clean for any tongue rows analysed before upgrade.
+    var hasDeep = (tb && (tb.upper_jiao || tb.middle_jiao || tb.lower_jiao))
+               || (holo && (holo.affected || []).length)
+               || meridians.length
+               || patterns.length
+               || (ascDesc && ascDesc.direction && ascDesc.direction !== 'balanced');
+    if (! hasDeep) return '';
+
+    var out = '<div class="text-label mt-4 mb-2">🔬 Deep Analysis · 深度分析 <span class="text-muted" style="font-weight:400;font-size:10px;letter-spacing:.08em;">Yin Modern Tongue Diagnosis</span></div>';
+
+    // ── Three Burners ──
+    if (tb.upper_jiao || tb.middle_jiao || tb.lower_jiao) {
+      out += '<div class="card mb-3" style="padding: var(--s-3);">' +
+        '<div class="text-label mb-2" style="font-size: 10px;">三焦辨證 · Three Burners</div>';
+      ['upper_jiao', 'middle_jiao', 'lower_jiao'].forEach(function (k) {
+        var z = tb[k];
+        if (! z) return;
+        var statusColor = {
+          heat: 'var(--red-seal)', damp_heat: '#c04545', dampness: 'var(--gold)',
+          cold_damp: '#4a90b8', deficiency_cold: '#4a90b8', stasis: '#6b2d88',
+          yin_deficiency: '#c04545', normal: 'var(--sage)',
+        }[z.status] || 'var(--stone)';
+        out += '<div style="padding: 6px 0; border-bottom: 1px dashed var(--border);">' +
+          '<div style="font-size: var(--text-xs);">' +
+          '<strong style="font-family: var(--font-zh); color: ' + statusColor + ';">' + HM.format.esc(z.name_zh || '') + '</strong> ' +
+          '<span class="text-muted">(' + HM.format.esc(z.name_en || '') + ')</span> ' +
+          '<span style="color: ' + statusColor + '; font-weight: 600;">· ' + HM.format.esc(z.status || 'normal').replace(/_/g, ' ') + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-muted mt-1">' + HM.format.esc(z.explanation || '') + '</div>' +
+          (z.organs && z.organs.length
+            ? '<div class="text-xs text-muted" style="font-size: 10px;">Organs: ' + z.organs.map(HM.format.esc).join(', ') + '</div>'
+            : '') +
+          '</div>';
+      });
+      if (tb.edges) {
+        out += '<div class="text-xs text-muted mt-2" style="font-style: italic;">' + HM.format.esc(tb.edges.note || '') + '</div>';
+      }
+      out += '</div>';
+    }
+
+    // ── Holographic body map ──
+    var affected = (holo && holo.affected) || [];
+    if (affected.length) {
+      out += '<div class="card mb-3" style="padding: var(--s-3);">' +
+        '<div class="text-label mb-2" style="font-size: 10px;">全息圖 · Body regions to watch</div>' +
+        '<ul style="list-style: none; padding: 0; margin: 0;">' +
+        affected.map(function (f) {
+          return '<li style="padding: 4px 0; font-size: var(--text-xs);">' +
+            '<strong>' + HM.format.esc(f.region || '') + '</strong>' +
+            '<div class="text-muted" style="font-size: 11px; margin-top: 2px;">' + HM.format.esc(f.reason || '') + '</div>' +
+            '</li>';
+        }).join('') +
+        '</ul></div>';
+    }
+
+    // ── Six Meridians ──
+    if (meridians.length) {
+      out += '<div class="card mb-3" style="padding: var(--s-3);">' +
+        '<div class="text-label mb-2" style="font-size: 10px;">六經辨證 · Six-Meridian Pattern Differentiation</div>' +
+        meridians.map(function (m) {
+          return '<div style="padding: 6px 0; border-bottom: 1px dashed var(--border);">' +
+            '<div style="font-size: var(--text-xs); font-weight: 600;">' + HM.format.esc(m.meridian || '') + '</div>' +
+            '<div class="text-xs text-muted" style="font-size: 11px;">' + HM.format.esc(m.zone || '') + ' — ' + HM.format.esc(m.note || '') + '</div>' +
+            '</div>';
+        }).join('') +
+        '</div>';
+    }
+
+    // ── Clinical sign patterns + formula guidance ──
+    if (patterns.length) {
+      out += '<div class="card mb-3" style="padding: var(--s-3); border-left: 3px solid var(--gold);">' +
+        '<div class="text-label mb-2" style="font-size: 10px;">臨床特徵 · Clinical Patterns Detected</div>';
+      patterns.forEach(function (p) {
+        out += '<div style="padding: 8px 0; border-bottom: 1px dashed var(--border);">' +
+          '<div style="font-size: var(--text-xs);">' +
+          '<strong style="font-family: var(--font-zh);">' + HM.format.esc(p.name_zh || '') + '</strong> · ' +
+          HM.format.esc(p.name_en || '') +
+          (p.extent ? ' <span class="chip chip--gold" style="font-size: 9px;">' + HM.format.esc(p.extent).replace(/_/g, ' ') + '</span>' : '') +
+          '</div>' +
+          (p.description ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(p.description) + '</div>' : '') +
+          (p.indication  ? '<div class="text-xs mt-1" style="color: #6b4413;">→ ' + HM.format.esc(p.indication)  + '</div>' : '') +
+          (p.formula     ? '<div class="text-xs mt-2" style="background: rgba(201,146,42,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--gold);">' +
+            '<strong>💊 Formula direction:</strong> ' + HM.format.esc(p.formula) + '</div>' : '') +
+          '</div>';
+      });
+      out += '</div>';
+    }
+
+    // ── Ascending / descending with treatment cautions ──
+    if (ascDesc && ascDesc.direction && ascDesc.direction !== 'balanced') {
+      var isAsc = ascDesc.direction === 'ascending_excess';
+      var borderCol = isAsc ? 'var(--red-seal)' : '#4a90b8';
+      out += '<div class="card mb-3" style="padding: var(--s-3); border-left: 3px solid ' + borderCol + ';">' +
+        '<div class="text-label mb-2" style="font-size: 10px;">升降辨證 · Ascending / Descending</div>' +
+        '<div style="font-size: var(--text-xs);">' +
+        '<strong style="color: ' + borderCol + '; font-family: var(--font-zh);">' + HM.format.esc(ascDesc.name_zh || '') + '</strong> · ' +
+        HM.format.esc(ascDesc.name_en || '') +
+        '</div>' +
+        (ascDesc.signs ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(ascDesc.signs) + '</div>' : '') +
+        (ascDesc.caution
+          ? '<div class="text-xs mt-2" style="background: rgba(192,57,43,0.08); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--red-seal); color: var(--red-seal);"><strong>⚠ Caution:</strong> ' + HM.format.esc(ascDesc.caution) + '</div>'
+          : '') +
+        (ascDesc.treatment
+          ? '<div class="text-xs mt-2" style="background: rgba(74,144,184,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid #4a90b8;"><strong>💡 Direction:</strong> ' + HM.format.esc(ascDesc.treatment) + '</div>'
+          : '') +
+        '</div>';
+    }
+
+    // ── Free-form AI observations ──
+    if (report.observations) {
+      out += '<div class="card mb-3" style="padding: var(--s-3);">' +
+        '<div class="text-label mb-2" style="font-size: 10px;">AI Observations · AI 觀察</div>' +
+        '<div class="text-xs text-muted" style="font-style: italic; line-height: 1.6;">' + HM.format.esc(report.observations) + '</div>' +
+        '</div>';
+    }
+
+    return out;
+  }
+
   function renderMiniTongue(t) {
     var report = t.constitution_report || {};
     var c = report.constitution || {};
@@ -488,6 +624,9 @@
         '</ul>') : '') +
 
       '</div>' +
+
+      // ─── Deep Yin Modern Tongue Diagnosis analysis ───
+      renderDeepTongueAnalysis(report) +
 
       // Constitution context
       '<div class="text-label mt-4 mb-2">🧭 Recent Constitution Reports · 近期體質報告</div>' +

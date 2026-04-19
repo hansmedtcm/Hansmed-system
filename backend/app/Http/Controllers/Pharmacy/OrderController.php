@@ -10,6 +10,7 @@ use App\Models\Shipment;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class OrderController extends Controller
 {
@@ -82,6 +83,60 @@ class OrderController extends Controller
 
             if ($order->prescription_id) {
                 $order->prescription()->update(['status' => 'dispensed']);
+            }
+
+            // Auto-decrement the master medicine catalogue (admin stock view)
+            // so the overall herb inventory tracked at medicine_catalog
+            // stays in sync when a pharmacy dispenses a prescription.
+            // Pharmacy inventory (products/inventory table) was already
+            // decremented above — this is the warehouse-level ledger.
+            //
+            // Matching strategy: order_items do not carry a medicine_catalog_id,
+            // so we resolve by drug_name against name_zh/name_pinyin/code.
+            // If no catalogue row matches, we skip silently (could be a
+            // patent/imported product that isn't in the master list).
+            if (Schema::hasTable('medicine_catalog') && Schema::hasColumn('medicine_catalog', 'stock_grams')) {
+                foreach ($order->items as $item) {
+                    $name = trim((string) ($item->drug_name ?? ''));
+                    if ($name === '') continue;
+                    $qty = (float) $item->quantity;
+                    if ($qty <= 0) continue;
+                    // order_items.unit is usually 'g'; only decrement when
+                    // measured in grams so we don't deduct 30 "packs" as 30g.
+                    $unit = strtolower(trim((string) ($item->unit ?? 'g')));
+                    if (! in_array($unit, ['g', 'gram', 'grams', '克'], true)) continue;
+
+                    $row = DB::table('medicine_catalog')
+                        ->where('name_zh', $name)
+                        ->orWhere('name_pinyin', $name)
+                        ->orWhere('code', $name)
+                        ->first();
+                    if (! $row) continue;
+
+                    DB::table('medicine_catalog')->where('id', $row->id)->update([
+                        'stock_grams'      => DB::raw('GREATEST(0, COALESCE(stock_grams, 0) - ' . $qty . ')'),
+                        'stock_updated_at' => now(),
+                        'updated_at'       => now(),
+                    ]);
+
+                    // Audit trail so admin can reconcile warehouse-level
+                    // movement when a patient order is dispensed.
+                    if (Schema::hasTable('audit_logs')) {
+                        DB::table('audit_logs')->insert([
+                            'user_id'     => $request->user()->id,
+                            'action'      => 'medicine.stock.decrement',
+                            'target_type' => 'medicine_catalog',
+                            'target_id'   => $row->id,
+                            'payload'     => json_encode([
+                                'reason'     => 'order_dispensed',
+                                'order_id'   => $order->id,
+                                'drug_name'  => $name,
+                                'qty_grams'  => $qty,
+                            ]),
+                            'created_at'  => now(),
+                        ]);
+                    }
+                }
             }
 
             return response()->json(['order' => $order]);
