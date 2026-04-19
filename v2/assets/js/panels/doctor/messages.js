@@ -71,8 +71,9 @@
   async function openThread(threadId) {
     currentThreadId = threadId;
     var view = document.getElementById('thread-view');
+    // Header is populated once we have the thread data back (in loadMessages).
     view.innerHTML = '' +
-      '<div style="padding: var(--s-4); border-bottom: 1px solid var(--border);">' +
+      '<div id="chat-header" style="padding: var(--s-4); border-bottom: 1px solid var(--border);">' +
       '<strong>Conversation · 對話</strong>' +
       '</div>' +
       '<div id="chat-messages" style="flex: 1; overflow-y: auto; padding: var(--s-3);"></div>' +
@@ -95,6 +96,15 @@
     try {
       var res = await HM.api.chat.messages(currentThreadId);
       var msgs = res.messages || res.data || [];
+
+      // Patient name in the chat header — populated once per thread open.
+      var header = document.getElementById('chat-header');
+      if (header && res.thread) {
+        var pname = res.thread.patient_name || ('Patient #' + res.thread.patient_id);
+        header.innerHTML =
+          '<strong>' + HM.format.esc(pname) + '</strong>' +
+          '<div class="text-xs text-muted">Patient #' + res.thread.patient_id + '</div>';
+      }
       var user = HM.auth.user();
       var userId = user ? user.id : null;
       var container = document.getElementById('chat-messages');

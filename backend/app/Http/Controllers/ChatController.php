@@ -12,10 +12,27 @@ class ChatController extends Controller
     public function threads(Request $request)
     {
         $userId = $request->user()->id;
-        $threads = DB::table('chat_threads')
-            ->where('patient_id', $userId)
-            ->orWhere('doctor_id', $userId)
-            ->orderByDesc('updated_at')
+        // Join patient + doctor profile so the UI can label conversations
+        // with real names ("Sarah Tan") instead of "Patient #3". Shape
+        // we return matches what the frontend reads:
+        //   t.patient.patient_profile.full_name
+        //   t.doctor.doctor_profile.full_name
+        $threads = DB::table('chat_threads as t')
+            ->leftJoin('patient_profiles as pp', 'pp.user_id', '=', 't.patient_id')
+            ->leftJoin('users as pu', 'pu.id', '=', 't.patient_id')
+            ->leftJoin('doctor_profiles as dp', 'dp.user_id', '=', 't.doctor_id')
+            ->leftJoin('users as du', 'du.id', '=', 't.doctor_id')
+            ->where(function ($q) use ($userId) {
+                $q->where('t.patient_id', $userId)->orWhere('t.doctor_id', $userId);
+            })
+            ->orderByDesc('t.updated_at')
+            ->select(
+                't.*',
+                'pp.full_name as _patient_name',
+                'pu.email as _patient_email',
+                'dp.full_name as _doctor_name',
+                'du.email as _doctor_email'
+            )
             ->get();
 
         foreach ($threads as &$t) {
@@ -28,6 +45,21 @@ class ChatController extends Controller
                 ->where('sender_id', '!=', $userId)
                 ->whereNull('read_at')
                 ->count();
+
+            // Re-shape the flat join columns into the nested objects
+            // the frontend expects — lets us reuse the same template
+            // whether the backend grows to Eloquent eager-loading later.
+            $t->patient = (object) [
+                'id' => $t->patient_id,
+                'email' => $t->_patient_email,
+                'patient_profile' => (object) ['full_name' => $t->_patient_name],
+            ];
+            $t->doctor = (object) [
+                'id' => $t->doctor_id,
+                'email' => $t->_doctor_email,
+                'doctor_profile' => (object) ['full_name' => $t->_doctor_name],
+            ];
+            unset($t->_patient_name, $t->_patient_email, $t->_doctor_name, $t->_doctor_email);
         }
 
         return response()->json(['threads' => $threads]);
@@ -75,7 +107,12 @@ class ChatController extends Controller
     public function messages(Request $request, int $threadId)
     {
         $userId = $request->user()->id;
-        $thread = DB::table('chat_threads')->find($threadId);
+        $thread = DB::table('chat_threads as t')
+            ->leftJoin('patient_profiles as pp', 'pp.user_id', '=', 't.patient_id')
+            ->leftJoin('doctor_profiles as dp', 'dp.user_id', '=', 't.doctor_id')
+            ->where('t.id', $threadId)
+            ->select('t.*', 'pp.full_name as patient_name', 'dp.full_name as doctor_name')
+            ->first();
         if (!$thread || ($thread->patient_id !== $userId && $thread->doctor_id !== $userId)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }

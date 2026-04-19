@@ -53,8 +53,11 @@
         div.onmouseleave = function () { div.style.background = 'transparent'; };
         div.onclick = function () { openThread(t.id); };
         var last = t.last_message;
+        var docName = (t.doctor && t.doctor.doctor_profile && t.doctor.doctor_profile.full_name)
+          ? ('Dr. ' + t.doctor.doctor_profile.full_name)
+          : ('Doctor #' + t.doctor_id);
         div.innerHTML = '<div class="flex-between">' +
-          '<div><strong style="font-size: var(--text-sm);">Doctor #' + t.doctor_id + '</strong>' +
+          '<div><strong style="font-size: var(--text-sm);">' + HM.format.esc(docName) + '</strong>' +
           '<div class="text-xs text-muted mt-1">' + (last ? HM.format.truncate(HM.format.esc(last.message), 40) : 'No messages') + '</div></div>' +
           (t.unread_count > 0 ? '<span class="sidebar-link-badge">' + t.unread_count + '</span>' : '') +
           '</div>';
@@ -67,7 +70,7 @@
     currentThreadId = threadId;
     var view = document.getElementById('thread-view');
     view.innerHTML = '' +
-      '<div style="padding: var(--s-4); border-bottom: 1px solid var(--border);">' +
+      '<div id="chat-header" style="padding: var(--s-4); border-bottom: 1px solid var(--border);">' +
       '<strong>Conversation</strong>' +
       '</div>' +
       '<div id="chat-messages" style="flex: 1; overflow-y: auto; padding: var(--s-3);"></div>' +
@@ -91,6 +94,14 @@
       var res = await HM.api.chat.messages(currentThreadId);
       var msgs = res.messages || [];
       var userId = HM.auth.user().id;
+
+      // Header — show the doctor's real name once the thread loads.
+      var header = document.getElementById('chat-header');
+      if (header && res.thread) {
+        var dname = res.thread.doctor_name ? ('Dr. ' + res.thread.doctor_name) : ('Doctor #' + res.thread.doctor_id);
+        header.innerHTML = '<strong>' + HM.format.esc(dname) + '</strong>';
+      }
+
       var container = document.getElementById('chat-messages');
       if (!container) return;
 
