@@ -79,6 +79,23 @@
             HM.format.statusBadge(row.status) +
           '</div>' +
           (rx.diagnosis ? '<p class="text-sm mt-2"><strong>Dx · 診斷:</strong> ' + HM.format.esc(rx.diagnosis) + '</p>' : '') +
+          // Delivery address — only present once the patient has placed
+          // an order (incoming-only Rx have no address yet). Shown with
+          // a distinct sage border so the packer spots it at a glance.
+          (row.address
+            ? (function () {
+                var a = row.address;
+                var line = [a.line1, a.line2].filter(Boolean).join(', ');
+                var region = [a.city, a.state, a.postal_code, a.country].filter(Boolean).join(' ');
+                return '<div class="mt-2" style="background:rgba(122,140,114,.08);padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--sage);">' +
+                  '<div class="text-label" style="font-size:10px;">📦 Deliver to · 送貨地址</div>' +
+                  '<div class="text-sm"><strong>' + HM.format.esc(a.recipient || '') + '</strong>' +
+                  (a.phone ? ' · <span class="text-muted">' + HM.format.esc(a.phone) + '</span>' : '') + '</div>' +
+                  '<div class="text-sm">' + HM.format.esc(line) + '</div>' +
+                  '<div class="text-xs text-muted">' + HM.format.esc(region) + '</div>' +
+                  '</div>';
+              })()
+            : '') +
           // Admin method block — only render when instructions have content
           (adminLine.length
             ? '<div class="mt-2" style="background:var(--washi);padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--gold);">' +

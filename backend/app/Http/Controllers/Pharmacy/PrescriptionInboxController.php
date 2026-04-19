@@ -37,10 +37,15 @@ class PrescriptionInboxController extends Controller
             'patient.patientProfile',
         ];
 
-        // B. Orders attached to this pharmacy (the historical behaviour)
+        // B. Orders attached to this pharmacy (the historical behaviour).
+        //    Eager-load address so the pharmacist sees exactly where
+        //    the package needs to go — critical for the packing desk.
         $orders = Order::where('pharmacy_id', $pharmacyId)
             ->whereNotNull('prescription_id')
-            ->with(array_map(fn($rel) => 'prescription.' . $rel, $rxWith))
+            ->with(array_merge(
+                array_map(fn($rel) => 'prescription.' . $rel, $rxWith),
+                ['address', 'patient.patientProfile']
+            ))
             ->orderByDesc('created_at')
             ->get()
             ->map(function ($o) {
@@ -51,6 +56,8 @@ class PrescriptionInboxController extends Controller
                     'order_id'     => $o->id,
                     'status'       => $o->status,
                     'prescription' => $o->prescription,
+                    'address'      => $o->address,     // delivery address for packing
+                    'patient'      => $o->patient,     // order-side patient (== Rx patient)
                     'created_at'   => $o->created_at,
                 ];
             });

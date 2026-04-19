@@ -202,14 +202,25 @@
       '<div class="card-title">' + patientLabel + '</div>' +
       '<div class="text-sm text-muted mt-1">' + summary + '</div>' +
       '</div>' +
-      '<div style="text-align:right;">' +
+      '<div style="text-align:right;display:flex;flex-direction:column;gap:6px;">' +
       '<button class="btn btn--primary btn--sm" data-review>Review · 審核</button>' +
+      '<button class="btn btn--outline btn--sm" data-chat>💬 Chat · 對話</button>' +
       '</div>' +
       '</div>';
 
     card.querySelector('[data-review]').addEventListener('click', function () {
       if (it.kind === 'tongue') openTongueModal(it.id, it.patient_id);
       else                      openConstitutionModal(it.id, it.patient_id);
+    });
+    // Opens/creates the chat thread for this patient and jumps the
+    // doctor to Messages so they can clarify symptoms before
+    // approving or prescribing.
+    card.querySelector('[data-chat]').addEventListener('click', async function (ev) {
+      ev.stopPropagation();
+      try {
+        var r = await HM.api.chat.openThread({ patient_id: it.patient_id });
+        location.hash = '#/messages/' + r.thread.id;
+      } catch (e) { HM.ui.toast(e.message || 'Could not open chat', 'danger'); }
     });
     return card;
   }
@@ -708,81 +719,168 @@
   // ═══════════════════════════════════════════════════════════
   //  PRESCRIBE MODAL — issue a formal prescription from a review
   // ═══════════════════════════════════════════════════════════
-  function openPrescribeModal(opts) {
-    var content = '<form id="rx-form">' +
+  // Rich prescription modal — mirrors the consult Rx pad experience
+  // (dosage pattern, usage-note preset chips, catalog autocomplete,
+  // per-row stock pill, running totals) so the doctor gets the same
+  // capable tooling when issuing from an AI review. Modal-bound so
+  // they don't lose the review context.
+  var rvwRxState = { items: [], catalog: [] };
+
+  async function openPrescribeModal(opts) {
+    rvwRxState.items = (opts.seed_items && opts.seed_items.length)
+      ? opts.seed_items.map(function (s) {
+          return {
+            drug_name: s.drug_name || '',
+            quantity:  s.quantity  || 10,
+            unit:      s.unit      || 'g',
+            notes:     s.note      || s.notes || '',
+            dosage:    s.dosage    || '',
+            frequency: s.frequency || '',
+          };
+        })
+      : [{ drug_name: '', quantity: 10, unit: 'g' }];
+
+    var content =
+      '<form id="rx-form">' +
       '<div class="alert alert--info mb-3" style="margin-top:0;"><div class="alert-body text-xs">' +
       '<strong>Formal prescription · 正式處方</strong><br>' +
-      'This creates a real prescription in the patient\'s record. They will receive a notification and can order the medicines via the pharmacy.' +
+      'Creates a real prescription in the patient\'s record — they get a notification and can order via the pharmacy.' +
       '</div></div>' +
 
-      '<div class="field-grid field-grid--2">' +
+      // Diagnosis
       '<div class="field"><label class="field-label">Diagnosis · 診斷</label>' +
       '<input name="diagnosis" class="field-input field-input--boxed" value="' + HM.format.esc(opts.default_diagnosis || '') + '" placeholder="e.g. Qi-Blood Deficiency · 氣血兩虛"></div>' +
-      '<div class="field"><label class="field-label">Duration (days)</label>' +
-      '<input name="duration_days" type="number" class="field-input field-input--boxed" value="7" min="1" max="90"></div>' +
-      '</div>' +
 
-      '<div class="field"><label class="field-label">Instructions · 醫囑</label>' +
-      '<textarea name="instructions" class="field-input field-input--boxed" rows="2" placeholder="How to take, when, any warnings…"></textarea></div>' +
-
-      '<div class="text-label mb-2 mt-3">Herb Items · 藥材</div>' +
-      '<div id="rx-items">' +
-      (opts.seed_items && opts.seed_items.length
-        ? opts.seed_items.map(rxItemRow).join('')
-        : rxItemRow({ drug_name: '', note: '', quantity: 10, unit: 'g' })) +
+      // ── Dosage pattern (packs × times × days) — same UX as consult ──
+      '<div class="text-label mt-3 mb-1">Dosage Pattern · 服用方式</div>' +
+      '<div class="flex flex-gap-2" style="align-items:center;flex-wrap:wrap;">' +
+      '<input id="rvrx-packs" class="field-input field-input--boxed rx-dosage-input" type="number" min="1" max="10" value="1" title="Packs per dose">' +
+      '<span>×</span>' +
+      '<input id="rvrx-times" class="field-input field-input--boxed rx-dosage-input" type="number" min="1" max="8" value="2" title="Times per day">' +
+      '<span>×</span>' +
+      '<input id="rvrx-days" class="field-input field-input--boxed rx-dosage-input" type="number" min="1" max="90" value="7" title="Duration in days">' +
+      '<span class="rx-dosage-hint text-xs text-muted" id="rvrx-hint">1 pack · 2×/day · 7 days (14 doses)</span>' +
       '</div>' +
-      '<button type="button" class="btn btn--ghost btn--sm" id="rx-add">+ Add Item</button>' +
+      '<div class="text-xs text-muted mt-1">Pack × Times/day × Days. Each herb\'s qty is per dose — the backend multiplies out for the full course. <span style="font-family:var(--font-zh);">每次 × 每日次數 × 天數。</span></div>' +
+
+      // ── Usage notes with preset chips (same chips as consult) ──
+      '<div class="text-label mt-3 mb-1">Usage Notes · 用法備註</div>' +
+      '<div id="rvrx-presets" class="rx-usage-presets">' +
+      [
+        { en: 'After meals',    zh: '飯後服用' },
+        { en: 'Before meals',   zh: '飯前服用' },
+        { en: 'Empty stomach',  zh: '空腹服用' },
+        { en: 'Warm water',     zh: '溫水送服' },
+        { en: 'Decoct in water',zh: '水煎服' },
+        { en: 'Before sleep',   zh: '睡前服用' },
+        { en: 'Morning',        zh: '晨起服用' },
+        { en: 'Avoid cold/raw', zh: '忌生冷' },
+        { en: 'Avoid spicy',    zh: '忌辛辣' },
+      ].map(function (p) {
+        return '<button type="button" class="rx-usage-chip" data-usage="' +
+          HM.format.esc(p.zh + ' ' + p.en) + '">' +
+          '<span style="font-family:var(--font-zh);">' + p.zh + '</span> · ' + p.en +
+          '</button>';
+      }).join('') +
+      '</div>' +
+      '<input id="rvrx-usage" class="field-input field-input--boxed mt-2" placeholder="e.g. 飯後服用，水煎 After meals, decoct with water">' +
+
+      // ── Herb items: table with stock pill + autocomplete ──
+      '<div class="text-label mt-3 mb-1">Herb Items · 藥材清單</div>' +
+      '<div class="text-xs text-muted mb-2">Type to search catalog. ' +
+      '<span style="color: var(--sage);">● in stock</span> · ' +
+      '<span style="color: var(--red-seal);">● out</span> · ' +
+      '<span style="color: var(--stone);">? not in catalog</span></div>' +
+      '<div id="rvrx-items-list" class="mb-2"></div>' +
+      '<datalist id="rvrx-catalog"></datalist>' +
+      '<button type="button" class="btn btn--outline btn--sm" id="rvrx-add-row">+ Add Herb · 新增藥材</button>' +
+
+      // Running total
+      '<div id="rvrx-total" class="rx-total-box mt-3" style="display:none;">' +
+      '<div class="flex-between"><span class="text-muted text-sm">Total price · 總金額</span><strong id="rvrx-total-price">—</strong></div>' +
+      '<div class="flex-between mt-1"><span class="text-muted text-sm">Total weight · 總重</span><span id="rvrx-total-weight">—</span></div>' +
+      '</div>' +
 
       '<div data-general-error class="alert alert--danger mt-3" style="display:none;"></div>' +
 
       '<div class="flex gap-2 mt-4">' +
-      '<button type="button" class="btn btn--ghost" id="rx-cancel">Cancel</button>' +
+      '<button type="button" class="btn btn--ghost" id="rvrx-cancel">Cancel</button>' +
       '<button type="submit" class="btn btn--primary btn--block">Issue Prescription · 開立處方</button>' +
       '</div>' +
       '</form>';
 
     var m = HM.ui.modal({ size: 'lg', title: '💊 Prescribe Medicine · 開立處方', content: content });
-
     var form = m.element.querySelector('#rx-form');
-    m.element.querySelector('#rx-cancel').addEventListener('click', function () { m.close(); });
-    m.element.querySelector('#rx-add').addEventListener('click', function () {
-      m.element.querySelector('#rx-items').insertAdjacentHTML('beforeend', rxItemRow({ drug_name: '', note: '', quantity: 10, unit: 'g' }));
+
+    // Styles shared with the consult pad.
+    injectRvRxStyles();
+
+    // Load catalog (shared endpoint) — autocomplete + stock pills.
+    HM.api.doctor.drugCatalog().then(function (res) {
+      rvwRxState.catalog = (res && res.data) || [];
+      var dl = m.element.querySelector('#rvrx-catalog');
+      if (dl) dl.innerHTML = rvwRxState.catalog.map(function (d) {
+        return '<option value="' + HM.format.esc(d.name) + '">' +
+          HM.format.esc((d.specification || '') + ' · stock: ' + (parseFloat(d.total_stock) || 0) + (d.unit || 'g')) +
+          '</option>';
+      }).join('');
+      renderRvRxList(m);
+    }).catch(function () { renderRvRxList(m); });
+
+    // Dosage-pattern inputs refresh the hint + totals.
+    ['rvrx-packs','rvrx-times','rvrx-days'].forEach(function (id) {
+      var el = m.element.querySelector('#' + id);
+      el.addEventListener('input', function () { updateRvRxHint(m); renderRvRxList(m); });
     });
-    m.element.querySelector('#rx-items').addEventListener('click', function (e) {
-      if (e.target.matches('[data-remove-rx]')) e.target.closest('.rx-item-row').remove();
+    updateRvRxHint(m);
+
+    // Preset chips — append / toggle into the usage input.
+    m.element.querySelector('#rvrx-presets').addEventListener('click', function (ev) {
+      var btn = ev.target.closest('[data-usage]'); if (! btn) return;
+      ev.preventDefault();
+      var piece = btn.getAttribute('data-usage');
+      var inp = m.element.querySelector('#rvrx-usage');
+      var parts = (inp.value || '').split(/[,，、；;]\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
+      var idx = parts.indexOf(piece);
+      if (idx >= 0) { parts.splice(idx, 1); btn.classList.remove('is-selected'); }
+      else          { parts.push(piece);    btn.classList.add('is-selected'); }
+      inp.value = parts.join(', ');
     });
 
+    // Add row
+    m.element.querySelector('#rvrx-add-row').addEventListener('click', function () {
+      rvwRxState.items.push({ drug_name: '', quantity: 10, unit: 'g' });
+      renderRvRxList(m);
+    });
+
+    m.element.querySelector('#rvrx-cancel').addEventListener('click', function () { m.close(); });
+
+    // Submit — collect everything and issue.
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       var diagnosis = form.querySelector('[name="diagnosis"]').value.trim();
-      var duration  = parseInt(form.querySelector('[name="duration_days"]').value || '7', 10);
-      var instr     = form.querySelector('[name="instructions"]').value.trim();
+      var packs = parseInt(m.element.querySelector('#rvrx-packs').value, 10) || 1;
+      var times = parseInt(m.element.querySelector('#rvrx-times').value, 10) || 1;
+      var days  = parseInt(m.element.querySelector('#rvrx-days').value,  10) || 7;
+      var usage = m.element.querySelector('#rvrx-usage').value.trim();
 
-      var names     = Array.from(form.querySelectorAll('[name="rx_name[]"]')).map(function (x) { return x.value.trim(); });
-      var specs     = Array.from(form.querySelectorAll('[name="rx_spec[]"]')).map(function (x) { return x.value.trim(); });
-      var qtys      = Array.from(form.querySelectorAll('[name="rx_qty[]"]')).map(function (x) { return parseFloat(x.value) || 0; });
-      var units     = Array.from(form.querySelectorAll('[name="rx_unit[]"]')).map(function (x) { return x.value.trim() || 'g'; });
-      var freqs     = Array.from(form.querySelectorAll('[name="rx_freq[]"]')).map(function (x) { return x.value.trim(); });
-      var notes     = Array.from(form.querySelectorAll('[name="rx_notes[]"]')).map(function (x) { return x.value.trim(); });
-
-      var items = [];
-      for (var i = 0; i < names.length; i++) {
-        if (names[i] && qtys[i] > 0) {
-          items.push({
-            drug_name:     names[i],
-            specification: specs[i] || null,
-            quantity:      qtys[i],
-            unit:          units[i],
-            frequency:     freqs[i] || null,
-            notes:         notes[i] || null,
-          });
-        }
-      }
-
-      if (!items.length) {
+      var clean = rvwRxState.items.filter(function (it) { return it.drug_name && parseFloat(it.quantity) > 0; });
+      if (!clean.length) {
         HM.form.showGeneralError(form, 'Add at least one herb with quantity > 0');
         return;
       }
+
+      // Per-dose → full-course multiplication (same as consult pad).
+      var multiplier = packs * times * days;
+      var expanded = clean.map(function (it) {
+        return {
+          drug_name:     it.drug_name,
+          quantity:      parseFloat((parseFloat(it.quantity) * multiplier).toFixed(2)),
+          unit:          it.unit || 'g',
+          notes:         (it.notes ? it.notes + ' | ' : '') + 'per dose: ' + it.quantity + (it.unit || 'g'),
+        };
+      });
+      var dosageLine = packs + ' pack · ' + times + '× per day · ' + days + ' days · 每次' + packs + '包 每日' + times + '次 共' + days + '天';
 
       HM.form.setLoading(form, true);
       try {
@@ -791,9 +889,9 @@
           source_type:   opts.source_type,
           source_id:     opts.source_id,
           diagnosis:     diagnosis || null,
-          instructions:  instr || null,
-          duration_days: duration,
-          items:         items,
+          instructions:  [dosageLine, usage].filter(Boolean).join('\n'),
+          duration_days: days,
+          items:         expanded,
         });
         m.close();
         HM.ui.toast('Prescription issued · 處方已開立', 'success');
@@ -804,16 +902,178 @@
     });
   }
 
-  function rxItemRow(item) {
-    return '<div class="rx-item-row" style="display:grid;grid-template-columns:2fr 1fr 70px 60px 1fr auto;gap:6px;margin-bottom:6px;">' +
-      '<input class="field-input field-input--boxed" name="rx_name[]" placeholder="Drug · 藥名" value="' + HM.format.esc(item.drug_name || '') + '" style="margin:0;padding:6px 10px;">' +
-      '<input class="field-input field-input--boxed" name="rx_spec[]" placeholder="Spec" value="' + HM.format.esc(item.specification || '') + '" style="margin:0;padding:6px 10px;">' +
-      '<input class="field-input field-input--boxed" name="rx_qty[]" type="number" step="0.1" placeholder="Qty" value="' + (item.quantity || 10) + '" style="margin:0;padding:6px 10px;">' +
-      '<input class="field-input field-input--boxed" name="rx_unit[]" placeholder="Unit" value="' + HM.format.esc(item.unit || 'g') + '" style="margin:0;padding:6px 10px;">' +
-      '<input class="field-input field-input--boxed" name="rx_freq[]" placeholder="Frequency · 用法" value="' + HM.format.esc(item.frequency || '') + '" style="margin:0;padding:6px 10px;">' +
-      '<button type="button" class="btn btn--ghost btn--sm" data-remove-rx style="margin:0;">✕</button>' +
-      '</div>' +
-      (item.note ? '<div class="text-xs text-muted" style="margin:-4px 0 6px 2px;">↑ from: ' + HM.format.esc(item.note) + '<input type="hidden" name="rx_notes[]" value="' + HM.format.esc(item.note) + '"></div>' : '<input type="hidden" name="rx_notes[]" value="">');
+  function updateRvRxHint(m) {
+    var packs = parseInt(m.element.querySelector('#rvrx-packs').value, 10) || 1;
+    var times = parseInt(m.element.querySelector('#rvrx-times').value, 10) || 1;
+    var days  = parseInt(m.element.querySelector('#rvrx-days').value,  10) || 1;
+    var hint  = m.element.querySelector('#rvrx-hint');
+    if (hint) hint.textContent = packs + ' pack · ' + times + '×/day · ' + days + ' days (' + (times * days) + ' doses)';
+  }
+
+  function rvRxCatalogLookup(name) {
+    if (!name) return null;
+    var lc = name.toLowerCase().trim();
+    for (var i = 0; i < rvwRxState.catalog.length; i++) {
+      if ((rvwRxState.catalog[i].name || '').toLowerCase() === lc) return rvwRxState.catalog[i];
+    }
+    return null;
+  }
+
+  function renderRvRxList(m) {
+    var container = m.element.querySelector('#rvrx-items-list');
+    if (!container) return;
+    if (!rvwRxState.items.length) {
+      container.innerHTML = '<div class="card" style="padding: var(--s-3);"><p class="text-muted text-xs text-center">No herbs added. Click "+ Add Herb" below.</p></div>';
+      return;
+    }
+
+    var packs = parseInt(m.element.querySelector('#rvrx-packs').value, 10) || 1;
+    var times = parseInt(m.element.querySelector('#rvrx-times').value, 10) || 1;
+    var days  = parseInt(m.element.querySelector('#rvrx-days').value,  10) || 1;
+    var multiplier = packs * times * days;
+
+    var totalPrice = 0, totalWeight = 0;
+    container.innerHTML = '';
+    var table = document.createElement('table');
+    table.className = 'rx-table';
+    table.innerHTML =
+      '<thead><tr>' +
+        '<th class="rx-col-num">#</th>' +
+        '<th class="rx-col-herb">Herb · 藥材</th>' +
+        '<th class="rx-col-stock" title="Stock">●</th>' +
+        '<th class="rx-col-qty">Qty / dose<div class="rx-col-sub">每次</div></th>' +
+        '<th class="rx-col-total-qty">Total Qty<div class="rx-col-sub">總量</div></th>' +
+        '<th class="rx-col-total">Total Cost<div class="rx-col-sub">總金額</div></th>' +
+        '<th class="rx-col-remove"></th>' +
+      '</tr></thead><tbody></tbody>';
+    var tbody = table.querySelector('tbody');
+
+    rvwRxState.items.forEach(function (it, idx) {
+      var match = rvRxCatalogLookup(it.drug_name);
+      var unitPrice = match ? (parseFloat(match.min_price) || 0) : 0;
+      var perDose = parseFloat(it.quantity) || 0;
+      var courseQty = perDose * multiplier;
+      var lineTotal = unitPrice * courseQty;
+      totalPrice += lineTotal;
+      totalWeight += courseQty;
+
+      var stockPill;
+      if (!it.drug_name) stockPill = '<span class="rx-stock" style="color:var(--stone);">—</span>';
+      else if (!match)   stockPill = '<span class="rx-stock" title="Not in catalog" style="color:var(--stone);">?</span>';
+      else {
+        var stock = parseFloat(match.total_stock) || 0;
+        if (stock <= 0)                stockPill = '<span class="rx-stock" style="color:var(--red-seal);" title="Out of stock">●</span>';
+        else if (stock < courseQty)    stockPill = '<span class="rx-stock" style="color:var(--gold);" title="Stock ' + stock.toFixed(0) + 'g — short of course ' + courseQty.toFixed(0) + 'g">●</span>';
+        else                           stockPill = '<span class="rx-stock" style="color:var(--sage);" title="In stock ' + stock.toFixed(0) + 'g">●</span>';
+      }
+
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="rx-col-num">' + (idx + 1) + '</td>' +
+        '<td class="rx-col-herb"><input data-rv-f="drug_name" data-rv-i="' + idx + '" class="rx-line-name" list="rvrx-catalog" autocomplete="off" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '"></td>' +
+        '<td class="rx-col-stock">' + stockPill + '</td>' +
+        '<td class="rx-col-qty"><input data-rv-f="quantity" data-rv-i="' + idx + '" type="number" step="0.1" min="0" class="rx-line-qty" value="' + (it.quantity || '') + '"></td>' +
+        '<td class="rx-col-total-qty">' + (perDose > 0 ? courseQty.toFixed(1) + ' g' : '—') + '</td>' +
+        '<td class="rx-col-total">' + (match && perDose > 0 ? '<strong>' + HM.format.money(lineTotal) + '</strong>' : '—') + '</td>' +
+        '<td class="rx-col-remove"><button type="button" class="rx-line-remove" data-rv-del="' + idx + '">✕</button></td>';
+      tbody.appendChild(tr);
+    });
+    container.appendChild(table);
+
+    // Per-input events
+    container.querySelectorAll('[data-rv-f]').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        var i = parseInt(inp.getAttribute('data-rv-i'), 10);
+        var f = inp.getAttribute('data-rv-f');
+        var v = inp.value;
+        if (f === 'quantity') v = parseFloat(v) || 0;
+        rvwRxState.items[i][f] = v;
+        if (f === 'drug_name') {
+          var hit = rvRxCatalogLookup(v);
+          if (hit && hit.unit) rvwRxState.items[i].unit = hit.unit;
+        }
+      });
+      inp.addEventListener('change', function () {
+        if (inp.getAttribute('data-rv-f') === 'drug_name') renderRvRxList(m);
+        else renderRvRxList(m);
+      });
+    });
+    container.querySelectorAll('[data-rv-del]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var i = parseInt(btn.getAttribute('data-rv-del'), 10);
+        rvwRxState.items.splice(i, 1);
+        if (!rvwRxState.items.length) rvwRxState.items.push({ drug_name: '', quantity: 10, unit: 'g' });
+        renderRvRxList(m);
+      });
+    });
+    // Delegated arrow-nav (same mechanics as consult pad).
+    if (!container._keyWired) {
+      container._keyWired = true;
+      container.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Enter') return;
+        var inp = ev.target.closest('[data-rv-f]'); if (!inp) return;
+        ev.preventDefault();
+        var f = inp.getAttribute('data-rv-f');
+        var i = parseInt(inp.getAttribute('data-rv-i'), 10);
+        var target;
+        if (ev.key === 'ArrowUp') target = Math.max(0, i - 1);
+        else {
+          target = i + 1;
+          if (target >= rvwRxState.items.length) {
+            rvwRxState.items.push({ drug_name: '', quantity: 10, unit: 'g' });
+            renderRvRxList(m);
+            setTimeout(function () {
+              var n = container.querySelector('[data-rv-f="' + f + '"][data-rv-i="' + target + '"]');
+              if (n) { n.focus(); if (n.select) n.select(); }
+            }, 0);
+            return;
+          }
+        }
+        var next = container.querySelector('[data-rv-f="' + f + '"][data-rv-i="' + target + '"]');
+        if (next) { next.focus(); if (next.select) next.select(); }
+      });
+    }
+
+    // Total box
+    var totalBox = m.element.querySelector('#rvrx-total');
+    var priceEl  = m.element.querySelector('#rvrx-total-price');
+    var weightEl = m.element.querySelector('#rvrx-total-weight');
+    if (totalBox && priceEl && weightEl) {
+      if (totalWeight > 0) {
+        totalBox.style.display = '';
+        priceEl.textContent  = HM.format.money(totalPrice);
+        weightEl.textContent = totalWeight.toFixed(1) + ' g (over ' + days + ' days)';
+      } else {
+        totalBox.style.display = 'none';
+      }
+    }
+  }
+
+  function injectRvRxStyles() {
+    if (document.getElementById('rvrx-style')) return;
+    var s = document.createElement('style');
+    s.id = 'rvrx-style';
+    s.textContent =
+      '.rx-dosage-input{width:70px;text-align:center;margin:0;padding:6px 8px;}' +
+      '.rx-usage-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}' +
+      '.rx-usage-chip{border:1px solid var(--border);background:#fff;color:var(--ink);padding:5px 11px;font-size:var(--text-xs);border-radius:999px;cursor:pointer;transition:all .15s;}' +
+      '.rx-usage-chip:hover{border-color:var(--gold);background:rgba(201,146,42,.08);}' +
+      '.rx-usage-chip.is-selected{border-color:var(--gold);background:rgba(201,146,42,.18);color:var(--ink);}' +
+      '.rx-table{width:100%;border-collapse:collapse;font-size:var(--text-sm);}' +
+      '.rx-table th{text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);font-weight:500;color:var(--stone);}' +
+      '.rx-table td{padding:4px 6px;border-bottom:1px dashed var(--border);}' +
+      '.rx-col-num{width:28px;color:var(--stone);}' +
+      '.rx-col-stock{width:24px;text-align:center;}' +
+      '.rx-col-qty{width:90px;}' +
+      '.rx-col-total-qty,.rx-col-total{width:90px;text-align:right;}' +
+      '.rx-col-remove{width:28px;text-align:right;}' +
+      '.rx-col-sub{font-size:10px;color:var(--stone);font-weight:400;}' +
+      '.rx-line-name,.rx-line-qty{width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:4px 8px;font-size:var(--text-sm);}' +
+      '.rx-line-name:focus,.rx-line-qty:focus{outline:none;border-color:var(--gold);}' +
+      '.rx-line-remove{background:none;border:none;color:var(--red-seal);cursor:pointer;padding:0 4px;}' +
+      '.rx-total-box{background:var(--washi);padding:var(--s-3);border-radius:var(--r-md);border:1px solid var(--border);}' +
+      '';
+    document.head.appendChild(s);
   }
 
   function renderMiniConstitution(q) {
