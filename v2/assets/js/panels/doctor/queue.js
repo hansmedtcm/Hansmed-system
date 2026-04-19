@@ -66,17 +66,23 @@
     var container = document.getElementById('q-list');
     HM.state.loading(container);
     try {
-      var res = await HM.api.doctor.listAppointments('date=' + state.date);
-      var appts = res.data || [];
+      // Pool (unclaimed, doctor_id=NULL) + mine (doctor_id=me) come from
+      // two different endpoints now. Merge them so the queue can show
+      // both "pickable" and "picked-by-me" cards in one list.
+      var results = await Promise.all([
+        HM.api.doctor.listPool('date=' + state.date),
+        HM.api.doctor.listAppointments('date=' + state.date),
+      ]);
+      var pool = (results[0] && results[0].data) || [];
+      var mine = (results[1] && results[1].data) || [];
+      var merged = pool.concat(mine);
 
-      // Filter: today + filter type
-      var list = appts.filter(function (a) {
+      var list = merged.filter(function (a) {
         var sameDate = (a.scheduled_start || '').slice(0, 10) === state.date;
         if (!sameDate) return false;
         if (['confirmed','pending_payment','in_progress','paid'].indexOf(a.status) < 0) return false;
         if (state.filter === 'mine') return a.doctor_id === getCurrentDoctorId();
         if (state.filter === 'matching') {
-          // Match if doctor hasn't picked it yet AND specialty matches the recommended
           if (a.doctor_id) return false;
           return matchesSpecialty(a);
         }
@@ -118,7 +124,12 @@
       '<div class="flex flex-gap-2 mb-1" style="align-items:center;flex-wrap:wrap;">' + visitBadge +
       '<span class="text-label text-gold">' + HM.format.time(a.scheduled_start) + ' · ' + HM.format.date(a.scheduled_start) + '</span>' +
       '</div>' +
-      '<div class="card-title">Patient #' + a.patient_id + '</div>' +
+      '<div class="card-title">' + HM.format.esc(
+        ((a.patient && a.patient.patient_profile && a.patient.patient_profile.full_name) ||
+         (a.patient && a.patient.email) ||
+         ('Patient #' + a.patient_id))
+      ) + '</div>' +
+      '<div class="text-xs text-muted">Patient #' + a.patient_id + '</div>' +
       '<div class="mt-2">' + concernBadge + specBadge + '</div>' +
       (a.notes ? '<div class="text-sm text-muted mt-2" style="max-width: 520px;">"' + HM.format.esc(a.notes) + '"</div>' : '') +
       '</div>' +

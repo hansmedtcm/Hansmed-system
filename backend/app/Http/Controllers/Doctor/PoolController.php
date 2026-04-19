@@ -25,6 +25,7 @@ class PoolController extends Controller
     {
         $date = $request->query('date');
         $q = Appointment::query()
+            ->with(['patient.patientProfile'])
             ->whereNull('doctor_id')
             ->where('is_pool', 1)
             ->whereNotIn('status', ['cancelled', 'completed', 'no_show'])

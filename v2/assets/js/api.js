@@ -205,6 +205,8 @@
     updateProfile: function (d) { return api.put('/doctor/profile', d); },
 
     listAppointments: function (q) { return api.get('/doctor/appointments' + (q ? '?' + q : '')); },
+    listPool:         function (q) { return api.get('/doctor/pool' + (q ? '?' + q : '')); },
+    pickPoolAppt:     function (id) { return api.post('/doctor/pool/' + id + '/pick'); },
     createAppointment:function (d) { return api.post('/doctor/appointments', d); },
     getAppointment:   function (id) { return api.get('/doctor/appointments/' + id); },
     startAppointment: function (id) { return api.post('/doctor/appointments/' + id + '/start'); },
