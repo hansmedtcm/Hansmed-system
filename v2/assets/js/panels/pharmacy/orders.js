@@ -54,9 +54,23 @@
         else if (o.status === 'dispensing') actions = '<button class="btn btn--primary btn--sm" data-action="finish">Mark Dispensed · 完成配藥</button>';
         else if (o.status === 'dispensed') actions = '<button class="btn btn--primary btn--sm" data-action="ship">Ship · 寄出</button>';
 
+        // Compact delivery summary so the packer can triage the queue
+        // without opening each order. Shows recipient · city only
+        // when an address is present.
+        var a = o.address;
+        var addrLine = a
+          ? ('<div class="text-xs mt-1" style="color:var(--sage);">📦 ' +
+              HM.format.esc(a.recipient || '—') +
+              (a.city ? ' · ' + HM.format.esc(a.city) : '') +
+              (a.postal_code ? ' ' + HM.format.esc(a.postal_code) : '') +
+             '</div>')
+          : '';
+
         card.innerHTML = '<div class="flex-between mb-2">' +
           '<div><strong>' + HM.format.esc(o.order_no) + '</strong>' +
-          '<div class="text-xs text-muted">' + HM.format.esc(HM.format.patientLabel(o)) + ' · ' + HM.format.date(o.created_at) + '</div></div>' +
+          '<div class="text-xs text-muted">' + HM.format.esc(HM.format.patientLabel(o)) + ' · ' + HM.format.date(o.created_at) + '</div>' +
+          addrLine +
+          '</div>' +
           '<div style="text-align: right;">' + HM.format.statusBadge(o.status) + '<div class="text-lg mt-1"><strong>' + HM.format.money(o.total) + '</strong></div></div>' +
           '</div>' +
           '<p class="text-sm text-muted mb-3">' + HM.format.truncate(HM.format.esc(itemsStr), 100) + '</p>' +
@@ -102,6 +116,21 @@
         '<div class="flex-between mb-4"><div><div class="text-label">' + HM.format.esc(o.order_no) + '</div><h2>' + HM.format.esc(HM.format.patientLabel(o)) + '</h2>' +
         '<div class="text-xs text-muted">Patient #' + o.patient_id + '</div></div>' +
         HM.format.statusBadge(o.status) + '</div>';
+      // Delivery address — the key packing-desk info. Distinct sage
+      // border so the packer spots it before scrolling to items.
+      if (o.address) {
+        var a = o.address;
+        var line = [a.line1, a.line2].filter(Boolean).join(', ');
+        var region = [a.city, a.state, a.postal_code, a.country].filter(Boolean).join(' ');
+        html += '<div class="mb-4" style="background:rgba(122,140,114,.08);padding:var(--s-3) var(--s-4);border-radius:var(--r-md);border-left:3px solid var(--sage);">' +
+          '<div class="text-label mb-1">📦 Deliver to · 送貨地址</div>' +
+          '<div><strong>' + HM.format.esc(a.recipient || '—') + '</strong>' +
+          (a.phone ? ' · <span class="text-muted">' + HM.format.esc(a.phone) + '</span>' : '') + '</div>' +
+          '<div class="text-sm">' + HM.format.esc(line) + '</div>' +
+          '<div class="text-sm text-muted">' + HM.format.esc(region) + '</div>' +
+          '</div>';
+      }
+
       if (o.prescription) {
         var rx = o.prescription;
         html += '<div class="alert alert--info mb-4"><div class="alert-body">' +
