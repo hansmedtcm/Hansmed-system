@@ -93,7 +93,15 @@
   }
 
   async function poll() {
-    if (! HM.api || ! HM.api.notification || ! HM.auth || ! HM.auth.token()) return;
+    // HM.auth.token is a property-accessor on some builds and doesn't
+    // exist on all — fall back to HM.api.getToken which always does.
+    var hasToken = false;
+    try {
+      if (HM.auth && typeof HM.auth.token === 'function') hasToken = !!HM.auth.token();
+      else if (HM.auth && typeof HM.auth.token === 'string') hasToken = !!HM.auth.token;
+      else if (HM.api && typeof HM.api.getToken === 'function') hasToken = !!HM.api.getToken();
+    } catch (_) {}
+    if (! HM.api || ! HM.api.notification || ! hasToken) return;
     try {
       var res = await HM.api.notification.list();
       var items = (res && res.data) || [];
