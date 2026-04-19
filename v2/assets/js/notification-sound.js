@@ -166,16 +166,34 @@
       timer = setInterval(poll, opts.intervalMs || 25000);
     })();
 
-    // Browsers block audio until the user interacts. Resume the
-    // context on first click/keydown so subsequent cues are audible.
+    // Browsers block audio until the user interacts. Create + resume
+    // the AudioContext on the first gesture so every subsequent cue
+    // is audible. Handles click, keydown, and touchstart (mobile).
+    // Without this the sound queue silently fails even though the
+    // notification polling is working correctly.
+    var unlocked = false;
     var resume = function () {
+      if (unlocked) return;
       var c = ctx();
-      if (c && c.state === 'suspended') c.resume();
-      document.removeEventListener('click', resume);
-      document.removeEventListener('keydown', resume);
+      if (! c) return;
+      var after = function () {
+        // Tiny silent blip forces the hardware path open on Safari —
+        // some iOS versions won't play the first real tone otherwise.
+        try {
+          var osc = c.createOscillator(); var g = c.createGain();
+          g.gain.value = 0.0001; osc.connect(g); g.connect(c.destination);
+          osc.start(); osc.stop(c.currentTime + 0.01);
+        } catch (_) {}
+        unlocked = true;
+        try { console.log('[HM notif] audio unlocked, state=' + c.state); } catch (_) {}
+      };
+      if (c.state === 'suspended') {
+        c.resume().then(after, after);
+      } else { after(); }
     };
-    document.addEventListener('click', resume);
-    document.addEventListener('keydown', resume);
+    ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(function (ev) {
+      document.addEventListener(ev, resume, { passive: true });
+    });
   }
 
   function stop() {
