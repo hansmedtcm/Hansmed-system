@@ -5,7 +5,7 @@
   'use strict';
   HM.adminPanels = HM.adminPanels || {};
 
-  var state = { dateFilter: 'today', statusFilter: '', visitFilter: '', customFrom: '', customTo: '' };
+  var state = { dateFilter: 'upcoming', statusFilter: '', visitFilter: '', customFrom: '', customTo: '' };
 
   function todayISO() {
     var d = new Date();
@@ -21,9 +21,9 @@
       // Date filter
       '<div class="text-label mb-2">Date · 日期</div>' +
       '<div class="filter-bar mb-3" id="date-filter">' +
-      dchip('today',     '📅 Today · 今日', true) +
+      dchip('today',     '📅 Today · 今日') +
       dchip('week',      'This Week · 本週') +
-      dchip('upcoming',  'Upcoming · 未來') +
+      dchip('upcoming',  'Upcoming · 未來', true) +
       dchip('past',      'Past · 過去') +
       dchip('all',       'All · 全部') +
       dchip('custom',    '🗓 Custom Range · 自訂區間') +

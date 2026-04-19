@@ -161,6 +161,10 @@
       renderRxList();
     });
 
+    // Usage-note preset chips in walk-in view (tabbed view wires its own
+    // copy inside wireSidebar). Without this, clicking a chip did nothing.
+    wireUsagePresets();
+
     renderRxList();
     renderTreatments();
     renderDocuments();
@@ -415,24 +419,8 @@
       renderRxList();
     });
 
-    // Usage-note preset chips — append to the input, comma-separated.
-    // Clicking the same chip twice toggles it off so doctors can
-    // undo without clearing the whole field.
-    var presetsBox = document.getElementById('rx-usage-presets');
-    if (presetsBox) {
-      presetsBox.addEventListener('click', function (ev) {
-        var btn = ev.target.closest('[data-usage]');
-        if (! btn) return;
-        var piece = btn.getAttribute('data-usage');
-        var inp = document.getElementById('rx-usage');
-        if (! inp) return;
-        var parts = (inp.value || '').split(/[,，、；;]\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
-        var idx = parts.indexOf(piece);
-        if (idx >= 0) parts.splice(idx, 1); else parts.push(piece);
-        inp.value = parts.join(', ');
-        inp.focus();
-      });
-    }
+    // Usage-note preset chips
+    wireUsagePresets();
 
     // File upload handler (walk-in only)
     var fileInput = document.getElementById('cr-files');
@@ -724,6 +712,30 @@
     });
   }
 
+  // Wire usage-note preset chips. Clicking toggles the phrase in the
+  // input (comma-separated). Shared between walk-in and tabbed views.
+  function wireUsagePresets() {
+    var presetsBox = document.getElementById('rx-usage-presets');
+    if (! presetsBox) return;
+    // Guard against double-wiring if caller runs twice.
+    if (presetsBox._hmWired) return;
+    presetsBox._hmWired = true;
+    presetsBox.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('[data-usage]');
+      if (! btn) return;
+      ev.preventDefault();
+      var piece = btn.getAttribute('data-usage');
+      var inp = document.getElementById('rx-usage');
+      if (! inp) return;
+      var parts = (inp.value || '').split(/[,，、；;]\s*/)
+        .map(function (s) { return s.trim(); }).filter(Boolean);
+      var idx = parts.indexOf(piece);
+      if (idx >= 0) { parts.splice(idx, 1); btn.classList.remove('is-selected'); }
+      else          { parts.push(piece);    btn.classList.add('is-selected'); }
+      inp.value = parts.join(', ');
+    });
+  }
+
   // ── Rx list rendering — table layout with per-gram pricing ──
   // Columns: Herb · Qty (per dose, g) · Cost per 1g (RM) · Total Qty (g) · Total Cost (RM)
   //
@@ -829,49 +841,57 @@
             if (m && m.unit) state.rxItems[i].unit = m.unit;
           }
         });
-        inp.addEventListener('change', function () { renderRxList(); });
-        inp.addEventListener('blur',   function () { renderRxList(); });
-
-        // Keyboard navigation between qty inputs: ↓ / Enter jumps to
-        // the next row's qty; ↑ jumps to the previous. Auto-adds a
-        // new row if the doctor presses ↓ or Enter on the last line.
-        inp.addEventListener('keydown', function (ev) {
-          if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Enter') return;
-          var field = inp.getAttribute('data-rx-field');
-          var i = parseInt(inp.getAttribute('data-rx-idx'), 10);
-          // Only hijack arrows on the qty field (native ↑/↓ on number
-          // inputs would otherwise step the value). Enter works on
-          // both name and qty for fast data-entry.
-          if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && field !== 'quantity') return;
-          ev.preventDefault();
-
-          var target = i;
-          if (ev.key === 'ArrowUp') {
-            target = Math.max(0, i - 1);
-          } else {
-            // ArrowDown or Enter — next row, auto-create when at end
-            target = i + 1;
-            if (target >= state.rxItems.length) {
-              state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g' });
-              renderRxList();
-              // after re-render the focus target doesn't exist yet —
-              // schedule focus on the new row.
-              setTimeout(function () {
-                var next = document.querySelector('[data-rx-field="' + field + '"][data-rx-idx="' + target + '"]');
-                if (next) { next.focus(); if (next.select) next.select(); }
-              }, 0);
-              return;
-            }
-          }
-          var next = document.querySelector('[data-rx-field="' + field + '"][data-rx-idx="' + target + '"]');
-          if (next) { next.focus(); if (next.select) next.select(); }
+        // Re-render only when a drug_name commit might change derived
+        // state (unit lookup, stock chip). Re-rendering on every blur
+        // destroyed focus targets mid-navigation — killing ↓/↑/Enter
+        // jumps between rows.
+        inp.addEventListener('change', function () {
+          if (inp.getAttribute('data-rx-field') === 'drug_name') renderRxList();
         });
+
+        // Keyboard navigation is handled via a single delegated listener
+        // on the container (wired once per container) — see below. Per-
+        // input attachment was flaky across re-renders and could miss
+        // the ArrowDown keydown, letting the browser scroll the page.
       });
 
       tbody.appendChild(tr);
     });
     container.appendChild(table);
     injectRxTableStyles();
+
+    // Delegated ↑/↓/Enter navigation between rows. Wire once per
+    // container — survives every renderRxList re-render. This is what
+    // fixes "ArrowDown scrolls the page" when focus is on a qty input:
+    // preventDefault always runs, regardless of re-render timing.
+    if (! container._hmRxKeyWired) {
+      container._hmRxKeyWired = true;
+      container.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Enter') return;
+        var inp = ev.target.closest('[data-rx-field]');
+        if (! inp) return;
+        ev.preventDefault();
+        var field = inp.getAttribute('data-rx-field');
+        var i = parseInt(inp.getAttribute('data-rx-idx'), 10);
+        var target = i;
+        if (ev.key === 'ArrowUp') {
+          target = Math.max(0, i - 1);
+        } else {
+          target = i + 1;
+          if (target >= state.rxItems.length) {
+            state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g' });
+            renderRxList();
+            setTimeout(function () {
+              var n = document.querySelector('[data-rx-field="' + field + '"][data-rx-idx="' + target + '"]');
+              if (n) { n.focus(); if (n.select) n.select(); }
+            }, 0);
+            return;
+          }
+        }
+        var next = document.querySelector('[data-rx-field="' + field + '"][data-rx-idx="' + target + '"]');
+        if (next) { next.focus(); if (next.select) next.select(); }
+      });
+    }
 
     // Wire dosage-pattern inputs (once per render so values persist + totals refresh)
     ['rx-packs', 'rx-times', 'rx-days'].forEach(function (id) {

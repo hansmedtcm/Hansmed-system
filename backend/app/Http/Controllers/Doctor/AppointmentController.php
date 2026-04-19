@@ -11,7 +11,16 @@ class AppointmentController extends Controller
     // D-04: list doctor's appointments by status
     public function index(Request $request)
     {
-        $q = Appointment::where('doctor_id', $request->user()->id);
+        // Show appointments assigned to this doctor PLUS unclaimed pool
+        // appointments so the doctor sees everything they could pick up.
+        $uid = $request->user()->id;
+        $q = Appointment::with(['patient.patientProfile'])
+            ->where(function ($w) use ($uid) {
+                $w->where('doctor_id', $uid)
+                  ->orWhere(function ($pool) {
+                      $pool->whereNull('doctor_id')->where('is_pool', 1);
+                  });
+            });
 
         if ($status = $request->query('status')) {
             $q->where('status', $status);
@@ -25,8 +34,14 @@ class AppointmentController extends Controller
     // D-05 / D-06: view appointment with patient + tongue report
     public function show(Request $request, int $id)
     {
-        $appt = Appointment::where('doctor_id', $request->user()->id)
-            ->with(['patient.patientProfile'])
+        $uid = $request->user()->id;
+        $appt = Appointment::with(['patient.patientProfile'])
+            ->where(function ($w) use ($uid) {
+                $w->where('doctor_id', $uid)
+                  ->orWhere(function ($pool) {
+                      $pool->whereNull('doctor_id')->where('is_pool', 1);
+                  });
+            })
             ->findOrFail($id);
 
         $tongue = $appt->tongue_diagnosis_id

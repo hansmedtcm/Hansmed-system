@@ -226,21 +226,26 @@
     };
 
     try {
-      var res = null;
-      try { res = await HM.api.patient.bookAppointment(payload); } catch (_) { res = null; }
-      // Show payment modal regardless of whether backend accepted — falls back to demo.
+      var res = await HM.api.patient.bookAppointment(payload);
       showPaymentModal(res && res.appointment ? res.appointment : { fee: DEFAULT_FEE });
     } catch (e) {
       btn.classList.remove('is-loading');
       btn.disabled = false;
-      HM.ui.toast(e.message || 'Booking failed', 'danger');
+      // Surface the real backend message so we stop silently fake-succeeding.
+      HM.ui.toast(e.message || 'Booking failed · 預約失敗', 'danger', 5000);
+      console.error('[booking] bookAppointment failed', e);
     }
   }
 
   function computeEnd(startIso, minutes) {
+    // Keep the same LOCAL-time string shape as startIso. toISOString()
+    // shifts to UTC, which in UTC+8 makes end < start and the backend
+    // rejects the booking ("scheduled_end must be after scheduled_start").
     var d = new Date(startIso);
     d.setMinutes(d.getMinutes() + minutes);
-    return d.toISOString().slice(0, 19);
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
   }
 
   function showPaymentModal(appt) {
