@@ -101,8 +101,15 @@
   }
 
   async function showOrderFlow(rx) {
-    // Fetch pharmacies & addresses in parallel
     var m = HM.ui.modal({ title: 'Order Medicine · 購藥', content: '<div class="state state--loading"><div class="state-icon"></div></div>' });
+    await loadOrderPicker(m, rx);
+  }
+
+  // Loads the picker INTO an existing modal. Used on first open AND after
+  // saving a new address so we never stack a second modal on top of the
+  // first (previous bug: duplicate "Order Medicine" dialogs).
+  async function loadOrderPicker(m, rx) {
+    m.body.innerHTML = '<div class="state state--loading"><div class="state-icon"></div></div>';
     try {
       var results = await Promise.all([
         HM.api.patient.listPharmacies(),
@@ -117,18 +124,14 @@
         return;
       }
 
-      // No saved addresses? Render an inline "add address" form so the
-      // patient can enter one right here instead of hitting a dead-end.
-      // We pre-fill from their profile address if present — most
-      // patients just confirm and move on.
       if (!addresses.length) {
+        var pp = {};
         try {
           var prof = await HM.api.patient.getProfile();
-          var pp = (prof && prof.user && prof.user.patient_profile) || (prof && prof.patient_profile) || {};
-          renderAddressForm(m, pp, function () { showOrderFlow(rx); });
-        } catch (_) {
-          renderAddressForm(m, {}, function () { showOrderFlow(rx); });
-        }
+          pp = (prof && prof.user && prof.user.patient_profile) || (prof && prof.patient_profile) || {};
+        } catch (_) {}
+        // After saving, re-enter the picker in the SAME modal — not a new one.
+        renderAddressForm(m, pp, function () { loadOrderPicker(m, rx); });
         return;
       }
 
@@ -142,7 +145,7 @@
         '<button id="ord-place" class="btn btn--primary btn--block mt-4">Place Order · 下單</button>';
 
       m.body.querySelector('#ord-addr-new').addEventListener('click', function () {
-        renderAddressForm(m, {}, function () { showOrderFlow(rx); });
+        renderAddressForm(m, {}, function () { loadOrderPicker(m, rx); });
       });
 
       m.body.querySelector('#ord-place').addEventListener('click', async function () {

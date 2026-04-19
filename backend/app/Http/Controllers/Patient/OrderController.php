@@ -71,7 +71,39 @@ class OrderController extends Controller
                         ->where('is_listed', true)
                         ->first();
                 }
+
+                // Fallback to the shared medicine_catalog (admin-managed
+                // universal price list) when the pharmacy doesn't list
+                // this specific herb. This prevents a dead-end when
+                // doctors prescribe anything outside a pharmacy's own
+                // SKU catalog — the pharmacy dispenses from its bulk
+                // warehouse stock and gets paid at the catalogue price.
                 if (! $product) {
+                    $catalog = \DB::table('medicine_catalog')
+                        ->where('is_active', 1)
+                        ->where(function ($q) use ($item) {
+                            $q->where('name_zh', $item->drug_name)
+                              ->orWhere('name_pinyin', $item->drug_name)
+                              ->orWhere('name_zh', 'like', '%' . $item->drug_name . '%')
+                              ->orWhere('name_pinyin', 'like', '%' . $item->drug_name . '%');
+                        })
+                        ->first();
+                    if ($catalog && $catalog->unit_price !== null) {
+                        // catalog unit_price is per 100g — normalise to per-unit
+                        $perGram = (float) $catalog->unit_price / 100.0;
+                        $lineTotal = $perGram * (float) $item->quantity;
+                        $subtotal += $lineTotal;
+                        $lines[] = [
+                            'product_id'    => null,
+                            'drug_name'     => $item->drug_name,
+                            'specification' => null,
+                            'unit_price'    => $perGram,
+                            'quantity'      => $item->quantity,
+                            'unit'          => $item->unit ?? 'g',
+                            'line_total'    => $lineTotal,
+                        ];
+                        continue; // skip the product-backed branch below
+                    }
                     throw ValidationException::withMessages([
                         'items' => "Pharmacy does not carry: {$item->drug_name}",
                     ]);
