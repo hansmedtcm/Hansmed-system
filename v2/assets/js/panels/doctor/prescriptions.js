@@ -85,9 +85,14 @@
 
           '<div class="flex flex-gap-2 mt-3">' +
             '<button class="btn btn--outline btn--sm" data-pdf>📄 PDF</button>' +
+            // To edit an Rx the doctor re-enters the consultation —
+            // re-submitting from there supersedes this one (old Rx is
+            // deleted + pharmacy is notified again). See consult.js.
+            (rx.status === 'issued' && rx.appointment_id
+              ? '<button class="btn btn--outline btn--sm" data-edit>Edit in consult · 回診編輯</button>'
+              : '') +
             (rx.status === 'issued'
-              ? '<button class="btn btn--outline btn--sm" data-revise>Revise · 修改</button>' +
-                '<button class="btn btn--ghost btn--sm" data-revoke style="color: var(--red-seal);">Revoke · 撤銷</button>'
+              ? '<button class="btn btn--ghost btn--sm" data-revoke style="color: var(--red-seal);">Revoke · 撤銷</button>'
               : '') +
           '</div>';
 
@@ -101,9 +106,12 @@
           }
         });
 
-        var reviseBtn = card.querySelector('[data-revise]');
-        if (reviseBtn) reviseBtn.addEventListener('click', function () {
-          openReviseModal(rx, function () { render(el); });
+        var editBtn = card.querySelector('[data-edit]');
+        if (editBtn) editBtn.addEventListener('click', function () {
+          // Jump back into the consult view — consult.js pre-fills the
+          // Rx pad with this Rx's items on load, the doctor edits, and
+          // re-submitting supersedes the old Rx.
+          location.hash = '#/consult/' + rx.appointment_id;
         });
 
         var revokeBtn = card.querySelector('[data-revoke]');

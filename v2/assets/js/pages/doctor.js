@@ -82,6 +82,7 @@
       reviewTypes: [
         'review.pending.*',
         'appointment.booked',
+        'appointment.pool.new',
       ],
       dispenseTypes: [],
       intervalMs: 25000,

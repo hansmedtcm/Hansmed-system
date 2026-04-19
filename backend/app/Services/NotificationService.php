@@ -38,6 +38,34 @@ class NotificationService
             ['appointment_id' => $appointmentId]);
     }
 
+    /**
+     * A patient has booked a pool appointment (no specific doctor yet).
+     * Fan out to every approved+accepting doctor so whoever's available
+     * picks it up first. Type = 'appointment.pool.new' — the doctor
+     * portal subscribes this type to the review-sound cue.
+     */
+    public function appointmentPoolCreated(int $patientId, int $appointmentId, ?string $concernLabel = null, ?string $specialty = null): void
+    {
+        $title = 'New pool appointment · 新候診預約';
+        $bits = [];
+        if ($concernLabel) $bits[] = $concernLabel;
+        if ($specialty)    $bits[] = $specialty;
+        $suffix = $bits ? ' (' . implode(' · ', $bits) . ')' : '';
+        $body  = 'A patient just booked and is waiting for a doctor to pick up' . $suffix . '.';
+
+        $doctorIds = DoctorProfile::where('verification_status', 'approved')
+            ->where('accepting_appointments', true)
+            ->pluck('user_id');
+
+        foreach ($doctorIds as $uid) {
+            $this->notify((int) $uid, 'appointment.pool.new', $title, $body, [
+                'appointment_id' => $appointmentId,
+                'patient_id'     => $patientId,
+                'route'          => '#/queue',
+            ]);
+        }
+    }
+
     public function prescriptionIssued(int $patientId, int $prescriptionId): void
     {
         $this->notify($patientId, 'prescription.issued',

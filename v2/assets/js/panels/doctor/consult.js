@@ -57,6 +57,38 @@
       state.treatments = [];
       state.caseRecord = {};
       state.documents = [];
+      state.existingRxId = null;
+
+      // Pre-fill the Rx pad from any existing issued Rx on this
+      // appointment. Lets the doctor re-enter the consult to edit
+      // medicines — when they re-submit, the backend supersedes the
+      // old Rx (see PrescriptionController::store).
+      try {
+        var rxRes = await HM.api.doctor.listRxForAppointment(appointmentId);
+        var existing = (rxRes && rxRes.data && rxRes.data[0]) || null;
+        if (existing) {
+          state.existingRxId = existing.id;
+          // Stored quantities are full-course totals. When we issued
+          // the Rx we stashed the per-dose value in the item's notes
+          // field as `per dose: NNg`. Parse it back so the pad shows
+          // what the doctor originally typed.
+          state.rxItems = (existing.items || []).map(function (it) {
+            var perDose = null;
+            var m = /per dose:\s*([0-9.]+)/i.exec(it.notes || '');
+            if (m) perDose = parseFloat(m[1]);
+            return {
+              drug_name:   it.drug_name,
+              quantity:    (perDose !== null && !isNaN(perDose)) ? perDose : parseFloat(it.quantity),
+              unit:        it.unit || 'g',
+              dosage:      it.dosage || '',
+              frequency:   it.frequency || '',
+              usage_method:it.usage_method || '',
+            };
+          });
+          state.caseRecord.pattern_diagnosis = existing.diagnosis || '';
+          state.caseRecord.doctor_instructions = existing.instructions || '';
+        }
+      } catch (_) { /* no existing Rx — fresh pad */ }
 
       // 2. Start the appointment
       try { await HM.api.doctor.startAppointment(appointmentId); } catch (_) {}

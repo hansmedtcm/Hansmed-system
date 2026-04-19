@@ -215,6 +215,7 @@
     patientConsults:   function (id) { return api.get('/doctor/patients/' + id + '/consultations'); },
 
     listPrescriptions: function (page) { return api.get('/doctor/prescriptions?page=' + (page || 1)); },
+    listRxForAppointment: function (apptId) { return api.get('/doctor/prescriptions?appointment_id=' + apptId); },
     issuePrescription: function (d) { return api.post('/doctor/prescriptions', d); },
     getPrescription:   function (id) { return api.get('/doctor/prescriptions/' + id); },
     revokePrescription:function (id) { return api.post('/doctor/prescriptions/' + id + '/revoke'); },

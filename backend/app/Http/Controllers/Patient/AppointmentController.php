@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\DoctorProfile;
 use App\Models\Payment;
+use App\Services\NotificationService;
 use App\Services\StripeClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,10 @@ use Illuminate\Validation\ValidationException;
 
 class AppointmentController extends Controller
 {
-    public function __construct(private StripeClient $stripe) {}
+    public function __construct(
+        private StripeClient $stripe,
+        private NotificationService $notifier,
+    ) {}
 
     // C-10: book appointment + create Stripe PaymentIntent.
     // Now supports POOL bookings: when doctor_id is missing, the appointment
@@ -105,6 +109,27 @@ class AppointmentController extends Controller
                 // Stripe not configured — continue in demo mode. Appointment is still created.
             }
 
+            // Notify: named-doctor bookings → that doctor; pool bookings
+            // → fan out to every approved+accepting doctor so the first
+            // available one picks it up. The audible cue + toast on the
+            // doctor portal comes from this notification.
+            try {
+                if ($isPool) {
+                    $this->notifier->appointmentPoolCreated(
+                        patientId: $request->user()->id,
+                        appointmentId: $appt->id,
+                        concernLabel: $data['concern_label'] ?? null,
+                        specialty: $data['recommended_specialty'] ?? null,
+                    );
+                } else {
+                    $this->notifier->appointmentConfirmed(
+                        patientId: $request->user()->id,
+                        doctorId:  $data['doctor_id'],
+                        appointmentId: $appt->id,
+                    );
+                }
+            } catch (\Throwable $e) { /* never fail booking on notify glitch */ }
+
             return response()->json([
                 'appointment'          => $appt,
                 'payment'              => $payment,
@@ -116,8 +141,12 @@ class AppointmentController extends Controller
 
     public function index(Request $request)
     {
+        // Eager-load the doctor's profile so the patient UI can show
+        // the doctor's real name once a pool appointment is picked up.
+        // Until then doctor_id is null and the UI shows "Awaiting pickup".
         return response()->json(
             Appointment::where('patient_id', $request->user()->id)
+                ->with(['doctor.doctorProfile'])
                 ->orderByDesc('scheduled_start')
                 ->paginate(20)
         );

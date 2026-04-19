@@ -11,19 +11,17 @@ class AppointmentController extends Controller
     // D-04: list doctor's appointments by status
     public function index(Request $request)
     {
-        // Show appointments assigned to this doctor PLUS unclaimed pool
-        // appointments so the doctor sees everything they could pick up.
-        $uid = $request->user()->id;
+        // Appointments tab shows ONLY what this doctor has already taken.
+        // Unclaimed pool bookings live in the separate Queue/Pool view;
+        // the doctor must explicitly pick them up before they appear here.
         $q = Appointment::with(['patient.patientProfile'])
-            ->where(function ($w) use ($uid) {
-                $w->where('doctor_id', $uid)
-                  ->orWhere(function ($pool) {
-                      $pool->whereNull('doctor_id')->where('is_pool', 1);
-                  });
-            });
+            ->where('doctor_id', $request->user()->id);
 
         if ($status = $request->query('status')) {
             $q->where('status', $status);
+        }
+        if ($date = $request->query('date')) {
+            $q->whereDate('scheduled_start', $date);
         }
 
         return response()->json(
@@ -34,14 +32,8 @@ class AppointmentController extends Controller
     // D-05 / D-06: view appointment with patient + tongue report
     public function show(Request $request, int $id)
     {
-        $uid = $request->user()->id;
-        $appt = Appointment::with(['patient.patientProfile'])
-            ->where(function ($w) use ($uid) {
-                $w->where('doctor_id', $uid)
-                  ->orWhere(function ($pool) {
-                      $pool->whereNull('doctor_id')->where('is_pool', 1);
-                  });
-            })
+        $appt = Appointment::where('doctor_id', $request->user()->id)
+            ->with(['patient.patientProfile'])
             ->findOrFail($id);
 
         $tongue = $appt->tongue_diagnosis_id

@@ -98,10 +98,22 @@
         }
         var isWalkIn = (a.visit_type || 'online') === 'walk_in';
         var withinHour = !isWalkIn && minutesUntil !== null && minutesUntil < 60 && minutesUntil > -60;
+        // Pool booking — no doctor assigned yet. Show a friendly waiting
+        // label; once a doctor picks up the appointment doctor_id is set
+        // and the real name appears on the next refresh.
+        var dp = (a.doctor && a.doctor.doctor_profile) || {};
+        var doctorLabel;
+        if (a.doctor_id && dp.full_name) {
+          doctorLabel = 'Dr. ' + dp.full_name;
+        } else if (a.doctor_id) {
+          doctorLabel = 'Dr. ' + ((a.doctor && a.doctor.email) || ('#' + a.doctor_id));
+        } else {
+          doctorLabel = 'Awaiting doctor pickup · 等待醫師接單';
+        }
         var data = {
           id: a.id,
           scheduled_start: a.scheduled_start,
-          doctor_name: 'Doctor #' + a.doctor_id,
+          doctor_name: doctorLabel,
           notes: a.notes || '',
           status_badge: HM.format.statusBadge(a.status),
           fee_formatted: HM.format.money(a.fee),
@@ -166,7 +178,11 @@
         '<h2 class="mb-4">' + HM.format.datetime(a.scheduled_start) + '</h2>' +
         '<div class="mb-3">' + HM.format.statusBadge(a.status) + '</div>' +
         '<dl class="mb-6">' +
-        '<div class="flex-between mb-2" style="padding: var(--s-2) 0; border-bottom: 1px solid var(--border);"><dt class="text-muted">Doctor</dt><dd>#' + a.doctor_id + '</dd></div>' +
+        '<div class="flex-between mb-2" style="padding: var(--s-2) 0; border-bottom: 1px solid var(--border);"><dt class="text-muted">Doctor</dt><dd>' +
+          (a.doctor_id
+            ? ('Dr. ' + HM.format.esc(((a.doctor && a.doctor.doctor_profile && a.doctor.doctor_profile.full_name) || (a.doctor && a.doctor.email) || ('#' + a.doctor_id))))
+            : '<span class="text-muted">Awaiting pickup · 等待接單</span>') +
+          '</dd></div>' +
         '<div class="flex-between mb-2" style="padding: var(--s-2) 0; border-bottom: 1px solid var(--border);"><dt class="text-muted">Fee</dt><dd>' + HM.format.money(a.fee) + '</dd></div>' +
         (a.notes ? '<div class="flex-between mb-2" style="padding: var(--s-2) 0;"><dt class="text-muted">Notes</dt><dd>' + HM.format.esc(a.notes) + '</dd></div>' : '') +
         '</dl>' +

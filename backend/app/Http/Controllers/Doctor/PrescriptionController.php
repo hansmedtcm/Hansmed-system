@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Order;
 use App\Models\Prescription;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -53,6 +54,34 @@ class PrescriptionController extends Controller
         }
 
         return DB::transaction(function () use ($apptId, $patientId, $data, $request) {
+            // If the doctor re-issues the Rx for the same appointment
+            // (after going back to edit), supersede any previous issued
+            // Rx so the pharmacy inbox / patient view only sees the
+            // latest one. Locked once the patient has paid for a
+            // medicine order tied to that Rx — from that point the
+            // doctor cannot overwrite; admin can still intervene.
+            if ($apptId) {
+                $existing = Prescription::where('appointment_id', $apptId)
+                    ->whereIn('status', ['issued', 'revised'])
+                    ->get();
+                foreach ($existing as $old) {
+                    $locked = Order::where('prescription_id', $old->id)
+                        ->whereIn('status', ['paid', 'dispensed', 'shipped', 'completed'])
+                        ->exists();
+                    if ($locked) {
+                        return response()->json([
+                            'message' => 'Cannot re-issue: patient has already paid for this prescription. Contact admin to amend.',
+                            'message_zh' => '無法重新開立：患者已付款。如需修改請聯絡管理員。',
+                        ], 422);
+                    }
+                    // Clear items first to avoid orphan rows, then delete
+                    // the parent. The audit trail lives in audit_logs if
+                    // enabled — prescriptions table itself stays clean.
+                    $old->items()->delete();
+                    $old->delete();
+                }
+            }
+
             // Build notes string to record the source context if this Rx came from an AI review
             $contextNote = null;
             if (! empty($data['source_type']) && ! empty($data['source_id'])) {
@@ -92,12 +121,19 @@ class PrescriptionController extends Controller
 
     public function index(Request $request)
     {
-        return response()->json(
-            Prescription::where('doctor_id', $request->user()->id)
-                ->with('items')
-                ->orderByDesc('created_at')
-                ->paginate(20)
-        );
+        $q = Prescription::where('doctor_id', $request->user()->id)
+            ->with('items')
+            ->orderByDesc('created_at');
+
+        // Optional filter — used by the consult view to pre-fill the Rx
+        // pad when the doctor re-enters a completed appointment to edit
+        // medicines.
+        if ($apptId = $request->query('appointment_id')) {
+            $q->where('appointment_id', $apptId)
+              ->whereIn('status', ['issued']);
+        }
+
+        return response()->json($q->paginate(20));
     }
 
     public function show(Request $request, int $id)

@@ -140,10 +140,15 @@
 
       container.innerHTML = '';
       items.forEach(function (a) {
+        // Prefer the joined profile name; fall back to id only if the
+        // patient hasn't completed their profile yet (should be rare
+        // after registration-wall enforces it).
+        var pp = (a.patient && a.patient.patient_profile) || {};
+        var realName = pp.full_name || (a.patient && a.patient.email) || ('Patient #' + a.patient_id);
         var data = {
           id: a.id,
           scheduled_start: a.scheduled_start,
-          patient_name: 'Patient #' + a.patient_id,
+          patient_name: realName,
           notes: a.notes || '',
           status_badge: HM.format.statusBadge(a.status),
           fee_formatted: HM.format.money(a.fee),
@@ -171,6 +176,8 @@
       var res = await HM.api.doctor.getAppointment(id);
       var a = res.appointment;
       var tongue = res.tongue_diagnosis;
+      var pp = (a.patient && a.patient.patient_profile) || {};
+      var pname = pp.full_name || (a.patient && a.patient.email) || ('Patient #' + a.patient_id);
 
       var html = '<div class="page-header">' +
         '<button class="btn btn--ghost" onclick="location.hash=\'#/appointments\'">← Back</button>' +
@@ -178,7 +185,8 @@
         '<div class="card card--pad-lg" style="max-width: 800px;">' +
         '<div class="flex-between mb-4">' +
         '<div><div class="text-label">' + HM.format.datetime(a.scheduled_start) + '</div>' +
-        '<h2>Patient #' + a.patient_id + '</h2></div>' +
+        '<h2>' + HM.format.esc(pname) + '</h2>' +
+        '<div class="text-xs text-muted">Patient #' + a.patient_id + '</div></div>' +
         HM.format.statusBadge(a.status) +
         '</div>' +
         (a.notes ? '<div class="alert alert--info"><div class="alert-body"><div class="alert-title">Patient Notes · 患者備註</div>' + HM.format.esc(a.notes) + '</div></div>' : '') +

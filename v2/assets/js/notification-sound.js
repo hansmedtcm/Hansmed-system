@@ -111,10 +111,26 @@
         newItems.sort(function (a, b) { return a.id - b.id; });
         var playedReview = false, playedDispense = false;
         newItems.forEach(function (n) {
-          if (matches(n.type, config.dispenseTypes) && ! playedDispense) {
-            playDispense(); playedDispense = true;
-          } else if (matches(n.type, config.reviewTypes) && ! playedReview) {
-            playReview(); playedReview = true;
+          var matched = false;
+          if (matches(n.type, config.dispenseTypes)) {
+            if (! playedDispense) { playDispense(); playedDispense = true; }
+            matched = true;
+          } else if (matches(n.type, config.reviewTypes)) {
+            if (! playedReview) { playReview(); playedReview = true; }
+            matched = true;
+          }
+          // Show a toast pop-up alongside the sound so the staff see
+          // WHAT just came in without having to open the bell menu.
+          // Clicking the toast jumps to the notification's route.
+          if (matched && HM.ui && HM.ui.toast) {
+            var msg = (n.title || 'New notification') + (n.body ? ' — ' + n.body : '');
+            try {
+              HM.ui.toast(msg, 'info', 6000);
+            } catch (_) {}
+            // Route hint: if the notification carries a route, advertise
+            // it via a second, clickable toast if UI supports it. We
+            // keep it simple and just set the hash on double-click of
+            // the bell — skipped here to avoid noisy UX.
           }
         });
       }
