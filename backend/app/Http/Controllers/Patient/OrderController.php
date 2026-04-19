@@ -74,18 +74,26 @@ class OrderController extends Controller
 
                 // Fallback to the shared medicine_catalog (admin-managed
                 // universal price list) when the pharmacy doesn't list
-                // this specific herb. This prevents a dead-end when
-                // doctors prescribe anything outside a pharmacy's own
-                // SKU catalog — the pharmacy dispenses from its bulk
-                // warehouse stock and gets paid at the catalogue price.
+                // this specific herb. Doctors' Rx drug_name is typically
+                // the combined display string "參苓白朮散 · Shen Ling Bai
+                // Zhu San", so we split on " · " and try each half against
+                // both name_zh and name_pinyin.
                 if (! $product) {
+                    $rawName = trim((string) $item->drug_name);
+                    $candidates = [$rawName];
+                    if (strpos($rawName, ' · ') !== false) {
+                        foreach (explode(' · ', $rawName) as $piece) {
+                            $p = trim($piece);
+                            if ($p !== '') $candidates[] = $p;
+                        }
+                    }
                     $catalog = \DB::table('medicine_catalog')
                         ->where('is_active', 1)
-                        ->where(function ($q) use ($item) {
-                            $q->where('name_zh', $item->drug_name)
-                              ->orWhere('name_pinyin', $item->drug_name)
-                              ->orWhere('name_zh', 'like', '%' . $item->drug_name . '%')
-                              ->orWhere('name_pinyin', 'like', '%' . $item->drug_name . '%');
+                        ->where(function ($q) use ($candidates) {
+                            foreach ($candidates as $c) {
+                                $q->orWhere('name_zh', $c)
+                                  ->orWhere('name_pinyin', $c);
+                            }
                         })
                         ->first();
                     if ($catalog && $catalog->unit_price !== null) {
@@ -104,8 +112,28 @@ class OrderController extends Controller
                         ];
                         continue; // skip the product-backed branch below
                     }
+                    // Last resort: if the catalog row exists but has no
+                    // price yet ("询"), still accept the order at a
+                    // reference price so the pharmacy can respond with
+                    // a quote. Fallback unit price of 0.50 RM/g is the
+                    // platform-wide default; admin can override later.
+                    if ($catalog && $catalog->unit_price === null) {
+                        $perGram = 0.50;
+                        $lineTotal = $perGram * (float) $item->quantity;
+                        $subtotal += $lineTotal;
+                        $lines[] = [
+                            'product_id'    => null,
+                            'drug_name'     => $item->drug_name,
+                            'specification' => null,
+                            'unit_price'    => $perGram,
+                            'quantity'      => $item->quantity,
+                            'unit'          => $item->unit ?? 'g',
+                            'line_total'    => $lineTotal,
+                        ];
+                        continue;
+                    }
                     throw ValidationException::withMessages([
-                        'items' => "Pharmacy does not carry: {$item->drug_name}",
+                        'items' => "Pharmacy does not carry: {$item->drug_name}. Try a different pharmacy or ask the doctor to use an in-catalog herb.",
                     ]);
                 }
 
