@@ -53,9 +53,16 @@ class NotificationService
         $suffix = $bits ? ' (' . implode(' · ', $bits) . ')' : '';
         $body  = 'A patient just booked and is waiting for a doctor to pick up' . $suffix . '.';
 
+        // Fan out broadly: approved+accepting first, but if none exist
+        // (single-doctor clinic still in pilot, or approvals not yet
+        // processed), fall back to any doctor user so the clinic never
+        // misses a booking alert.
         $doctorIds = DoctorProfile::where('verification_status', 'approved')
             ->where('accepting_appointments', true)
             ->pluck('user_id');
+        if ($doctorIds->isEmpty()) {
+            $doctorIds = \App\Models\User::where('role', 'doctor')->pluck('id');
+        }
 
         foreach ($doctorIds as $uid) {
             $this->notify((int) $uid, 'appointment.pool.new', $title, $body, [
@@ -75,9 +82,14 @@ class NotificationService
 
         // Fan out to every approved pharmacy so they see the Rx in
         // their inbox + hear the dispense cue, even before the
-        // patient places an order.
+        // patient places an order. Fall back to any pharmacy user
+        // if no approvals exist yet — avoids a silent inbox on a
+        // clinic still completing verification paperwork.
         $pharmacyIds = PharmacyProfile::where('verification_status', 'approved')
             ->pluck('user_id');
+        if ($pharmacyIds->isEmpty()) {
+            $pharmacyIds = \App\Models\User::where('role', 'pharmacy')->pluck('id');
+        }
         foreach ($pharmacyIds as $uid) {
             $this->notify((int) $uid, 'prescription.incoming',
                 'New prescription in inbox · 新處方進來',
@@ -153,6 +165,9 @@ class NotificationService
         $doctorIds = DoctorProfile::where('verification_status', 'approved')
             ->where('accepting_appointments', true)
             ->pluck('user_id');
+        if ($doctorIds->isEmpty()) {
+            $doctorIds = \App\Models\User::where('role', 'doctor')->pluck('id');
+        }
 
         foreach ($doctorIds as $uid) {
             $this->notify((int) $uid, $type, $title, $body, [

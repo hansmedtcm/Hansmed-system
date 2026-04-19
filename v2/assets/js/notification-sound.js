@@ -97,6 +97,11 @@
     try {
       var res = await HM.api.notification.list();
       var items = (res && res.data) || [];
+      // Always log so the clinic can F12 and verify cues are firing.
+      // Disable once behavior is confirmed: window.HM_NOTIF_DEBUG = false.
+      if (window.HM_NOTIF_DEBUG !== false) {
+        try { console.log('[HM notif] poll: ' + items.length + ' items, lastSeen=' + lastSeenId + ', top.id=' + (items[0] && items[0].id) + ', top.type=' + (items[0] && items[0].type)); } catch (_) {}
+      }
       if (! items.length) return;
 
       // Find highest id seen this poll.

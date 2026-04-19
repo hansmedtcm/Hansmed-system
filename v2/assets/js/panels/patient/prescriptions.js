@@ -116,8 +116,19 @@
         m.body.innerHTML = '<p class="text-muted">No pharmacies available yet. Please check back later.</p>';
         return;
       }
+
+      // No saved addresses? Render an inline "add address" form so the
+      // patient can enter one right here instead of hitting a dead-end.
+      // We pre-fill from their profile address if present — most
+      // patients just confirm and move on.
       if (!addresses.length) {
-        m.body.innerHTML = '<div class="alert alert--warning"><div class="alert-body">Please add a delivery address in your profile before ordering.</div></div>';
+        try {
+          var prof = await HM.api.patient.getProfile();
+          var pp = (prof && prof.user && prof.user.patient_profile) || (prof && prof.patient_profile) || {};
+          renderAddressForm(m, pp, function () { showOrderFlow(rx); });
+        } catch (_) {
+          renderAddressForm(m, {}, function () { showOrderFlow(rx); });
+        }
         return;
       }
 
@@ -127,7 +138,12 @@
       m.body.innerHTML = '' +
         '<div class="field"><label class="field-label">Pharmacy · 藥房</label><select id="ord-pharm" class="field-input field-input--boxed">' + phOpts + '</select></div>' +
         '<div class="field"><label class="field-label">Delivery Address · 收貨地址</label><select id="ord-addr" class="field-input field-input--boxed">' + addrOpts + '</select></div>' +
+        '<div class="mt-2"><button type="button" class="btn btn--ghost btn--sm" id="ord-addr-new">+ Add new address · 新增地址</button></div>' +
         '<button id="ord-place" class="btn btn--primary btn--block mt-4">Place Order · 下單</button>';
+
+      m.body.querySelector('#ord-addr-new').addEventListener('click', function () {
+        renderAddressForm(m, {}, function () { showOrderFlow(rx); });
+      });
 
       m.body.querySelector('#ord-place').addEventListener('click', async function () {
         try {
@@ -146,6 +162,67 @@
     } catch (err) {
       m.body.innerHTML = '<p class="text-danger">' + (err.message || 'Failed to load') + '</p>';
     }
+  }
+
+  /**
+   * Inline "add delivery address" form rendered inside the order modal
+   * when the patient has no saved addresses yet. Pre-fills from their
+   * patient profile (address_line1/city/etc) so they usually just
+   * confirm and continue. Saves via /patient/addresses then re-enters
+   * the order flow so the new address is pre-selected.
+   */
+  function renderAddressForm(m, pp, onSaved) {
+    function v(x) { return HM.format.esc(x || ''); }
+    m.body.innerHTML = '' +
+      '<div class="alert alert--info mb-4"><div class="alert-body">' +
+      'Enter a delivery address to continue · 請輸入收貨地址' +
+      '</div></div>' +
+      '<div class="field-grid field-grid--2">' +
+      '<div class="field"><label class="field-label" data-required>Recipient · 收件人</label>' +
+      '<input id="ad-recipient" class="field-input field-input--boxed" value="' + v(pp.full_name) + '" required></div>' +
+      '<div class="field"><label class="field-label" data-required>Phone · 電話</label>' +
+      '<input id="ad-phone" class="field-input field-input--boxed" value="' + v(pp.phone) + '" required></div>' +
+      '</div>' +
+      '<div class="field"><label class="field-label" data-required>Address Line 1 · 地址</label>' +
+      '<input id="ad-line1" class="field-input field-input--boxed" value="' + v(pp.address_line1) + '" required></div>' +
+      '<div class="field"><label class="field-label">Address Line 2 · 地址 2</label>' +
+      '<input id="ad-line2" class="field-input field-input--boxed" value="' + v(pp.address_line2) + '"></div>' +
+      '<div class="field-grid field-grid--3">' +
+      '<div class="field"><label class="field-label" data-required>City · 城市</label>' +
+      '<input id="ad-city" class="field-input field-input--boxed" value="' + v(pp.city) + '" required></div>' +
+      '<div class="field"><label class="field-label">State · 州</label>' +
+      '<input id="ad-state" class="field-input field-input--boxed" value="' + v(pp.state) + '"></div>' +
+      '<div class="field"><label class="field-label" data-required>Postal · 郵遞</label>' +
+      '<input id="ad-postal" class="field-input field-input--boxed" value="' + v(pp.postal_code) + '" required></div>' +
+      '</div>' +
+      '<div class="field"><label class="field-label">Country · 國家</label>' +
+      '<input id="ad-country" class="field-input field-input--boxed" value="' + v(pp.country || 'Malaysia') + '"></div>' +
+      '<button id="ad-save" class="btn btn--primary btn--block mt-4">Save &amp; Continue · 儲存並繼續</button>';
+
+    m.body.querySelector('#ad-save').addEventListener('click', async function () {
+      var getVal = function (id) { return (m.body.querySelector(id).value || '').trim(); };
+      var payload = {
+        recipient:   getVal('#ad-recipient'),
+        phone:       getVal('#ad-phone'),
+        line1:       getVal('#ad-line1'),
+        line2:       getVal('#ad-line2') || null,
+        city:        getVal('#ad-city'),
+        state:       getVal('#ad-state') || null,
+        postal_code: getVal('#ad-postal'),
+        country:     getVal('#ad-country') || 'Malaysia',
+      };
+      if (!payload.recipient || !payload.phone || !payload.line1 || !payload.city || !payload.postal_code) {
+        HM.ui.toast('Please fill all required fields · 請填寫必填欄位', 'warning');
+        return;
+      }
+      try {
+        await HM.api.patient.createAddress(payload);
+        HM.ui.toast('Address saved · 地址已儲存', 'success');
+        if (typeof onSaved === 'function') onSaved();
+      } catch (err) {
+        HM.ui.toast(err.message || 'Failed to save address', 'danger');
+      }
+    });
   }
 
   HM.patientPanels.prescriptions = {
