@@ -83,7 +83,7 @@ Route::post('/vouchers/preview', function (\Illuminate\Http\Request $r) {
 // Defaults are open — admin disables explicitly via system_configs.
 Route::get('/public/features', function () {
     $rows = \Illuminate\Support\Facades\DB::table('system_configs')
-        ->whereIn('config_key', ['shop_enabled', 'video_provider'])
+        ->whereIn('config_key', ['shop_enabled', 'video_provider', 'jitsi_domain'])
         ->get()->keyBy('config_key');
     $boolish = function ($v) {
         if ($v === null) return null;
@@ -95,9 +95,14 @@ Route::get('/public/features', function () {
     $shop = isset($rows['shop_enabled']) ? $boolish($rows['shop_enabled']->config_value) : null;
     $videoRaw = isset($rows['video_provider']) ? trim((string) $rows['video_provider']->config_value) : '';
     $video = in_array($videoRaw, ['jitsi','google_meet'], true) ? $videoRaw : 'jitsi';
+    // Self-hosted Jitsi domain — admin can swap meet.jit.si (5-min
+    // limits) for their own server (no limits) without touching code.
+    $jitsiDomainRaw = isset($rows['jitsi_domain']) ? trim((string) $rows['jitsi_domain']->config_value) : '';
+    $jitsiDomain = $jitsiDomainRaw !== '' ? $jitsiDomainRaw : 'meet.jit.si';
     return response()->json([
         'shop_enabled'    => $shop === null ? true : $shop, // default ON
         'video_provider'  => $video,                         // 'jitsi' or 'google_meet'
+        'jitsi_domain'    => $jitsiDomain,                   // e.g. 'meet.jit.si' or 'meet.example.com'
     ]);
 });
 

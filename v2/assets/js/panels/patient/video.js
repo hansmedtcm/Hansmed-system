@@ -77,7 +77,8 @@
       }
 
       var roomName = rtc.channel || ('HansMed-Consult-' + appointmentId);
-      var jitsiUrl = 'https://' + HM.config.JITSI_DOMAIN + '/' + encodeURIComponent(roomName) +
+      var domain = (features && features.jitsi_domain) || HM.config.JITSI_DOMAIN || 'meet.jit.si';
+      var jitsiUrl = 'https://' + domain + '/' + encodeURIComponent(roomName) +
         '#userInfo.displayName="' + encodeURIComponent(displayName) + '"' +
         '&config.prejoinPageEnabled=false' +
         '&config.disableDeepLinking=true';

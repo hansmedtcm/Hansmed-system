@@ -104,13 +104,25 @@
         '<div class="field"><label class="check-item">' +
         '<input type="radio" name="video_provider" value="jitsi" ' +
         ((c.video_provider !== 'google_meet') ? 'checked' : '') + '> ' +
-        '<strong>Jitsi (default)</strong> — embedded video, no signup required. Free. · 嵌入式視訊，免登入。' +
+        '<strong>Jitsi</strong> — embedded video, no signup required. · 嵌入式視訊，免登入。' +
         '</label></div>' +
         '<div class="field"><label class="check-item">' +
         '<input type="radio" name="video_provider" value="google_meet" ' +
         ((c.video_provider === 'google_meet') ? 'checked' : '') + '> ' +
         '<strong>Google Meet</strong> — opens in a new tab. Doctor creates a Meet room in their Google account and pastes the URL on the consult page; patient gets a Join button. · 於新分頁開啟，醫師於 Google 建立會議並貼上連結，患者點擊加入。' +
         '</label></div>' +
+
+        // Self-hostable Jitsi domain — meet.jit.si imposes a 5-min
+        // unauthenticated cap. Self-hosted Jitsi has no such limit.
+        '<div class="field mt-3" id="jitsi-domain-field">' +
+        '<label class="field-label">Jitsi Domain · Jitsi 網域</label>' +
+        '<input name="jitsi_domain" class="field-input field-input--boxed" placeholder="meet.jit.si" value="' + HM.format.esc(c.jitsi_domain || '') + '">' +
+        '<div class="field-hint">' +
+        '<strong>Default <code>meet.jit.si</code> caps anonymous calls at ~5 minutes.</strong> ' +
+        'For unlimited calls: self-host Jitsi on a $5/mo VPS (1-line installer at <a href="https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-quickstart" target="_blank" rel="noopener">jitsi.github.io</a>) and put your domain here, e.g. <code>meet.yourclinic.com</code>. Or switch to Google Meet above. ' +
+        '<span style="font-family: var(--font-zh);">公共 meet.jit.si 對未登入使用者僅約 5 分鐘，建議自架 Jitsi 或改用 Google Meet。</span>' +
+        '</div>' +
+        '</div>' +
         '</div>' +
 
         '<div class="card mb-4">' +

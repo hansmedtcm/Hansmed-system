@@ -126,7 +126,10 @@
       // which opens the Meet in a new tab.
       videoBlock = renderMeetSetupBlock(state.appt);
     } else {
-      var jitsiUrl = 'https://' + HM.config.JITSI_DOMAIN + '/' + encodeURIComponent(roomName) +
+      // Admin can override the Jitsi domain (self-hosted = no 5-min
+      // limit). Falls back to meet.jit.si if not configured.
+      var domain = (features && features.jitsi_domain) || HM.config.JITSI_DOMAIN || 'meet.jit.si';
+      var jitsiUrl = 'https://' + domain + '/' + encodeURIComponent(roomName) +
         '#userInfo.displayName="' + encodeURIComponent(displayName) + '"&config.prejoinPageEnabled=false';
       videoBlock = '<div class="consult-video">' +
         '<iframe src="' + HM.format.esc(jitsiUrl) + '" style="width:100%;height:100%;border:none;" allow="camera;microphone;display-capture;autoplay"></iframe>' +
