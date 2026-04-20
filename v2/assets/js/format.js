@@ -174,15 +174,15 @@
 
   /**
    * Produce an <img> tag with a graceful fallback if the URL 404s.
-   * On Railway the storage volume is ephemeral — uploads vanish on
-   * every deploy — so we get broken-image icons all over the place.
-   * This wraps the image so the card renders a neutral placeholder
-   * icon + washi background instead.
+   * Uses a global HM.imgFallback(el, icon, title) called from a
+   * minimal inline onerror handler — earlier implementation jammed a
+   * full HTML string into the attribute which leaked quotes into the
+   * DOM when the browser tried to parse it.
    *
    * Usage:
    *   HM.format.img(url, {
    *     style: 'width:70px;height:70px;border-radius:var(--r-md);',
-   *     icon: '👅',            // shown in the placeholder
+   *     icon: '👅',
    *     title: 'Photo unavailable',
    *   })
    */
@@ -191,21 +191,36 @@
     var icon = opts.icon || '📄';
     var baseStyle = opts.style || 'width:70px;height:70px;border-radius:var(--r-md);';
     var title = opts.title || 'Photo unavailable · 圖片不存在';
-    // Placeholder HTML — built as a string so we can inject via outerHTML.
-    var placeholder =
-      '<div style="' + baseStyle +
-      'object-fit:cover;background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--stone);" ' +
-      'title="' + esc(title) + '">' + icon + '</div>';
-    if (! url) return placeholder;
-    var safe = esc(url);
-    // JSON-stringify to produce a properly-quoted JS string for the
-    // inline onerror handler. This keeps the HTML itself single-line.
-    var replacement = JSON.stringify(placeholder);
-    return '<img src="' + safe + '" ' +
-      'loading="lazy" ' +
-      'onerror="this.outerHTML=' + esc(replacement).replace(/"/g, '&quot;') + ';" ' +
-      'style="' + baseStyle + 'object-fit:cover;background:var(--washi);">';
+    var placeholderStyle = baseStyle +
+      'object-fit:cover;background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--stone);';
+
+    if (! url) {
+      return '<div style="' + placeholderStyle + '" title="' + esc(title) + '">' + icon + '</div>';
+    }
+
+    // Single-quoted attribute values so we can embed JSON-safe double
+    // quotes inside. Keeps the handler tiny + brittle-free.
+    return "<img src='" + esc(url) + "' " +
+      "loading='lazy' " +
+      "onerror=\"HM.imgFallback(this, '" + icon + "', '" + esc(title).replace(/'/g, "\\'") + "')\" " +
+      "style='" + baseStyle + "object-fit:cover;background:var(--washi);'>";
   }
+
+  // Swap a failed <img> for a placeholder <div> with the same box
+  // size. Called from the onerror handler generated above. Global so
+  // it stays reachable even after HTML snippets are cloned/moved.
+  window.HM.imgFallback = function (imgEl, icon, title) {
+    if (! imgEl || imgEl._hmFellBack) return;
+    imgEl._hmFellBack = true;
+    var div = document.createElement('div');
+    // Reuse the img's existing style so the box size/border matches.
+    div.style.cssText = (imgEl.getAttribute('style') || '') +
+      ';display:flex;align-items:center;justify-content:center;' +
+      'font-size:2rem;color:var(--stone);background:var(--washi);';
+    div.title = title || 'Photo unavailable';
+    div.textContent = icon || '📄';
+    if (imgEl.parentNode) imgEl.parentNode.replaceChild(div, imgEl);
+  };
 
   window.HM.format = {
     money: money,
