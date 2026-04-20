@@ -276,12 +276,13 @@
       '</div>';
 
     card.querySelector('[data-review]').addEventListener('click', function () {
-      // Combined cards open the constitution modal — it already loads
-      // the linked tongue scans + Wuyun Liuqi context, so the doctor
-      // reviews everything in one place. Standalone tongue cards
-      // open the tongue modal as before.
-      if (it.kind === 'tongue') openTongueModal(it.id, it.patient_id);
-      else                      openConstitutionModal(it.id, it.patient_id);
+      // Combined cards open the constitution modal — it loads the
+      // linked tongue scan + Wuyun Liuqi inline (full deep analysis,
+      // not just a thumbnail), so the doctor reviews everything in
+      // one place. Standalone tongue cards open the tongue modal.
+      if (it.kind === 'tongue')          openTongueModal(it.id, it.patient_id);
+      else if (it.kind === 'combined')   openConstitutionModal(it.id, it.patient_id, it.extra && it.extra.tongue_id);
+      else                                openConstitutionModal(it.id, it.patient_id);
     });
     // Opens/creates the chat thread for this patient and jumps the
     // doctor to Messages so they can clarify symptoms before
@@ -299,21 +300,30 @@
   // ═══════════════════════════════════════════════════════════
   //  CONSTITUTION REVIEW MODAL  (with tongue context from same patient)
   // ═══════════════════════════════════════════════════════════
-  async function openConstitutionModal(id, patientId) {
+  async function openConstitutionModal(id, patientId, linkedTongueId) {
     var loading = HM.ui.modal({ size: 'xl', title: 'Loading…', content: '<div class="state state--loading"><div class="state-icon"></div></div>' });
 
-    var res, tongueRes, patientRes;
+    var res, tongueRes, patientRes, linkedTongueRes = null;
     try {
       // Fetch the report + related tongue scans + patient profile (for DOB-
       // based Wuyun Liuqi analysis) in parallel.
-      var results = await Promise.all([
+      // When the doctor opened a "combined" card, ALSO fetch the
+      // linked tongue's full review payload (with deep three-burner /
+      // holographic / six-meridian analysis) so we can inline it
+      // instead of just the mini thumbnail.
+      var promises = [
         HM.api.doctor.getConstitutionReview(id),
         HM.api.doctor.patientTongue(patientId).catch(function () { return { data: [] }; }),
         HM.api.doctor.patientConsults(patientId).catch(function () { return { patient: null }; }),
-      ]);
+      ];
+      if (linkedTongueId) {
+        promises.push(HM.api.doctor.getTongueReview(linkedTongueId).catch(function () { return null; }));
+      }
+      var results = await Promise.all(promises);
       res = results[0];
       tongueRes = results[1];
       patientRes = results[2];
+      linkedTongueRes = results[3] || null;
     } catch (e) {
       loading.close();
       HM.ui.toast(e.message || 'Failed to load', 'danger');
@@ -407,13 +417,76 @@
 
       '</div>' +
 
-      // Tongue context for the same patient
-      '<div class="text-label mt-4 mb-2">👅 Recent Tongue Scans · 近期舌診</div>' +
-      (tongueScans.length
-        ? '<div class="card" style="padding: var(--s-3);">' +
-          tongueScans.map(renderMiniTongue).join('') +
-          '</div>'
-        : '<div class="card" style="padding: var(--s-3);"><p class="text-xs text-muted" style="margin:0;">No tongue scans on file for this patient.</p></div>') +
+      // Linked tongue — when this constitution review came from a
+      // combined session (patient submitted tongue + questionnaire
+      // together), inline the FULL tongue analysis here instead of
+      // just a mini thumbnail. Includes photo, findings, AI advice,
+      // and the deep three-burner / holographic / six-meridian /
+      // ascending-descending analysis.
+      (function () {
+        if (! linkedTongueRes || ! linkedTongueRes.diagnosis) {
+          // No matched tongue — fall back to the historical mini list.
+          return '<div class="text-label mt-4 mb-2">👅 Recent Tongue Scans · 近期舌診</div>' +
+            (tongueScans.length
+              ? '<div class="card" style="padding: var(--s-3);">' +
+                tongueScans.map(renderMiniTongue).join('') +
+                '</div>'
+              : '<div class="card" style="padding: var(--s-3);"><p class="text-xs text-muted" style="margin:0;">No tongue scans on file for this patient.</p></div>');
+        }
+        var lt = linkedTongueRes.diagnosis;
+        var ltReport = lt.constitution_report || {};
+        var ltConst = ltReport.constitution || {};
+        var ltFindings = ltReport.findings || [];
+        var ltRecs = ltReport.recommendations || [];
+        var ltStatusBadge = {
+          pending:       '<span class="badge">⏳ Pending</span>',
+          approved:      '<span class="badge badge--success">✓ Approved</span>',
+          needs_changes: '<span class="badge badge--danger">Needs Changes</span>',
+        }[lt.review_status || 'pending'] || '';
+
+        return '<div class="text-label mt-4 mb-2">👅 Linked Tongue Diagnosis · 配對舌診 ' + ltStatusBadge + '</div>' +
+          '<div class="card" style="padding: var(--s-3);">' +
+          (lt.image_url
+            ? HM.format.img(lt.image_url, {
+                style: 'width:100%;aspect-ratio:1;border-radius:var(--r-md);border:1px solid var(--border);margin-bottom:var(--s-3);',
+                icon: '👅',
+                title: 'Photo unavailable · 圖片已不存在',
+              })
+            : '') +
+          (ltConst.name_en ? '<div class="card-title">' + HM.format.esc(ltConst.name_en) + '</div>' : '') +
+          (ltConst.name_zh ? '<div class="text-sm text-muted" style="font-family: var(--font-zh);">' + HM.format.esc(ltConst.name_zh) + '</div>' : '') +
+          (lt.health_score != null ? '<div class="text-sm mt-2">Health Score: <strong>' + lt.health_score + '/100</strong></div>' : '') +
+
+          (ltFindings.length ? ('<div class="text-label mt-4 mb-2">Findings</div>' +
+            '<ul class="text-xs text-muted" style="list-style: none; padding: 0;">' +
+            ltFindings.map(function (f) {
+              return '<li style="padding: 4px 0; border-bottom: 1px solid var(--border);">' +
+                '<strong>' + HM.format.esc((f.category || '').replace(/_/g, ' ')) + ':</strong> ' +
+                HM.format.esc(f.value || '—') + '</li>';
+            }).join('') + '</ul>') : '') +
+
+          (ltRecs.length ? ('<div class="text-label mt-4 mb-2">AI Lifestyle Suggestions</div>' +
+            '<ul class="text-xs text-muted" style="padding-left: 18px;">' +
+            ltRecs.map(function (r) { return '<li>' + HM.format.esc(r) + '</li>'; }).join('') +
+            '</ul>') : '') +
+
+          // Deep Yin Modern Tongue Diagnosis analysis — three-burner,
+          // holographic body map, six meridians, clinical patterns,
+          // ascending/descending direction.
+          renderDeepTongueAnalysis(ltReport) +
+
+          // Quick actions for the linked tongue review — doctor can
+          // approve / request changes on the tongue right from the
+          // constitution modal so they don't have to bounce.
+          (lt.review_status === 'pending'
+            ? '<div class="flex gap-2 mt-3">' +
+              '<button type="button" class="btn btn--danger btn--sm" id="lt-needs-changes">Tongue: Request Changes</button>' +
+              '<button type="button" class="btn btn--primary btn--sm" id="lt-approve" style="flex:1;">✓ Approve Tongue · 批准舌診</button>' +
+              '</div>'
+            : '<div class="text-xs text-muted mt-3" style="text-align:center;">Tongue review already completed.</div>') +
+
+          '</div>';
+      })() +
 
       '</div>' +
 
@@ -484,6 +557,38 @@
       e.preventDefault();
       submitConstitution(form, m, id, 'approved');
     });
+
+    // Inline tongue-review actions (only present on combined sessions
+    // where linkedTongueRes was loaded). One-click approve / needs-
+    // changes for the linked tongue without leaving the modal.
+    var ltApprove = m.element.querySelector('#lt-approve');
+    var ltChanges = m.element.querySelector('#lt-needs-changes');
+    if (ltApprove && linkedTongueRes && linkedTongueRes.diagnosis) {
+      var ltId = linkedTongueRes.diagnosis.id;
+      var disableLtButtons = function () {
+        ltApprove.disabled = true; ltChanges.disabled = true;
+      };
+      var submitLt = async function (decision) {
+        disableLtButtons();
+        try {
+          await HM.api.doctor.reviewTongue(ltId, {
+            decision: decision,
+            comment: '',
+            medicine_suggestions: linkedTongueRes.diagnosis.medicine_suggestions || [],
+          });
+          HM.ui.toast('Tongue ' + (decision === 'approved' ? 'approved' : 'flagged for changes') + ' · 舌診已處理', 'success');
+          // Reflect new state inline so the doctor sees it without
+          // a refresh.
+          var box = ltApprove.parentNode;
+          box.outerHTML = '<div class="text-xs text-muted mt-3" style="text-align:center;">✓ Tongue review submitted.</div>';
+        } catch (err) {
+          HM.ui.toast(err.message || 'Tongue review failed', 'danger');
+          ltApprove.disabled = false; ltChanges.disabled = false;
+        }
+      };
+      ltApprove.addEventListener('click', function () { submitLt('approved'); });
+      ltChanges.addEventListener('click', function () { submitLt('needs_changes'); });
+    }
 
     // Prescribe — opens a second modal, seeded with the primary pattern's herbs
     m.element.querySelector('#cr-prescribe').addEventListener('click', function () {
