@@ -24,9 +24,81 @@ class AppointmentController extends Controller
             $q->whereDate('scheduled_start', $date);
         }
 
-        return response()->json(
-            $q->orderByDesc('scheduled_start')->paginate(20)
-        );
+        $page = $q->orderByDesc('scheduled_start')->paginate(20);
+
+        // Layer in prescription orders + treatment fees so each card
+        // can display the COMBINED total (consult fee + Rx orders +
+        // treatment fees), not just the consult fee. We do this in PHP
+        // rather than via SQL joins to keep the query simple.
+        $apptIds = collect($page->items())->pluck('id');
+        if ($apptIds->isNotEmpty()) {
+            // Each appointment's prescriptions
+            $rxByAppt = \App\Models\Prescription::whereIn('appointment_id', $apptIds)
+                ->select('id', 'appointment_id', 'status')
+                ->get()
+                ->groupBy('appointment_id');
+
+            // Paid+ orders linked to those prescriptions
+            $rxIds = $rxByAppt->flatten()->pluck('id');
+            $ordersByRx = $rxIds->isEmpty()
+                ? collect()
+                : \App\Models\Order::whereIn('prescription_id', $rxIds)
+                    ->whereIn('status', ['paid', 'dispensing', 'dispensed', 'shipped', 'delivered', 'completed'])
+                    ->select('id', 'order_no', 'prescription_id', 'total', 'status')
+                    ->get()
+                    ->groupBy('prescription_id');
+
+            // Treatment fees from consultations.treatments JSON
+            $consultRows = \DB::table('consultations')
+                ->whereIn('appointment_id', $apptIds)
+                ->select('appointment_id', 'treatments')
+                ->get()
+                ->keyBy('appointment_id');
+
+            foreach ($page->items() as $appt) {
+                $consultFee = (float) ($appt->fee ?? 0);
+
+                // Treatment fees
+                $treatmentFee = 0.0;
+                $tCount = 0;
+                if (isset($consultRows[$appt->id]) && $consultRows[$appt->id]->treatments) {
+                    $list = json_decode($consultRows[$appt->id]->treatments, true) ?: [];
+                    foreach ($list as $t) {
+                        $f = (float) ($t['fee'] ?? 0);
+                        if ($f > 0) { $treatmentFee += $f; $tCount++; }
+                    }
+                }
+
+                // Rx-order totals across every Rx for this appt
+                $rxOrderFee = 0.0;
+                $rxOrderCount = 0;
+                $orderSummaries = [];
+                $rxs = $rxByAppt->get($appt->id, collect());
+                foreach ($rxs as $rx) {
+                    $orders = $ordersByRx->get($rx->id, collect());
+                    foreach ($orders as $o) {
+                        $rxOrderFee   += (float) $o->total;
+                        $rxOrderCount += 1;
+                        $orderSummaries[] = [
+                            'order_no' => $o->order_no,
+                            'total'    => (float) $o->total,
+                            'status'   => $o->status,
+                        ];
+                    }
+                }
+
+                // Attach computed fields for the frontend.
+                $appt->setAttribute('consult_fee',     $consultFee);
+                $appt->setAttribute('treatment_fee',   $treatmentFee);
+                $appt->setAttribute('treatment_count', $tCount);
+                $appt->setAttribute('rx_order_fee',    $rxOrderFee);
+                $appt->setAttribute('rx_order_count',  $rxOrderCount);
+                $appt->setAttribute('rx_orders',       $orderSummaries);
+                $appt->setAttribute('total_billed',    $consultFee + $treatmentFee + $rxOrderFee);
+            }
+        }
+
+        return response()->json($page);
     }
 
     // D-05 / D-06: view appointment with patient + tongue report
@@ -40,9 +112,58 @@ class AppointmentController extends Controller
             ? \App\Models\TongueDiagnosis::find($appt->tongue_diagnosis_id)
             : null;
 
+        // Same fee enrichment as index() so the detail page can render
+        // a full breakdown: consultation + treatments + medicine orders.
+        $consultFee = (float) ($appt->fee ?? 0);
+        $treatmentFee = 0.0;
+        $treatmentList = [];
+        $cRow = \DB::table('consultations')->where('appointment_id', $appt->id)->first();
+        if ($cRow && $cRow->treatments) {
+            $list = json_decode($cRow->treatments, true) ?: [];
+            foreach ($list as $t) {
+                $f = (float) ($t['fee'] ?? 0);
+                if ($f > 0) {
+                    $treatmentFee += $f;
+                    $treatmentList[] = [
+                        'name'    => $t['name'] ?? '—',
+                        'name_zh' => $t['name_zh'] ?? '',
+                        'fee'     => $f,
+                    ];
+                }
+            }
+        }
+
+        $rxOrders = [];
+        $rxOrderFee = 0.0;
+        $rxs = \App\Models\Prescription::where('appointment_id', $appt->id)->pluck('id');
+        if ($rxs->isNotEmpty()) {
+            $orders = \App\Models\Order::whereIn('prescription_id', $rxs)
+                ->whereIn('status', ['paid', 'dispensing', 'dispensed', 'shipped', 'delivered', 'completed'])
+                ->select('id', 'order_no', 'prescription_id', 'total', 'status', 'paid_at')
+                ->get();
+            foreach ($orders as $o) {
+                $rxOrderFee += (float) $o->total;
+                $rxOrders[] = [
+                    'id'       => $o->id,
+                    'order_no' => $o->order_no,
+                    'total'    => (float) $o->total,
+                    'status'   => $o->status,
+                    'paid_at'  => $o->paid_at,
+                ];
+            }
+        }
+
         return response()->json([
             'appointment'      => $appt,
             'tongue_diagnosis' => $tongue,
+            'fee_breakdown'    => [
+                'consult_fee'    => $consultFee,
+                'treatment_fee'  => $treatmentFee,
+                'treatments'     => $treatmentList,
+                'rx_order_fee'   => $rxOrderFee,
+                'rx_orders'      => $rxOrders,
+                'total_billed'   => $consultFee + $treatmentFee + $rxOrderFee,
+            ],
         ]);
     }
 

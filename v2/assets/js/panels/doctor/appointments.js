@@ -145,13 +145,33 @@
         // after registration-wall enforces it).
         var pp = (a.patient && a.patient.patient_profile) || {};
         var realName = pp.full_name || (a.patient && a.patient.email) || ('Patient #' + a.patient_id);
+        // Combined fee = consultation + treatments + paid Rx orders.
+        // Backend computes total_billed; fall back to bare fee on
+        // older payloads.
+        var consultFee   = parseFloat(a.consult_fee   != null ? a.consult_fee   : a.fee) || 0;
+        var treatmentFee = parseFloat(a.treatment_fee || 0);
+        var rxOrderFee   = parseFloat(a.rx_order_fee  || 0);
+        var totalBilled  = (a.total_billed != null) ? parseFloat(a.total_billed) : (consultFee + treatmentFee + rxOrderFee);
+        var hasExtras = treatmentFee > 0 || rxOrderFee > 0;
+
+        var feeBlock = hasExtras
+          ? '<div style="text-align:right;">' +
+            '<strong style="color:var(--gold);font-size:var(--text-lg);">' + HM.format.money(totalBilled) + '</strong>' +
+            '<div class="text-xs text-muted" style="margin-top:2px;">' +
+              '診費 ' + HM.format.money(consultFee) +
+              (treatmentFee > 0 ? ' · 治療 ' + HM.format.money(treatmentFee) : '') +
+              (rxOrderFee   > 0 ? ' · 藥單 ' + HM.format.money(rxOrderFee)   : '') +
+            '</div>' +
+            '</div>'
+          : HM.format.money(consultFee);
+
         var data = {
           id: a.id,
           scheduled_start: a.scheduled_start,
           patient_name: realName,
           notes: a.notes || '',
           status_badge: HM.format.statusBadge(a.status),
-          fee_formatted: HM.format.money(a.fee),
+          fee_formatted: feeBlock,
           can_consult: ['confirmed','in_progress'].indexOf(a.status) >= 0,
           visit_badge: visitTypeBadge(a.visit_type),
         };
@@ -179,6 +199,52 @@
       var pp = (a.patient && a.patient.patient_profile) || {};
       var pname = pp.full_name || (a.patient && a.patient.email) || ('Patient #' + a.patient_id);
 
+      // Fee breakdown card — consult + treatments + each Rx order line.
+      var fb = res.fee_breakdown || {};
+      var feeBreakdownHtml = '';
+      if (fb.total_billed > 0 || (fb.consult_fee || 0) > 0) {
+        feeBreakdownHtml =
+          '<div class="card card--pad-lg mt-4" style="max-width: 800px; border-left:3px solid var(--gold);">' +
+          '<div class="text-label mb-3">💰 Fee Breakdown · 費用明細</div>' +
+          '<div class="flex-between" style="padding: var(--s-2) 0; border-bottom: 1px dashed var(--border);">' +
+            '<span>Consultation · 診費</span>' +
+            '<strong>' + HM.format.money(fb.consult_fee || 0) + '</strong>' +
+          '</div>';
+
+        if ((fb.treatments || []).length) {
+          fb.treatments.forEach(function (t) {
+            feeBreakdownHtml +=
+              '<div class="flex-between" style="padding: var(--s-2) 0; border-bottom: 1px dashed var(--border);">' +
+                '<span class="text-sm">💉 ' + HM.format.esc(t.name) +
+                (t.name_zh ? ' <span style="font-family:var(--font-zh);color:var(--stone);">· ' + HM.format.esc(t.name_zh) + '</span>' : '') +
+                '</span>' +
+                '<span>' + HM.format.money(t.fee) + '</span>' +
+              '</div>';
+          });
+        }
+
+        if ((fb.rx_orders || []).length) {
+          fb.rx_orders.forEach(function (o) {
+            feeBreakdownHtml +=
+              '<div class="flex-between" style="padding: var(--s-2) 0; border-bottom: 1px dashed var(--border);">' +
+                '<span class="text-sm">💊 Rx Order ' +
+                '<a href="#/orders" style="font-family:var(--font-mono);color:var(--gold);">' + HM.format.esc(o.order_no) + '</a> ' +
+                HM.format.statusBadge(o.status) +
+                '</span>' +
+                '<span>' + HM.format.money(o.total) + '</span>' +
+              '</div>';
+          });
+        }
+
+        feeBreakdownHtml +=
+          '<div class="flex-between mt-2" style="padding-top: var(--s-2); border-top: 2px solid var(--ink);">' +
+            '<strong>Total · 合計</strong>' +
+            '<strong style="color: var(--gold); font-size: var(--text-xl);">' + HM.format.money(fb.total_billed) + '</strong>' +
+          '</div>' +
+          '<div class="text-xs text-muted mt-2" style="font-style:italic;">Consultation fee is yours; medicine order revenue is shared with the dispensing pharmacy. · 診費歸醫師，藥單收入與配藥藥房分成。</div>' +
+          '</div>';
+      }
+
       var html = '<div class="page-header">' +
         '<button class="btn btn--ghost" onclick="location.hash=\'#/appointments\'">← Back</button>' +
         '</div>' +
@@ -195,7 +261,8 @@
         (['confirmed','in_progress'].indexOf(a.status) >= 0 ?
           '<button class="btn btn--primary" onclick="location.hash=\'#/consult/' + a.id + '\'">Start Consultation · 開始問診</button>' : '') +
         '<button class="btn btn--outline" onclick="location.hash=\'#/patients/' + a.patient_id + '\'">View Patient History · 查看病史</button>' +
-        '</div></div>';
+        '</div></div>' +
+        feeBreakdownHtml;
       el.innerHTML = html;
     } catch (e) { HM.state.error(el, e); }
   }
