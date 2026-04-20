@@ -260,6 +260,7 @@
     var qRow = res.questionnaire;
     var report = qRow.report || {};
     var patterns = report.patterns || [];
+    var healthConcerns = (report.health_concerns || '').trim();
     var dims = report.dimensions || {};
     var alerts = report.safety_alerts || [];
     var primaryType = patterns.length ? (patterns[0].l || 'Balanced Constitution') : 'Balanced Constitution';
@@ -287,6 +288,17 @@
 
       // ─── LEFT — patient report + tongue context ───
       '<div>' +
+
+      // Patient's own words — shown FIRST so the doctor reads the
+      // context before interpreting the AI dimensions. Gold border so
+      // it stands out from the auto-generated report below.
+      (healthConcerns
+        ? '<div class="text-label mb-2">🩺 Patient\'s Concerns · 患者主訴</div>' +
+          '<div class="card mb-3" style="padding: var(--s-4); background: rgba(201,146,42,.06); border-left: 3px solid var(--gold);">' +
+          '<div class="text-sm" style="white-space: pre-wrap;">' + HM.format.esc(healthConcerns) + '</div>' +
+          '</div>'
+        : '') +
+
       '<div class="text-label mb-2">🧭 Constitution Report · 體質報告</div>' +
       '<div class="card" style="padding: var(--s-4);">' +
       (patterns.length ? (

@@ -184,7 +184,7 @@
   };
 
   // ── State ──────────────────────────────────────────────────
-  var state = { answers: {}, dims: {}, followUpAlerts: [], qIndex: 0 };
+  var state = { answers: {}, dims: {}, followUpAlerts: [], qIndex: 0, healthConcerns: '' };
 
   async function render(el) {
     state = {
@@ -515,8 +515,9 @@
     var q = QS[state.qIndex];
     var step = state.qIndex + 1;
     var total = QS.length;
-    // Overall progress includes the tongue step (unless skipped) + 10 Qs + review
-    var totalSteps = state.skippedTongue ? (total + 1) : (total + 2);
+    // Overall progress includes the tongue step (unless skipped) + 10 Qs
+    // + concerns + review. +1 for concerns step added after QS.
+    var totalSteps = state.skippedTongue ? (total + 2) : (total + 3);
     var currentStep = state.skippedTongue ? step : step + 1;
     var pct = Math.round((currentStep / totalSteps) * 100);
 
@@ -538,7 +539,7 @@
 
       '<div class="flex gap-2 mt-4">' +
       (state.qIndex > 0 ? '<button class="btn btn--ghost" id="aid-back">← Back · 上一題</button>' : '') +
-      '<button class="btn btn--primary" id="aid-next" disabled>' + (state.qIndex === total - 1 ? 'Generate Report · 生成報告' : 'Next · 下一題') + ' →</button>' +
+      '<button class="btn btn--primary" id="aid-next" disabled>' + (state.qIndex === total - 1 ? 'Continue · 繼續' : 'Next · 下一題') + ' →</button>' +
       '</div>' +
       '</div>' +
 
@@ -664,8 +665,73 @@
       state.qIndex++;
       renderQuestion(el);
     } else {
-      renderReport(el);
+      // After the 10-dim scoring is done, ask the patient if there's
+      // anything specific they want the doctor to know. Free-text,
+      // optional. Gives the reviewing doctor context the fixed-choice
+      // questions can't capture (recent events, medications, goals).
+      renderConcerns(el);
     }
+  }
+
+  // ── Current health concerns step ───────────────────────────
+  // A free-text capture right before the report screen. Kept optional
+  // so we don't block patients who just want the AI read-out, but
+  // surfaces prominently on the doctor review modal so the reviewer
+  // sees it alongside the dimensions.
+  function renderConcerns(el) {
+    // Update progress: this sits between Q10 and review.
+    var totalSteps = state.skippedTongue ? (QS.length + 2) : (QS.length + 3);
+    var currentStep = state.skippedTongue ? (QS.length + 1) : (QS.length + 2);
+    var pct = Math.round((currentStep / totalSteps) * 100);
+
+    el.innerHTML = '<div class="page-header">' +
+      '<div class="page-header-label">🩺 Current Health Concerns · 目前健康狀況</div>' +
+      '<div class="flex-between mt-2">' +
+      '<div class="text-sm text-muted">Step ' + currentStep + ' of ' + totalSteps + ' · Additional info</div>' +
+      '<div class="text-sm text-muted">' + pct + '%</div>' +
+      '</div>' +
+      '<div class="aid-progress"><div class="aid-progress-fill" style="width: ' + pct + '%;"></div></div>' +
+      '</div>' +
+
+      '<div style="max-width: 760px;">' +
+      '<h2 class="mb-2">Anything specific you\'d like the doctor to know?</h2>' +
+      '<p class="text-muted mb-4" style="font-family: var(--font-zh);">您現在有任何特別想告訴醫師的健康問題嗎？</p>' +
+
+      '<p class="text-sm text-muted mb-3">' +
+      'Tell us about your current symptoms, recent events, medications you take, or any goals for this consultation. The doctor sees this alongside your AI report. ' +
+      '<span style="font-family: var(--font-zh);">請描述目前的症狀、最近身體變化、正在服用的藥物，或您想解決的健康問題。醫師審核報告時會一併參考。</span>' +
+      '</p>' +
+
+      '<textarea id="aid-concerns" class="field-input field-input--boxed" rows="7" ' +
+      'placeholder="e.g. Lower back pain for 3 weeks after lifting heavy boxes; taking paracetamol occasionally. Sleep has worsened. ' +
+      '例：三週前搬重物後腰痛持續，偶爾服用止痛藥，睡眠變差。" style="width:100%;">' +
+      HM.format.esc(state.healthConcerns || '') +
+      '</textarea>' +
+      '<div class="text-xs text-muted mt-1">Optional — leave blank if you just want the AI read-out. · 非必填，如僅需 AI 報告可留空。</div>' +
+
+      '<div class="flex gap-2 mt-4">' +
+      '<button class="btn btn--ghost" id="aid-concerns-back">← Back · 上一題</button>' +
+      '<button class="btn btn--primary" id="aid-concerns-next">Generate Report · 生成報告 →</button>' +
+      '</div>' +
+      '</div>';
+
+    injectStyle();
+
+    var textarea = document.getElementById('aid-concerns');
+    textarea.addEventListener('input', function () {
+      state.healthConcerns = textarea.value;
+    });
+    textarea.focus();
+
+    document.getElementById('aid-concerns-back').addEventListener('click', function () {
+      state.healthConcerns = textarea.value;
+      state.qIndex = QS.length - 1;
+      renderQuestion(el);
+    });
+    document.getElementById('aid-concerns-next').addEventListener('click', function () {
+      state.healthConcerns = textarea.value.trim();
+      renderReport(el);
+    });
   }
 
   // ── Pattern detection ──────────────────────────────────────
@@ -806,6 +872,7 @@
     var advice = report.doctor_advice || {};
     var comment = report.doctor_comment || '';
     var reviewedAt = report.reviewed_at || '';
+    var concerns = (report.health_concerns || '').trim();
 
     var banner = '';
     if (status === 'pending') {
@@ -879,6 +946,16 @@
       banner +
 
       (alerts.length ? renderAlerts(alerts) : '') +
+
+      // Patient's own concerns — echoed back so they can confirm what
+      // they told the doctor. Gold border so it's visually grouped
+      // with the doctor's response that comes later on the page.
+      (concerns
+        ? '<div class="card card--pad-lg mb-4" style="border-left:3px solid var(--gold);background:rgba(201,146,42,.04);">' +
+          '<div class="text-label mb-2">🩺 Your Concerns · 您的主訴</div>' +
+          '<div class="text-sm" style="white-space:pre-wrap;">' + HM.format.esc(concerns) + '</div>' +
+          '</div>'
+        : '') +
 
       tongueSection +
 
@@ -1265,13 +1342,14 @@
     btn.textContent = 'Submitting… · 送出中…';
     var payload = {
       symptoms: {
-        kind:          'ai_constitution_v2',
-        review_status: 'pending',
-        answers:       state.answers,
-        dimensions:    state.dims,
-        patterns:      types,
-        safety_alerts: alerts,
-        submitted_at:  new Date().toISOString(),
+        kind:             'ai_constitution_v2',
+        review_status:    'pending',
+        answers:          state.answers,
+        dimensions:       state.dims,
+        patterns:         types,
+        safety_alerts:    alerts,
+        health_concerns:  (state.healthConcerns || '').trim() || null,
+        submitted_at:     new Date().toISOString(),
         // Link this questionnaire to the tongue scan from the same session
         // so the reviewing doctor sees both sides of the assessment together.
         tongue_diagnosis_id:     state.tongueId || null,
