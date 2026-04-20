@@ -70,6 +70,7 @@
             '📤 Import CSV · 匯入' +
             '<input type="file" id="mc-import-file" accept=".csv,text/csv" style="display:none;">' +
           '</label>' +
+          '<button class="btn btn--outline" id="mc-reconcile" title="Apply any missing stock decrements from dispensed orders">🔄 Sync Dispensed · 對賬</button>' +
           '<button class="btn btn--primary" id="mc-add">+ Add Medicine · 新增</button>' +
         '</div>' +
       '</div>' +
@@ -105,6 +106,7 @@
     document.getElementById('mc-lowstock').addEventListener('change', function () { loadStock(); });
     document.getElementById('mc-add').addEventListener('click', function () { showEditModal(null); });
     document.getElementById('mc-export').addEventListener('click', exportCsv);
+    document.getElementById('mc-reconcile').addEventListener('click', reconcileStock);
     document.getElementById('mc-import-file').addEventListener('change', function (e) {
       var file = e.target.files && e.target.files[0];
       if (file) importCsv(file);
@@ -389,6 +391,65 @@
         } catch (e) { HM.ui.toast(e.message || 'Failed', 'danger'); }
       },
     });
+  }
+
+  // Reconcile medicine_catalog.stock_grams against every historical
+  // dispensed order. Idempotent via audit_logs dedup. Useful when
+  // dispenses happened before the matcher was robust enough to debit
+  // stock — one click applies all missing decrements.
+  async function reconcileStock() {
+    var ok = await HM.ui.confirm(
+      'Sync all dispensed orders into medicine stock?\n\n' +
+      'Walks every dispensed/shipped/delivered order and applies any\n' +
+      'missing stock decrement. Already-applied decrements are skipped\n' +
+      '(safe to run repeatedly).\n\n' +
+      '對賬：將所有已配藥訂單同步到藥材庫存。重複執行亦安全。'
+    );
+    if (! ok) return;
+
+    var btn = document.getElementById('mc-reconcile');
+    var orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Syncing… · 對賬中';
+    try {
+      var res = await HM.api.admin.reconcileMedicineStock();
+      var msg =
+        (res.items_applied || 0) + ' applied · ' +
+        (res.items_skipped || 0) + ' skipped (already booked) · ' +
+        (res.items_unmatched || 0) + ' unmatched';
+      HM.ui.toast(
+        'Sync complete · 對賬完成\n' + msg,
+        res.items_unmatched ? 'warning' : 'success',
+        8000
+      );
+      // If anything was applied, reload so the new stock_grams shows.
+      if (res.items_applied > 0) loadStock();
+
+      // Surface unmatched rows in a modal so the admin can fix them.
+      if (res.details && res.details.some(function (d) { return d.outcome === 'unmatched'; })) {
+        var unmatched = res.details.filter(function (d) { return d.outcome === 'unmatched'; });
+        HM.ui.modal({
+          size: 'md',
+          title: 'Unmatched items · 未對應項目',
+          content:
+            '<p class="text-sm text-muted mb-3">' +
+            'These dispensed items did not match any medicine_catalog row. ' +
+            'Check the name / Chinese character variants. ' +
+            '<span style="font-family:var(--font-zh);">以下項目找不到對應的藥材。請檢查名稱或繁/簡字變體。</span>' +
+            '</p>' +
+            '<ul style="font-size:var(--text-sm);line-height:1.6;">' +
+            unmatched.map(function (d) {
+              return '<li>' + HM.format.esc(d.order) + ' · ' + HM.format.esc(d.drug) + '</li>';
+            }).join('') +
+            '</ul>',
+        });
+      }
+    } catch (e) {
+      HM.ui.toast('Sync failed: ' + (e.message || ''), 'danger');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
+    }
   }
 
   // Download the full catalog as CSV. Triggers a direct browser download

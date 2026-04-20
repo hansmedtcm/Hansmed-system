@@ -258,6 +258,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get   ('/medicine-catalog/export',  [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'exportCsv']);
         Route::post  ('/medicine-catalog/import',  [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'importCsv']);
         Route::post  ('/medicine-catalog/{id}/adjust-stock', [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'adjustStock']);
+        Route::post  ('/medicine-catalog/reconcile', [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'reconcileFromDispensed']);
 
         // Medicine purchase orders (stock-in log)
         Route::get   ('/medicine-purchases',       [\App\Http\Controllers\Admin\MedicinePurchaseController::class, 'index']);

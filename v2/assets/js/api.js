@@ -343,6 +343,7 @@
     updateMedicine:         function (id, d) { return api.patch('/admin/medicine-catalog/' + id, d); },
     deleteMedicine:         function (id, force) { return api.delete('/admin/medicine-catalog/' + id + (force ? '?force=1' : '')); },
     adjustMedicineStock:    function (id, d) { return api.post('/admin/medicine-catalog/' + id + '/adjust-stock', d); },
+    reconcileMedicineStock: function () { return api.post('/admin/medicine-catalog/reconcile'); },
     exportMedicineCsv:      function () { return api.get('/admin/medicine-catalog/export'); },
     importMedicineCsv:      function (file) {
       var fd = new FormData();

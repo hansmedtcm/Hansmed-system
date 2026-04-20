@@ -176,6 +176,130 @@ class MedicineCatalogController extends Controller
     }
 
     /**
+     * Reconcile medicine_catalog.stock_grams against every historical
+     * dispensed order — applies any decrement that wasn't recorded
+     * earlier (e.g. before the matcher was robust enough, before
+     * stock_grams column existed, before the audit log was written).
+     *
+     * Dedup is via audit_logs: any order_item we've already logged
+     * under action='medicine.stock.decrement' with {order_id,
+     * drug_name, qty_grams} is skipped. Idempotent — safe to run
+     * any number of times without double-decrementing.
+     */
+    public function reconcileFromDispensed(Request $request)
+    {
+        $this->ensureTable();
+
+        $report = [
+            'orders_scanned'   => 0,
+            'items_scanned'    => 0,
+            'items_applied'    => 0,
+            'items_skipped'    => 0,   // already logged
+            'items_unmatched'  => 0,   // no catalog row
+            'details'          => [],
+        ];
+
+        $splitRegex = '/\s*[·・•\|]\s*/u';
+
+        // Touch every order that's past the 'paid' gate. Dispensed /
+        // shipped / delivered / completed all legitimately consumed
+        // stock.
+        DB::table('orders')
+            ->whereIn('status', ['dispensed', 'shipped', 'delivered', 'completed'])
+            ->orderBy('id')
+            ->get(['id', 'order_no'])
+            ->each(function ($order) use (&$report, $splitRegex, $request) {
+                $report['orders_scanned']++;
+
+                $items = DB::table('order_items')->where('order_id', $order->id)->get();
+                foreach ($items as $item) {
+                    $report['items_scanned']++;
+
+                    $name = trim((string) ($item->drug_name ?? ''));
+                    $qty  = (float) ($item->quantity ?? 0);
+                    $unit = strtolower(trim((string) ($item->unit ?? 'g')));
+                    if ($name === '' || $qty <= 0) { $report['items_skipped']++; continue; }
+                    if (! in_array($unit, ['g', 'gram', 'grams', '克'], true)) { $report['items_skipped']++; continue; }
+
+                    // Skip if we've already booked this exact item.
+                    $already = DB::table('audit_logs')
+                        ->where('action', 'medicine.stock.decrement')
+                        ->where('target_type', 'medicine_catalog')
+                        ->whereRaw("JSON_EXTRACT(payload, '$.order_id') = ?", [$order->id])
+                        ->whereRaw("JSON_EXTRACT(payload, '$.drug_name') = ?", [$name])
+                        ->whereRaw("JSON_EXTRACT(payload, '$.qty_grams') = ?", [$qty])
+                        ->exists();
+                    if ($already) { $report['items_skipped']++; continue; }
+
+                    // Match with the same tolerance the live dispense uses.
+                    $candidates = [$name];
+                    foreach (preg_split($splitRegex, $name) as $piece) {
+                        $p = trim($piece);
+                        if ($p !== '' && ! in_array($p, $candidates, true)) $candidates[] = $p;
+                    }
+                    $row = DB::table('medicine_catalog')
+                        ->where(function ($q) use ($candidates) {
+                            foreach ($candidates as $c) {
+                                $q->orWhere('name_zh', $c)
+                                  ->orWhere('name_pinyin', $c)
+                                  ->orWhereRaw('LOWER(name_pinyin) = LOWER(?)', [$c])
+                                  ->orWhere('code', $c);
+                            }
+                        })
+                        ->first();
+                    if (! $row) {
+                        foreach ($candidates as $c) {
+                            if (mb_strlen($c) < 2) continue;
+                            $row = DB::table('medicine_catalog')
+                                ->where(function ($q) use ($c) {
+                                    $q->where('name_zh', 'like', '%' . $c . '%')
+                                      ->orWhere('name_pinyin', 'like', '%' . $c . '%');
+                                })->first();
+                            if ($row) break;
+                        }
+                    }
+                    if (! $row) {
+                        $report['items_unmatched']++;
+                        $report['details'][] = ['order' => $order->order_no, 'drug' => $name, 'outcome' => 'unmatched'];
+                        continue;
+                    }
+
+                    DB::table('medicine_catalog')->where('id', $row->id)->update([
+                        'stock_grams'      => DB::raw('GREATEST(0, COALESCE(stock_grams, 0) - ' . $qty . ')'),
+                        'stock_updated_at' => now(),
+                        'updated_at'       => now(),
+                    ]);
+                    $newStock = DB::table('medicine_catalog')->where('id', $row->id)->value('stock_grams');
+
+                    DB::table('audit_logs')->insert([
+                        'user_id'     => $request->user()->id,
+                        'action'      => 'medicine.stock.decrement',
+                        'target_type' => 'medicine_catalog',
+                        'target_id'   => $row->id,
+                        'payload'     => json_encode([
+                            'reason'    => 'reconcile_backfill',
+                            'order_id'  => $order->id,
+                            'drug_name' => $name,
+                            'qty_grams' => $qty,
+                        ]),
+                        'created_at'  => now(),
+                    ]);
+
+                    $report['items_applied']++;
+                    $report['details'][] = [
+                        'order'     => $order->order_no,
+                        'drug'      => $name,
+                        'matched'   => $row->name_zh . ' · ' . $row->name_pinyin,
+                        'grams'     => $qty,
+                        'new_stock' => $newStock,
+                    ];
+                }
+            });
+
+        return response()->json($report);
+    }
+
+    /**
      * Seed (or upsert) the Timing Herbs Mar-2026 price list.
      * Safe to run multiple times — upserts on `code`.
      */
