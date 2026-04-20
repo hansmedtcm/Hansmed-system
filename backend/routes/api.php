@@ -250,15 +250,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/medicine-catalog',   [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'migrate']);
 
         // Medicine catalogue (Timing Herbs master price list)
+        // Static POST routes MUST register before the {id} wildcards below;
+        // otherwise POST /medicine-catalog/reconcile gets resolved as
+        // {id}=reconcile and Laravel reports "POST not supported" because
+        // that wildcard only has PATCH + DELETE handlers.
+        Route::post  ('/medicine-catalog/seed',      [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'seed']);
+        Route::get   ('/medicine-catalog/export',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'exportCsv']);
+        Route::post  ('/medicine-catalog/import',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'importCsv']);
+        Route::post  ('/medicine-catalog/reconcile', [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'reconcileFromDispensed']);
+        Route::post  ('/medicine-catalog/{id}/adjust-stock', [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'adjustStock']);
+
         Route::get   ('/medicine-catalog',         [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'index']);
         Route::post  ('/medicine-catalog',         [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'store']);
         Route::patch ('/medicine-catalog/{id}',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'update']);
         Route::delete('/medicine-catalog/{id}',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'destroy']);
-        Route::post  ('/medicine-catalog/seed',    [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'seed']);
-        Route::get   ('/medicine-catalog/export',  [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'exportCsv']);
-        Route::post  ('/medicine-catalog/import',  [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'importCsv']);
-        Route::post  ('/medicine-catalog/{id}/adjust-stock', [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'adjustStock']);
-        Route::post  ('/medicine-catalog/reconcile', [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'reconcileFromDispensed']);
 
         // Medicine purchase orders (stock-in log)
         Route::get   ('/medicine-purchases',       [\App\Http\Controllers\Admin\MedicinePurchaseController::class, 'index']);
