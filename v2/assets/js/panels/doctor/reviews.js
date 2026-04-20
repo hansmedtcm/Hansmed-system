@@ -937,6 +937,52 @@
         '<div class="text-xs text-muted mt-1" style="font-style:italic;">Click any herb to add it to your prescription draft below.</div>'
       : '';
 
+    // 藥膳 — actual medicinal-meal recipe names from the textbook.
+    // Patient can look these up; the doctor often recommends them by
+    // name as supportive home cooking alongside (or instead of) a
+    // formal Rx. Each chip injects into the lifestyle tips so the
+    // recommendation rides along with the rest of the advice.
+    var mealsHtml = (syn.medicinal_meals && syn.medicinal_meals.length)
+      ? '<div class="syn-section-head">🍲 Medicinal Meals · 藥膳食療</div>' +
+        '<div class="syn-meals">' +
+        syn.medicinal_meals.slice(0, 12).map(function (m) {
+          var themes = (m.for_themes || []).map(function (t) { return t.zh; }).join(' / ');
+          var label = (m.name_zh || '') + (m.name_en ? ' · ' + m.name_en : '');
+          var note  = m.note_en ? ' — ' + m.note_en : '';
+          var payload = encodeURIComponent(JSON.stringify({
+            icon: '🍲',
+            en:   'Try medicinal meal: ' + (m.name_en || m.name_zh),
+            zh:   '藥膳建議：' + (m.name_zh || m.name_en),
+          }));
+          return '<button type="button" class="syn-meal-card" data-syn-add="tip" ' +
+            'data-syn-payload="' + payload + '" ' +
+            'title="For: ' + HM.format.esc(themes) + note + ' — click to add as a lifestyle tip">' +
+            '<div style="font-family:var(--font-zh);font-weight:600;">' + HM.format.esc(m.name_zh || '') + '</div>' +
+            (m.name_en ? '<div class="text-xs text-muted">' + HM.format.esc(m.name_en) + '</div>' : '') +
+            (m.note_en ? '<div class="text-xs" style="color:var(--stone);margin-top:2px;font-style:italic;">' + HM.format.esc(m.note_en) + '</div>' : '') +
+            '</button>';
+        }).join('') +
+        '</div>' +
+        '<div class="text-xs text-muted mt-1" style="font-style:italic;">From <em>中醫藥膳學</em> (Zuo et al., 2014). Click any meal to add it to the lifestyle tips list below.</div>'
+      : '';
+
+    // Seasonal note — adds context based on today\'s month. Particularly
+    // useful for chronic patients whose patterns flare with weather.
+    var seasonHtml = (syn.season && syn.season.tips_en && syn.season.tips_en.length)
+      ? '<div class="syn-section-head">🌤️ Seasonal Note · 時令提示 — ' +
+        HM.format.esc(syn.season.en) + ' · ' + HM.format.esc(syn.season.zh) +
+        '</div>' +
+        '<div class="syn-season">' +
+        syn.season.tips_en.map(function (t, i) {
+          var zh = (syn.season.tips_zh && syn.season.tips_zh[i]) || '';
+          return '<div class="syn-season-line">' +
+            '<div>' + HM.format.esc(t) + '</div>' +
+            (zh ? '<div style="font-family:var(--font-zh);color:var(--stone);font-size:11px;margin-top:2px;">' + HM.format.esc(zh) + '</div>' : '') +
+            '</div>';
+        }).join('') +
+        '</div>'
+      : '';
+
     injectSynthesisStyles();
 
     return '<div class="syn-panel">' +
@@ -954,6 +1000,8 @@
 
       lifestyleHtml +
       herbsHtml +
+      mealsHtml +
+      seasonHtml +
       '</div>';
   }
 
@@ -1074,6 +1122,14 @@
       '.syn-add-btn{flex-shrink:0;background:var(--washi);border:1px solid var(--gold);color:var(--gold);border-radius:var(--r-sm);padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;}' +
       '.syn-add-btn:hover{background:var(--gold);color:#fff;}' +
       '.syn-add-btn--done{background:rgba(122,140,114,.15) !important;color:var(--sage) !important;border-color:rgba(122,140,114,.4) !important;cursor:default;}' +
+      // Medicinal-meal cards (藥膳)
+      '.syn-meals{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;}' +
+      '.syn-meal-card{background:linear-gradient(135deg,rgba(201,146,42,.06),rgba(122,140,114,.06));border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:var(--r-sm);padding:10px 12px;text-align:left;cursor:pointer;font-family:inherit;color:var(--ink);transition:all .15s;}' +
+      '.syn-meal-card:hover{border-color:var(--gold);background:rgba(201,146,42,.12);transform:translateY(-1px);}' +
+      // Seasonal note block
+      '.syn-season{background:#fff;border:1px solid var(--border);border-left:3px solid #4a90b8;border-radius:var(--r-sm);padding:10px 12px;}' +
+      '.syn-season-line{padding:6px 0;border-bottom:1px dashed var(--border);font-size:12px;line-height:1.5;}' +
+      '.syn-season-line:last-child{border-bottom:none;}' +
       '';
     document.head.appendChild(s);
   }
