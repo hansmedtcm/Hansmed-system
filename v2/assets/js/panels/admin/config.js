@@ -80,6 +80,18 @@
         '</div></div>' +
         '</div>' +
 
+        // Patient-facing feature toggles. Hide modules that aren't
+        // ready or aren't relevant for this clinic. Patient sidebar
+        // reads /public/features on login.
+        '<div class="card mb-4">' +
+        '<div class="card-title">Patient Features · 患者功能開關</div>' +
+        '<div class="field"><div class="check-group">' +
+        check('shop_enabled', 'Shop & Cart pages visible to patients · 顯示商店與購物車', c.shop_enabled !== '0' && c.shop_enabled !== 'false') +
+        '</div>' +
+        '<div class="field-hint">Uncheck to hide the Shop and Cart links from the patient sidebar (existing orders are unaffected). · 取消後患者側邊欄將不顯示「商店」與「購物車」。</div>' +
+        '</div>' +
+        '</div>' +
+
         '<div class="card mb-4">' +
         '<div class="card-title">Walk-in Treatments · 臨診治療項目</div>' +
         '<p class="text-xs text-muted mb-3">Preset treatments that appear as quick-add buttons in the consult panel. Use the form to add new ones, or edit the JSON directly for bulk changes. ' +

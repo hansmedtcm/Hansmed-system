@@ -344,6 +344,12 @@
     deleteMedicine:         function (id, force) { return api.delete('/admin/medicine-catalog/' + id + (force ? '?force=1' : '')); },
     adjustMedicineStock:    function (id, d) { return api.post('/admin/medicine-catalog/' + id + '/adjust-stock', d); },
     reconcileMedicineStock: function () { return api.post('/admin/medicine-catalog/reconcile'); },
+
+    // Vouchers / discount codes
+    listVouchers:    function () { return api.get('/admin/vouchers'); },
+    createVoucher:   function (d) { return api.post('/admin/vouchers', d); },
+    updateVoucher:   function (id, d) { return api.patch('/admin/vouchers/' + id, d); },
+    deleteVoucher:   function (id) { return api.delete('/admin/vouchers/' + id); },
     exportMedicineCsv:      function () { return api.get('/admin/medicine-catalog/export'); },
     importMedicineCsv:      function (file) {
       var fd = new FormData();
@@ -437,5 +443,9 @@
     consultation: consultation,
     pages: pages,
     security: security,
+
+    // Misc public endpoints
+    publicFeatures: function () { return api.get('/public/features'); },
+    previewVoucher: function (d) { return api.post('/vouchers/preview', d); },
   };
 })();

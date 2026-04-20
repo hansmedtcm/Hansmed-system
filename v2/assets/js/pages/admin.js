@@ -35,6 +35,8 @@
   HM.router.on('#/permissions', function () { HM.adminPanels.permissions.render(panel()); });
   HM.router.on('#/audit', function () { HM.adminPanels.audit.render(panel()); });
   HM.router.on('#/config', function () { HM.adminPanels.config.render(panel()); });
+  HM.router.on('#/vouchers', function () { HM.adminPanels.vouchers.render(panel()); });
+  HM.router.on('#/my-account', function () { HM.adminPanels.myAccount.render(panel()); });
   HM.router.otherwise(function () { HM.router.navigate('#/'); });
   HM.router.start();
 

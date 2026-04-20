@@ -250,7 +250,8 @@ class OrderController extends Controller
     public function pay(Request $request, int $id)
     {
         $data = $request->validate([
-            'method' => ['nullable', 'string', 'max:30'],
+            'method'        => ['nullable', 'string', 'max:30'],
+            'voucher_code'  => ['nullable', 'string', 'max:40'],
         ]);
 
         $order = Order::where('patient_id', $request->user()->id)->findOrFail($id);
@@ -261,7 +262,32 @@ class OrderController extends Controller
             ], 422);
         }
 
-        return DB::transaction(function () use ($order, $data, $request) {
+        // Voucher application — preview to validate, then apply if ok.
+        $voucher = null;
+        $discount = 0.0;
+        if (! empty($data['voucher_code'])) {
+            $svc = app(\App\Services\VoucherService::class);
+            $preview = $svc->preview($data['voucher_code'], (float) $order->total, 'order');
+            if (! $preview['ok']) {
+                return response()->json(['message' => $preview['message']], 422);
+            }
+            $voucher  = $preview['voucher'];
+            $discount = $preview['discount_amount'];
+        }
+
+        return DB::transaction(function () use ($order, $data, $request, $voucher, $discount) {
+            // Apply discount to order total before marking paid so the
+            // pharmacy + finance reports see the discounted figure.
+            if ($discount > 0) {
+                $newTotal = max(0, (float) $order->total - $discount);
+                $order->update([
+                    'total'   => $newTotal,
+                ]);
+                if ($voucher) {
+                    app(\App\Services\VoucherService::class)->recordRedemption((int) $voucher->id);
+                }
+            }
+
             $order->update([
                 'status'  => 'paid',
                 'paid_at' => now(),

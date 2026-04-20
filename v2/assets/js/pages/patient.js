@@ -77,6 +77,33 @@
     setInterval(refreshPatientCounts, 60000);
   }
 
+  // ── Feature flags — admin can hide the Shop pages from the
+  // sidebar by setting shop_enabled=false in System Settings.
+  // We pull /public/features once on page load and prune the
+  // sidebar links + cart badge accordingly.
+  (async function applyFeatureFlags() {
+    try {
+      var res = await HM.api.publicFeatures();
+      if (res && res.shop_enabled === false) {
+        // Hide Shop, Cart sidebar links + the section header that wraps them.
+        var routesToHide = ['#/shop', '#/cart'];
+        routesToHide.forEach(function (r) {
+          var link = document.querySelector('.sidebar-link[data-route="' + r + '"]');
+          if (link) link.style.display = 'none';
+        });
+        // Hide the "Shop & Medicine" section header if both children are hidden.
+        var sectionHeaders = document.querySelectorAll('.sidebar-section');
+        sectionHeaders.forEach(function (h) {
+          if (h.textContent && /Shop|商店/i.test(h.textContent)) h.style.display = 'none';
+        });
+        // If the patient happened to land on /shop or /cart, bounce home.
+        if (location.hash === '#/shop' || location.hash === '#/cart') {
+          location.hash = '#/';
+        }
+      }
+    } catch (_) { /* default to showing everything */ }
+  })();
+
   // ── Cart badge sync ──
   function updateCartBadge() {
     var count = (HM.cart && HM.cart.count) ? HM.cart.count() : 0;

@@ -124,8 +124,13 @@
       { id: 'grabpay',   icon: '🟢', label: 'GrabPay' },
       { id: 'shopeepay', icon: '🟠', label: 'ShopeePay' },
     ];
+
+    // Local state for live voucher preview — kept on the modal so the
+    // Pay button can read the latest valid voucher when sending.
+    var voucherState = { code: null, discount: 0, total: parseFloat(o.total) || 0 };
+
     var html = '<p class="mb-3">Choose a payment method · 選擇付款方式</p>' +
-      '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: var(--s-2); margin-bottom: var(--s-5);">' +
+      '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: var(--s-2); margin-bottom: var(--s-3);">' +
       methods.map(function (pm, idx) {
         return '<button type="button" data-pm="' + pm.id + '" class="btn btn--outline' + (idx === 0 ? ' is-selected' : '') + '" style="padding: var(--s-3); flex-direction:column; gap: var(--s-1); height:auto; min-height:80px;' +
           (idx === 0 ? 'border-color: var(--gold);' : '') + '">' +
@@ -134,6 +139,24 @@
           '</button>';
       }).join('') +
       '</div>' +
+
+      // ── Voucher input ──
+      '<div class="field" style="margin-bottom: var(--s-3);">' +
+      '<label class="field-label">🎟️ Voucher Code · 優惠碼 (optional)</label>' +
+      '<div class="flex gap-2">' +
+      '<input id="voucher-code" class="field-input field-input--boxed" placeholder="e.g. NEWYEAR2026" style="flex:1;text-transform:uppercase;font-family:var(--font-mono);">' +
+      '<button type="button" class="btn btn--outline" id="voucher-apply">Apply · 套用</button>' +
+      '</div>' +
+      '<div id="voucher-status" class="text-xs mt-1" style="min-height:18px;"></div>' +
+      '</div>' +
+
+      // ── Total summary (updates with voucher) ──
+      '<div id="pay-summary" style="background: var(--washi); padding: var(--s-3); border-radius: var(--r-sm); margin-bottom: var(--s-4);">' +
+      '<div class="flex-between text-sm"><span class="text-muted">Subtotal · 小計</span><span>' + HM.format.money(o.total) + '</span></div>' +
+      '<div id="pay-discount-row" class="flex-between text-sm" style="display:none;color:var(--sage);"><span>Voucher discount · 優惠</span><span id="pay-discount-amt"></span></div>' +
+      '<div class="flex-between mt-2" style="padding-top:var(--s-2);border-top:1px solid var(--border);"><strong>Total · 應付總額</strong><strong id="pay-total" style="color:var(--gold);font-size:var(--text-lg);">' + HM.format.money(o.total) + '</strong></div>' +
+      '</div>' +
+
       '<button id="pay-confirm" class="btn btn--primary btn--block btn--lg">Pay ' + HM.format.money(o.total) + ' · 確認付款</button>' +
       '<p class="text-xs text-muted text-center mt-3">Secured by Stripe Malaysia · 安全支付</p>';
 
@@ -148,6 +171,57 @@
       });
     });
 
+    function updateTotalDisplay() {
+      var subtotal = parseFloat(o.total) || 0;
+      var newTotal = Math.max(0, subtotal - voucherState.discount);
+      voucherState.total = newTotal;
+      var discRow = m.body.querySelector('#pay-discount-row');
+      var discAmt = m.body.querySelector('#pay-discount-amt');
+      var totalEl = m.body.querySelector('#pay-total');
+      var payBtn  = m.body.querySelector('#pay-confirm');
+      if (voucherState.discount > 0) {
+        discRow.style.display = '';
+        discAmt.textContent = '−' + HM.format.money(voucherState.discount);
+      } else {
+        discRow.style.display = 'none';
+      }
+      totalEl.textContent = HM.format.money(newTotal);
+      payBtn.textContent = 'Pay ' + HM.format.money(newTotal) + ' · 確認付款';
+    }
+
+    // Voucher apply — POST /vouchers/preview, update state + UI.
+    var codeInput = m.body.querySelector('#voucher-code');
+    var statusEl = m.body.querySelector('#voucher-status');
+    var applyBtn = m.body.querySelector('#voucher-apply');
+    applyBtn.addEventListener('click', async function () {
+      var code = (codeInput.value || '').trim();
+      if (! code) {
+        voucherState = { code: null, discount: 0, total: parseFloat(o.total) || 0 };
+        statusEl.innerHTML = '';
+        updateTotalDisplay();
+        return;
+      }
+      applyBtn.disabled = true;
+      applyBtn.textContent = '…';
+      try {
+        var res = await HM.api.previewVoucher({ code: code, amount: o.total, scope: 'order' });
+        if (res.ok) {
+          voucherState = { code: code, discount: res.discount_amount || 0, total: res.total_after };
+          statusEl.innerHTML = '<span style="color:var(--sage);">✓ ' + HM.format.esc(res.message) + '</span>';
+        } else {
+          voucherState = { code: null, discount: 0, total: parseFloat(o.total) || 0 };
+          statusEl.innerHTML = '<span style="color:var(--red-seal);">✗ ' + HM.format.esc(res.message || 'Invalid voucher') + '</span>';
+        }
+        updateTotalDisplay();
+      } catch (err) {
+        statusEl.innerHTML = '<span style="color:var(--red-seal);">✗ ' + HM.format.esc(err.message || 'Could not validate voucher') + '</span>';
+      } finally {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply · 套用';
+      }
+    });
+    codeInput.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); applyBtn.click(); } });
+
     m.body.querySelector('#pay-confirm').addEventListener('click', async function () {
       var selected = m.body.querySelector('[data-pm].is-selected');
       var method = selected ? selected.getAttribute('data-pm') : 'card';
@@ -155,17 +229,19 @@
       btn.disabled = true;
       btn.textContent = 'Processing… · 處理中';
       try {
-        await HM.api.patient.payOrder(o.id, { method: method });
+        await HM.api.patient.payOrder(o.id, {
+          method:        method,
+          voucher_code:  voucherState.code || null,
+        });
         m.close();
         HM.ui.toast('Payment successful — pharmacy notified · 付款成功，藥房已收到', 'success', 5000);
-        // Re-render so the Pay button disappears and the new status shows.
         setTimeout(function () {
           var el = document.getElementById('panel-container');
           if (el) HM.patientPanels.orders.renderDetail(el, o.id);
         }, 500);
       } catch (err) {
         btn.disabled = false;
-        btn.textContent = 'Pay ' + HM.format.money(o.total) + ' · 確認付款';
+        btn.textContent = 'Pay ' + HM.format.money(voucherState.total) + ' · 確認付款';
         HM.ui.toast(err.message || 'Payment failed · 付款失敗', 'danger');
       }
     });

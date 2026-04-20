@@ -31,7 +31,42 @@
         '<div class="field"><label class="field-label">Business Hours · 營業時間</label><input name="business_hours" class="field-input" value="' + HM.format.esc(pp.business_hours || '') + '" placeholder="e.g. Mon-Sat 9am-9pm"></div>' +
         '<div class="field"><label class="field-label">Delivery Radius (km) · 配送範圍</label><input name="delivery_radius_km" type="number" step="0.1" class="field-input" value="' + (pp.delivery_radius_km || '') + '"></div>' +
         '<button type="submit" class="btn btn--primary">Save Changes · 儲存</button>' +
-        '</form>';
+        '</form>' +
+
+        // Change Password card — appended below the profile form.
+        '<div class="card card--pad-lg mt-6" style="max-width: 800px;">' +
+        '<h3 class="mb-3">🔒 Change Password · 更改密碼</h3>' +
+        '<form id="pw-form">' +
+        '<div class="field"><label class="field-label" data-required>Current Password · 目前密碼</label>' +
+        '<input type="password" name="current_password" class="field-input" required></div>' +
+        '<div class="field"><label class="field-label" data-required>New Password · 新密碼</label>' +
+        '<input type="password" name="new_password" class="field-input" required minlength="8">' +
+        '<div class="field-hint">Min 8 characters · at least 1 uppercase + 1 number · 至少8字元，含大寫字母及數字</div></div>' +
+        '<div class="field"><label class="field-label" data-required>Confirm New Password · 確認新密碼</label>' +
+        '<input type="password" name="new_password_confirmation" class="field-input" required></div>' +
+        '<div data-general-error class="alert alert--danger" style="display:none;"></div>' +
+        '<button type="submit" class="btn btn--primary">Update Password · 更新密碼</button>' +
+        '</form></div>';
+
+      var pwForm = document.getElementById('pw-form');
+      if (pwForm) pwForm.addEventListener('submit', async function (ev) {
+        ev.preventDefault();
+        var d = HM.form.serialize(pwForm);
+        if (d.new_password !== d.new_password_confirmation) {
+          HM.form.showGeneralError(pwForm, 'Passwords do not match · 密碼不一致');
+          return;
+        }
+        HM.form.setLoading(pwForm, true);
+        try {
+          await HM.api.security.changePassword(d);
+          HM.ui.toast('Password updated · 密碼已更改', 'success');
+          pwForm.reset();
+          HM.form.setLoading(pwForm, false);
+        } catch (err) {
+          HM.form.setLoading(pwForm, false);
+          HM.form.showGeneralError(pwForm, err.message || 'Failed');
+        }
+      });
 
       document.getElementById('pp-form').addEventListener('submit', async function (e) {
         e.preventDefault();

@@ -117,20 +117,92 @@
         html += '</div>';
       }
 
-      // Consultations
-      html += '<div class="text-label mb-3">Consultation History · 問診記錄</div>';
+      // Consultations — expanded card shows the full case record
+      // (chief complaint, BP, pulse, body diagram findings, doctor's
+      // notes), treatments performed, and the full prescription.
+      // This is the doctor's clinical record for the patient.
+      html += '<div class="text-label mb-3">Consultation History · 問診記錄 (' + appts.length + ')</div>';
       if (!appts.length) {
-        html += '<div class="card"><p class="text-muted text-center">No consultations yet</p></div>';
+        html += '<div class="card"><p class="text-muted text-center">No consultations yet · 暫無問診記錄</p></div>';
       } else {
         appts.forEach(function (a) {
           var c = a.consultation || {};
+          var cr = c.case_record || {};
           var rx = a.prescription || {};
-          html += '<div class="card card--bordered mb-3" style="border-left-color: ' + (a.status === 'completed' ? 'var(--sage)' : 'var(--gold)') + ';">' +
-            '<div class="flex-between">' +
-            '<strong>' + HM.format.datetime(a.scheduled_start) + '</strong>' +
-            HM.format.statusBadge(a.status) + '</div>';
-          if (c.doctor_notes) html += '<p class="text-sm text-muted mt-2"><em>' + HM.format.esc(c.doctor_notes) + '</em></p>';
-          if (rx.diagnosis) html += '<div class="text-sm mt-2">Dx: ' + HM.format.esc(rx.diagnosis) + '</div>';
+          var treatments = c.treatments || [];
+          var visitBadge = (a.visit_type === 'walk_in')
+            ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);font-size:10px;">🏥 Walk-in</span>'
+            : '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;font-size:10px;">📹 Online</span>';
+
+          html += '<div class="card card--bordered mb-3" style="border-left-color: ' +
+            (a.status === 'completed' ? 'var(--sage)' : 'var(--gold)') + ';">' +
+            '<div class="flex-between mb-2" style="align-items:flex-start;">' +
+              '<div>' +
+                '<strong>' + HM.format.datetime(a.scheduled_start) + '</strong> ' + visitBadge +
+                (a.concern_label ? '<div class="text-xs text-muted mt-1">Concern: ' + HM.format.esc(a.concern_label) + '</div>' : '') +
+              '</div>' +
+              HM.format.statusBadge(a.status) +
+            '</div>';
+
+          // ── Case Record block — chief complaint, BP, pulse, body marks
+          var hasCR = cr.chief_complaint || cr.bp || cr.pulse || cr.pattern_diagnosis || cr.doctor_instructions || (cr.body_marks && cr.body_marks.length);
+          if (hasCR) {
+            html += '<div class="mt-2" style="background:var(--washi);padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--gold);">' +
+              '<div class="text-label" style="font-size:10px;">📋 Case Record · 病歷</div>';
+            if (cr.chief_complaint) html += '<div class="text-sm mt-1"><strong>Chief Complaint · 主訴:</strong> ' + HM.format.esc(cr.chief_complaint) + '</div>';
+            if (cr.bp || cr.pulse) {
+              html += '<div class="text-sm mt-1">';
+              if (cr.bp)    html += '<strong>BP · 血壓:</strong> ' + HM.format.esc(cr.bp);
+              if (cr.bp && cr.pulse) html += ' · ';
+              if (cr.pulse) html += '<strong>Pulse · 脈診:</strong> ' + HM.format.esc(cr.pulse);
+              html += '</div>';
+            }
+            if (cr.pattern_diagnosis)   html += '<div class="text-sm mt-1"><strong>Pattern · 證型:</strong> ' + HM.format.esc(cr.pattern_diagnosis) + '</div>';
+            if (cr.doctor_instructions) html += '<div class="text-sm mt-1"><strong>Notes · 醫囑:</strong> ' + HM.format.esc(cr.doctor_instructions) + '</div>';
+            if (cr.body_marks && cr.body_marks.length) {
+              html += '<div class="text-xs text-muted mt-1">Body marks: ' + cr.body_marks.length + ' point(s) recorded</div>';
+            }
+            html += '</div>';
+          }
+
+          // ── Doctor notes from consultation (separate from case_record)
+          if (c.doctor_notes) {
+            html += '<div class="text-sm text-muted mt-2"><em>' + HM.format.esc(c.doctor_notes) + '</em></div>';
+          }
+
+          // ── Treatments performed
+          if (treatments.length) {
+            html += '<div class="mt-2" style="background:rgba(122,140,114,.08);padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--sage);">' +
+              '<div class="text-label" style="font-size:10px;">💉 Treatments · 治療 (' + treatments.length + ')</div>';
+            treatments.forEach(function (t) {
+              html += '<div class="text-sm mt-1">' +
+                (t.icon || '•') + ' <strong>' + HM.format.esc(t.name || t.key || '—') + '</strong>' +
+                (t.name_zh ? ' · <span style="font-family:var(--font-zh);">' + HM.format.esc(t.name_zh) + '</span>' : '') +
+                (t.points && t.points.length ? '<div class="text-xs text-muted">Points · 穴位: ' + t.points.map(HM.format.esc).join(', ') + '</div>' : '') +
+                (t.notes ? '<div class="text-xs text-muted">' + HM.format.esc(t.notes) + '</div>' : '') +
+                '</div>';
+            });
+            html += '</div>';
+          }
+
+          // ── Prescription with full items
+          if (rx && (rx.diagnosis || (rx.items && rx.items.length))) {
+            html += '<div class="mt-2" style="background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:var(--s-2) var(--s-3);">' +
+              '<div class="text-label" style="font-size:10px;">💊 Prescription · 處方</div>';
+            if (rx.diagnosis)    html += '<div class="text-sm mt-1"><strong>Dx · 診斷:</strong> ' + HM.format.esc(rx.diagnosis) + '</div>';
+            if (rx.instructions) html += '<div class="text-sm mt-1"><strong>Instructions · 醫囑:</strong> ' + HM.format.esc(rx.instructions) + '</div>';
+            if (rx.items && rx.items.length) {
+              html += '<div class="text-xs text-muted mt-2" style="display:flex;flex-wrap:wrap;gap:6px;">';
+              rx.items.forEach(function (it) {
+                html += '<span style="background:var(--washi);padding:2px 8px;border-radius:999px;border:1px solid var(--border);">' +
+                  HM.format.esc(it.drug_name) + ' ' + it.quantity + (it.unit || 'g') +
+                  '</span>';
+              });
+              html += '</div>';
+            }
+            html += '</div>';
+          }
+
           html += '</div>';
         });
       }

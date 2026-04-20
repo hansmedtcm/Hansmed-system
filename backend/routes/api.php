@@ -66,6 +66,38 @@ Route::get('/public/treatment-types', function () {
     return response()->json(['types' => is_array($types) ? $types : []]);
 });
 
+// Voucher preview — patient enters a code at payment, we validate
+// and return the discount preview. POST so the body carries the
+// scope ('appointment' | 'order') and amount cleanly.
+Route::post('/vouchers/preview', function (\Illuminate\Http\Request $r) {
+    $data = $r->validate([
+        'code'   => ['required', 'string', 'max:40'],
+        'amount' => ['required', 'numeric', 'min:0'],
+        'scope'  => ['required', 'in:appointment,order'],
+    ]);
+    $svc = app(\App\Services\VoucherService::class);
+    return response()->json($svc->preview($data['code'], (float) $data['amount'], $data['scope']));
+});
+
+// Feature flags exposed to logged-in patients (sidebar visibility etc.).
+// Defaults are open — admin disables explicitly via system_configs.
+Route::get('/public/features', function () {
+    $rows = \Illuminate\Support\Facades\DB::table('system_configs')
+        ->whereIn('config_key', ['shop_enabled'])
+        ->get()->keyBy('config_key');
+    $boolish = function ($v) {
+        if ($v === null) return null;
+        $s = strtolower(trim((string) $v));
+        if (in_array($s, ['1','true','yes','on'], true))  return true;
+        if (in_array($s, ['0','false','no','off'], true)) return false;
+        return null;
+    };
+    $shop = isset($rows['shop_enabled']) ? $boolish($rows['shop_enabled']->config_value) : null;
+    return response()->json([
+        'shop_enabled' => $shop === null ? true : $shop, // default ON
+    ]);
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me',      [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -251,6 +283,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Storage health — confirms whether uploads dir is persistent.
         Route::get ('/storage-health',             [\App\Http\Controllers\Admin\MigrationController::class, 'storageHealth']);
+
+        // Vouchers / discount codes
+        Route::get   ('/vouchers',       [\App\Http\Controllers\Admin\VoucherController::class, 'index']);
+        Route::post  ('/vouchers',       [\App\Http\Controllers\Admin\VoucherController::class, 'store']);
+        Route::patch ('/vouchers/{id}',  [\App\Http\Controllers\Admin\VoucherController::class, 'update']);
+        Route::delete('/vouchers/{id}',  [\App\Http\Controllers\Admin\VoucherController::class, 'destroy']);
 
         // Medicine catalogue (Timing Herbs master price list)
         // Static POST routes MUST register before the {id} wildcards below;
