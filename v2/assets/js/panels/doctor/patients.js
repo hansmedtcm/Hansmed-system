@@ -127,9 +127,15 @@
       } else {
         appts.forEach(function (a) {
           var c = a.consultation || {};
-          var cr = c.case_record || {};
+          // case_record + treatments are JSON-casted on the model but
+          // can come back as null / string / object on legacy rows.
+          // Coerce defensively so neither .forEach nor .length blows
+          // up the whole patient detail render.
+          var cr = (c.case_record && typeof c.case_record === 'object') ? c.case_record : {};
           var rx = a.prescription || {};
-          var treatments = c.treatments || [];
+          var treatments = Array.isArray(c.treatments) ? c.treatments : [];
+          var bodyMarks  = Array.isArray(cr.body_marks) ? cr.body_marks : [];
+          var rxItems    = Array.isArray(rx.items) ? rx.items : [];
           var visitBadge = (a.visit_type === 'walk_in')
             ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);font-size:10px;">🏥 Walk-in</span>'
             : '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;font-size:10px;">📹 Online</span>';
@@ -145,7 +151,7 @@
             '</div>';
 
           // ── Case Record block — chief complaint, BP, pulse, body marks
-          var hasCR = cr.chief_complaint || cr.bp || cr.pulse || cr.pattern_diagnosis || cr.doctor_instructions || (cr.body_marks && cr.body_marks.length);
+          var hasCR = cr.chief_complaint || cr.bp || cr.pulse || cr.pattern_diagnosis || cr.doctor_instructions || bodyMarks.length;
           if (hasCR) {
             html += '<div class="mt-2" style="background:var(--washi);padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--gold);">' +
               '<div class="text-label" style="font-size:10px;">📋 Case Record · 病歷</div>';
@@ -159,8 +165,8 @@
             }
             if (cr.pattern_diagnosis)   html += '<div class="text-sm mt-1"><strong>Pattern · 證型:</strong> ' + HM.format.esc(cr.pattern_diagnosis) + '</div>';
             if (cr.doctor_instructions) html += '<div class="text-sm mt-1"><strong>Notes · 醫囑:</strong> ' + HM.format.esc(cr.doctor_instructions) + '</div>';
-            if (cr.body_marks && cr.body_marks.length) {
-              html += '<div class="text-xs text-muted mt-1">Body marks: ' + cr.body_marks.length + ' point(s) recorded</div>';
+            if (bodyMarks.length) {
+              html += '<div class="text-xs text-muted mt-1">Body marks: ' + bodyMarks.length + ' point(s) recorded</div>';
             }
             html += '</div>';
           }
@@ -186,16 +192,16 @@
           }
 
           // ── Prescription with full items
-          if (rx && (rx.diagnosis || (rx.items && rx.items.length))) {
+          if (rx && (rx.diagnosis || rxItems.length)) {
             html += '<div class="mt-2" style="background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:var(--s-2) var(--s-3);">' +
               '<div class="text-label" style="font-size:10px;">💊 Prescription · 處方</div>';
             if (rx.diagnosis)    html += '<div class="text-sm mt-1"><strong>Dx · 診斷:</strong> ' + HM.format.esc(rx.diagnosis) + '</div>';
             if (rx.instructions) html += '<div class="text-sm mt-1"><strong>Instructions · 醫囑:</strong> ' + HM.format.esc(rx.instructions) + '</div>';
-            if (rx.items && rx.items.length) {
+            if (rxItems.length) {
               html += '<div class="text-xs text-muted mt-2" style="display:flex;flex-wrap:wrap;gap:6px;">';
-              rx.items.forEach(function (it) {
+              rxItems.forEach(function (it) {
                 html += '<span style="background:var(--washi);padding:2px 8px;border-radius:999px;border:1px solid var(--border);">' +
-                  HM.format.esc(it.drug_name) + ' ' + it.quantity + (it.unit || 'g') +
+                  HM.format.esc(it.drug_name || '') + ' ' + (it.quantity || '') + (it.unit || 'g') +
                   '</span>';
               });
               html += '</div>';
