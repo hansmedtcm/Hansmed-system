@@ -379,11 +379,6 @@
       // review form for immediate clinical context.
       '<div id="rvw-wyl-const" class="mb-4"></div>' +
 
-      // Combined synthesis panel — the headline summary that fuses
-      // all three diagnostic sources into a single ranked plan.
-      // Hidden when there's nothing to synthesise (no themes detected).
-      renderSynthesisPanel(synthesis) +
-
       '<div class="grid-2" style="gap: var(--s-5); align-items: start;">' +
 
       // ─── LEFT — patient report + tongue context ───
@@ -542,7 +537,14 @@
       '</div>' +
       '</form>' +
 
-      '</div>';
+      '</div>' +
+
+      // Combined synthesis panel — sits BELOW the editable form so the
+      // doctor sees / writes their own assessment first, then scrolls
+      // to a curated bank of suggestions. Each suggestion has a
+      // "+ Add to plan" button that injects it into the matching
+      // editable field above.
+      renderSynthesisPanel(synthesis);
 
     var m = HM.ui.modal({
       size: 'xl',
@@ -555,6 +557,10 @@
     if (window.HM && HM.wuyunLiuqi) {
       HM.wuyunLiuqi.mountDual(m.element.querySelector('#rvw-wyl-const'), patientDob);
     }
+
+    // Wire the synthesis-panel "+ Add" buttons so the doctor can
+    // inject any suggestion straight into the editable form above.
+    wireSynthesisActions(m.element);
 
     var form = m.element.querySelector('#cr-form');
 
@@ -861,7 +867,16 @@
         '</div>';
     }).join('');
 
-    function renderFoodList(items, color, label_en, label_zh, icon) {
+    // Each suggestion gets a "+ Add" button. data-syn-add encodes
+    // (1) which form field to inject into and (2) the JSON-stringified
+    // payload to inject. A single delegated listener wired after the
+    // modal mounts handles every click.
+    function addBtn(target, payload, label) {
+      var data = encodeURIComponent(JSON.stringify(payload));
+      return '<button type="button" class="syn-add-btn" data-syn-add="' + target + '" data-syn-payload="' + data + '" title="' + (label || 'Add to your plan') + '">+ Add</button>';
+    }
+
+    function renderFoodList(items, color, label_en, label_zh, icon, target) {
       if (! items.length) return '';
       return '<div class="syn-food-col" style="border-top:3px solid ' + color + ';">' +
         '<div class="syn-food-head">' + icon + ' ' + label_en + ' · ' + label_zh + '</div>' +
@@ -871,8 +886,12 @@
                                   (it.why_zh ? ' · <span style="font-family:var(--font-zh);">' + HM.format.esc(it.why_zh) + '</span>' : '') +
                                   '</div>' : '';
           return '<li>' +
-            '<div><strong>' + HM.format.esc(it.en) + '</strong>' +
-            (it.zh ? ' <span style="font-family:var(--font-zh);color:var(--stone);">· ' + HM.format.esc(it.zh) + '</span>' : '') +
+            '<div class="syn-item-row">' +
+              '<div style="flex:1;">' +
+                '<strong>' + HM.format.esc(it.en) + '</strong>' +
+                (it.zh ? ' <span style="font-family:var(--font-zh);color:var(--stone);">· ' + HM.format.esc(it.zh) + '</span>' : '') +
+              '</div>' +
+              addBtn(target, { en: it.en, zh: it.zh }) +
             '</div>' +
             why +
             '</li>';
@@ -881,17 +900,23 @@
     }
 
     var foodHtml = '<div class="syn-food-grid">' +
-      renderFoodList(syn.food.eatMore, 'var(--sage)',     'Eat More',  '宜多食', '✅') +
-      renderFoodList(syn.food.eatLess, 'var(--gold)',     'Eat Less',  '宜少食', '⚠️') +
-      renderFoodList(syn.food.avoid,   'var(--red-seal)', 'Avoid',     '忌',     '❌') +
+      renderFoodList(syn.food.eatMore, 'var(--sage)',     'Eat More',  '宜多食', '✅', 'food-more') +
+      renderFoodList(syn.food.eatLess, 'var(--gold)',     'Eat Less',  '宜少食', '⚠️', 'food-less') +
+      renderFoodList(syn.food.avoid,   'var(--red-seal)', 'Avoid',     '忌',     '❌', 'avoid') +
       '</div>';
 
     var lifestyleHtml = syn.lifestyle.length
       ? '<div class="syn-section-head">🌿 Lifestyle · 生活建議</div>' +
         '<ul class="syn-lifestyle">' +
         syn.lifestyle.slice(0, 10).map(function (l) {
-          return '<li>' + (l.icon || '•') + ' <strong>' + HM.format.esc(l.en) + '</strong>' +
-            (l.zh ? '<div style="font-family:var(--font-zh);color:var(--stone);font-size:11px;margin-left:24px;">' + HM.format.esc(l.zh) + '</div>' : '') +
+          return '<li>' +
+            '<div class="syn-item-row">' +
+              '<div style="flex:1;">' +
+                (l.icon || '•') + ' <strong>' + HM.format.esc(l.en) + '</strong>' +
+                (l.zh ? '<div style="font-family:var(--font-zh);color:var(--stone);font-size:11px;margin-left:24px;">' + HM.format.esc(l.zh) + '</div>' : '') +
+              '</div>' +
+              addBtn('tip', { icon: l.icon || '💡', en: l.en, zh: l.zh || '' }) +
+            '</div>' +
             '</li>';
         }).join('') +
         '</ul>'
@@ -902,19 +927,25 @@
         '<div class="syn-herbs">' +
         syn.herbs.slice(0, 12).map(function (h) {
           var themes = (h.for_themes || []).map(function (t) { return t.zh; }).join(' / ');
-          return '<span class="syn-herb-pill" title="For: ' + HM.format.esc(themes) + '">' +
-            HM.format.esc(h.name) + '</span>';
+          // Each herb pill is itself the "+ Add" trigger to keep the
+          // pill bank dense — click it to inject into the herbs textarea.
+          return '<button type="button" class="syn-herb-pill" data-syn-add="herb" ' +
+            'data-syn-payload="' + encodeURIComponent(JSON.stringify({ name: h.name })) + '" ' +
+            'title="For: ' + HM.format.esc(themes) + ' — click to add">' +
+            HM.format.esc(h.name) + ' <span style="opacity:.6;">+</span>' +
+            '</button>';
         }).join(' ') +
         '</div>' +
-        '<div class="text-xs text-muted mt-1" style="font-style:italic;">Hover each herb to see which pattern(s) it addresses.</div>'
+        '<div class="text-xs text-muted mt-1" style="font-style:italic;">Click any herb to add it to your prescription draft above.</div>'
       : '';
 
     injectSynthesisStyles();
 
     return '<div class="syn-panel">' +
       '<div class="syn-header">' +
-      '<div class="syn-title">🔮 Combined Plan · 綜合分析建議</div>' +
-      '<div class="syn-sub">Synthesised from ' + sourceCount + ' source' + (sourceCount === 1 ? '' : 's') + ': ' + sourceLabel + '</div>' +
+      '<div class="syn-title">🔮 Reference: Combined Plan · 參考：綜合分析建議</div>' +
+      '<div class="syn-sub">Synthesised from ' + sourceCount + ' source' + (sourceCount === 1 ? '' : 's') + ': ' + sourceLabel +
+      ' · Click <strong>+ Add</strong> on any item to inject it into your editable form above.</div>' +
       '</div>' +
 
       '<div class="syn-section-head">🎯 Detected Patterns · 主要證型</div>' +
@@ -926,6 +957,87 @@
       lifestyleHtml +
       herbsHtml +
       '</div>';
+  }
+
+  /**
+   * Wire the synthesis "+ Add" buttons after the modal is in the DOM.
+   * Routes each button's payload into the matching editable form field:
+   *   herb       → append to #cr-herbs (comma-separated)
+   *   food-more  → append to #cr-foods
+   *   food-less  → append to #cr-foods with a "(less)" tag for clarity
+   *   avoid      → append to #cr-avoid
+   *   tip        → insert a new tip row into #cr-tips
+   * Buttons disable themselves after a successful add so the doctor
+   * doesn't double-inject the same item.
+   */
+  function wireSynthesisActions(modalEl) {
+    var panel = modalEl.querySelector('.syn-panel');
+    if (! panel) return;
+    panel.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('[data-syn-add]');
+      if (! btn) return;
+      ev.preventDefault();
+      var target = btn.getAttribute('data-syn-add');
+      var payload;
+      try { payload = JSON.parse(decodeURIComponent(btn.getAttribute('data-syn-payload') || '{}')); }
+      catch (_) { payload = {}; }
+
+      var appendCSV = function (textarea, value) {
+        if (! textarea) return;
+        var cur = (textarea.value || '').trim();
+        var parts = cur ? cur.split(/\s*,\s*/) : [];
+        if (parts.indexOf(value) >= 0) return false;
+        parts.push(value);
+        textarea.value = parts.join(', ');
+        return true;
+      };
+
+      var added = false;
+      if (target === 'herb') {
+        added = appendCSV(modalEl.querySelector('#cr-herbs'), payload.name);
+      } else if (target === 'food-more') {
+        var label = payload.zh ? (payload.en + ' ' + payload.zh) : payload.en;
+        added = appendCSV(modalEl.querySelector('#cr-foods'), label);
+      } else if (target === 'food-less') {
+        var label2 = '(less) ' + (payload.zh ? (payload.en + ' ' + payload.zh) : payload.en);
+        added = appendCSV(modalEl.querySelector('#cr-foods'), label2);
+      } else if (target === 'avoid') {
+        var avoidEl = modalEl.querySelector('#cr-avoid');
+        var avoidLabel = payload.zh ? (payload.en + ' ' + payload.zh) : payload.en;
+        var cur = (avoidEl.value || '').trim();
+        if (cur.indexOf(avoidLabel) < 0) {
+          avoidEl.value = cur ? (cur + '; ' + avoidLabel) : avoidLabel;
+          added = true;
+        }
+      } else if (target === 'tip') {
+        modalEl.querySelector('#cr-tips').insertAdjacentHTML('beforeend',
+          tipRow({ icon: payload.icon || '💡', en: payload.en || '', zh: payload.zh || '' }));
+        added = true;
+      }
+
+      if (added) {
+        btn.classList.add('syn-add-btn--done');
+        btn.textContent = '✓ Added';
+        btn.disabled = true;
+        // Brief flash on the target field so the doctor sees where it landed.
+        var flashTarget =
+          target === 'herb'      ? modalEl.querySelector('#cr-herbs') :
+          target === 'food-more' ? modalEl.querySelector('#cr-foods') :
+          target === 'food-less' ? modalEl.querySelector('#cr-foods') :
+          target === 'avoid'     ? modalEl.querySelector('#cr-avoid') :
+          target === 'tip'       ? modalEl.querySelector('#cr-tips').lastElementChild : null;
+        if (flashTarget) {
+          flashTarget.style.transition = 'background-color .4s';
+          flashTarget.style.backgroundColor = 'rgba(122,140,114,.15)';
+          setTimeout(function () { flashTarget.style.backgroundColor = ''; }, 600);
+        }
+      } else {
+        // Already in the field — don't double-add.
+        btn.textContent = '· Already added';
+        btn.disabled = true;
+        btn.classList.add('syn-add-btn--done');
+      }
+    });
   }
 
   function injectSynthesisStyles() {
@@ -957,7 +1069,13 @@
       '.syn-lifestyle li{padding:6px 0;border-bottom:1px dashed var(--border);font-size:12px;}' +
       '.syn-lifestyle li:last-child{border-bottom:none;}' +
       '.syn-herbs{display:flex;flex-wrap:wrap;gap:6px;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;}' +
-      '.syn-herb-pill{display:inline-block;background:rgba(201,146,42,.1);color:#6b4413;border:1px solid rgba(201,146,42,.4);border-radius:999px;padding:3px 10px;font-size:11px;cursor:help;}' +
+      '.syn-herb-pill{display:inline-block;background:rgba(201,146,42,.1);color:#6b4413;border:1px solid rgba(201,146,42,.4);border-radius:999px;padding:4px 11px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s;}' +
+      '.syn-herb-pill:hover{background:rgba(201,146,42,.25);border-color:var(--gold);}' +
+      '.syn-herb-pill:disabled,.syn-herb-pill.syn-add-btn--done{cursor:default;background:rgba(122,140,114,.15);color:var(--sage);border-color:rgba(122,140,114,.4);}' +
+      '.syn-item-row{display:flex;align-items:flex-start;gap:8px;}' +
+      '.syn-add-btn{flex-shrink:0;background:var(--washi);border:1px solid var(--gold);color:var(--gold);border-radius:var(--r-sm);padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;}' +
+      '.syn-add-btn:hover{background:var(--gold);color:#fff;}' +
+      '.syn-add-btn--done{background:rgba(122,140,114,.15) !important;color:var(--sage) !important;border-color:rgba(122,140,114,.4) !important;cursor:default;}' +
       '';
     document.head.appendChild(s);
   }
