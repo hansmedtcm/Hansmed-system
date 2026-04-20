@@ -55,16 +55,24 @@ class ConstitutionReviewController extends Controller
             if ($filter === 'mine' && (int) $reviewed_by !== $me)  continue;
 
             $out[] = [
-                'id'              => $row->id,
-                'patient_id'      => $row->patient_id,
-                'patient_name'    => $row->patient_name,
-                'patient_email'   => $row->patient_email,
-                'created_at'      => $row->created_at,
-                'review_status'   => $status,
-                'reviewed_by'     => $reviewed_by,
-                'reviewed_at'     => $s['reviewed_at'] ?? null,
-                'patterns'        => $s['patterns'] ?? [],
-                'safety_alerts'   => $s['safety_alerts'] ?? [],
+                'id'                  => $row->id,
+                'patient_id'          => $row->patient_id,
+                'patient_name'        => $row->patient_name,
+                'patient_email'       => $row->patient_email,
+                'created_at'          => $row->created_at,
+                'review_status'       => $status,
+                'reviewed_by'         => $reviewed_by,
+                'reviewed_at'         => $s['reviewed_at'] ?? null,
+                'patterns'            => $s['patterns'] ?? [],
+                'safety_alerts'       => $s['safety_alerts'] ?? [],
+                'health_concerns'     => $s['health_concerns'] ?? null,
+                // Linkage so the frontend can fold the matching tongue
+                // diagnosis card into this constitution card — the
+                // patient submitted them as one session.
+                'tongue_diagnosis_id' => isset($s['tongue_diagnosis_id']) ? (int) $s['tongue_diagnosis_id'] : null,
+                'tongue_image_url'    => $s['tongue_image_url'] ?? null,
+                'tongue_health_score' => $s['tongue_health_score'] ?? null,
+                'tongue_constitution' => $s['tongue_constitution'] ?? null,
             ];
         }
 

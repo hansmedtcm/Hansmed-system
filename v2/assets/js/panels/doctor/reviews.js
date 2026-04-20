@@ -95,20 +95,35 @@
     var container = document.getElementById('rv-list');
     HM.state.loading(container);
     try {
-      var calls = [];
-      if (state.type !== 'tongue')       calls.push(HM.api.doctor.listConstitutionReviews(state.filter));
-      else                                calls.push(Promise.resolve({ data: [] }));
-      if (state.type !== 'constitution') calls.push(HM.api.doctor.listTongueReviews(state.filter));
-      else                                calls.push(Promise.resolve({ data: [] }));
-
-      var results = await Promise.all(calls);
+      // Always fetch both — we need constitutions to know which
+      // tongue rows to fold into combined cards, regardless of the
+      // current type filter. Filtering is applied at the end.
+      var results = await Promise.all([
+        HM.api.doctor.listConstitutionReviews(state.filter),
+        HM.api.doctor.listTongueReviews(state.filter),
+      ]);
       var constitutions = (results[0] && results[0].data) || [];
       var tongues       = (results[1] && results[1].data) || [];
 
+      // Index tongues by id so we can fold matched ones into their
+      // constitution sibling. The patient submits both as one
+      // session; the questionnaire payload carries tongue_diagnosis_id
+      // pointing at the tongue row, so we have a direct join key.
+      var tongueById = {};
+      tongues.forEach(function (t) { tongueById[t.id] = t; });
+      var foldedTongueIds = {};
+
       var items = [];
       constitutions.forEach(function (c) {
+        var matchedTongue = c.tongue_diagnosis_id ? tongueById[c.tongue_diagnosis_id] : null;
+        var report = matchedTongue && matchedTongue.constitution_report ? matchedTongue.constitution_report : {};
+        var tongueConst = report.constitution || c.tongue_constitution || {};
+        if (matchedTongue) foldedTongueIds[matchedTongue.id] = true;
+
         items.push({
-          kind: 'constitution',
+          // "combined" when both tongue + questionnaire submitted; the
+          // single card replaces two separate ones in the queue.
+          kind: matchedTongue ? 'combined' : 'constitution',
           id: c.id,
           patient_id: c.patient_id,
           patient_name: c.patient_name || null,
@@ -118,10 +133,21 @@
           extra: {
             patterns: c.patterns || [],
             safety_alerts: c.safety_alerts || [],
+            health_concerns: c.health_concerns || null,
+            tongue_id: matchedTongue ? matchedTongue.id : (c.tongue_diagnosis_id || null),
+            image_url: matchedTongue ? matchedTongue.image_url : (c.tongue_image_url || null),
+            constitution_en: tongueConst.name_en || null,
+            constitution_zh: tongueConst.name_zh || null,
+            health_score: matchedTongue ? matchedTongue.health_score : (c.tongue_health_score || null),
           },
         });
       });
+
+      // Standalone tongue rows — those NOT folded into a constitution
+      // (patient skipped the questionnaire, or hasn't submitted it
+      // yet). They keep their own card.
       tongues.forEach(function (t) {
+        if (foldedTongueIds[t.id]) return;
         var patient = t.patient || {};
         var pp = patient.patient_profile || {};
         var report = t.constitution_report || {};
@@ -142,6 +168,14 @@
           },
         });
       });
+
+      // Type filter — combined cards count as BOTH so the doctor
+      // sees them whether they filter by tongue or constitution.
+      if (state.type === 'tongue') {
+        items = items.filter(function (it) { return it.kind === 'tongue' || it.kind === 'combined'; });
+      } else if (state.type === 'constitution') {
+        items = items.filter(function (it) { return it.kind === 'constitution' || it.kind === 'combined'; });
+      }
 
       items.sort(function (a, b) {
         return (new Date(b.created_at)) - (new Date(a.created_at));
@@ -170,29 +204,54 @@
       needs_changes: '<span class="badge badge--danger">Needs Changes</span>',
     }[it.review_status || 'pending'];
 
-    var typeBadge = it.kind === 'tongue'
-      ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);">👅 Tongue · 舌診</span>'
-      : '<span class="badge" style="background:rgba(122,140,114,.15);color:var(--sage);">🧭 Constitution · 體質</span>';
+    // Type badge(s) — combined cards show BOTH so the doctor sees at
+    // a glance that this is a full session (tongue + questionnaire).
+    var tongueBadge = '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);">👅 Tongue · 舌診</span>';
+    var constBadge  = '<span class="badge" style="background:rgba(122,140,114,.15);color:var(--sage);">🧭 Constitution · 體質</span>';
+    var typeBadge;
+    if      (it.kind === 'combined')     typeBadge = tongueBadge + ' ' + constBadge;
+    else if (it.kind === 'tongue')       typeBadge = tongueBadge;
+    else                                 typeBadge = constBadge;
 
-    var summary = '';
-    if (it.kind === 'tongue') {
-      var x = it.extra;
-      summary = (x.constitution_en ? '<strong>' + HM.format.esc(x.constitution_en) + '</strong>' : 'Analysis complete') +
-        (x.health_score != null ? ' · Health ' + x.health_score + '/100' : '');
-    } else {
-      var patterns = it.extra.patterns || [];
-      var alerts = it.extra.safety_alerts || [];
-      summary = 'Primary: <strong>' + (patterns.length ? HM.format.esc(patterns[0].l || patterns[0].c || '—') : '—') + '</strong>' +
-        (alerts.length ? ' · <span style="color:var(--red-seal);">⚠️ ' + alerts.length + ' alert(s)</span>' : '');
-    }
+    // Summary line(s) — combined cards show both summaries on
+    // separate rows so the doctor can scan tongue + constitution
+    // side by side before opening the modal.
+    var summary;
+    var x = it.extra || {};
+    var patterns = x.patterns || [];
+    var alerts = x.safety_alerts || [];
+    var primaryConstitution = patterns.length ? (patterns[0].l || patterns[0].c || '—') : '—';
+    var tongueLine =
+      '<div class="text-sm" style="margin-top:2px;">' +
+      '<span class="text-muted">Tongue · 舌診:</span> ' +
+      (x.constitution_en
+        ? '<strong>' + HM.format.esc(x.constitution_en) + '</strong>'
+        : 'Analysis complete') +
+      (x.health_score != null ? ' · <span class="text-muted">Health ' + x.health_score + '/100</span>' : '') +
+      '</div>';
+    var constLine =
+      '<div class="text-sm" style="margin-top:2px;">' +
+      '<span class="text-muted">Constitution · 體質:</span> ' +
+      '<strong>' + HM.format.esc(primaryConstitution) + '</strong>' +
+      (alerts.length ? ' · <span style="color:var(--red-seal);">⚠️ ' + alerts.length + ' alert(s)</span>' : '') +
+      '</div>';
+    var concernsLine = x.health_concerns
+      ? '<div class="text-xs text-muted mt-1" style="font-style:italic;">🩺 "' +
+        HM.format.esc(HM.format.truncate(x.health_concerns, 90)) + '"</div>'
+      : '';
+
+    if (it.kind === 'combined')      summary = tongueLine + constLine + concernsLine;
+    else if (it.kind === 'tongue')   summary = tongueLine;
+    else                              summary = constLine + concernsLine;
 
     var patientLabel = HM.format.esc(HM.format.patientLabel(it)) + (it.patient_email && !it.patient_name ? ' · ' + HM.format.esc(it.patient_email) : '');
-    // Image fallback handled by the shared HM.format.img helper — if
-    // the URL 404s (Railway ephemeral-storage wipe etc.) it swaps in
-    // a neutral placeholder with the right icon.
-    var thumbIcon = (it.kind === 'tongue') ? '👅' : '🧭';
-    var imgHtml = (it.kind === 'tongue' && it.extra.image_url)
-      ? HM.format.img(it.extra.image_url, {
+
+    // Thumbnail: tongue photo if available (combined or tongue-only);
+    // 🧭 placeholder for constitution-only (no tongue submitted).
+    var thumbUrl  = (it.kind === 'tongue' || it.kind === 'combined') ? (x.image_url || null) : null;
+    var thumbIcon = (it.kind === 'constitution') ? '🧭' : '👅';
+    var imgHtml = thumbUrl
+      ? HM.format.img(thumbUrl, {
           style: 'width:70px;height:70px;border-radius:var(--r-md);border:1px solid var(--border);flex-shrink:0;',
           icon: thumbIcon,
           title: 'Photo unavailable · 圖片已不存在',
@@ -208,7 +267,7 @@
       '<span class="text-xs text-muted">' + HM.format.datetime(it.created_at) + '</span>' +
       '</div>' +
       '<div class="card-title">' + patientLabel + '</div>' +
-      '<div class="text-sm text-muted mt-1">' + summary + '</div>' +
+      summary +
       '</div>' +
       '<div style="text-align:right;display:flex;flex-direction:column;gap:6px;">' +
       '<button class="btn btn--primary btn--sm" data-review>Review · 審核</button>' +
@@ -217,6 +276,10 @@
       '</div>';
 
     card.querySelector('[data-review]').addEventListener('click', function () {
+      // Combined cards open the constitution modal — it already loads
+      // the linked tongue scans + Wuyun Liuqi context, so the doctor
+      // reviews everything in one place. Standalone tongue cards
+      // open the tongue modal as before.
       if (it.kind === 'tongue') openTongueModal(it.id, it.patient_id);
       else                      openConstitutionModal(it.id, it.patient_id);
     });
