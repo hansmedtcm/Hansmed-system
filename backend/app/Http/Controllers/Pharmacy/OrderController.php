@@ -95,6 +95,7 @@ class OrderController extends Controller
             // so we resolve by drug_name against name_zh/name_pinyin/code.
             // If no catalogue row matches, we skip silently (could be a
             // patent/imported product that isn't in the master list).
+            $stockDecrements = [];
             if (Schema::hasTable('medicine_catalog') && Schema::hasColumn('medicine_catalog', 'stock_grams')) {
                 foreach ($order->items as $item) {
                     $name = trim((string) ($item->drug_name ?? ''));
@@ -107,32 +108,69 @@ class OrderController extends Controller
                     if (! in_array($unit, ['g', 'gram', 'grams', '克'], true)) continue;
 
                     // Doctors' Rx stores drug_name as the combined display
-                    // string "參苓白朮散 · Shen Ling Bai Zhu San" (see
-                    // DrugCatalogController). Split on " · " and try each
-                    // half against name_zh / name_pinyin / code.
+                    // string "參苓白朮散 · Shen Ling Bai Zhu San" (from
+                    // DrugCatalogController::index). Split on any middot
+                    // variant — "·", "・", "•" — to be tolerant of how
+                    // the name was typed. Match strategy, in order:
+                    //   1. exact name_zh / name_pinyin / code on each half
+                    //   2. LIKE with each half as a substring of the
+                    //      catalog row (handles trad/simplified variants
+                    //      that share most characters)
                     $candidates = [$name];
-                    if (strpos($name, ' · ') !== false) {
-                        foreach (explode(' · ', $name) as $piece) {
-                            $p = trim($piece);
-                            if ($p !== '') $candidates[] = $p;
-                        }
+                    $splitRegex = '/\s*[·・•\|]\s*/u';
+                    foreach (preg_split($splitRegex, $name) as $piece) {
+                        $p = trim($piece);
+                        if ($p !== '' && ! in_array($p, $candidates, true)) $candidates[] = $p;
                     }
+
                     $row = DB::table('medicine_catalog')
                         ->where(function ($q) use ($candidates) {
                             foreach ($candidates as $c) {
                                 $q->orWhere('name_zh', $c)
                                   ->orWhere('name_pinyin', $c)
+                                  ->orWhereRaw('LOWER(name_pinyin) = LOWER(?)', [$c])
                                   ->orWhere('code', $c);
                             }
                         })
                         ->first();
-                    if (! $row) continue;
+
+                    // Loose LIKE fallback for each candidate — handles
+                    // trad↔simplified Chinese mismatches + partial
+                    // pinyin typos.
+                    if (! $row) {
+                        foreach ($candidates as $c) {
+                            if (mb_strlen($c) < 2) continue;
+                            $row = DB::table('medicine_catalog')
+                                ->where(function ($q) use ($c) {
+                                    $q->where('name_zh', 'like', '%' . $c . '%')
+                                      ->orWhere('name_pinyin', 'like', '%' . $c . '%');
+                                })
+                                ->first();
+                            if ($row) break;
+                        }
+                    }
+
+                    if (! $row) {
+                        \Log::warning('[stock.decrement.miss] No catalog match for dispensed item', [
+                            'order_id'   => $order->id,
+                            'drug_name'  => $name,
+                            'candidates' => $candidates,
+                        ]);
+                        continue;
+                    }
 
                     DB::table('medicine_catalog')->where('id', $row->id)->update([
                         'stock_grams'      => DB::raw('GREATEST(0, COALESCE(stock_grams, 0) - ' . $qty . ')'),
                         'stock_updated_at' => now(),
                         'updated_at'       => now(),
                     ]);
+                    $newStock = DB::table('medicine_catalog')->where('id', $row->id)->value('stock_grams');
+                    $stockDecrements[] = [
+                        'drug_name'    => $name,
+                        'matched'      => $row->name_zh . ' · ' . $row->name_pinyin,
+                        'grams'        => $qty,
+                        'new_stock'    => $newStock,
+                    ];
 
                     // Audit trail so admin can reconcile warehouse-level
                     // movement when a patient order is dispensed.
@@ -154,7 +192,10 @@ class OrderController extends Controller
                 }
             }
 
-            return response()->json(['order' => $order]);
+            return response()->json([
+                'order'             => $order,
+                'stock_decrements'  => $stockDecrements,
+            ]);
         });
     }
 

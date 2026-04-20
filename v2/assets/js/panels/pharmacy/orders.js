@@ -96,7 +96,22 @@
   async function finishDispense(id) {
     var ok = await HM.ui.confirm('Mark this order as fully dispensed? · 確認完成配藥？');
     if (!ok) return;
-    try { await HM.api.pharmacy.finishDispense(id); HM.ui.toast('Dispensed · 已完成', 'success'); load(); } catch (e) { HM.ui.toast(e.message, 'danger'); }
+    try {
+      var res = await HM.api.pharmacy.finishDispense(id);
+      // Show exactly which catalog items got debited so the pharmacist
+      // can confirm the warehouse ledger moved. Unmatched items stay
+      // silent here but are logged server-side as stock.decrement.miss.
+      var decs = (res && res.stock_decrements) || [];
+      if (decs.length) {
+        var lines = decs.map(function (d) {
+          return '• ' + d.matched + ': -' + d.grams + 'g (now ' + Number(d.new_stock).toFixed(0) + 'g)';
+        }).join('\n');
+        HM.ui.toast('Dispensed · 已完成 — warehouse updated:\n' + lines, 'success', 7000);
+      } else {
+        HM.ui.toast('Dispensed · 已完成 (no catalog items matched — check names)', 'warning', 5000);
+      }
+      load();
+    } catch (e) { HM.ui.toast(e.message || 'Failed', 'danger'); }
   }
   async function shipOrder(id) {
     var carrier = await HM.ui.prompt('Carrier name · 快遞公司 (e.g. J&T, Pos Laju):', { required: true });
