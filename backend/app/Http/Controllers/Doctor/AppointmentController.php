@@ -58,14 +58,21 @@ class AppointmentController extends Controller
             foreach ($page->items() as $appt) {
                 $consultFee = (float) ($appt->fee ?? 0);
 
-                // Treatment fees
+                // Treatment fees — defensive cast: legacy rows may
+                // contain malformed JSON (e.g. a quoted string), in
+                // which case json_decode returns a non-array value
+                // and foreach blows up. Skip anything that isn't a
+                // proper list of treatment objects.
                 $treatmentFee = 0.0;
                 $tCount = 0;
                 if (isset($consultRows[$appt->id]) && $consultRows[$appt->id]->treatments) {
-                    $list = json_decode($consultRows[$appt->id]->treatments, true) ?: [];
-                    foreach ($list as $t) {
-                        $f = (float) ($t['fee'] ?? 0);
-                        if ($f > 0) { $treatmentFee += $f; $tCount++; }
+                    $list = json_decode($consultRows[$appt->id]->treatments, true);
+                    if (is_array($list)) {
+                        foreach ($list as $t) {
+                            if (! is_array($t)) continue;
+                            $f = (float) ($t['fee'] ?? 0);
+                            if ($f > 0) { $treatmentFee += $f; $tCount++; }
+                        }
                     }
                 }
 
@@ -119,16 +126,19 @@ class AppointmentController extends Controller
         $treatmentList = [];
         $cRow = \DB::table('consultations')->where('appointment_id', $appt->id)->first();
         if ($cRow && $cRow->treatments) {
-            $list = json_decode($cRow->treatments, true) ?: [];
-            foreach ($list as $t) {
-                $f = (float) ($t['fee'] ?? 0);
-                if ($f > 0) {
-                    $treatmentFee += $f;
-                    $treatmentList[] = [
-                        'name'    => $t['name'] ?? '—',
-                        'name_zh' => $t['name_zh'] ?? '',
-                        'fee'     => $f,
-                    ];
+            $list = json_decode($cRow->treatments, true);
+            if (is_array($list)) {
+                foreach ($list as $t) {
+                    if (! is_array($t)) continue;
+                    $f = (float) ($t['fee'] ?? 0);
+                    if ($f > 0) {
+                        $treatmentFee += $f;
+                        $treatmentList[] = [
+                            'name'    => $t['name'] ?? '—',
+                            'name_zh' => $t['name_zh'] ?? '',
+                            'fee'     => $f,
+                        ];
+                    }
                 }
             }
         }
