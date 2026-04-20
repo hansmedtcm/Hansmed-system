@@ -379,6 +379,11 @@
       // review form for immediate clinical context.
       '<div id="rvw-wyl-const" class="mb-4"></div>' +
 
+      // Combined synthesis panel — at the top, as it originally was.
+      // Each suggestion still has a "+ Add" button that injects
+      // straight into the editable form below.
+      renderSynthesisPanel(synthesis) +
+
       '<div class="grid-2" style="gap: var(--s-5); align-items: start;">' +
 
       // ─── LEFT — patient report + tongue context ───
@@ -537,14 +542,7 @@
       '</div>' +
       '</form>' +
 
-      '</div>' +
-
-      // Combined synthesis panel — sits BELOW the editable form so the
-      // doctor sees / writes their own assessment first, then scrolls
-      // to a curated bank of suggestions. Each suggestion has a
-      // "+ Add to plan" button that injects it into the matching
-      // editable field above.
-      renderSynthesisPanel(synthesis);
+      '</div>';
 
     var m = HM.ui.modal({
       size: 'xl',
@@ -936,16 +934,16 @@
             '</button>';
         }).join(' ') +
         '</div>' +
-        '<div class="text-xs text-muted mt-1" style="font-style:italic;">Click any herb to add it to your prescription draft above.</div>'
+        '<div class="text-xs text-muted mt-1" style="font-style:italic;">Click any herb to add it to your prescription draft below.</div>'
       : '';
 
     injectSynthesisStyles();
 
     return '<div class="syn-panel">' +
       '<div class="syn-header">' +
-      '<div class="syn-title">🔮 Reference: Combined Plan · 參考：綜合分析建議</div>' +
+      '<div class="syn-title">🔮 Combined Plan · 綜合分析建議</div>' +
       '<div class="syn-sub">Synthesised from ' + sourceCount + ' source' + (sourceCount === 1 ? '' : 's') + ': ' + sourceLabel +
-      ' · Click <strong>+ Add</strong> on any item to inject it into your editable form above.</div>' +
+      ' · Click <strong>+ Add</strong> on any item to inject it into your editable form below.</div>' +
       '</div>' +
 
       '<div class="syn-section-head">🎯 Detected Patterns · 主要證型</div>' +
