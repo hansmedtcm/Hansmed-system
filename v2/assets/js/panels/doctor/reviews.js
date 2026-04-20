@@ -457,17 +457,13 @@
           (ltConst.name_zh ? '<div class="text-sm text-muted" style="font-family: var(--font-zh);">' + HM.format.esc(ltConst.name_zh) + '</div>' : '') +
           (lt.health_score != null ? '<div class="text-sm mt-2">Health Score: <strong>' + lt.health_score + '/100</strong></div>' : '') +
 
-          (ltFindings.length ? ('<div class="text-label mt-4 mb-2">Findings</div>' +
+          (ltFindings.length ? ('<div class="text-label mt-4 mb-2">Findings · 望舌所見</div>' +
             '<ul class="text-xs text-muted" style="list-style: none; padding: 0;">' +
-            ltFindings.map(function (f) {
-              return '<li style="padding: 4px 0; border-bottom: 1px solid var(--border);">' +
-                '<strong>' + HM.format.esc((f.category || '').replace(/_/g, ' ')) + ':</strong> ' +
-                HM.format.esc(f.value || '—') + '</li>';
-            }).join('') + '</ul>') : '') +
+            ltFindings.map(renderFindingRow).join('') + '</ul>') : '') +
 
-          (ltRecs.length ? ('<div class="text-label mt-4 mb-2">AI Lifestyle Suggestions</div>' +
+          (ltRecs.length ? ('<div class="text-label mt-4 mb-2">AI Lifestyle Suggestions · AI 養生建議</div>' +
             '<ul class="text-xs text-muted" style="padding-left: 18px;">' +
-            ltRecs.map(function (r) { return '<li>' + HM.format.esc(r) + '</li>'; }).join('') +
+            ltRecs.map(function (r) { return '<li style="margin-bottom: 4px;">' + HM.format.esc(r) + '</li>'; }).join('') +
             '</ul>') : '') +
 
           // Deep Yin Modern Tongue Diagnosis analysis — three-burner,
@@ -646,20 +642,34 @@
           cold_damp: '#4a90b8', deficiency_cold: '#4a90b8', stasis: '#6b2d88',
           yin_deficiency: '#c04545', normal: 'var(--sage)',
         }[z.status] || 'var(--stone)';
+        // Status label: prefer the bilingual pair from the backend
+        // (status_zh + status_en); fall back to the raw enum.
+        var statusEn = z.status_en || (z.status || 'normal').replace(/_/g, ' ');
+        var statusZh = z.status_zh || '';
         out += '<div style="padding: 6px 0; border-bottom: 1px dashed var(--border);">' +
           '<div style="font-size: var(--text-xs);">' +
           '<strong style="font-family: var(--font-zh); color: ' + statusColor + ';">' + HM.format.esc(z.name_zh || '') + '</strong> ' +
           '<span class="text-muted">(' + HM.format.esc(z.name_en || '') + ')</span> ' +
-          '<span style="color: ' + statusColor + '; font-weight: 600;">· ' + HM.format.esc(z.status || 'normal').replace(/_/g, ' ') + '</span>' +
+          '<span style="color: ' + statusColor + '; font-weight: 600;">· ' + HM.format.esc(statusEn) +
+          (statusZh ? ' · ' + HM.format.esc(statusZh) : '') + '</span>' +
           '</div>' +
-          '<div class="text-xs text-muted mt-1">' + HM.format.esc(z.explanation || '') + '</div>' +
+          '<div class="text-xs text-muted mt-1">' + HM.format.esc(z.explanation || '') +
+          (z.explanation_zh
+            ? '<div style="font-family: var(--font-zh); margin-top: 2px;">' + HM.format.esc(z.explanation_zh) + '</div>'
+            : '') +
+          '</div>' +
           (z.organs && z.organs.length
-            ? '<div class="text-xs text-muted" style="font-size: 10px;">Organs: ' + z.organs.map(HM.format.esc).join(', ') + '</div>'
+            ? '<div class="text-xs text-muted" style="font-size: 10px;">Organs · 涉及臟腑: ' + z.organs.map(HM.format.esc).join(', ') + '</div>'
             : '') +
           '</div>';
       });
       if (tb.edges) {
-        out += '<div class="text-xs text-muted mt-2" style="font-style: italic;">' + HM.format.esc(tb.edges.note || '') + '</div>';
+        out += '<div class="text-xs text-muted mt-2" style="font-style: italic;">' +
+          HM.format.esc(tb.edges.note || '') +
+          (tb.edges.note_zh
+            ? '<div style="font-family: var(--font-zh);">' + HM.format.esc(tb.edges.note_zh) + '</div>'
+            : '') +
+          '</div>';
       }
       out += '</div>';
     }
@@ -668,12 +678,20 @@
     var affected = (holo && holo.affected) || [];
     if (affected.length) {
       out += '<div class="card mb-3" style="padding: var(--s-3);">' +
-        '<div class="text-label mb-2" style="font-size: 10px;">全息圖 · Body regions to watch</div>' +
+        '<div class="text-label mb-2" style="font-size: 10px;">全息圖 · Body Regions to Watch</div>' +
         '<ul style="list-style: none; padding: 0; margin: 0;">' +
         affected.map(function (f) {
           return '<li style="padding: 4px 0; font-size: var(--text-xs);">' +
-            '<strong>' + HM.format.esc(f.region || '') + '</strong>' +
-            '<div class="text-muted" style="font-size: 11px; margin-top: 2px;">' + HM.format.esc(f.reason || '') + '</div>' +
+            '<strong>' + HM.format.esc(f.region || '') +
+            (f.region_zh
+              ? ' <span style="font-family: var(--font-zh); color: var(--stone); font-weight: 400;">· ' + HM.format.esc(f.region_zh) + '</span>'
+              : '') +
+            '</strong>' +
+            '<div class="text-muted" style="font-size: 11px; margin-top: 2px;">' + HM.format.esc(f.reason || '') +
+            (f.reason_zh
+              ? '<div style="font-family: var(--font-zh); margin-top: 1px;">' + HM.format.esc(f.reason_zh) + '</div>'
+              : '') +
+            '</div>' +
             '</li>';
         }).join('') +
         '</ul></div>';
@@ -684,9 +702,15 @@
       out += '<div class="card mb-3" style="padding: var(--s-3);">' +
         '<div class="text-label mb-2" style="font-size: 10px;">六經辨證 · Six-Meridian Pattern Differentiation</div>' +
         meridians.map(function (m) {
+          var zoneZh = m.zone_zh ? ' · ' + HM.format.esc(m.zone_zh) : '';
           return '<div style="padding: 6px 0; border-bottom: 1px dashed var(--border);">' +
             '<div style="font-size: var(--text-xs); font-weight: 600;">' + HM.format.esc(m.meridian || '') + '</div>' +
-            '<div class="text-xs text-muted" style="font-size: 11px;">' + HM.format.esc(m.zone || '') + ' — ' + HM.format.esc(m.note || '') + '</div>' +
+            '<div class="text-xs text-muted" style="font-size: 11px;">' +
+            HM.format.esc(m.zone || '') + zoneZh + ' — ' + HM.format.esc(m.note || '') +
+            (m.note_zh
+              ? '<div style="font-family: var(--font-zh); margin-top: 2px;">' + HM.format.esc(m.note_zh) + '</div>'
+              : '') +
+            '</div>' +
             '</div>';
         }).join('') +
         '</div>';
@@ -703,10 +727,28 @@
           HM.format.esc(p.name_en || '') +
           (p.extent ? ' <span class="chip chip--gold" style="font-size: 9px;">' + HM.format.esc(p.extent).replace(/_/g, ' ') + '</span>' : '') +
           '</div>' +
-          (p.description ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(p.description) + '</div>' : '') +
-          (p.indication  ? '<div class="text-xs mt-1" style="color: #6b4413;">→ ' + HM.format.esc(p.indication)  + '</div>' : '') +
-          (p.formula     ? '<div class="text-xs mt-2" style="background: rgba(201,146,42,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--gold);">' +
-            '<strong>💊 Formula direction:</strong> ' + HM.format.esc(p.formula) + '</div>' : '') +
+          (p.description
+            ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(p.description) +
+              (p.description_zh
+                ? '<div style="font-family: var(--font-zh); margin-top: 1px;">' + HM.format.esc(p.description_zh) + '</div>'
+                : '') +
+              '</div>'
+            : '') +
+          (p.indication
+            ? '<div class="text-xs mt-1" style="color: #6b4413;">→ ' + HM.format.esc(p.indication) +
+              (p.indication_zh
+                ? '<div style="font-family: var(--font-zh); margin-top: 1px;">→ ' + HM.format.esc(p.indication_zh) + '</div>'
+                : '') +
+              '</div>'
+            : '') +
+          (p.formula
+            ? '<div class="text-xs mt-2" style="background: rgba(201,146,42,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--gold);">' +
+              '<strong>💊 Formula direction · 用藥方向:</strong> ' + HM.format.esc(p.formula) +
+              (p.formula_zh
+                ? '<div style="font-family: var(--font-zh); margin-top: 2px;">' + HM.format.esc(p.formula_zh) + '</div>'
+                : '') +
+              '</div>'
+            : '') +
           '</div>';
       });
       out += '</div>';
@@ -722,12 +764,28 @@
         '<strong style="color: ' + borderCol + '; font-family: var(--font-zh);">' + HM.format.esc(ascDesc.name_zh || '') + '</strong> · ' +
         HM.format.esc(ascDesc.name_en || '') +
         '</div>' +
-        (ascDesc.signs ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(ascDesc.signs) + '</div>' : '') +
+        (ascDesc.signs
+          ? '<div class="text-xs text-muted mt-1">' + HM.format.esc(ascDesc.signs) +
+            (ascDesc.signs_zh
+              ? '<div style="font-family: var(--font-zh); margin-top: 1px;">' + HM.format.esc(ascDesc.signs_zh) + '</div>'
+              : '') +
+            '</div>'
+          : '') +
         (ascDesc.caution
-          ? '<div class="text-xs mt-2" style="background: rgba(192,57,43,0.08); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--red-seal); color: var(--red-seal);"><strong>⚠ Caution:</strong> ' + HM.format.esc(ascDesc.caution) + '</div>'
+          ? '<div class="text-xs mt-2" style="background: rgba(192,57,43,0.08); padding: 6px 10px; border-radius: 3px; border-left: 2px solid var(--red-seal); color: var(--red-seal);">' +
+            '<strong>⚠ Caution · 注意:</strong> ' + HM.format.esc(ascDesc.caution) +
+            (ascDesc.caution_zh
+              ? '<div style="font-family: var(--font-zh); margin-top: 2px;">' + HM.format.esc(ascDesc.caution_zh) + '</div>'
+              : '') +
+            '</div>'
           : '') +
         (ascDesc.treatment
-          ? '<div class="text-xs mt-2" style="background: rgba(74,144,184,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid #4a90b8;"><strong>💡 Direction:</strong> ' + HM.format.esc(ascDesc.treatment) + '</div>'
+          ? '<div class="text-xs mt-2" style="background: rgba(74,144,184,0.1); padding: 6px 10px; border-radius: 3px; border-left: 2px solid #4a90b8;">' +
+            '<strong>💡 Direction · 治法:</strong> ' + HM.format.esc(ascDesc.treatment) +
+            (ascDesc.treatment_zh
+              ? '<div style="font-family: var(--font-zh); margin-top: 2px;">' + HM.format.esc(ascDesc.treatment_zh) + '</div>'
+              : '') +
+            '</div>'
           : '') +
         '</div>';
     }
@@ -741,6 +799,50 @@
     }
 
     return out;
+  }
+
+  // Bilingual labels for the finding categories that come back from
+  // the AnalysisReport — keeps the data flat (just `category` enum)
+  // while the UI shows both languages.
+  var FINDING_CATEGORY_LABELS = {
+    tongue_color: { en: 'Tongue colour', zh: '舌色' },
+    coating:      { en: 'Coating',       zh: '苔象' },
+    shape:        { en: 'Shape',         zh: '舌形' },
+    moisture:     { en: 'Moisture',      zh: '潤燥' },
+    midline:      { en: 'Midline',       zh: '中線' },
+    teeth_marks:  { en: 'Teeth marks',   zh: '齒痕' },
+    cracks:       { en: 'Cracks',        zh: '裂紋' },
+  };
+
+  function renderFindingRow(f) {
+    var lab = FINDING_CATEGORY_LABELS[f.category] || {
+      en: (f.category || '').replace(/_/g, ' '),
+      zh: '',
+    };
+    var labelHtml = '<strong>' + HM.format.esc(lab.en) +
+      (lab.zh ? ' · ' + lab.zh : '') + ':</strong> ';
+
+    // Two finding shapes:
+    //   - Standard: { value, value_zh, indication_en, indication_zh }
+    //   - Boolean:  { present: true, indication_en, indication_zh }
+    var valueHtml = '';
+    if (f.value || f.value_zh) {
+      valueHtml = HM.format.esc(f.value || '—') +
+        (f.value_zh ? ' <span style="font-family: var(--font-zh); color: var(--stone);">· ' + HM.format.esc(f.value_zh) + '</span>' : '');
+    }
+    var indicationHtml = '';
+    if (f.indication_en || f.indication_zh) {
+      indicationHtml = '<div style="margin-top:2px; font-size: 11px;">→ ' +
+        HM.format.esc(f.indication_en || '') +
+        (f.indication_zh
+          ? '<span style="font-family: var(--font-zh); color: var(--stone);"> · ' + HM.format.esc(f.indication_zh) + '</span>'
+          : '') +
+        '</div>';
+    }
+
+    return '<li style="padding: 6px 0; border-bottom: 1px solid var(--border);">' +
+      labelHtml + valueHtml + indicationHtml +
+      '</li>';
   }
 
   function renderMiniTongue(t) {
@@ -818,17 +920,13 @@
       (c.name_zh ? '<div class="text-sm text-muted" style="font-family: var(--font-zh);">' + HM.format.esc(c.name_zh) + '</div>' : '') +
       (d.health_score != null ? '<div class="text-sm mt-2">Health Score: <strong>' + d.health_score + '/100</strong></div>' : '') +
 
-      (findings.length ? ('<div class="text-label mt-4 mb-2">Findings</div>' +
+      (findings.length ? ('<div class="text-label mt-4 mb-2">Findings · 望舌所見</div>' +
         '<ul class="text-xs text-muted" style="list-style: none; padding: 0;">' +
-        findings.map(function (f) {
-          return '<li style="padding: 4px 0; border-bottom: 1px solid var(--border);">' +
-            '<strong>' + HM.format.esc((f.category || '').replace(/_/g, ' ')) + ':</strong> ' +
-            HM.format.esc(f.value || '—') + '</li>';
-        }).join('') + '</ul>') : '') +
+        findings.map(renderFindingRow).join('') + '</ul>') : '') +
 
-      (recs.length ? ('<div class="text-label mt-4 mb-2">AI Lifestyle Suggestions</div>' +
+      (recs.length ? ('<div class="text-label mt-4 mb-2">AI Lifestyle Suggestions · AI 養生建議</div>' +
         '<ul class="text-xs text-muted" style="padding-left: 18px;">' +
-        recs.map(function (r) { return '<li>' + HM.format.esc(r) + '</li>'; }).join('') +
+        recs.map(function (r) { return '<li style="margin-bottom: 4px;">' + HM.format.esc(r) + '</li>'; }).join('') +
         '</ul>') : '') +
 
       '</div>' +

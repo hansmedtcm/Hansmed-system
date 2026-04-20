@@ -16,6 +16,102 @@ namespace App\Services\TongueDiagnosis;
  */
 class AnalysisReport
 {
+    /** Status code → bilingual label for three-burner zones. */
+    private const STATUS_LABELS = [
+        'heat'             => ['en' => 'Heat',                'zh' => '熱'],
+        'damp_heat'        => ['en' => 'Damp-heat',           'zh' => '濕熱'],
+        'dampness'         => ['en' => 'Dampness',            'zh' => '濕氣'],
+        'cold_damp'        => ['en' => 'Cold-damp',           'zh' => '寒濕'],
+        'deficiency_cold'  => ['en' => 'Deficiency cold',     'zh' => '虛寒'],
+        'stasis'           => ['en' => 'Blood stasis',        'zh' => '血瘀'],
+        'yin_deficiency'   => ['en' => 'Yin deficiency',      'zh' => '陰虛'],
+        'normal'           => ['en' => 'Normal',              'zh' => '正常'],
+    ];
+
+    /**
+     * English explanation key → Chinese translation. Used to attach a
+     * Chinese counterpart to the explanation/note/reason strings the
+     * AnalysisReport emits. Keeps the bilingual data centralised so
+     * future copy edits live in one place.
+     */
+    private const ZH_PHRASES = [
+        // Three-burner explanations
+        'Heat signs in heart/lung zone'                                                        => '心肺區出現熱象',
+        'Heat in spleen/stomach zone'                                                          => '脾胃區有熱',
+        'Heat descending into lower jiao'                                                      => '熱邪下注下焦',
+        'Pale colour indicates cold / qi-blood deficiency in this region'                      => '此區色淡，主寒或氣血虛',
+        'Dark colour indicates blood stasis in this region'                                    => '此區色暗，主血瘀',
+        'Yellow greasy coating — damp-heat accumulation'                                       => '黃膩苔，主濕熱蘊積',
+        'White greasy/sticky coating — phlegm-damp or cold-damp'                               => '白膩苔，主痰濕或寒濕',
+        'Peeled / no coating — stomach yin depletion in this zone'                             => '剝苔/無苔，主胃陰虧虛',
+        'Edges may show liver/gallbladder qi swelling — assess with clinical signs.'           => '舌邊或顯肝膽氣脹，須結合臨床',
+
+        // Holographic regions
+        'Head / face / brain / eyes'                          => '頭、面、腦、目',
+        'Throat / tonsils'                                    => '咽喉、扁桃體',
+        'Heart'                                               => '心',
+        'Lungs'                                               => '肺',
+        'Stomach / spleen'                                    => '脾胃',
+        'Stomach'                                             => '胃',
+        'Liver'                                               => '肝',
+        'Gallbladder / descending lung'                       => '膽 / 肺氣下降',
+        'Lower intestines / bladder'                          => '大腸 / 膀胱',
+        'Uterus / prostate'                                   => '子宮 / 前列腺',
+        'Kidneys (yang)'                                      => '腎陽',
+        'Blood / circulation'                                 => '血液 / 循環',
+
+        // Holographic reasons
+        'Tip or upper-jiao redness — heat rising to the head.'                                 => '舌尖或上焦發紅，熱邪上擾頭面。',
+        'Upper-jiao heat may present as throat inflammation.'                                  => '上焦熱可表現為咽喉發炎。',
+        'Heart fire pattern when tip is red; may disturb shen (anxiety, insomnia).'            => '舌尖紅多屬心火，可擾神（焦慮、失眠）。',
+        'Upper-jiao heat may involve the lung network.'                                        => '上焦熱可累及肺絡。',
+        'Depression in the heart zone indicates heart qi deficiency — watch for sweating.'     => '心區凹陷主心氣虛，注意自汗。',
+        'Greasy coating in the centre — damp accumulation in the digestive middle.'            => '中部膩苔，主中焦濕困。',
+        'Red middle — stomach fire (may present as acid reflux, bad breath, hunger).'          => '舌中紅主胃火，可見泛酸、口臭、易飢。',
+        'Left-edge redness or swelling — liver qi stagnation or liver fire.'                   => '左邊紅腫，主肝鬱或肝火。',
+        'Right-edge redness or swelling — gallbladder heat or lung qi failing to descend.'     => '右邊紅腫，主膽熱或肺氣不降。',
+        'Root greasy coating — lower-jiao dampness; watch stool/urine signs.'                  => '根部膩苔，主下焦濕，留意二便。',
+        'Lower-jiao dampness may affect pelvic inflammation or discharge.'                     => '下焦濕邪可致盆腔炎或帶下。',
+        'Pale wet root — kidney yang deficiency with water retention.'                         => '舌根淡濕，主腎陽虛兼水停。',
+        'Purple or petechiae — systemic blood stasis; check for fixed pain.'                   => '紫斑或瘀點，主全身血瘀，留意定點疼痛。',
+
+        // Six-meridian notes
+        'Thin white tip — early Taiyang exterior cold or Shaoyin onset.'                       => '舌尖薄白，主太陽表寒初起或少陰始病。',
+        'Red tip — Shaoyin heart heat or Taiyang heat-transmission.'                           => '舌尖紅，主少陰心熱或太陽傳熱。',
+        'Yellow/dry or greasy centre — Yangming heat-bind or Taiyin damp-cold; differentiate by dryness vs greasiness.'
+            => '舌中黃乾或膩，主陽明熱結或太陰寒濕，須以乾膩辨之。',
+        'Edge redness or swelling — Shaoyang gallbladder-heat or Jueyin liver stagnation/cold.'
+            => '舌邊紅腫，主少陽膽熱或厥陰肝鬱寒。',
+        'Pale wet root — Shaoyin kidney-yang deficit.'                                         => '舌根淡濕，主少陰腎陽虧虛。',
+
+        // Six-meridian zones
+        'Tongue tip'        => '舌尖',
+        'Tongue centre'     => '舌中',
+        'Bilateral edges'   => '舌邊兩側',
+        'Tongue root'       => '舌根',
+
+        // Holographic description
+        'Body regions inferred from tongue zones via the holographic map.'
+            => '以全息圖推斷可能涉及之身體部位。',
+
+        // Ascending / descending
+        'Tip elevation balanced, midline centred — no strong ascending/descending signal on tongue.'
+            => '舌尖高度平衡，中線居中，舌象未見明顯升降異常。',
+    ];
+
+    private static function withZh(string $en): array
+    {
+        return [
+            'en' => $en,
+            'zh' => self::ZH_PHRASES[$en] ?? '',
+        ];
+    }
+
+    private static function statusLabel(?string $status): array
+    {
+        return self::STATUS_LABELS[$status ?? 'normal'] ?? ['en' => $status ?? '', 'zh' => ''];
+    }
+
     public function generate(array $analysis): array
     {
         $constitutions = KnowledgeBase::matchConstitutions($analysis);
@@ -216,15 +312,26 @@ class AnalysisReport
                 $status = $this->fallbackBurnerStatus($zoneKey, $a);
             }
 
+            $statusLabel = self::statusLabel($status);
+            // Per-line explanation gets a Chinese twin so the doctor
+            // sees both languages without a separate translation pass.
+            $explanationEn = $explanation ? implode(' · ', $explanation) : 'Normal appearance';
+            $explanationZh = $explanation
+                ? implode(' · ', array_map(fn($e) => self::ZH_PHRASES[$e] ?? '', $explanation))
+                : '正常';
+
             $result[$zoneKey] = [
-                'name_zh'      => $zoneMeta['name_zh'] ?? '',
-                'name_en'      => $zoneMeta['name_en'] ?? '',
-                'organs'       => $zoneMeta['organs'] ?? [],
-                'status'       => $status,
-                'zone_color'   => $zoneColor,
-                'zone_coating' => $zoneCoating,
-                'notes'        => $zone['notes'] ?? null,
-                'explanation'  => $explanation ? implode(' · ', $explanation) : 'Normal appearance',
+                'name_zh'         => $zoneMeta['name_zh'] ?? '',
+                'name_en'         => $zoneMeta['name_en'] ?? '',
+                'organs'          => $zoneMeta['organs'] ?? [],
+                'status'          => $status,
+                'status_en'       => $statusLabel['en'],
+                'status_zh'       => $statusLabel['zh'],
+                'zone_color'      => $zoneColor,
+                'zone_coating'    => $zoneCoating,
+                'notes'           => $zone['notes'] ?? null,
+                'explanation'     => $explanationEn,
+                'explanation_zh'  => $explanationZh,
             ];
         }
 
@@ -233,6 +340,7 @@ class AnalysisReport
             'left_edge'  => ($zones['left_edge']  ?? null) ?: null,
             'right_edge' => ($zones['right_edge'] ?? null) ?: null,
             'note'       => 'Left edge reflects liver; right edge reflects lung / gallbladder.',
+            'note_zh'    => '舌左邊主肝，右邊主肺/膽。',
         ];
 
         return $result;
@@ -266,9 +374,13 @@ class AnalysisReport
         $flags = [];
 
         $register = function (string $region, string $reason) use (&$flags) {
+            // Each entry carries both languages so the doctor UI can
+            // render bilingual labels without lookup tables.
             $flags[] = [
-                'region' => $region,
-                'reason' => $reason,
+                'region'    => $region,
+                'region_zh' => self::ZH_PHRASES[$region] ?? '',
+                'reason'    => $reason,
+                'reason_zh' => self::ZH_PHRASES[$reason] ?? '',
             ];
         };
 
@@ -338,35 +450,45 @@ class AnalysisReport
         $middleCoat = $zones['middle_jiao']['coating'] ?? null;
         $root    = $zones['lower_jiao']['color']   ?? null;
 
-        if ($tip === 'red' || $tipCoat === 'thin_white') {
+        $emit = function (string $meridian, string $zone, string $note) use (&$notes) {
             $notes[] = [
-                'meridian' => 'Taiyang / Shaoyin · 太陽 / 少陰',
-                'zone'     => 'Tongue tip',
-                'note'     => $tipCoat === 'thin_white'
-                    ? 'Thin white tip — early Taiyang exterior cold or Shaoyin onset.'
-                    : 'Red tip — Shaoyin heart heat or Taiyang heat-transmission.',
+                'meridian' => $meridian,
+                'zone'     => $zone,
+                'zone_zh'  => self::ZH_PHRASES[$zone] ?? '',
+                'note'     => $note,
+                'note_zh'  => self::ZH_PHRASES[$note] ?? '',
             ];
+        };
+
+        if ($tip === 'red' || $tipCoat === 'thin_white') {
+            $emit(
+                'Taiyang / Shaoyin · 太陽 / 少陰',
+                'Tongue tip',
+                $tipCoat === 'thin_white'
+                    ? 'Thin white tip — early Taiyang exterior cold or Shaoyin onset.'
+                    : 'Red tip — Shaoyin heart heat or Taiyang heat-transmission.'
+            );
         }
         if (in_array($middle, ['red', 'deep_red'], true) || $middleCoat === 'yellow_dry' || $middleCoat === 'yellow_greasy') {
-            $notes[] = [
-                'meridian' => 'Yangming / Taiyin · 陽明 / 太陰',
-                'zone'     => 'Tongue centre',
-                'note'     => 'Yellow/dry or greasy centre — Yangming heat-bind or Taiyin damp-cold; differentiate by dryness vs greasiness.',
-            ];
+            $emit(
+                'Yangming / Taiyin · 陽明 / 太陰',
+                'Tongue centre',
+                'Yellow/dry or greasy centre — Yangming heat-bind or Taiyin damp-cold; differentiate by dryness vs greasiness.'
+            );
         }
         if (($zones['left_edge']['color'] ?? null) === 'red' || ! empty($a['signs']['liver_gb_swelling'])) {
-            $notes[] = [
-                'meridian' => 'Shaoyang / Jueyin · 少陽 / 厥陰',
-                'zone'     => 'Bilateral edges',
-                'note'     => 'Edge redness or swelling — Shaoyang gallbladder-heat or Jueyin liver stagnation/cold.',
-            ];
+            $emit(
+                'Shaoyang / Jueyin · 少陽 / 厥陰',
+                'Bilateral edges',
+                'Edge redness or swelling — Shaoyang gallbladder-heat or Jueyin liver stagnation/cold.'
+            );
         }
         if (in_array($root, ['pale_white'], true) && ($a['moisture'] ?? 'moist') === 'slippery') {
-            $notes[] = [
-                'meridian' => 'Shaoyin (kidney) · 少陰（腎）',
-                'zone'     => 'Tongue root',
-                'note'     => 'Pale wet root — Shaoyin kidney-yang deficit.',
-            ];
+            $emit(
+                'Shaoyin (kidney) · 少陰（腎）',
+                'Tongue root',
+                'Pale wet root — Shaoyin kidney-yang deficit.'
+            );
         }
 
         return $notes;
@@ -490,86 +612,102 @@ class AnalysisReport
 
         if ($tip === 'left_higher' || $midline === 'shifted_right') {
             $p = $tenPrin['ascending'] ?? [];
+            $signsEn = $p['signs']   ?? 'Left side enlarged / left tip higher.';
+            $cauEn   = $p['caution'] ?? 'Avoid Chaihu (柴胡) — it lifts liver qi further.';
             return [
-                'direction'  => 'ascending_excess',
-                'name_zh'    => '肝气上逆',
-                'name_en'    => 'Liver qi ascending excess',
-                'signs'      => $p['signs']   ?? 'Left side enlarged / left tip higher.',
-                'caution'    => $p['caution'] ?? 'Avoid Chaihu (柴胡) — it lifts liver qi further.',
+                'direction'   => 'ascending_excess',
+                'name_zh'     => '肝氣上逆',
+                'name_en'     => 'Liver qi ascending excess',
+                'signs'       => $signsEn,
+                'signs_zh'    => $p['signs_zh']   ?? '舌左側偏大或左尖上抬。',
+                'caution'     => $cauEn,
+                'caution_zh'  => $p['caution_zh'] ?? '避免柴胡，柴胡升舉肝氣，恐加重上逆。',
             ];
         }
         if ($tip === 'right_higher' || $midline === 'shifted_left') {
             $p = $tenPrin['descending'] ?? [];
+            $signsEn = $p['signs']    ?? 'Right side enlarged / right tip higher.';
+            $tx      = $p['treatment'] ?? 'Consider descending herbs such as Xingren (杏仁), Pipaye (枇杷叶), Zhidahuang (制大黄).';
             return [
-                'direction'  => 'descending_blocked',
-                'name_zh'    => '肺气不降',
-                'name_en'    => 'Lung qi failing to descend',
-                'signs'      => $p['signs']    ?? 'Right side enlarged / right tip higher.',
-                'treatment'  => $p['treatment'] ?? 'Consider descending herbs such as Xingren (杏仁), Pipaye (枇杷叶), Zhidahuang (制大黄).',
+                'direction'    => 'descending_blocked',
+                'name_zh'      => '肺氣不降',
+                'name_en'      => 'Lung qi failing to descend',
+                'signs'        => $signsEn,
+                'signs_zh'     => $p['signs_zh']     ?? '舌右側偏大或右尖上抬。',
+                'treatment'    => $tx,
+                'treatment_zh' => $p['treatment_zh'] ?? '可加降氣藥，如杏仁、枇杷葉、制大黃等。',
             ];
         }
 
         return [
             'direction' => 'balanced',
             'note'      => 'Tip elevation balanced, midline centred — no strong ascending/descending signal on tongue.',
+            'note_zh'   => '舌尖平衡、中線居中，未見明顯升降異常。',
         ];
     }
 
+    /**
+     * Lifestyle suggestions per primary constitution. Returns "EN · 中文"
+     * formatted strings so the existing frontend (which renders each
+     * recommendation as a single <li>) shows both languages without a
+     * data-shape change. New fields can swap to {en, zh} objects later
+     * if richer rendering is needed.
+     */
     private function recommendations(?array $primary): array
     {
-        if (! $primary) return ['Maintain balanced diet and regular exercise'];
+        if (! $primary) return ['Maintain balanced diet and regular exercise · 保持均衡飲食與規律運動'];
 
         return match ($primary['type']) {
             'qi_deficient' => [
-                'Prioritise rest and avoid overexertion',
-                'Eat warm, cooked foods; favour rice porridge, yam (山药), dates',
-                'Gentle exercise like Tai Chi or walking',
-                'Avoid cold/raw foods and excessive sweating',
+                'Prioritise rest and avoid overexertion · 多休息，避免過度勞累',
+                'Eat warm, cooked foods; favour rice porridge, yam (山藥), dates · 食溫熱熟食，多用米粥、山藥、紅棗',
+                'Gentle exercise like Tai Chi or walking · 適度運動如太極、散步',
+                'Avoid cold/raw foods and excessive sweating · 忌生冷食物及過度出汗',
             ],
             'yang_deficient' => [
-                'Keep warm, especially lower back and abdomen',
-                'Eat warming foods: ginger, cinnamon, lamb',
-                'Avoid cold/raw foods, iced drinks',
-                'Warm foot soaks before bed',
-                'Moderate sun exposure in the morning',
+                'Keep warm, especially lower back and abdomen · 注意保暖，尤其腰腹部',
+                'Eat warming foods: ginger, cinnamon, lamb · 食溫陽食物如薑、桂、羊肉',
+                'Avoid cold/raw foods, iced drinks · 忌生冷及冰飲',
+                'Warm foot soaks before bed · 睡前溫水泡腳',
+                'Moderate sun exposure in the morning · 早晨適度曬太陽',
             ],
             'yin_deficient' => [
-                'Stay well hydrated throughout the day',
-                'Eat moistening foods: pear, lily bulb (百合), black sesame',
-                'Avoid spicy, fried, and excessively hot foods',
-                'Ensure adequate sleep (before 11pm)',
-                'Practice gentle meditation or Qigong',
+                'Stay well hydrated throughout the day · 全天注意補水',
+                'Eat moistening foods: pear, lily bulb (百合), black sesame · 食滋潤食物如雪梨、百合、黑芝麻',
+                'Avoid spicy, fried, and excessively hot foods · 忌辛辣、油炸、過熱食物',
+                'Ensure adequate sleep (before 11pm) · 充足睡眠（11點前入睡）',
+                'Practice gentle meditation or Qigong · 練習靜坐或氣功',
             ],
             'phlegm_dampness' => [
-                'Reduce greasy, sweet, and dairy-heavy foods',
-                'Eat light foods: barley (薏苡仁), lotus seed, winter melon',
-                'Regular aerobic exercise to promote circulation',
-                'Avoid damp environments',
+                'Reduce greasy, sweet, and dairy-heavy foods · 減少油膩、甜食及奶製品',
+                'Eat light foods: barley (薏苡仁), lotus seed, winter melon · 食清淡食物如薏苡仁、蓮子、冬瓜',
+                'Regular aerobic exercise to promote circulation · 規律有氧運動，促進循環',
+                'Avoid damp environments · 避免潮濕環境',
             ],
             'damp_heat' => [
-                'Avoid alcohol, spicy, and greasy foods',
-                'Eat cooling, dampness-draining foods: mung bean, cucumber, bitter melon',
-                'Maintain good hygiene, keep skin dry',
-                'Regular moderate exercise',
+                'Avoid alcohol, spicy, and greasy foods · 忌酒、辛辣、油膩',
+                'Eat cooling, dampness-draining foods: mung bean, cucumber, bitter melon · 食清熱利濕食物如綠豆、黃瓜、苦瓜',
+                'Maintain good hygiene, keep skin dry · 注意衛生，保持皮膚乾爽',
+                'Regular moderate exercise · 規律適度運動',
             ],
             'blood_stasis' => [
-                'Stay physically active to promote blood circulation',
-                'Include foods that invigorate blood: hawthorn, turmeric, dark leafy greens',
-                'Avoid prolonged sitting or standing',
-                'Keep warm to prevent cold-induced stasis',
+                'Stay physically active to promote blood circulation · 多運動促進血液循環',
+                'Include foods that invigorate blood: hawthorn, turmeric, dark leafy greens · 食活血食物如山楂、薑黃、深色綠葉菜',
+                'Avoid prolonged sitting or standing · 避免久坐久立',
+                'Keep warm to prevent cold-induced stasis · 注意保暖以防寒凝血瘀',
             ],
             'qi_stagnation' => [
-                'Manage stress through meditation, deep breathing, or counselling',
-                'Regular outdoor exercise to move qi',
-                'Eat foods that soothe liver qi: chrysanthemum tea, citrus peel, mint',
-                'Maintain regular sleep schedule',
-                'Engage in creative or social activities',
+                'Manage stress through meditation, deep breathing, or counselling · 透過靜坐、深呼吸或心理諮詢紓解壓力',
+                'Regular outdoor exercise to move qi · 規律戶外運動以行氣',
+                'Eat foods that soothe liver qi: chrysanthemum tea, citrus peel, mint · 食疏肝食物如菊花茶、陳皮、薄荷',
+                'Maintain regular sleep schedule · 保持規律作息',
+                'Engage in creative or social activities · 多參與創作或社交活動',
             ],
             default => [
-                'Maintain balanced diet with varied whole foods',
-                'Regular moderate exercise',
-                'Adequate sleep (7-8 hours)',
-                'Manage stress levels',
+                'Maintain balanced diet with varied whole foods · 飲食均衡多樣化',
+                'Regular moderate exercise · 規律適度運動',
+                'Adequate sleep (7-8 hours) · 充足睡眠（7-8 小時）',
+                'Manage stress levels · 適度減壓',
             ],
         };
     }
