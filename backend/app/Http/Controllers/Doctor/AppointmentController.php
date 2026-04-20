@@ -253,4 +253,31 @@ class AppointmentController extends Controller
         $appt->update(['status' => 'completed']);
         return response()->json(['appointment' => $appt]);
     }
+
+    /**
+     * Set / update the meeting URL on an appointment. Used when the
+     * platform's video provider is Google Meet (or any "bring-your-
+     * own-link" provider) where the doctor pastes the URL after
+     * creating a room in their own Google account. Auto-creates the
+     * meeting_url column on first call so no formal migration is
+     * needed for this small change.
+     */
+    public function setMeetingUrl(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'meeting_url' => ['nullable', 'url', 'max:500'],
+        ]);
+
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('appointments', 'meeting_url')) {
+            try {
+                \DB::statement("ALTER TABLE appointments ADD COLUMN meeting_url VARCHAR(500) NULL AFTER notes");
+            } catch (\Throwable $e) { /* race / already exists */ }
+        }
+
+        $appt = Appointment::where('doctor_id', $request->user()->id)->findOrFail($id);
+        $appt->meeting_url = $data['meeting_url'] ?? null;
+        $appt->save();
+
+        return response()->json(['appointment' => $appt]);
+    }
 }

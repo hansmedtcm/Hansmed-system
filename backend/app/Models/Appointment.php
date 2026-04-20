@@ -16,6 +16,8 @@ class Appointment extends Model
         'concern', 'concern_label', 'recommended_specialty', 'is_pool',
         // Walk-in support
         'visit_type',
+        // External video meeting URL (Google Meet etc., when video_provider != jitsi)
+        'meeting_url',
     ];
 
     protected $casts = [

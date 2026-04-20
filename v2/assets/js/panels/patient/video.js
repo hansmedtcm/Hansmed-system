@@ -8,8 +8,66 @@
   async function render(el, appointmentId) {
     HM.state.loading(el);
     try {
-      // Try to fetch a proper join token. Degrade gracefully if the backend
-      // refuses — Jitsi can still host the call with a deterministic room.
+      // Pick provider — admin-controlled at /public/features.
+      var features = {};
+      try { features = await HM.api.publicFeatures(); } catch (_) {}
+      var provider = (features && features.video_provider) || 'jitsi';
+
+      // For Google Meet we need the doctor's pasted URL from the
+      // appointment record. Fetch it via the patient appointments
+      // list (we don't have a single-appt endpoint on patient side).
+      var meetingUrl = null;
+      if (provider === 'google_meet') {
+        try {
+          var apptRes = await HM.api.patient.listAppointments();
+          var match = (apptRes.data || []).find(function (x) { return x.id == appointmentId; });
+          if (match) meetingUrl = match.meeting_url || null;
+        } catch (_) {}
+      }
+
+      var user = HM.auth.user();
+      var displayName = HM.auth.displayName(user);
+
+      // ── Google Meet path: doctor pastes URL, patient sees Join button ──
+      if (provider === 'google_meet') {
+        var hdr = '<div class="page-header">' +
+          '<button class="btn btn--ghost" onclick="location.hash=\'#/appointments\'">← Back</button>' +
+          '</div>';
+        if (! meetingUrl) {
+          el.innerHTML = hdr +
+            '<div class="alert alert--warning"><div class="alert-icon">⏳</div><div class="alert-body">' +
+            '<div class="alert-title">Doctor hasn\'t shared the meeting link yet · 醫師尚未提供會議連結</div>' +
+            'Please refresh in a moment. The doctor will paste the Google Meet URL when they start the consultation. ' +
+            '<span style="font-family: var(--font-zh);">請稍後重新整理，醫師將於開始時提供連結。</span>' +
+            '<div class="mt-3"><button class="btn btn--outline" onclick="HM.patientPanels.video.render(document.getElementById(\'panel-container\'), ' + appointmentId + ')">↻ Refresh · 重新整理</button></div>' +
+            '</div></div>';
+          return;
+        }
+        el.innerHTML = hdr +
+          '<div class="card card--pad-lg" style="text-align:center;max-width: 720px;background:linear-gradient(135deg,rgba(74,144,217,.05),rgba(255,255,255,.5));">' +
+          '<div style="font-size:4rem;margin-bottom:var(--s-3);">📹</div>' +
+          '<h2 class="mb-2">Google Meet · Google 視訊</h2>' +
+          '<p class="text-muted mb-4">Click below to join the consultation in a new tab. ' +
+          '<span style="font-family: var(--font-zh);">點擊下方按鈕於新分頁加入問診。</span></p>' +
+          '<a href="' + HM.format.esc(meetingUrl) + '" target="_blank" rel="noopener" class="btn btn--primary btn--lg" style="font-size:var(--text-lg);padding:var(--s-3) var(--s-5);">' +
+          '▶ Join Google Meet · 加入會議</a>' +
+          '<div class="text-xs text-muted mt-3" style="font-family: var(--font-mono); word-break: break-all;">' + HM.format.esc(meetingUrl) + '</div>' +
+          '<div class="flex flex-gap-2 mt-4" style="justify-content:center;">' +
+          '<button class="btn btn--outline btn--sm" onclick="HM.patientPanels.video._copyLink(\'' + meetingUrl.replace(/'/g, "\\'") + '\')">📋 Copy Link</button>' +
+          '<button class="btn btn--danger btn--sm" id="end-call">End Consultation · 結束</button>' +
+          '</div>' +
+          '</div>';
+
+        document.getElementById('end-call').addEventListener('click', async function () {
+          var ok = await HM.ui.confirm('End this consultation? · 確定結束？', { danger: true });
+          if (!ok) return;
+          try { await HM.api.consultation.finish(appointmentId, { duration_seconds: 0 }); } catch (_) {}
+          location.hash = '#/appointments';
+        });
+        return;
+      }
+
+      // ── Default: embedded Jitsi ──
       var rtc = {};
       try {
         var res = await HM.api.consultation.joinToken(appointmentId);
@@ -18,10 +76,7 @@
         console.warn('joinToken failed, falling back:', e.message);
       }
 
-      var user = HM.auth.user();
-      var displayName = HM.auth.displayName(user);
       var roomName = rtc.channel || ('HansMed-Consult-' + appointmentId);
-
       var jitsiUrl = 'https://' + HM.config.JITSI_DOMAIN + '/' + encodeURIComponent(roomName) +
         '#userInfo.displayName="' + encodeURIComponent(displayName) + '"' +
         '&config.prejoinPageEnabled=false' +

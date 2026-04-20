@@ -208,6 +208,7 @@
     listAppointments: function (q) { return api.get('/doctor/appointments' + (q ? '?' + q : '')); },
     listPool:         function (q) { return api.get('/doctor/pool' + (q ? '?' + q : '')); },
     pickPoolAppt:     function (id) { return api.post('/doctor/pool/' + id + '/pick'); },
+    setMeetingUrl:    function (id, url) { return api.post('/doctor/appointments/' + id + '/meeting-url', { meeting_url: url }); },
     createAppointment:function (d) { return api.post('/doctor/appointments', d); },
     getAppointment:   function (id) { return api.get('/doctor/appointments/' + id); },
     startAppointment: function (id) { return api.post('/doctor/appointments/' + id + '/start'); },

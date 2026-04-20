@@ -83,7 +83,7 @@ Route::post('/vouchers/preview', function (\Illuminate\Http\Request $r) {
 // Defaults are open — admin disables explicitly via system_configs.
 Route::get('/public/features', function () {
     $rows = \Illuminate\Support\Facades\DB::table('system_configs')
-        ->whereIn('config_key', ['shop_enabled'])
+        ->whereIn('config_key', ['shop_enabled', 'video_provider'])
         ->get()->keyBy('config_key');
     $boolish = function ($v) {
         if ($v === null) return null;
@@ -93,8 +93,11 @@ Route::get('/public/features', function () {
         return null;
     };
     $shop = isset($rows['shop_enabled']) ? $boolish($rows['shop_enabled']->config_value) : null;
+    $videoRaw = isset($rows['video_provider']) ? trim((string) $rows['video_provider']->config_value) : '';
+    $video = in_array($videoRaw, ['jitsi','google_meet'], true) ? $videoRaw : 'jitsi';
     return response()->json([
-        'shop_enabled' => $shop === null ? true : $shop, // default ON
+        'shop_enabled'    => $shop === null ? true : $shop, // default ON
+        'video_provider'  => $video,                         // 'jitsi' or 'google_meet'
     ]);
 });
 
@@ -195,6 +198,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/appointments/{id}',           [DoctorAppointmentController::class, 'show']);
         Route::post('/appointments/{id}/start',    [DoctorAppointmentController::class, 'start']);
         Route::post('/appointments/{id}/complete', [DoctorAppointmentController::class, 'complete']);
+        Route::post('/appointments/{id}/meeting-url', [DoctorAppointmentController::class, 'setMeetingUrl']);
 
         // Patient pool (doctors pick unclaimed pool appointments)
         Route::get('/pool',             [\App\Http\Controllers\Doctor\PoolController::class, 'index']);

@@ -107,21 +107,40 @@
     var tokenRes = { rtc: {} };
     try { tokenRes = await HM.api.consultation.joinToken(appointmentId); } catch (_) {}
 
-    var rtc = tokenRes.rtc || {};
+    // Pick video provider — admin-controlled in System Settings.
+    // Default jitsi if anything goes wrong fetching the flag.
+    var features = {};
+    try { features = await HM.api.publicFeatures(); } catch (_) {}
+    var provider = (features && features.video_provider) || 'jitsi';
+
     var user = HM.auth.user();
     var displayName = HM.auth.displayName(user);
+    var rtc = tokenRes.rtc || {};
     var roomName = rtc.channel || ('HansMed-Consult-' + appointmentId);
-    var jitsiUrl = 'https://' + HM.config.JITSI_DOMAIN + '/' + encodeURIComponent(roomName) +
-      '#userInfo.displayName="' + encodeURIComponent(displayName) + '"&config.prejoinPageEnabled=false';
+
+    var videoBlock;
+    if (provider === 'google_meet') {
+      // Google Meet doesn't allow iframe embedding (X-Frame-Options
+      // DENY). The doctor pastes the meet URL after creating the
+      // room in their Google account; both sides then click Join
+      // which opens the Meet in a new tab.
+      videoBlock = renderMeetSetupBlock(state.appt);
+    } else {
+      var jitsiUrl = 'https://' + HM.config.JITSI_DOMAIN + '/' + encodeURIComponent(roomName) +
+        '#userInfo.displayName="' + encodeURIComponent(displayName) + '"&config.prejoinPageEnabled=false';
+      videoBlock = '<div class="consult-video">' +
+        '<iframe src="' + HM.format.esc(jitsiUrl) + '" style="width:100%;height:100%;border:none;" allow="camera;microphone;display-capture;autoplay"></iframe>' +
+        '</div>';
+    }
 
     el.innerHTML = header() +
       '<div class="consult-layout consult-layout--online">' +
-      '<div><div class="consult-video">' +
-      '<iframe src="' + HM.format.esc(jitsiUrl) + '" style="width:100%;height:100%;border:none;" allow="camera;microphone;display-capture;autoplay"></iframe>' +
-      '</div></div>' +
+      '<div>' + videoBlock + '</div>' +
       '<div id="consult-side">' + sidebarMarkup() + '</div>' +
       '</div>' +
       footerActions();
+
+    if (provider === 'google_meet') wireMeetSetup(state.appt);
 
     injectStyle();
     wireSidebar();
@@ -201,6 +220,108 @@
     renderRxList();
     renderTreatments();
     renderDocuments();
+  }
+
+  // ── Google Meet setup block ───────────────────────────────
+  // Used when video_provider = google_meet. Doctor creates a Meet
+  // room in their own Google account (free, no API setup), pastes
+  // the URL, saves; the patient sees a Join button on their video
+  // page. Doctor sees the same Join button + an Edit option.
+  function renderMeetSetupBlock(appt) {
+    var url = (appt && appt.meeting_url) || '';
+    return '<div class="card card--pad-lg" style="text-align:center;background:linear-gradient(135deg,rgba(74,144,217,.05),rgba(255,255,255,.5));">' +
+      '<div style="font-size:3rem;margin-bottom:var(--s-2);">📹</div>' +
+      '<h3 class="mb-2">Google Meet · Google 視訊會議</h3>' +
+      '<p class="text-muted text-sm mb-4">' +
+      'Google Meet doesn\'t embed inside other sites — it opens in a new tab. ' +
+      '<span style="font-family: var(--font-zh);">Google Meet 不支援嵌入，會於新分頁開啟。</span>' +
+      '</p>' +
+
+      // Active meeting URL (if set)
+      (url
+        ? '<div class="alert alert--success mb-4"><div class="alert-body">' +
+          '<div class="text-label mb-1">Meeting URL · 會議連結</div>' +
+          '<div style="font-family: var(--font-mono); font-size: var(--text-sm); word-break: break-all;">' + HM.format.esc(url) + '</div>' +
+          '</div></div>' +
+
+          '<div class="flex flex-gap-2" style="justify-content:center;">' +
+          '<a href="' + HM.format.esc(url) + '" target="_blank" rel="noopener" class="btn btn--primary btn--lg">▶ Join Meeting · 加入會議</a>' +
+          '<button type="button" class="btn btn--outline" id="meet-edit">✎ Edit URL · 編輯</button>' +
+          '</div>'
+        : '<div class="alert alert--info mb-4"><div class="alert-body text-sm">' +
+          '<strong>Step 1:</strong> Click "Create New Meet" below — opens Google Meet in a new tab. ' +
+          'Sign in with your Google account, click <em>New meeting → Start an instant meeting</em>, ' +
+          'and copy the room URL. <br>' +
+          '<strong>Step 2:</strong> Paste the URL here and click Save. The patient will see a Join button.' +
+          '<br><span style="font-family: var(--font-zh);">第一步：點下方「建立新會議」於 Google 建立會議並複製連結。第二步：貼上後按儲存，患者即可加入。</span>' +
+          '</div></div>' +
+
+          '<div class="flex flex-gap-2 mb-3" style="justify-content:center;">' +
+          '<a href="https://meet.google.com/new" target="_blank" rel="noopener" class="btn btn--outline">🌐 Create New Meet · 建立新會議</a>' +
+          '</div>') +
+
+      // URL editor (hidden when URL is already set, shown via Edit button)
+      '<div id="meet-url-form" class="mt-3" style="' + (url ? 'display:none;' : '') + 'max-width:560px;margin:0 auto;">' +
+      '<div class="flex flex-gap-2">' +
+      '<input id="meet-url-input" class="field-input field-input--boxed" placeholder="https://meet.google.com/xxx-yyyy-zzz" value="' + HM.format.esc(url) + '" style="flex:1;font-family:var(--font-mono);">' +
+      '<button type="button" class="btn btn--primary" id="meet-url-save">Save · 儲存</button>' +
+      (url ? '<button type="button" class="btn btn--ghost" id="meet-url-clear" title="Remove meeting URL">✕</button>' : '') +
+      '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function wireMeetSetup(appt) {
+    var saveBtn = document.getElementById('meet-url-save');
+    var input   = document.getElementById('meet-url-input');
+    var editBtn = document.getElementById('meet-edit');
+    var clearBtn = document.getElementById('meet-url-clear');
+    var form = document.getElementById('meet-url-form');
+
+    if (editBtn) editBtn.addEventListener('click', function () {
+      if (form) form.style.display = '';
+      if (input) { input.focus(); input.select(); }
+    });
+
+    if (saveBtn) saveBtn.addEventListener('click', async function () {
+      var url = (input.value || '').trim();
+      if (url && ! /^https?:\/\//i.test(url)) {
+        HM.ui.toast('URL must start with https:// · 連結需以 https:// 開頭', 'warning');
+        return;
+      }
+      saveBtn.disabled = true;
+      saveBtn.textContent = '…';
+      try {
+        var res = await HM.api.doctor.setMeetingUrl(appt.id, url || null);
+        appt.meeting_url = (res.appointment && res.appointment.meeting_url) || url;
+        HM.ui.toast('Meeting URL saved · 會議連結已儲存', 'success');
+        // Re-render the block so the patient-side Join button appears.
+        var container = document.querySelector('.consult-layout--online > div:first-child');
+        if (container) {
+          container.innerHTML = renderMeetSetupBlock(appt);
+          wireMeetSetup(appt);
+        }
+      } catch (err) {
+        HM.ui.toast(err.message || 'Failed to save', 'danger');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save · 儲存';
+      }
+    });
+
+    if (clearBtn) clearBtn.addEventListener('click', async function () {
+      var ok = await HM.ui.confirm('Remove meeting URL? · 確認移除會議連結？');
+      if (! ok) return;
+      try {
+        await HM.api.doctor.setMeetingUrl(appt.id, null);
+        appt.meeting_url = null;
+        var container = document.querySelector('.consult-layout--online > div:first-child');
+        if (container) {
+          container.innerHTML = renderMeetSetupBlock(appt);
+          wireMeetSetup(appt);
+        }
+      } catch (err) { HM.ui.toast(err.message || 'Failed', 'danger'); }
+    });
   }
 
   // ── Header ─────────────────────────────────────────────────

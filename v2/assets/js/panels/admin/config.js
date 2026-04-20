@@ -92,6 +92,27 @@
         '</div>' +
         '</div>' +
 
+        // ── Video provider for teleconsult ──
+        // Jitsi (default) is fully embeddable; meet.jit.si is free
+        // but the public room codes are guessable. Google Meet
+        // doesn't allow iframe embedding (X-Frame-Options DENY) so
+        // we open it in a new tab — the doctor pastes the meet URL
+        // when starting the consult and the patient sees a Join
+        // button. Switch any time without breaking past consults.
+        '<div class="card mb-4">' +
+        '<div class="card-title">Video Provider · 視訊平台</div>' +
+        '<div class="field"><label class="check-item">' +
+        '<input type="radio" name="video_provider" value="jitsi" ' +
+        ((c.video_provider !== 'google_meet') ? 'checked' : '') + '> ' +
+        '<strong>Jitsi (default)</strong> — embedded video, no signup required. Free. · 嵌入式視訊，免登入。' +
+        '</label></div>' +
+        '<div class="field"><label class="check-item">' +
+        '<input type="radio" name="video_provider" value="google_meet" ' +
+        ((c.video_provider === 'google_meet') ? 'checked' : '') + '> ' +
+        '<strong>Google Meet</strong> — opens in a new tab. Doctor creates a Meet room in their Google account and pastes the URL on the consult page; patient gets a Join button. · 於新分頁開啟，醫師於 Google 建立會議並貼上連結，患者點擊加入。' +
+        '</label></div>' +
+        '</div>' +
+
         '<div class="card mb-4">' +
         '<div class="card-title">Walk-in Treatments · 臨診治療項目</div>' +
         '<p class="text-xs text-muted mb-3">Preset treatments that appear as quick-add buttons in the consult panel. Use the form to add new ones, or edit the JSON directly for bulk changes. ' +
