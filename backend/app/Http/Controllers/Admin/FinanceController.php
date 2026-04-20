@@ -71,7 +71,57 @@ class FinanceController extends Controller
             )
             ->groupBy('a.doctor_id', 'dp.full_name', 'u.email')
             ->orderByDesc('consultation_revenue')
+            ->get()
+            ->keyBy('doctor_id');
+
+        // ── Prescription-driven order revenue per doctor ──
+        // Even when the appointment isn't marked 'completed' yet (or the
+        // Rx came from an AI review with no appointment), the doctor
+        // who issued the prescription should get attribution credit
+        // when the patient pays for the medicines. Sum paid orders
+        // joined back to the issuing doctor via prescriptions.doctor_id.
+        $rxOrderRows = DB::table('orders as o')
+            ->join('prescriptions as p', 'p.id', '=', 'o.prescription_id')
+            ->leftJoin('doctor_profiles as dp', 'dp.user_id', '=', 'p.doctor_id')
+            ->leftJoin('users as u',  'u.id', '=', 'p.doctor_id')
+            ->whereIn('o.status', ['paid', 'dispensing', 'dispensed', 'shipped', 'delivered', 'completed'])
+            ->whereNotNull('p.doctor_id')
+            ->when($from, fn($q) => $q->whereDate('o.created_at', '>=', $from))
+            ->when($to,   fn($q) => $q->whereDate('o.created_at', '<=', $to))
+            ->select(
+                'p.doctor_id',
+                DB::raw('COALESCE(dp.full_name, u.email) as doctor_name'),
+                DB::raw('COALESCE(SUM(o.total), 0) as rx_order_revenue'),
+                DB::raw('COUNT(*) as rx_order_count')
+            )
+            ->groupBy('p.doctor_id', 'dp.full_name', 'u.email')
             ->get();
+
+        // Merge the two sides — doctors who issued Rx but had no
+        // completed appointments still appear in the table.
+        foreach ($rxOrderRows as $rx) {
+            if (! isset($rows[$rx->doctor_id])) {
+                $rows[$rx->doctor_id] = (object) [
+                    'doctor_id'            => $rx->doctor_id,
+                    'doctor_name'          => $rx->doctor_name,
+                    'visit_count'          => 0,
+                    'walk_in_count'        => 0,
+                    'online_count'         => 0,
+                    'consultation_revenue' => 0,
+                ];
+            }
+            $rows[$rx->doctor_id]->rx_order_revenue = (float) $rx->rx_order_revenue;
+            $rows[$rx->doctor_id]->rx_order_count   = (int)   $rx->rx_order_count;
+        }
+        // Default zero on doctors who only had consultations
+        foreach ($rows as $r) {
+            if (! isset($r->rx_order_revenue)) $r->rx_order_revenue = 0.0;
+            if (! isset($r->rx_order_count))   $r->rx_order_count   = 0;
+        }
+        // Re-rank by total revenue (consultation + later +treatment + +Rx)
+        $rows = $rows->values()->sortByDesc(function ($r) {
+            return (float) $r->consultation_revenue + (float) ($r->rx_order_revenue ?? 0);
+        })->values();
 
         // Now layer in treatment fees from consultations.treatments JSON.
         // We can't aggregate JSON server-side cleanly, so pull a small set and tally in PHP.
@@ -96,16 +146,24 @@ class FinanceController extends Controller
             }
         }
 
-        // Merge treatment totals into rows
+        // Merge treatment totals + Rx-order revenue into rows
         $totalConsultation = 0.0;
         $totalTreatment    = 0.0;
+        $totalRxOrder      = 0.0;
+        $totalRxOrderCount = 0;
         $totalVisits       = 0;
         foreach ($rows as $r) {
             $r->treatment_revenue = (float) ($treatmentByDoctor[$r->doctor_id] ?? 0);
-            $r->total_revenue     = (float) $r->consultation_revenue + $r->treatment_revenue;
+            $r->rx_order_revenue  = (float) ($r->rx_order_revenue ?? 0);
+            $r->rx_order_count    = (int)   ($r->rx_order_count   ?? 0);
+            $r->total_revenue     = (float) $r->consultation_revenue
+                                  + $r->treatment_revenue
+                                  + $r->rx_order_revenue;
             $r->visit_count       = (int) $r->visit_count;
             $totalConsultation   += (float) $r->consultation_revenue;
             $totalTreatment      += $r->treatment_revenue;
+            $totalRxOrder        += $r->rx_order_revenue;
+            $totalRxOrderCount   += $r->rx_order_count;
             $totalVisits         += (int) $r->visit_count;
         }
 
@@ -117,7 +175,9 @@ class FinanceController extends Controller
                 'visit_count'          => $totalVisits,
                 'consultation_revenue' => $totalConsultation,
                 'treatment_revenue'    => $totalTreatment,
-                'total_revenue'        => $totalConsultation + $totalTreatment,
+                'rx_order_revenue'     => $totalRxOrder,
+                'rx_order_count'       => $totalRxOrderCount,
+                'total_revenue'        => $totalConsultation + $totalTreatment + $totalRxOrder,
             ],
         ]);
     }

@@ -285,11 +285,19 @@
       '</div></div>';
 
     if (!doctors.length) {
-      host.innerHTML = summaryRow + '<div class="card"><p class="text-muted text-center" style="padding: var(--s-5);">No completed appointments in this date range.</p></div>';
+      host.innerHTML = summaryRow +
+        '<div class="card"><p class="text-muted text-center" style="padding: var(--s-5);">' +
+        'No completed appointments AND no prescription orders in this date range.<br>' +
+        '<span class="text-xs" style="font-family: var(--font-zh);">此期間無已完成問診，亦無處方訂單。</span>' +
+        '</p></div>';
       return;
     }
 
     var rows = doctors.map(function (d, idx) {
+      var rxCol = (d.rx_order_count || 0) > 0
+        ? HM.format.money(d.rx_order_revenue || 0) +
+          '<div class="text-xs text-muted">' + d.rx_order_count + ' order(s)</div>'
+        : '<span class="text-muted">—</span>';
       return '<tr>' +
         '<td data-label="Rank" style="font-family: var(--font-mono); color: var(--stone);">#' + (idx + 1) + '</td>' +
         '<td data-label="Doctor"><strong>' + HM.format.esc(d.doctor_name || ('#' + d.doctor_id)) + '</strong></td>' +
@@ -297,6 +305,7 @@
         '<td data-label="Walk-in / Online" style="font-size: var(--text-xs); color: var(--stone);">🏥 ' + (d.walk_in_count || 0) + ' · 📹 ' + (d.online_count || 0) + '</td>' +
         '<td data-label="Consultation" style="text-align: right;">' + HM.format.money(d.consultation_revenue || 0) + '</td>' +
         '<td data-label="Treatments" style="text-align: right;">' + HM.format.money(d.treatment_revenue || 0) + '</td>' +
+        '<td data-label="Rx Orders" style="text-align: right;">' + rxCol + '</td>' +
         '<td data-label="Total" style="text-align: right; font-weight: 600; color: var(--gold);">' + HM.format.money(d.total_revenue || 0) + '</td>' +
         '</tr>';
     }).join('');
@@ -304,9 +313,22 @@
     host.innerHTML = summaryRow +
       '<div class="card" style="padding: 0;">' +
       '<div class="table-wrap"><table class="table table--responsive">' +
-      '<thead><tr><th>#</th><th>Doctor</th><th style="text-align:right;">Visits</th><th>Walk-in / Online</th><th style="text-align:right;">Consultation</th><th style="text-align:right;">Treatments</th><th style="text-align:right;">Total</th></tr></thead>' +
+      '<thead><tr>' +
+        '<th>#</th>' +
+        '<th>Doctor · 醫師</th>' +
+        '<th style="text-align:right;">Visits · 問診</th>' +
+        '<th>Walk-in / Online</th>' +
+        '<th style="text-align:right;">Consultation · 診費</th>' +
+        '<th style="text-align:right;">Treatments · 治療</th>' +
+        '<th style="text-align:right;">Rx Orders · 處方訂單</th>' +
+        '<th style="text-align:right;">Total · 合計</th>' +
+      '</tr></thead>' +
       '<tbody>' + rows + '</tbody>' +
       '</table></div>' +
+      '<div class="text-xs text-muted" style="padding: var(--s-3);">' +
+      'Rx Orders column attributes paid medicine orders to the doctor who issued the prescription, even when the consultation isn\'t marked complete yet. ' +
+      '<span style="font-family: var(--font-zh);">處方訂單欄將已付款的藥單收入歸屬於開立處方的醫師，無論問診是否標記為完成。</span>' +
+      '</div>' +
       '</div>';
   }
 
