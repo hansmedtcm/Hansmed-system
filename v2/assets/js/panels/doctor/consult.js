@@ -185,6 +185,7 @@
     document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
       btn.addEventListener('click', function () { addTreatment(btn.getAttribute('data-tx-add')); });
     });
+    wireCustomTreatmentForm();
 
     // Prescription: add-row button
     var addRow = document.getElementById('rx-add-row');
@@ -364,10 +365,27 @@
       state.treatmentTypes.map(function (t) {
         return '<button type="button" class="btn btn--outline btn--sm" data-tx-add="' + t.key + '">' + t.icon + ' ' + t.name + ' · ' + t.name_zh + '</button>';
       }).join('') +
+      // One-off custom treatment for THIS visit only — opens an inline
+      // mini form so the doctor doesn't have to leave the consult.
+      // For long-term presets they still use admin Settings.
+      '<button type="button" class="btn btn--ghost btn--sm" id="tx-add-custom" style="border:1px dashed var(--gold);color:var(--gold);">+ Custom · 自訂</button>' +
       '</div>' +
 
-      '<div class="text-xs text-muted mt-3">Need a new treatment type? Ask admin to add it in System Settings → Walk-in Treatments. ' +
-      '<span style="font-family: var(--font-zh);">需新增治療類型，請聯絡管理員於系統設定中新增。</span></div>';
+      // Inline custom-treatment form (hidden until clicked).
+      '<div id="tx-custom-form" class="card mt-3" style="display:none;padding: var(--s-3); background: var(--washi);">' +
+      '<div class="text-label mb-2">Custom Treatment for this visit · 本次自訂治療</div>' +
+      '<div class="field-grid field-grid--2" style="gap: var(--s-2);">' +
+      '<div class="field"><label class="field-label">Icon</label><input id="tx-c-icon" class="field-input field-input--boxed" value="💉" style="text-align:center;"></div>' +
+      '<div class="field"><label class="field-label" data-required>Name (EN)</label><input id="tx-c-name" class="field-input field-input--boxed" placeholder="e.g. Ear acupuncture"></div>' +
+      '<div class="field"><label class="field-label">中文名稱</label><input id="tx-c-name-zh" class="field-input field-input--boxed" placeholder="例：耳針" style="font-family:var(--font-zh);"></div>' +
+      '<div class="field"><label class="field-label">Fee (RM)</label><input id="tx-c-fee" type="number" min="0" step="0.01" class="field-input field-input--boxed" value="0"></div>' +
+      '</div>' +
+      '<div class="flex gap-2 mt-2">' +
+      '<button type="button" class="btn btn--ghost btn--sm" id="tx-c-cancel">Cancel</button>' +
+      '<button type="button" class="btn btn--primary btn--sm" id="tx-c-add">+ Add to log</button>' +
+      '<span class="text-xs text-muted" style="margin-left:auto;align-self:center;">Tip: ask admin to add it as a preset in System Settings if you use it often. · 常用治療請聯絡管理員加入預設。</span>' +
+      '</div>' +
+      '</div>';
   }
 
   // ── Prescription panel ───────────────────────────────────
@@ -438,12 +456,13 @@
       });
     });
 
-    // Treatment add buttons (presets only — custom is admin-managed)
+    // Treatment add buttons (presets) + inline custom-treatment form
     document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         addTreatment(btn.getAttribute('data-tx-add'));
       });
     });
+    wireCustomTreatmentForm();
 
     // Prescription add row
     document.getElementById('rx-add-row').addEventListener('click', function () {
@@ -660,6 +679,57 @@
         state.documents.splice(i, 1);
         renderDocuments();
       });
+    });
+  }
+
+  // ── Custom (one-off) treatment form ──────────────────────
+  // Reveals inline mini-form so the doctor can log a treatment that
+  // isn't in the admin preset list, without leaving the consult.
+  // Stored only on this consultation — for repeat use, admin should
+  // add it to system_configs.treatment_types.
+  function wireCustomTreatmentForm() {
+    var openBtn = document.getElementById('tx-add-custom');
+    var form = document.getElementById('tx-custom-form');
+    if (! openBtn || ! form || openBtn._wired) return;
+    openBtn._wired = true;
+
+    openBtn.addEventListener('click', function () {
+      form.style.display = (form.style.display === 'none' || ! form.style.display) ? '' : 'none';
+      if (form.style.display !== 'none') {
+        var nm = document.getElementById('tx-c-name'); if (nm) nm.focus();
+      }
+    });
+    document.getElementById('tx-c-cancel').addEventListener('click', function () {
+      form.style.display = 'none';
+    });
+    document.getElementById('tx-c-add').addEventListener('click', function () {
+      var name    = (document.getElementById('tx-c-name').value || '').trim();
+      var name_zh = (document.getElementById('tx-c-name-zh').value || '').trim();
+      var icon    = (document.getElementById('tx-c-icon').value || '').trim() || '💉';
+      var fee     = parseFloat(document.getElementById('tx-c-fee').value) || 0;
+      if (! name) {
+        HM.ui.toast('Please enter the English name · 請輸入英文名稱', 'warning');
+        return;
+      }
+      state.treatments.push({
+        type:       'custom_' + Date.now(),
+        name:       name,
+        name_zh:    name_zh,
+        icon:       icon,
+        has_points: false,
+        points:     '',
+        duration_min: 0,
+        fee:        fee,
+        notes:      '',
+      });
+      renderTreatments();
+      // Reset + collapse the form ready for the next one.
+      document.getElementById('tx-c-name').value = '';
+      document.getElementById('tx-c-name-zh').value = '';
+      document.getElementById('tx-c-icon').value = '💉';
+      document.getElementById('tx-c-fee').value = '0';
+      form.style.display = 'none';
+      HM.ui.toast('Custom treatment added · 已新增自訂治療', 'success');
     });
   }
 
