@@ -203,6 +203,10 @@
     // Wuyun Liuqi analysis (practitioner-only clinical aide)
     mountWuyunLiuqi();
 
+    // Clinical assist (red flags / questions / DDx based on
+    // chief complaint + vitals). Re-evaluates on every input.
+    wireClinicalAssist();
+
     // Treatments: preset add buttons
     document.querySelectorAll('[data-tx-add]').forEach(function (btn) {
       btn.addEventListener('click', function () { addTreatment(btn.getAttribute('data-tx-add')); });
@@ -382,7 +386,12 @@
       '<textarea id="cr-chief" class="field-input" rows="2" placeholder="Primary reason for visit"></textarea></div>' +
       '<div class="field"><label class="field-label">Blood Pressure · 血壓</label>' +
       '<input id="cr-bp" class="field-input field-input--boxed" placeholder="e.g. 120/80"></div>' +
-      '</div>';
+      '</div>' +
+
+      // Clinical assist panel — populated from chief_complaint + BP +
+      // pulse + age via HM.clinicalAssist. Doctor sees red flags,
+      // suggested questions, and differentials without leaving the page.
+      '<div id="cr-clinical-assist" class="cr-clinical-assist mt-3"></div>';
 
     var fourExam =
       '<div class="field"><label class="field-label">切 Pulse · 脈診</label>' +
@@ -597,6 +606,10 @@
     // Usage-note preset chips
     wireUsagePresets();
 
+    // Clinical assist (also wires in the online tabbed view, since
+    // the case-record fields appear in the Case Record tab)
+    wireClinicalAssist();
+
     // File upload handler (walk-in only)
     var fileInput = document.getElementById('cr-files');
     if (fileInput) {
@@ -804,6 +817,155 @@
         renderDocuments();
       });
     });
+  }
+
+  // ── Clinical assist panel (5MCC-based) ───────────────────
+  // Re-evaluates on every change to chief_complaint / BP / pulse +
+  // patient age (from the loaded appointment), then renders the
+  // panel with red flags, suggested questions, differentials,
+  // and vitals alerts. Doctor-only — never shown to the patient.
+  function wireClinicalAssist() {
+    var slot   = document.getElementById('cr-clinical-assist');
+    if (! slot || ! HM.clinicalAssist) return;
+    var chiefEl = document.getElementById('cr-chief');
+    var bpEl    = document.getElementById('cr-bp');
+    var pulseEl = document.getElementById('cr-pulse');
+
+    var pp = (state.appt && state.appt.patient && state.appt.patient.patient_profile) || {};
+    var dob = pp.birth_date || pp.dob || null;
+    var age = null;
+    if (dob) {
+      try {
+        var d = new Date(String(dob).slice(0, 10));
+        age = Math.floor((Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000));
+      } catch (_) {}
+    }
+
+    var refresh = function () {
+      var res = HM.clinicalAssist.evaluate({
+        chief_complaint: chiefEl ? chiefEl.value : '',
+        bp:    bpEl    ? bpEl.value    : '',
+        pulse: pulseEl ? pulseEl.value : '',
+        age:   age,
+      });
+      slot.innerHTML = renderClinicalAssist(res);
+    };
+
+    // Debounce to avoid re-render thrashing while typing.
+    var debounceT;
+    var debounced = function () {
+      clearTimeout(debounceT);
+      debounceT = setTimeout(refresh, 250);
+    };
+    if (chiefEl) chiefEl.addEventListener('input', debounced);
+    if (bpEl)    bpEl.addEventListener('input', debounced);
+    if (pulseEl) pulseEl.addEventListener('input', debounced);
+
+    refresh();
+  }
+
+  function renderClinicalAssist(res) {
+    if (! res) return '';
+    // If nothing matched and no vitals alerts, show a single-line
+    // baseline note so the doctor knows the panel is alive.
+    var hasContent = (res.matched_complaints && res.matched_complaints.length) ||
+                     (res.vitals_alerts && res.vitals_alerts.length);
+    if (! hasContent) {
+      return '<details class="ca-empty"><summary>🩺 Clinical Assist · 臨床提示 — type a chief complaint to see suggestions</summary>' +
+        '<div class="ca-tiny">Pulls from <em>The 5-Minute Clinical Consult 2017</em>. Suggestions appear as you type. Try entries like "headache", "chest pain", "abdominal pain", "low back pain", "cough", "insomnia", "fatigue", "menstrual irregularity"…</div></details>';
+    }
+
+    injectClinicalAssistStyle();
+    var label = res.matched_complaints.length
+      ? res.matched_complaints.map(function (m) { return m.label_en + ' · ' + m.label_zh; }).join(', ')
+      : 'Vitals review';
+
+    function sevColor(s) {
+      return s === 'critical' ? '#a8273a' : s === 'high' ? '#c0651e' : s === 'medium' ? '#b08a2e' : 'var(--stone)';
+    }
+    function sevIcon(s) {
+      return s === 'critical' ? '🚨' : s === 'high' ? '⚠️' : s === 'medium' ? '⚠' : 'ℹ️';
+    }
+
+    var redFlagsHtml = '';
+    var allFlags = (res.vitals_alerts || []).concat(res.red_flags || []);
+    if (allFlags.length) {
+      // Sort critical → high → medium → low
+      var rank = { critical: 0, high: 1, medium: 2, low: 3 };
+      allFlags.sort(function (a, b) { return (rank[a.severity] || 9) - (rank[b.severity] || 9); });
+      redFlagsHtml = '<div class="ca-section-head">🚨 Red Flags · 警示</div>' +
+        '<ul class="ca-flag-list">' +
+        allFlags.map(function (f) {
+          return '<li class="ca-flag" style="border-left-color:' + sevColor(f.severity) + ';">' +
+            '<div>' + sevIcon(f.severity) + ' ' + HM.format.esc(f.msg_en) + '</div>' +
+            (f.msg_zh ? '<div style="font-family:var(--font-zh);color:var(--stone);font-size:11px;margin-top:2px;">' + HM.format.esc(f.msg_zh) + '</div>' : '') +
+            '</li>';
+        }).join('') +
+        '</ul>';
+    }
+
+    var qHtml = '';
+    if (res.questions && res.questions.length) {
+      qHtml = '<details class="ca-block"><summary>❓ Suggested questions to ask · 建議詢問 (' + res.questions.length + ')</summary>' +
+        '<ul class="ca-q-list">' +
+        res.questions.map(function (q) {
+          return '<li><div>' + HM.format.esc(q.q_en) + '</div>' +
+            (q.q_zh ? '<div style="font-family:var(--font-zh);color:var(--stone);font-size:11px;">' + HM.format.esc(q.q_zh) + '</div>' : '') +
+            (q.why ? '<div class="ca-why">→ ' + HM.format.esc(q.why) + '</div>' : '') +
+            '</li>';
+        }).join('') + '</ul></details>';
+    }
+
+    var dxHtml = '';
+    if (res.differentials && res.differentials.length) {
+      dxHtml = '<details class="ca-block"><summary>🔎 Differentials to consider · 鑑別診斷 (' + res.differentials.length + ')</summary>' +
+        '<ul class="ca-dx-list">' +
+        res.differentials.map(function (d) {
+          return '<li><strong>' + HM.format.esc(d.name_en) + '</strong>' +
+            (d.name_zh ? ' · <span style="font-family:var(--font-zh);color:var(--stone);">' + HM.format.esc(d.name_zh) + '</span>' : '') +
+            (d.note ? '<div class="ca-why">' + HM.format.esc(d.note) + '</div>' : '') +
+            '</li>';
+        }).join('') + '</ul></details>';
+    }
+
+    return '<div class="ca-panel">' +
+      '<div class="ca-header">' +
+      '<div class="ca-title">🩺 Clinical Assist · 臨床提示</div>' +
+      '<div class="ca-sub">For: ' + HM.format.esc(label) + '</div>' +
+      '</div>' +
+      redFlagsHtml +
+      qHtml +
+      dxHtml +
+      '<div class="ca-footnote">Source: <em>The 5-Minute Clinical Consult 2017</em>. Decision support only — your clinical judgement remains primary. ' +
+      '<span style="font-family:var(--font-zh);">僅作臨床參考，最終判斷由醫師決定。</span></div>' +
+      '</div>';
+  }
+
+  function injectClinicalAssistStyle() {
+    if (document.getElementById('ca-style')) return;
+    var s = document.createElement('style');
+    s.id = 'ca-style';
+    s.textContent =
+      '.cr-clinical-assist{margin-bottom: var(--s-3);}' +
+      '.ca-panel{background:#fff;border:1px solid rgba(168,39,58,.25);border-radius:var(--r-md);padding:12px 14px;}' +
+      '.ca-empty summary{cursor:pointer;font-size:12px;color:var(--stone);padding:6px 10px;background:var(--washi);border:1px dashed var(--border);border-radius:var(--r-sm);user-select:none;}' +
+      '.ca-tiny{font-size:11px;color:var(--stone);padding:8px 10px;}' +
+      '.ca-header{border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:8px;}' +
+      '.ca-title{font-weight:600;color:var(--ink);font-size:13px;}' +
+      '.ca-sub{font-size:11px;color:var(--stone);margin-top:2px;}' +
+      '.ca-section-head{font-size:11px;letter-spacing:.06em;color:var(--stone);margin-top:4px;margin-bottom:6px;text-transform:uppercase;font-weight:600;}' +
+      '.ca-flag-list{list-style:none;padding:0;margin:0 0 8px 0;}' +
+      '.ca-flag{padding:6px 10px;border-left:3px solid var(--red-seal);background:rgba(168,39,58,.04);border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:4px;font-size:12px;line-height:1.45;}' +
+      '.ca-block{margin-top:8px;}' +
+      '.ca-block summary{cursor:pointer;font-size:12px;color:var(--ink);font-weight:500;padding:4px 0;user-select:none;}' +
+      '.ca-block summary:hover{color:var(--gold);}' +
+      '.ca-q-list,.ca-dx-list{list-style:none;padding:0 0 0 16px;margin:6px 0 0 0;}' +
+      '.ca-q-list li,.ca-dx-list li{padding:5px 0;border-bottom:1px dashed var(--border);font-size:12px;}' +
+      '.ca-q-list li:last-child,.ca-dx-list li:last-child{border-bottom:none;}' +
+      '.ca-why{font-size:10px;color:var(--stone);font-style:italic;margin-top:1px;}' +
+      '.ca-footnote{font-size:10px;color:var(--stone);font-style:italic;margin-top:8px;border-top:1px dashed var(--border);padding-top:6px;}' +
+      '';
+    document.head.appendChild(s);
   }
 
   // ── Custom (one-off) treatment form ──────────────────────
