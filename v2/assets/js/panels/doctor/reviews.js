@@ -359,11 +359,30 @@
     // Build the tongue-context sidebar from the patient's recent tongue scans
     var tongueScans = (tongueRes && tongueRes.data) ? tongueRes.data.slice(0, 3) : [];
 
+    // ── Combined synthesis: DOB + Constitution + Tongue → unified plan
+    // Run before the HTML is built so the panel sits at the top.
+    var wylAnalysis = (window.HM && HM.wuyunLiuqi && HM.wuyunLiuqi.analyze)
+      ? HM.wuyunLiuqi.analyze(patientDob)
+      : null;
+    var linkedTongueReport = (linkedTongueRes && linkedTongueRes.diagnosis && linkedTongueRes.diagnosis.constitution_report) || null;
+    var synthesis = (window.HM && HM.synthesis && HM.synthesis.combine)
+      ? HM.synthesis.combine({
+          wyl:          wylAnalysis,
+          constitution: report,
+          tongue:       linkedTongueReport,
+        })
+      : null;
+
     var content =
       // Wuyun Liuqi slot — populated after the modal is mounted so the
       // DOB-based analysis + today's environmental qi sit above the
       // review form for immediate clinical context.
       '<div id="rvw-wyl-const" class="mb-4"></div>' +
+
+      // Combined synthesis panel — the headline summary that fuses
+      // all three diagnostic sources into a single ranked plan.
+      // Hidden when there's nothing to synthesise (no themes detected).
+      renderSynthesisPanel(synthesis) +
 
       '<div class="grid-2" style="gap: var(--s-5); align-items: start;">' +
 
@@ -799,6 +818,148 @@
     }
 
     return out;
+  }
+
+  /**
+   * Render the unified synthesis panel — fuses DOB, constitution, and
+   * tongue analysis into a ranked theme list with combined food /
+   * lifestyle / herb advice. Returns empty string when no themes
+   * matched so the modal stays clean.
+   */
+  function renderSynthesisPanel(syn) {
+    if (! syn || ! syn.themes || ! syn.themes.length) return '';
+
+    var sourceCount = syn.sourceCount || 0;
+    var sourceLabel = (syn.hasDob ? '🌌 DOB · 五運六氣 ' : '') +
+                      (syn.hasConstitution ? '🧭 Constitution ' : '') +
+                      (syn.hasTongue ? '👅 Tongue' : '');
+
+    // Themes — coloured dots by priority + evidence trail per source.
+    var themesHtml = syn.themes.map(function (t) {
+      var pColor = t.priority === 'high' ? 'var(--red-seal)' :
+                   t.priority === 'medium' ? 'var(--gold)' : 'var(--stone)';
+      var pIcon = t.priority === 'high' ? '●●●' : t.priority === 'medium' ? '●●○' : '●○○';
+      var sources = t.sources.map(function (s) {
+        var icon = s === 'DOB' ? '🌌' : s === 'Constitution' ? '🧭' : '👅';
+        return '<span class="syn-source-pill">' + icon + ' ' + s + '</span>';
+      }).join('');
+      var evidenceLines = '';
+      if (t.evidence.dob)          evidenceLines += '<div class="syn-ev"><strong>DOB:</strong> ' + HM.format.esc(t.evidence.dob) + '</div>';
+      if (t.evidence.constitution) evidenceLines += '<div class="syn-ev"><strong>Constitution:</strong> ' + HM.format.esc(t.evidence.constitution) + '</div>';
+      if (t.evidence.tongue)       evidenceLines += '<div class="syn-ev"><strong>Tongue:</strong> ' + HM.format.esc(t.evidence.tongue) + '</div>';
+
+      return '<div class="syn-theme">' +
+        '<div class="syn-theme-head">' +
+          '<span style="color:' + pColor + ';font-family:var(--font-mono);font-size:10px;">' + pIcon + '</span> ' +
+          '<strong style="font-family:var(--font-zh);">' + HM.format.esc(t.zh) + '</strong> · ' +
+          '<span>' + HM.format.esc(t.en) + '</span> ' +
+          sources +
+        '</div>' +
+        '<div class="syn-theme-summary">' + HM.format.esc(t.summary_en) +
+        '<div style="font-family:var(--font-zh);">' + HM.format.esc(t.summary_zh) + '</div></div>' +
+        (evidenceLines ? '<details class="syn-evidence"><summary>Why · 依據</summary>' + evidenceLines + '</details>' : '') +
+        '</div>';
+    }).join('');
+
+    function renderFoodList(items, color, label_en, label_zh, icon) {
+      if (! items.length) return '';
+      return '<div class="syn-food-col" style="border-top:3px solid ' + color + ';">' +
+        '<div class="syn-food-head">' + icon + ' ' + label_en + ' · ' + label_zh + '</div>' +
+        '<ul class="syn-food-list">' +
+        items.slice(0, 8).map(function (it) {
+          var why = it.why_en ? '<div class="syn-why">— ' + HM.format.esc(it.why_en) +
+                                  (it.why_zh ? ' · <span style="font-family:var(--font-zh);">' + HM.format.esc(it.why_zh) + '</span>' : '') +
+                                  '</div>' : '';
+          return '<li>' +
+            '<div><strong>' + HM.format.esc(it.en) + '</strong>' +
+            (it.zh ? ' <span style="font-family:var(--font-zh);color:var(--stone);">· ' + HM.format.esc(it.zh) + '</span>' : '') +
+            '</div>' +
+            why +
+            '</li>';
+        }).join('') +
+        '</ul></div>';
+    }
+
+    var foodHtml = '<div class="syn-food-grid">' +
+      renderFoodList(syn.food.eatMore, 'var(--sage)',     'Eat More',  '宜多食', '✅') +
+      renderFoodList(syn.food.eatLess, 'var(--gold)',     'Eat Less',  '宜少食', '⚠️') +
+      renderFoodList(syn.food.avoid,   'var(--red-seal)', 'Avoid',     '忌',     '❌') +
+      '</div>';
+
+    var lifestyleHtml = syn.lifestyle.length
+      ? '<div class="syn-section-head">🌿 Lifestyle · 生活建議</div>' +
+        '<ul class="syn-lifestyle">' +
+        syn.lifestyle.slice(0, 10).map(function (l) {
+          return '<li>' + (l.icon || '•') + ' <strong>' + HM.format.esc(l.en) + '</strong>' +
+            (l.zh ? '<div style="font-family:var(--font-zh);color:var(--stone);font-size:11px;margin-left:24px;">' + HM.format.esc(l.zh) + '</div>' : '') +
+            '</li>';
+        }).join('') +
+        '</ul>'
+      : '';
+
+    var herbsHtml = syn.herbs.length
+      ? '<div class="syn-section-head">🌿 Suggested Herb Directions · 建議用藥方向</div>' +
+        '<div class="syn-herbs">' +
+        syn.herbs.slice(0, 12).map(function (h) {
+          var themes = (h.for_themes || []).map(function (t) { return t.zh; }).join(' / ');
+          return '<span class="syn-herb-pill" title="For: ' + HM.format.esc(themes) + '">' +
+            HM.format.esc(h.name) + '</span>';
+        }).join(' ') +
+        '</div>' +
+        '<div class="text-xs text-muted mt-1" style="font-style:italic;">Hover each herb to see which pattern(s) it addresses.</div>'
+      : '';
+
+    injectSynthesisStyles();
+
+    return '<div class="syn-panel">' +
+      '<div class="syn-header">' +
+      '<div class="syn-title">🔮 Combined Plan · 綜合分析建議</div>' +
+      '<div class="syn-sub">Synthesised from ' + sourceCount + ' source' + (sourceCount === 1 ? '' : 's') + ': ' + sourceLabel + '</div>' +
+      '</div>' +
+
+      '<div class="syn-section-head">🎯 Detected Patterns · 主要證型</div>' +
+      '<div class="syn-themes">' + themesHtml + '</div>' +
+
+      '<div class="syn-section-head">🍱 Food Recommendations · 飲食建議</div>' +
+      foodHtml +
+
+      lifestyleHtml +
+      herbsHtml +
+      '</div>';
+  }
+
+  function injectSynthesisStyles() {
+    if (document.getElementById('syn-style')) return;
+    var s = document.createElement('style');
+    s.id = 'syn-style';
+    s.textContent =
+      '.syn-panel{background:linear-gradient(135deg,rgba(201,146,42,.05),rgba(122,140,114,.05));border:1px solid rgba(201,146,42,.3);border-radius:var(--r-md);padding:var(--s-4);margin-bottom:var(--s-5);}' +
+      '.syn-header{border-bottom:1px solid rgba(201,146,42,.2);padding-bottom:var(--s-2);margin-bottom:var(--s-3);}' +
+      '.syn-title{font-family:var(--font-serif,Cormorant);font-size:18px;font-weight:600;color:var(--ink);}' +
+      '.syn-sub{font-size:11px;color:var(--stone);margin-top:2px;}' +
+      '.syn-section-head{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--stone);margin:var(--s-3) 0 var(--s-2);font-weight:500;}' +
+      '.syn-themes{display:flex;flex-direction:column;gap:8px;}' +
+      '.syn-theme{background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;}' +
+      '.syn-theme-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;}' +
+      '.syn-theme-summary{font-size:11px;color:var(--stone);margin-top:4px;line-height:1.5;}' +
+      '.syn-source-pill{display:inline-block;background:var(--washi);border:1px solid var(--border);border-radius:999px;padding:1px 8px;font-size:10px;color:var(--stone);margin-left:4px;}' +
+      '.syn-evidence{margin-top:6px;font-size:11px;}' +
+      '.syn-evidence summary{cursor:pointer;color:var(--gold);user-select:none;}' +
+      '.syn-ev{padding:2px 0;color:var(--stone);}' +
+      '.syn-food-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;}' +
+      '.syn-food-col{background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;}' +
+      '.syn-food-head{font-size:11px;font-weight:600;margin-bottom:8px;letter-spacing:.05em;}' +
+      '.syn-food-list{list-style:none;padding:0;margin:0;}' +
+      '.syn-food-list li{padding:6px 0;border-bottom:1px dashed var(--border);font-size:12px;}' +
+      '.syn-food-list li:last-child{border-bottom:none;}' +
+      '.syn-why{font-size:10px;color:var(--stone);margin-top:2px;line-height:1.4;}' +
+      '.syn-lifestyle{list-style:none;padding:0;margin:0;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;}' +
+      '.syn-lifestyle li{padding:6px 0;border-bottom:1px dashed var(--border);font-size:12px;}' +
+      '.syn-lifestyle li:last-child{border-bottom:none;}' +
+      '.syn-herbs{display:flex;flex-wrap:wrap;gap:6px;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;}' +
+      '.syn-herb-pill{display:inline-block;background:rgba(201,146,42,.1);color:#6b4413;border:1px solid rgba(201,146,42,.4);border-radius:999px;padding:3px 10px;font-size:11px;cursor:help;}' +
+      '';
+    document.head.appendChild(s);
   }
 
   // Bilingual labels for the finding categories that come back from
