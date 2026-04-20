@@ -85,11 +85,9 @@ class OrderController extends Controller
                 if (! $product) {
                     $rawName = trim((string) $item->drug_name);
                     $candidates = [$rawName];
-                    if (strpos($rawName, ' · ') !== false) {
-                        foreach (explode(' · ', $rawName) as $piece) {
-                            $p = trim($piece);
-                            if ($p !== '') $candidates[] = $p;
-                        }
+                    foreach (preg_split('/\s*[·・•\|]\s*/u', $rawName) as $piece) {
+                        $p = trim($piece);
+                        if ($p !== '' && ! in_array($p, $candidates, true)) $candidates[] = $p;
                     }
                     $catalog = \DB::table('medicine_catalog')
                         ->where('is_active', 1)
@@ -100,9 +98,27 @@ class OrderController extends Controller
                             }
                         })
                         ->first();
+                    // Loose LIKE fallback for trad↔simplified variance.
+                    if (! $catalog) {
+                        foreach ($candidates as $c) {
+                            if (mb_strlen($c) < 2) continue;
+                            $catalog = \DB::table('medicine_catalog')
+                                ->where('is_active', 1)
+                                ->where(function ($q) use ($c) {
+                                    $q->where('name_zh', 'like', '%' . $c . '%')
+                                      ->orWhere('name_pinyin', 'like', '%' . $c . '%');
+                                })
+                                ->first();
+                            if ($catalog) break;
+                        }
+                    }
                     if ($catalog && $catalog->unit_price !== null) {
-                        // catalog unit_price is per 100g — normalise to per-unit
-                        $perGram = (float) $catalog->unit_price / 100.0;
+                        // Per-gram price = pack price ÷ pack_grams (default 100).
+                        // Earlier code hard-coded ÷100 and doubled the price on
+                        // herbs whose pack_grams is 200 (e.g. 參苓白朮散).
+                        $packGrams = (float) ($catalog->pack_grams ?? 100);
+                        if ($packGrams <= 0) $packGrams = 100;
+                        $perGram = (float) $catalog->unit_price / $packGrams;
                         $lineTotal = $perGram * (float) $item->quantity;
                         $subtotal += $lineTotal;
                         $lines[] = [
@@ -114,7 +130,7 @@ class OrderController extends Controller
                             'unit'          => $item->unit ?? 'g',
                             'line_total'    => $lineTotal,
                         ];
-                        continue; // skip the product-backed branch below
+                        continue;
                     }
                     // Last resort: if the catalog row exists but has no
                     // price yet ("询"), still accept the order at a
