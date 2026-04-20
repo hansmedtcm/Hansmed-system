@@ -32,6 +32,21 @@ if [ "$USER_COUNT" -eq "0" ]; then
   php artisan db:seed --force 2>/dev/null || echo "Seeding skipped"
 fi
 
+echo "Ensuring storage subdirectories exist..."
+# When a Railway Volume is mounted at /app/storage/app/public the
+# upload subdirs are empty on first boot. Re-create them so the
+# tongue/doc upload routes keep working without a manual migration.
+mkdir -p \
+  /app/storage/app/public \
+  /app/storage/app/public/tongue \
+  /app/storage/app/public/chat \
+  /app/storage/app/public/medical-docs \
+  /app/storage/framework/cache/data \
+  /app/storage/framework/sessions \
+  /app/storage/framework/views \
+  /app/storage/logs
+chmod -R 775 /app/storage 2>/dev/null || true
+
 echo "Ensuring storage symlink exists..."
 php artisan storage:link --force 2>/dev/null || true
 

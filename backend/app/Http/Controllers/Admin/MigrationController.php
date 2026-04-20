@@ -13,6 +13,82 @@ use Illuminate\Support\Facades\Schema;
  */
 class MigrationController extends Controller
 {
+    /**
+     * Storage health check — used after attaching a Railway Volume
+     * to confirm uploads are landing on persistent disk. Reports:
+     *   - uploads_dir:       absolute path being written to
+     *   - dir_exists:        boolean
+     *   - writable:          boolean
+     *   - tongue_files:      count of files currently on disk
+     *   - rows_in_db:        tongue diagnoses with an image_url
+     *   - orphans:           rows whose file no longer exists on disk
+     *   - disk_free_mb:      headroom left in the mount
+     *   - appears_persistent:heuristic — path starts with a common
+     *                        volume mount prefix or the device ID
+     *                        differs from the container root, both
+     *                        strong signals a volume is mounted.
+     */
+    public function storageHealth()
+    {
+        $uploadsDir = storage_path('app/public/tongue');
+        $baseStorage = storage_path('app');
+
+        $dirExists = is_dir($uploadsDir);
+        $writable  = $dirExists && is_writable($uploadsDir);
+
+        $tongueFiles = 0;
+        if ($dirExists) {
+            try {
+                $iter = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($uploadsDir, \FilesystemIterator::SKIP_DOTS));
+                foreach ($iter as $f) { if ($f->isFile()) $tongueFiles++; }
+            } catch (\Throwable $e) { /* ignore */ }
+        }
+
+        // Orphan count — DB rows whose file is missing on disk.
+        $orphans = 0;
+        $rowsInDb = 0;
+        try {
+            $rows = DB::table('tongue_diagnoses')->whereNotNull('image_url')->pluck('image_url');
+            $rowsInDb = $rows->count();
+            foreach ($rows as $url) {
+                // Expected URL shape is `{APP_URL}/api/uploads/tongue/xxx.jpg`.
+                if (preg_match('#/api/uploads/(.+)$#', $url, $m)) {
+                    $p = storage_path('app/public/' . $m[1]);
+                    if (! is_file($p)) $orphans++;
+                }
+            }
+        } catch (\Throwable $e) { /* table may be empty */ }
+
+        // Rough signal: if the storage path's device id differs from /
+        // the container root, something is mounted there. Not 100%
+        // conclusive (overlayfs edge cases) but a decent heuristic.
+        $persistent = false;
+        try {
+            $rootDev = @stat('/');
+            $storDev = @stat($baseStorage);
+            if ($rootDev && $storDev && isset($rootDev['dev']) && isset($storDev['dev'])) {
+                $persistent = $rootDev['dev'] !== $storDev['dev'];
+            }
+        } catch (\Throwable $e) { /* ignore */ }
+
+        $freeBytes = @disk_free_space($baseStorage) ?: 0;
+
+        return response()->json([
+            'uploads_dir'         => $uploadsDir,
+            'dir_exists'          => $dirExists,
+            'writable'            => $writable,
+            'tongue_files'        => $tongueFiles,
+            'rows_in_db'          => $rowsInDb,
+            'orphans'             => $orphans,
+            'disk_free_mb'        => (int) round($freeBytes / 1024 / 1024),
+            'appears_persistent'  => $persistent,
+            'hint'                => $persistent
+                ? 'Storage path sits on a different filesystem from / — likely a Railway Volume.'
+                : 'Storage path shares the container root filesystem. Uploads will be wiped on redeploy until a Railway Volume is mounted at /app/storage (or a sub-path like /app/storage/app/public).',
+        ]);
+    }
+
+
     public function poolBooking(Request $request)
     {
         $log = [];

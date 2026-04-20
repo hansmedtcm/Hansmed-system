@@ -8,4 +8,8 @@ cmds = ["composer install --no-dev --optimize-autoloader"]
 cmds = ["php artisan config:cache", "php artisan route:cache"]
 
 [start]
-cmd = "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
+# mkdir -p first: when a Railway Volume is mounted over /app/storage
+# (or a sub-path) the mount starts empty, so Laravel's expected dirs
+# must be (re)created every boot. Idempotent — safe when no volume
+# is attached too.
+cmd = "mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/storage/app/public/medical-docs /app/storage/framework/cache/data /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs && chmod -R 775 /app/storage 2>/dev/null || true; php artisan storage:link --force 2>/dev/null || true; php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"

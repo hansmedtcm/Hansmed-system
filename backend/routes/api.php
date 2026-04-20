@@ -249,6 +249,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/fix-tongue-image-urls', [\App\Http\Controllers\Admin\MigrationController::class, 'fixTongueImageUrls']);
         Route::post('/migrate/medicine-catalog',   [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'migrate']);
 
+        // Storage health — confirms whether uploads dir is persistent.
+        Route::get ('/storage-health',             [\App\Http\Controllers\Admin\MigrationController::class, 'storageHealth']);
+
         // Medicine catalogue (Timing Herbs master price list)
         // Static POST routes MUST register before the {id} wildcards below;
         // otherwise POST /medicine-catalog/reconcile gets resolved as

@@ -16,4 +16,11 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 
 EXPOSE ${PORT:-8080}
 
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+# mkdir -p on boot: when a Railway Volume is mounted at /app/storage
+# (or a sub-path like /app/storage/app/public) the mount starts empty,
+# so Laravel's expected directory tree must be recreated every start.
+# Idempotent when no volume is attached.
+CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/storage/app/public/medical-docs /app/storage/framework/cache/data /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs \
+    && chmod -R 775 /app/storage 2>/dev/null || true; \
+    php artisan storage:link --force 2>/dev/null || true; \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
