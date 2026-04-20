@@ -172,6 +172,41 @@
     return '—';
   }
 
+  /**
+   * Produce an <img> tag with a graceful fallback if the URL 404s.
+   * On Railway the storage volume is ephemeral — uploads vanish on
+   * every deploy — so we get broken-image icons all over the place.
+   * This wraps the image so the card renders a neutral placeholder
+   * icon + washi background instead.
+   *
+   * Usage:
+   *   HM.format.img(url, {
+   *     style: 'width:70px;height:70px;border-radius:var(--r-md);',
+   *     icon: '👅',            // shown in the placeholder
+   *     title: 'Photo unavailable',
+   *   })
+   */
+  function img(url, opts) {
+    opts = opts || {};
+    var icon = opts.icon || '📄';
+    var baseStyle = opts.style || 'width:70px;height:70px;border-radius:var(--r-md);';
+    var title = opts.title || 'Photo unavailable · 圖片不存在';
+    // Placeholder HTML — built as a string so we can inject via outerHTML.
+    var placeholder =
+      '<div style="' + baseStyle +
+      'object-fit:cover;background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--stone);" ' +
+      'title="' + esc(title) + '">' + icon + '</div>';
+    if (! url) return placeholder;
+    var safe = esc(url);
+    // JSON-stringify to produce a properly-quoted JS string for the
+    // inline onerror handler. This keeps the HTML itself single-line.
+    var replacement = JSON.stringify(placeholder);
+    return '<img src="' + safe + '" ' +
+      'loading="lazy" ' +
+      'onerror="this.outerHTML=' + esc(replacement).replace(/"/g, '&quot;') + ';" ' +
+      'style="' + baseStyle + 'object-fit:cover;background:var(--washi);">';
+  }
+
   window.HM.format = {
     money: money,
     moneyShort: moneyShort,
@@ -187,5 +222,6 @@
     age: age,
     patientLabel: patientLabel,
     doctorLabel: doctorLabel,
+    img: img,
   };
 })();

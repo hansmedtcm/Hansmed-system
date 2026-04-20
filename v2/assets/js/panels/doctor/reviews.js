@@ -187,9 +187,16 @@
     }
 
     var patientLabel = HM.format.esc(HM.format.patientLabel(it)) + (it.patient_email && !it.patient_name ? ' · ' + HM.format.esc(it.patient_email) : '');
+    // Image fallback: if the URL 404s (Railway ephemeral-storage wipe,
+    // cross-origin, etc.) swap in a placeholder so the card doesn't
+    // show a broken-image icon. Keeps the list scannable even when
+    // the historical photo is gone.
+    var placeholder = '<div style="width:70px;height:70px;border-radius:var(--r-md);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;color:var(--stone);" title="Photo unavailable · 圖片已不存在">' + (it.kind === 'tongue' ? '👅' : '🧭') + '</div>';
     var imgHtml = (it.kind === 'tongue' && it.extra.image_url)
-      ? '<img src="' + HM.format.esc(it.extra.image_url) + '" style="width:70px;height:70px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);flex-shrink:0;">'
-      : '<div style="width:70px;height:70px;border-radius:var(--r-md);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;">' + (it.kind === 'tongue' ? '👅' : '🧭') + '</div>';
+      ? '<img src="' + HM.format.esc(it.extra.image_url) + '" ' +
+        'onerror="this.outerHTML=' + JSON.stringify(placeholder) + ';" ' +
+        'style="width:70px;height:70px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);flex-shrink:0;background:var(--washi);">'
+      : placeholder;
 
     card.innerHTML = '<div class="flex gap-3" style="align-items:flex-start;">' +
       imgHtml +
@@ -631,7 +638,11 @@
       '<div>' +
       '<div class="text-label mb-2">👅 AI Tongue Analysis · AI 舌診</div>' +
       '<div class="card" style="padding: var(--s-4);">' +
-      (d.image_url ? '<img src="' + HM.format.esc(d.image_url) + '" style="width: 100%; border-radius: var(--r-md); border: 1px solid var(--border); margin-bottom: var(--s-3);">' : '') +
+      (d.image_url
+        ? '<img src="' + HM.format.esc(d.image_url) + '" ' +
+          'onerror="this.outerHTML=\'<div style=&quot;width:100%;aspect-ratio:1;border-radius:var(--r-md);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:4rem;color:var(--stone);margin-bottom:var(--s-3);&quot; title=&quot;Photo no longer on disk&quot;>👅</div>\';" ' +
+          'style="width: 100%; border-radius: var(--r-md); border: 1px solid var(--border); margin-bottom: var(--s-3); background: var(--washi);">'
+        : '') +
       (c.name_en ? '<div class="card-title">' + HM.format.esc(c.name_en) + '</div>' : '') +
       (c.name_zh ? '<div class="text-sm text-muted" style="font-family: var(--font-zh);">' + HM.format.esc(c.name_zh) + '</div>' : '') +
       (d.health_score != null ? '<div class="text-sm mt-2">Health Score: <strong>' + d.health_score + '/100</strong></div>' : '') +

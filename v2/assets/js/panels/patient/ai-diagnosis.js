@@ -486,7 +486,10 @@
       : '<span class="badge" style="background:rgba(122,140,114,.15);color:var(--sage);">🧭 Constitution · 體質</span>';
 
     var imgHtml = (it.kind === 'tongue' && it.image_url)
-      ? '<img src="' + HM.format.esc(it.image_url) + '" style="width:56px;height:56px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border);flex-shrink:0;">'
+      ? HM.format.img(it.image_url, {
+          style: 'width:56px;height:56px;border-radius:var(--r-sm);border:1px solid var(--border);flex-shrink:0;',
+          icon: '👅', title: 'Photo unavailable · 圖片已不存在',
+        })
       : '<div style="width:56px;height:56px;border-radius:var(--r-sm);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">' + (it.kind === 'tongue' ? '👅' : '🧭') + '</div>';
 
     card.innerHTML = '<div class="flex gap-3" style="align-items:center;">' +
@@ -916,7 +919,10 @@
         // Header summary — photo + constitution + score
         '<div class="flex gap-4 mb-3" style="align-items:center;flex-wrap:wrap;">' +
         (report.tongue_image_url
-          ? '<img src="' + HM.format.esc(report.tongue_image_url) + '" style="width:110px;height:110px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);">'
+          ? HM.format.img(report.tongue_image_url, {
+              style: 'width:110px;height:110px;border-radius:var(--r-md);border:1px solid var(--border);',
+              icon: '👅', title: 'Photo unavailable · 圖片已不存在',
+            })
           : '<div style="width:110px;height:110px;border-radius:var(--r-md);background:var(--washi);display:flex;align-items:center;justify-content:center;font-size:3rem;">👅</div>') +
         '<div style="flex:1;min-width:200px;">' +
         (tc.name_en

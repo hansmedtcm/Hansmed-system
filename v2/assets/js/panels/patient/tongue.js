@@ -216,7 +216,10 @@
         '</div>' +
         reviewBanner +
         '<div class="grid-2" style="gap: var(--s-6); align-items: start;">' +
-        '<div><img src="' + HM.format.esc(d.image_url) + '" style="width: 100%; border-radius: var(--r-md); border: 1px solid var(--border);"></div>' +
+        '<div>' + HM.format.img(d.image_url, {
+          style: 'width: 100%; aspect-ratio: 1; border-radius: var(--r-md); border: 1px solid var(--border);',
+          icon: '👅', title: 'Photo unavailable — please re-upload · 圖片已不存在，請重新上傳',
+        }) + '</div>' +
         '<div>' +
         '<div class="text-label mb-2">' + HM.format.datetime(d.created_at) + '</div>';
 
