@@ -333,6 +333,7 @@
     getContent:     function (slug) { return api.get('/admin/content/' + slug); },
     saveContent:    function (d) { return api.post('/admin/content', d); },
     deleteContent:  function (slug) { return api.delete('/admin/content/' + slug); },
+    seedCompliancePages: function () { return api.post('/admin/content/seed-compliance'); },
 
     exportCsv:      function (entity) { return api.get('/admin/reports/export/' + entity); },
 
@@ -448,5 +449,8 @@
     // Misc public endpoints
     publicFeatures: function () { return api.get('/public/features'); },
     previewVoucher: function (d) { return api.post('/vouchers/preview', d); },
+
+    // PDPA §6 consent event — records to audit_logs.
+    recordConsent: function (action) { return api.post('/consent', { action: action }); },
   };
 })();

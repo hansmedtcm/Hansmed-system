@@ -198,11 +198,19 @@
   // One "Start" button kicks off: tongue photo → 10 questions → combined report.
   function renderIntro(el) {
     el.innerHTML = '<div class="page-header">' +
-      '<div class="page-header-label">AI Diagnosis · AI 智能診斷</div>' +
-      '<h1 class="page-title">Full TCM Assessment · 完整體質評估</h1>' +
-      '<p class="text-muted mt-1">One guided session covering both tongue diagnosis and the 10-dimension constitution quiz. ' +
-      'Your combined results go to a licensed TCM doctor for review and personalised advice. ' +
-      '<span style="font-family: var(--font-zh);">一次性完成舌診與 10 維體質問卷，結果送交中醫師審核，獲取個人化建議。</span></p>' +
+      '<div class="page-header-label">AI Wellness Analysis · AI 健康評估</div>' +
+      '<h1 class="page-title">Full TCM Wellness Check · 完整體質評估</h1>' +
+      '<p class="text-muted mt-1">One guided session covering tongue observation and a 10-dimension constitution questionnaire. ' +
+      'Your combined wellness insights go to a licensed TCM practitioner for review and personalised advice. ' +
+      '<span style="font-family: var(--font-zh);">一次性完成舌象觀察與 10 維體質問卷，結果送交註冊中醫師審核，獲取個人化建議。</span></p>' +
+      '</div>' +
+
+      // Sticky disclaimer — MDA 2012 compliance. Shown on every screen
+      // in the AI-wellness flow.
+      '<div class="ai-wellness-disclaimer">' +
+        '<strong>⚠️ Wellness education, not a medical diagnosis.</strong> This AI tool provides TCM-based wellness insights only. ' +
+        'For diagnosis or treatment, please consult a licensed TCM practitioner.' +
+        '<br><span style="font-family: var(--font-zh);"><strong>此為健康教育工具，非醫療診斷。</strong>如需診斷或治療，請諮詢註冊中醫師。</span>' +
       '</div>' +
 
       // Flow explainer
@@ -387,15 +395,28 @@
     }, 3000);
   }
 
+  /**
+   * Convert a numeric health_score (0-100) to a qualitative band
+   * for patient-facing display. MDA-compliance: patients shouldn't
+   * see a numeric "health score" from an AI tool — that looks like
+   * a medical measurement. Doctors still see the number in their
+   * review modal for clinical reference.
+   */
+  function healthBand(score) {
+    if (score == null) return { key: 'unknown', en: '—', zh: '—', color: 'var(--stone)' };
+    if (score >= 80) return { key: 'balanced',    en: 'Balanced · 平和',            zh: '平和', color: 'var(--sage)' };
+    if (score >= 60) return { key: 'mild',        en: 'Mildly imbalanced · 輕度失衡', zh: '輕度失衡', color: 'var(--gold)' };
+    return               { key: 'attention',    en: 'Needs attention · 需要關注',   zh: '需要關注', color: 'var(--red-seal)' };
+  }
+
   function showTongueComplete(d, box) {
     var report = d.constitution_report || {};
     var c = report.constitution || {};
-    var score = d.health_score;
-    var scoreColor = score == null ? 'var(--stone)' : score >= 80 ? 'var(--sage)' : score >= 60 ? 'var(--gold)' : 'var(--red-seal)';
+    var band = healthBand(d.health_score);
     box.innerHTML =
       '<div class="card card--bordered" style="border-left:3px solid var(--sage);">' +
       '<div class="flex-between mb-2"><strong>✓ AI analysis complete · AI 分析完成</strong>' +
-      (score != null ? '<span style="font-weight:600;color:' + scoreColor + ';">Score: ' + score + '/100</span>' : '') +
+      (band.key !== 'unknown' ? '<span style="font-weight:600;color:' + band.color + ';">' + band.en + '</span>' : '') +
       '</div>' +
       (c.name_en
         ? '<div class="text-sm">Initial constitution: <strong>' + HM.format.esc(c.name_en) + '</strong>' +
@@ -499,7 +520,7 @@
       '<div class="card-title" style="font-size: var(--text-base);">' + HM.format.esc(it.summary) + '</div>' +
       '<div class="text-xs text-muted mt-1">' + HM.format.datetime(it.created_at) +
       (it.review_status === 'approved' && it.has_advice ? ' · 💬 Doctor has added advice' : '') +
-      (it.kind === 'tongue' && it.health_score != null ? ' · Score ' + it.health_score + '/100' : '') +
+      (it.kind === 'tongue' && it.health_score != null ? ' · ' + healthBand(it.health_score).en : '') +
       '</div>' +
       '</div>' +
       '<div style="text-align:right;">' +
@@ -790,16 +811,23 @@
     var alerts = state.followUpAlerts || [];
 
     el.innerHTML = '<div class="page-header">' +
-      '<div class="page-header-label">Constitution Report · 體質報告</div>' +
+      '<div class="page-header-label">Wellness Report · 健康報告</div>' +
       '<h1 class="page-title">Your 10-Dimension Profile</h1>' +
-      '<p class="text-muted mt-1">Assessment complete. Submit for doctor review — your personalised herb, food and lifestyle advice will appear here after approval.</p>' +
+      '<p class="text-muted mt-1">Assessment complete. Submit for TCM practitioner review — your personalised herb, food and lifestyle advice will appear here after approval.</p>' +
+      '</div>' +
+
+      // Sticky MDA-compliance disclaimer
+      '<div class="ai-wellness-disclaimer">' +
+        '<strong>⚠️ Wellness education, not a medical diagnosis.</strong> Insights based on TCM tradition only. ' +
+        'For diagnosis or treatment, please consult a licensed TCM practitioner.' +
+        '<br><span style="font-family: var(--font-zh);"><strong>此為健康教育工具，非醫療診斷。</strong>如需診斷或治療，請諮詢註冊中醫師。</span>' +
       '</div>' +
 
       (alerts.length ? renderAlerts(alerts) : '') +
 
       // Constitution pills
       '<div class="card card--pad-lg mb-4">' +
-      '<div class="text-label mb-3">Diagnosed Constitution · 體質診斷</div>' +
+      '<div class="text-label mb-3">Wellness Constitution · 體質分析</div>' +
       '<div class="flex gap-2 flex-wrap mb-4">' +
       types.map(function (t) {
         var colorMap = { green: 'var(--sage)', yellow: 'var(--gold)', red: 'var(--red-seal)', blue: '#6699bb' };
@@ -853,14 +881,45 @@
       '<span style="font-family: var(--font-zh);">送出後由持證中醫師審核，您將收到個人化的草藥、飲食與生活建議。</span>' +
       '</div></div>' +
 
+      // PDPA §6 consent — store the event in audit_logs on submit.
+      '<div id="aid-consent-box" style="background: var(--washi); padding: var(--s-3); border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: var(--s-4);">' +
+        '<label style="display: flex; gap: var(--s-2); align-items: flex-start; cursor: pointer;">' +
+          '<input type="checkbox" id="aid-consent" style="margin-top: 4px; flex-shrink: 0; width: 16px; height: 16px;">' +
+          '<div class="text-sm" style="line-height: 1.5;">' +
+            '<strong>I consent to my questionnaire responses being processed for TCM wellness analysis, and reviewed by a licensed TCM practitioner.</strong> ' +
+            'My responses are stored securely and used only for this purpose. I can request deletion any time from Settings. ' +
+            '<br><span style="font-family: var(--font-zh);">' +
+            '<strong>我同意問卷資料用於 TCM 健康分析，並由註冊中醫師審核。</strong>' +
+            '資料安全儲存，僅用於此目的，可隨時於設定中要求刪除。' +
+            '</span>' +
+          '</div>' +
+        '</label>' +
+      '</div>' +
+
       '<div class="flex gap-2 flex-wrap">' +
-      '<button class="btn btn--primary btn--lg" id="aid-save">Submit for Doctor Review · 送交醫師</button>' +
+      '<button class="btn btn--primary btn--lg" id="aid-save" disabled>Submit for Doctor Review · 送交醫師</button>' +
       '<button class="btn btn--outline btn--lg" onclick="location.hash=\'#/book\'">Book Consultation · 預約深度問診</button>' +
       '<button class="btn btn--ghost" id="aid-restart">Restart · 重新測評</button>' +
       '</div>';
 
     injectStyle();
-    document.getElementById('aid-save').addEventListener('click', function () { saveReport(types, alerts); });
+
+    // Gate Submit on the consent checkbox.
+    var consent = document.getElementById('aid-consent');
+    var saveBtn = document.getElementById('aid-save');
+    consent.addEventListener('change', function () { saveBtn.disabled = ! consent.checked; });
+
+    saveBtn.addEventListener('click', async function () {
+      if (! consent.checked) {
+        HM.ui.toast('Please tick the consent box first. · 請先勾選同意方塊。', 'warning');
+        return;
+      }
+      // Log consent immediately so the audit row is written BEFORE
+      // the report is persisted — meets PDPA §6 "consent at point
+      // of collection".
+      try { await HM.api.recordConsent('consent.constitution_questionnaire'); } catch (_) {}
+      saveReport(types, alerts);
+    });
     document.getElementById('aid-restart').addEventListener('click', function () { render(el); });
   }
 
@@ -906,8 +965,8 @@
     var tongueSection = '';
     if (report.tongue_diagnosis_id || report.tongue_image_url || report.tongue_constitution) {
       var tc = report.tongue_constitution || {};
-      var tScore = report.tongue_health_score;
-      var tColor = tScore == null ? 'var(--stone)' : tScore >= 80 ? 'var(--sage)' : tScore >= 60 ? 'var(--gold)' : 'var(--red-seal)';
+      var tBand = healthBand(report.tongue_health_score);
+      var tColor = tBand.color;
       var tFull = report._tongue_full || null;
       var tongueReport = tFull ? (tFull.constitution_report || {}) : {};
       var isReviewed = (status === 'approved' || status === 'needs_changes');
@@ -931,8 +990,8 @@
         (tc.name_zh
           ? '<div style="font-family:var(--font-zh);color:var(--stone);">' + HM.format.esc(tc.name_zh) + '</div>'
           : '') +
-        (tScore != null
-          ? '<div class="mt-2">Health Score: <strong style="font-size:1.3rem;color:' + tColor + ';">' + tScore + '</strong>/100</div>'
+        (tBand.key !== 'unknown'
+          ? '<div class="mt-2">Wellness band · 健康狀態：<strong style="font-size:1.1rem;color:' + tColor + ';">' + tBand.en + '</strong></div>'
           : '') +
         '</div>' +
         '</div>' +
@@ -945,8 +1004,15 @@
 
     el.innerHTML = '<div class="page-header">' +
       '<button class="btn btn--ghost" onclick="location.hash=\'#/ai-diagnosis\'">← New Assessment · 新測評</button>' +
-      '<h1 class="page-title mt-2">Full TCM Report · 完整體質報告</h1>' +
-      '<p class="text-muted mt-1">Combined tongue diagnosis and 10-dimension constitution assessment · 舌診與體質問卷綜合報告</p>' +
+      '<h1 class="page-title mt-2">Full TCM Wellness Report · 完整體質評估報告</h1>' +
+      '<p class="text-muted mt-1">Combined tongue observation and 10-dimension constitution assessment · 舌象與體質問卷綜合報告</p>' +
+      '</div>' +
+
+      // Sticky MDA-compliance disclaimer
+      '<div class="ai-wellness-disclaimer">' +
+        '<strong>⚠️ Wellness education, not a medical diagnosis.</strong> This TCM wellness analysis is reviewed by a licensed TCM practitioner. ' +
+        'For any clinical diagnosis or treatment, please consult a licensed TCM practitioner in person.' +
+        '<br><span style="font-family: var(--font-zh);"><strong>此為健康教育，非醫療診斷。</strong>如需臨床診斷或治療，請親自諮詢註冊中醫師。</span>' +
       '</div>' +
 
       banner +
@@ -1418,7 +1484,23 @@
     if (document.getElementById('aid-style')) return;
     var s = document.createElement('style');
     s.id = 'aid-style';
+    // Sticky top disclaimer — MDA 2012 compliance. Sits at the top of
+    // every AI-wellness screen and can't be scrolled past easily.
+    var disclaimerCss =
+      '.ai-wellness-disclaimer{' +
+        'position:sticky;top:0;z-index:50;' +
+        'background:linear-gradient(135deg, rgba(168,39,58,.08), rgba(201,146,42,.08));' +
+        'border:1px solid rgba(168,39,58,.3);' +
+        'border-left:4px solid var(--red-seal);' +
+        'border-radius:var(--r-sm);' +
+        'padding:10px 14px;' +
+        'font-size:13px;line-height:1.45;' +
+        'color:var(--ink);' +
+        'margin-bottom:var(--s-3);' +
+        'box-shadow:0 1px 3px rgba(0,0,0,.05);' +
+      '}';
     s.textContent =
+      disclaimerCss +
       // Progress
       '.aid-progress{height:4px;background:var(--border);border-radius:2px;margin-top:var(--s-2);overflow:hidden;}' +
       '.aid-progress-fill{height:100%;background:var(--gold);transition:width .3s ease;}' +

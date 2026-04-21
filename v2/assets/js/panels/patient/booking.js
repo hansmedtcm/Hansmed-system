@@ -249,7 +249,14 @@
   }
 
   function showPaymentModal(appt) {
-    var html = '<p class="mb-4">Choose your payment method · 選擇付款方式</p>' +
+    var html =
+      // Pilot banner — appointment payments are still simulated
+      // until Stripe webhooks are wired. See launch-readiness.md.
+      '<div style="background: rgba(184,150,90,.12); border: 1px solid rgba(184,150,90,.4); border-radius: var(--r-sm); padding: 8px 12px; margin-bottom: var(--s-3); font-size: 12px; color: #8a5b00;">' +
+        '⚠️ <strong>Pilot programme — simulated payment.</strong> No card is actually charged. Your booking will confirm as if paid, for testing purposes. ' +
+        '<br><span style="font-family: var(--font-zh);"><strong>試用階段 — 模擬付款。</strong>不會實際扣款，預約將視為已確認供測試用途。</span>' +
+      '</div>' +
+      '<p class="mb-4">Choose your payment method · 選擇付款方式</p>' +
       '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--s-2); margin-bottom: var(--s-5);">' +
       pm('card', '💳', 'Card', true) +
       pm('fpx', '🏦', 'FPX') +

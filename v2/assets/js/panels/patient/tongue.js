@@ -5,12 +5,44 @@
   'use strict';
   HM.patientPanels = HM.patientPanels || {};
 
+  // Inject the shared disclaimer style if it's not already on the
+  // page (ai-diagnosis.js injects it too — this covers patients who
+  // land on the tongue page directly without visiting AI diagnosis).
+  function ensureDisclaimerStyle() {
+    if (document.getElementById('ai-wellness-disclaimer-style')) return;
+    var s = document.createElement('style');
+    s.id = 'ai-wellness-disclaimer-style';
+    s.textContent =
+      '.ai-wellness-disclaimer{' +
+        'position:sticky;top:0;z-index:50;' +
+        'background:linear-gradient(135deg, rgba(168,39,58,.08), rgba(201,146,42,.08));' +
+        'border:1px solid rgba(168,39,58,.3);' +
+        'border-left:4px solid var(--red-seal);' +
+        'border-radius:var(--r-sm);' +
+        'padding:10px 14px;' +
+        'font-size:13px;line-height:1.45;' +
+        'color:var(--ink);' +
+        'margin-bottom:var(--s-3);' +
+        'box-shadow:0 1px 3px rgba(0,0,0,.05);' +
+      '}';
+    document.head.appendChild(s);
+  }
+
   async function render(el) {
+    ensureDisclaimerStyle();
     el.innerHTML = '<div class="page-header">' +
-      '<div class="page-header-label">Tongue Diagnosis · 舌診</div>' +
-      '<h1 class="page-title">AI Tongue Analysis · 人工智能舌診</h1>' +
-      '<p class="page-subtitle">Upload a photo of your tongue for AI-assisted analysis based on classical TCM.<br>' +
-      '<span style="font-family: var(--font-zh);">上傳舌頭照片，AI 根據古典中醫學為您分析體質。</span></p>' +
+      '<div class="page-header-label">Tongue Wellness Analysis · 舌象健康評估</div>' +
+      '<h1 class="page-title">AI Tongue Wellness Analysis · AI 舌象健康評估</h1>' +
+      '<p class="page-subtitle">Upload a photo of your tongue for an AI-assisted wellness insight grounded in classical TCM observation. Always reviewed by a licensed TCM practitioner before any personalised guidance is shared.<br>' +
+      '<span style="font-family: var(--font-zh);">上傳舌頭照片，AI 根據古典中醫觀察為您提供健康見解。由註冊中醫師審核後方提供個人化建議。</span></p>' +
+      '</div>' +
+
+      // Sticky disclaimer banner — PDPA / MDA compliance. Visible the
+      // whole time the patient is on the tongue page.
+      '<div class="ai-wellness-disclaimer">' +
+        '<strong>⚠️ Wellness education, not a medical diagnosis.</strong> This AI tool offers TCM-based wellness insights only. ' +
+        'For diagnosis or treatment, please consult a licensed TCM practitioner.' +
+        '<br><span style="font-family: var(--font-zh);"><strong>此為健康教育工具，非醫療診斷。</strong>如需診斷或治療，請諮詢註冊中醫師。</span>' +
       '</div>' +
 
       '<div class="card card--pad-lg mb-6" style="max-width: 700px;">' +
@@ -20,7 +52,24 @@
       '• Extend tongue fully, relaxed · 舌頭完全伸出，放鬆<br>' +
       '• Clean tongue (not right after eating) · 乾淨舌面（勿剛進食後）<br>' +
       '• Phone camera, 1-2 feet away · 手機距離 30-60 公分</p>' +
-      '<button type="button" class="btn btn--primary btn--lg btn--block" id="tongue-open">' +
+
+      // PDPA §6 consent block — must be ticked before we accept the
+      // upload. Event is logged to audit_logs on submit.
+      '<div id="tongue-consent-box" style="background: var(--washi); padding: var(--s-3); border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: var(--s-4);">' +
+        '<label style="display: flex; gap: var(--s-2); align-items: flex-start; cursor: pointer;">' +
+          '<input type="checkbox" id="tongue-consent" style="margin-top: 4px; flex-shrink: 0; width: 16px; height: 16px;">' +
+          '<div class="text-sm" style="line-height: 1.5;">' +
+            '<strong>I consent to my tongue photo being processed for TCM wellness analysis, and reviewed by a licensed TCM practitioner.</strong> ' +
+            'My photo is stored securely and used only for this purpose. I can request deletion any time from Settings. ' +
+            '<br><span style="font-family: var(--font-zh);">' +
+            '<strong>我同意將舌頭照片用於 TCM 健康分析，並由註冊中醫師審核。</strong>' +
+            '照片安全儲存，僅用於此目的，可隨時於設定中要求刪除。' +
+            '</span>' +
+          '</div>' +
+        '</label>' +
+      '</div>' +
+
+      '<button type="button" class="btn btn--primary btn--lg btn--block" id="tongue-open" disabled>' +
       '📷 Open Tongue Camera · 開啟舌頭相機' +
       '</button>' +
       '<p class="text-xs text-muted mt-2" style="text-align:center;">A guided frame will help you align your tongue for the best reading. ' +
@@ -31,7 +80,26 @@
       '<div class="text-label mb-3">Scan History · 舌診歷史記錄</div>' +
       '<div id="tongue-list"></div>';
 
-    document.getElementById('tongue-open').addEventListener('click', function () {
+    // Gate the camera button on the consent checkbox so we never
+    // capture a photo without a recorded consent event.
+    var consentEl = document.getElementById('tongue-consent');
+    var openBtn = document.getElementById('tongue-open');
+    consentEl.addEventListener('change', function () {
+      openBtn.disabled = ! consentEl.checked;
+    });
+    openBtn.addEventListener('click', async function () {
+      if (! consentEl.checked) {
+        HM.ui.toast('Please tick the consent box first. · 請先勾選同意方塊。', 'warning');
+        return;
+      }
+      // Log consent once per session — prevents spamming the audit
+      // table if the user retakes multiple photos in one visit.
+      if (! window.__hmTongueConsentLogged) {
+        try {
+          await HM.api.recordConsent('consent.tongue_analysis');
+          window.__hmTongueConsentLogged = true;
+        } catch (_) {}
+      }
       HM.tongueCapture.open({
         onCapture: function (file) { handleUpload(file); },
       });

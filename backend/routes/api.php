@@ -66,6 +66,15 @@ Route::get('/public/treatment-types', function () {
     return response()->json(['types' => is_array($types) ? $types : []]);
 });
 
+// Published content pages (privacy, retention, terms, faq, about).
+// Admin manages via /admin/content. Public reads via this endpoint.
+Route::get('/pages/{slug}', function (string $slug) {
+    $page = \Illuminate\Support\Facades\DB::table('content_pages')
+        ->where('slug', $slug)->first();
+    if (! $page) return response()->json(['message' => 'Not found'], 404);
+    return response()->json(['page' => $page]);
+});
+
 // Voucher preview — patient enters a code at payment, we validate
 // and return the discount preview. POST so the body carries the
 // scope ('appointment' | 'order') and amount cleanly.
@@ -112,6 +121,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Account security (C-21)
     Route::post('/auth/change-password', [\App\Http\Controllers\Auth\SecurityController::class, 'changePassword']);
+
+    // PDPA §6 consent capture — patient signals consent before a
+    // processing activity. We persist the event to audit_logs so
+    // we can demonstrate compliance on request.
+    Route::post('/consent', function (\Illuminate\Http\Request $r) {
+        $data = $r->validate([
+            'action' => ['required', 'regex:/^consent\.[a-z0-9_\.]+$/i'],
+        ]);
+        \Illuminate\Support\Facades\DB::table('audit_logs')->insert([
+            'user_id'    => $r->user()->id,
+            'action'     => $data['action'],
+            'target_type'=> 'user',
+            'target_id'  => $r->user()->id,
+            'payload'    => json_encode([
+                'ip'          => $r->ip(),
+                'user_agent'  => substr($r->userAgent() ?? '', 0, 255),
+                'consented_at'=> now()->toIso8601String(),
+            ]),
+            'created_at' => now(),
+        ]);
+        return response()->json(['ok' => true]);
+    });
     Route::post('/auth/delete-account',  [\App\Http\Controllers\Auth\SecurityController::class, 'deleteAccount']);
 
     // Sidebar tab badge counts (per role)
@@ -184,6 +215,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/orders',          [PatientOrderController::class, 'store']);
             Route::get('/orders/{id}',      [PatientOrderController::class, 'show']);
             Route::post('/orders/{id}/pay', [PatientOrderController::class, 'pay']);
+
+            // PDPA §30 right of access — patient downloads everything
+            // we hold about them as a structured JSON bundle.
+            Route::get('/data-export', [\App\Http\Controllers\Patient\DataExportController::class, 'export']);
         });
     });
 
@@ -361,6 +396,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Content management (M-12)
         Route::get('/content',              [\App\Http\Controllers\Admin\ContentController::class, 'index']);
+        Route::post('/content/seed-compliance', [\App\Http\Controllers\Admin\ContentController::class, 'seedCompliancePages']);
         Route::get('/content/{slug}',       [\App\Http\Controllers\Admin\ContentController::class, 'show']);
         Route::post('/content',             [\App\Http\Controllers\Admin\ContentController::class, 'upsert']);
         Route::delete('/content/{slug}',    [\App\Http\Controllers\Admin\ContentController::class, 'destroy']);

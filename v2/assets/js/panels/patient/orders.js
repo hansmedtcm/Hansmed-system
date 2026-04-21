@@ -129,7 +129,14 @@
     // Pay button can read the latest valid voucher when sending.
     var voucherState = { code: null, discount: 0, total: parseFloat(o.total) || 0 };
 
-    var html = '<p class="mb-3">Choose a payment method · 選擇付款方式</p>' +
+    var html =
+      // Pilot banner — this will be removed once real Stripe webhooks
+      // are wired for public launch. See launch-readiness.md #4.
+      '<div style="background: rgba(184,150,90,.12); border: 1px solid rgba(184,150,90,.4); border-radius: var(--r-sm); padding: 8px 12px; margin-bottom: var(--s-3); font-size: 12px; color: #8a5b00;">' +
+        '⚠️ <strong>Pilot programme — simulated payment.</strong> No card is actually charged. Your order will proceed as if paid, for testing purposes. ' +
+        '<br><span style="font-family: var(--font-zh);"><strong>試用階段 — 模擬付款。</strong>不會實際扣款，訂單將視為已付款供測試用途。</span>' +
+      '</div>' +
+      '<p class="mb-3">Choose a payment method · 選擇付款方式</p>' +
       '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: var(--s-2); margin-bottom: var(--s-3);">' +
       methods.map(function (pm, idx) {
         return '<button type="button" data-pm="' + pm.id + '" class="btn btn--outline' + (idx === 0 ? ' is-selected' : '') + '" style="padding: var(--s-3); flex-direction:column; gap: var(--s-1); height:auto; min-height:80px;' +

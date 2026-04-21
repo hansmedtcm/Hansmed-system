@@ -9,10 +9,35 @@
     el.innerHTML = '<div class="page-header flex-between">' +
       '<div><div class="page-header-label">Content · 內容管理</div>' +
       '<h1 class="page-title">Static Pages CMS</h1></div>' +
-      '<button class="btn btn--primary" id="new-content">+ New Page</button></div>' +
+      '<div class="flex gap-2">' +
+      '<button class="btn btn--outline" id="seed-compliance" title="Populates /privacy + /retention with PDPA-compliant defaults">⚖️ Seed Compliance Pages</button>' +
+      '<button class="btn btn--primary" id="new-content">+ New Page</button>' +
+      '</div>' +
+      '</div>' +
       '<div id="cnt-list"></div>';
 
     document.getElementById('new-content').addEventListener('click', function () { showEditor(null); });
+    document.getElementById('seed-compliance').addEventListener('click', async function () {
+      var ok = await HM.ui.confirm(
+        'Seed /privacy and /retention pages with the PDPA-compliant defaults?\n\n' +
+        'Overwrites any existing pages at those slugs.\n' +
+        '以 PDPA 合規預設內容建立 /privacy 與 /retention 頁面（將覆寫同 slug 的現有頁面）。',
+        { title: 'Seed Compliance Pages · 植入合規頁' }
+      );
+      if (!ok) return;
+      this.disabled = true;
+      this.textContent = 'Seeding… · 處理中';
+      try {
+        await HM.api.admin.seedCompliancePages();
+        HM.ui.toast('Seeded /privacy + /retention · 已植入', 'success');
+        load();
+      } catch (err) {
+        HM.ui.toast(err.message || 'Seed failed', 'danger');
+      } finally {
+        this.disabled = false;
+        this.textContent = '⚖️ Seed Compliance Pages';
+      }
+    });
     await load();
   }
 
