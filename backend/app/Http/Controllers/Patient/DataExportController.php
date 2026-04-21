@@ -151,6 +151,32 @@ class DataExportController extends Controller
 
         $addresses = Address::where('user_id', $userId)->get()->toArray();
 
+        // PDPA §30 — the user is entitled to see every consent grant /
+        // revoke we have on file about them. Table was added 2026-04-21
+        // alongside the consent modal flow (docs/ux/consent-copy.md).
+        $consents = [];
+        if (\Illuminate\Support\Facades\Schema::hasTable('consent_grants')) {
+            $consents = DB::table('consent_grants')
+                ->where('user_id', $userId)
+                ->orderBy('granted_at')
+                ->get(['purpose_id', 'granted', 'consent_version',
+                       'granted_at', 'ip_address', 'user_agent',
+                       'related_booking', 'note'])
+                ->map(function ($c) {
+                    return [
+                        'purpose_id'      => $c->purpose_id,
+                        'granted'         => (bool) $c->granted,
+                        'consent_version' => $c->consent_version,
+                        'granted_at'      => $c->granted_at,
+                        'ip_address'      => $c->ip_address,
+                        'user_agent'      => $c->user_agent,
+                        'related_booking' => $c->related_booking,
+                        'note'            => $c->note,
+                    ];
+                })
+                ->toArray();
+        }
+
         // Chat — include messages the user sent + received, but strip
         // PII from the counterparty (keep display name only).
         $chat = [];
@@ -203,6 +229,7 @@ class DataExportController extends Controller
             'tongue_scans'       => $tongueDiagnoses,
             'constitution_reports' => $questionnaires,
             'chat_threads'       => $chat,
+            'consent_history'    => $consents,
         ];
 
         // Filename suggestion: hansmed-export-<email-slug>-<date>.json

@@ -459,4 +459,39 @@ CREATE TABLE audit_logs (
   KEY idx_al_target (target_type, target_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ─────────────────────────────────────────────────────────
+-- consent_grants — PDPA 2010 § 6 / § 7 / § 38 consent audit
+-- Added 2026-04-21. See docs/ux/consent-copy.md for purposes
+-- and docs/legal/privacy-notice.md for user-facing wording.
+--
+-- Insert a new row on EVERY grant AND every revoke. The latest
+-- row per (user_id, purpose_id) is the current state. Never
+-- UPDATE or DELETE existing rows — the table is the audit log.
+--
+-- Canonical purpose_id values (keep in sync with consent-copy.md):
+--   core_account         — required for signup
+--   tongue_image         — tongue photo storage + AI processing
+--   questionnaire        — questionnaire storage + use
+--   ai_processing        — third-party AI vendor processing
+--   practitioner_share   — share records with a practitioner (per booking)
+--   marketing_email      — newsletters
+--   analytics            — anonymised usage analytics
+-- ─────────────────────────────────────────────────────────
+CREATE TABLE consent_grants (
+  id                BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id           BIGINT UNSIGNED NOT NULL,
+  purpose_id        VARCHAR(64) NOT NULL,
+  granted           TINYINT(1) NOT NULL,
+  consent_version   VARCHAR(16) NOT NULL,
+  granted_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ip_address        VARCHAR(45) NULL,
+  user_agent        VARCHAR(255) NULL,
+  related_booking   BIGINT UNSIGNED NULL COMMENT 'appointment id for practitioner_share, NULL otherwise',
+  note              VARCHAR(255) NULL,
+  KEY idx_cg_user_purpose (user_id, purpose_id),
+  KEY idx_cg_user_time (user_id, granted_at),
+  KEY idx_cg_purpose (purpose_id),
+  CONSTRAINT fk_cg_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

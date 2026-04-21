@@ -49,7 +49,30 @@
       "Bash(node --check v2/assets/js/panels/doctor/prescriptions.js)",
       "Bash(node --check v2/assets/js/panels/pharmacy/inbox.js)",
       "Bash(node --check v2/assets/js/panels/doctor/consult.js)",
-      "Bash(node --check v2/assets/js/api.js)"
+      "Bash(node --check v2/assets/js/api.js)",
+      "Bash(git commit -m ' *)",
+      "Bash(grep -n \"prescriptions\\\\|appointments\" E:\\\\\\\\Hansmed-system\\\\\\\\backend\\\\\\\\routes\\\\\\\\api.php)",
+      "Bash(ls E:\\\\\\\\Hansmed-system\\\\\\\\v2\\\\\\\\assets\\\\\\\\js\\\\\\\\panels\\\\\\\\pharmacy\\\\\\\\)",
+      "Bash(grep -rn 'health_concerns\\\\|symptoms.*report\\\\|$row->symptoms\\\\|json_decode.*symptoms' E:/Hansmed-system/backend/app/Http/Controllers/Doctor/ConstitutionReviewController.php)",
+      "Bash(grep -n \"Admin\\\\\\\\\\\\\\\\\" E:/Hansmed-system/backend/routes/api.php)",
+      "Bash(pdftotext -layout -f 1 -l 20 'E:/Downloads/中医药膳学 \\(陈静主编（贵阳中医学院基础学院）, 陈静主编, 陈静\\)OCR.pdf' -)",
+      "Bash(cp '中医药膳学 \\(陈静主编（贵阳中医学院基础学院）, 陈静主编, 陈静\\)OCR.pdf' /tmp/yaoshan_chen.pdf)",
+      "Bash(cp '中医药膳学（全国中医药行业高等教育十二五创新教材） \\(左铮云，刘志勇，乐毅敏\\) \\(z-library.sk, 1lib.sk, z-lib.sk\\).epub' /tmp/yaoshan_zuo.epub)",
+      "Bash(ls -la /tmp/yaoshan*)",
+      "Bash(pdftotext -layout -f 1 -l 25 /tmp/yaoshan_chen.pdf /tmp/yaoshan_chen_p1-25.txt)",
+      "Read(//tmp/**)",
+      "Bash(unzip -o yaoshan_zuo.epub -d yaoshan_zuo_extracted/)",
+      "Bash(grep -v \"^[[:space:]]*$\")",
+      "Bash(pdftotext -layout -f 1 -l 5 /tmp/cmdx.pdf -)",
+      "Bash(pdftotext -layout -f 5 -l 15 /tmp/cmdx.pdf /tmp/cmdx_intro.txt)",
+      "Bash(pdftotext -layout -f 1 -l 1 /tmp/cmdx.pdf -)",
+      "Bash(pdftotext -layout /tmp/cmdx.pdf /tmp/cmdx_full.txt)",
+      "Bash(grep -n \"^HEADACHE$\\\\|Headache$\\\\|^DIZZINESS\\\\|^CHEST PAIN\\\\|^ABDOMINAL PAIN\\\\|^LOW BACK PAIN\\\\|^FATIGUE\\\\|^INSOMNIA\\\\|^COUGH\\\\|^Constipation$\\\\|^Diarrhea, Acute$\" /tmp/cmdx_full.txt)",
+      "Bash(grep -n \"^Headache$\\\\|^Dizziness$\\\\|^Insomnia$\\\\|^Cough$\\\\|^Constipation$\\\\|^Anxiety$\\\\|^Hypertension Essential$\\\\|^Hyperlipidemia$\\\\|^Asthma$\\\\|^Diabetes\" /tmp/cmdx_full.txt)",
+      "Bash(grep -n \"^HEADACHE$\\\\|^Headache$\" /tmp/cmdx_full.txt)",
+      "Bash(npx tsc *)",
+      "Bash(unset ANTHROPIC_API_KEY)",
+      "Bash(npx ts-node *)"
     ]
   }
 }

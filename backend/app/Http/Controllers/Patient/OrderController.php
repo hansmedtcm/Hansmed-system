@@ -171,7 +171,11 @@ class OrderController extends Controller
                 ];
             }
 
-            $shipping = 0; // TODO: distance / flat-rate rule
+            // Flat-rate shipping per pilot decision (2026-04-21):
+            //   - West Malaysia (Peninsular): RM 10
+            //   - East Malaysia (Sabah / Sarawak / Labuan): RM 20
+            //   - Outside MY: not supported in pilot (defaults to 0; pharmacy will reject on fulfilment)
+            $shipping = self::calculateShipping($address);
             $total    = $subtotal + $shipping;
 
             $order = Order::create([
@@ -315,5 +319,47 @@ class OrderController extends Controller
 
             return response()->json(['order' => $order->fresh(['items', 'shipment'])]);
         });
+    }
+
+    /**
+     * Calculate flat-rate shipping based on delivery address state.
+     *
+     * Rates set per pilot product decision (2026-04-21):
+     *   - West Malaysia (Peninsular states):  RM 10
+     *   - East Malaysia (Sabah / Sarawak / Labuan):  RM 20
+     *   - International / unknown:  0 (order will be rejected by pharmacy at fulfilment)
+     *
+     * State matching is case-insensitive and trims common prefixes
+     * like "Wilayah Persekutuan" / "Negeri" for robustness against
+     * user-entered variations.
+     *
+     * TODO (post-pilot): move rates + rules to config/shipping.php so
+     * ops can adjust without a deploy.
+     */
+    public static function calculateShipping(Address $address): float
+    {
+        $country = strtoupper(trim((string) $address->country));
+        if ($country !== '' && ! in_array($country, ['MY', 'MALAYSIA', 'MYS'], true)) {
+            return 0.0;
+        }
+
+        $state = Str::of((string) $address->state)
+            ->lower()
+            ->replaceMatches('/^(wilayah\s+persekutuan|negeri|state\s+of)\s+/i', '')
+            ->trim()
+            ->__toString();
+
+        $eastStates = ['sabah', 'sarawak', 'labuan'];
+        foreach ($eastStates as $needle) {
+            if (str_contains($state, $needle)) {
+                return 20.00;
+            }
+        }
+
+        // Default: treat as West Malaysia (Peninsular).
+        // Covers Johor, Kedah, Kelantan, Melaka, Negeri Sembilan, Pahang,
+        // Perak, Perlis, Pulau Pinang, Selangor, Terengganu, Kuala Lumpur,
+        // Putrajaya — plus any unrecognised MY state string.
+        return 10.00;
     }
 }

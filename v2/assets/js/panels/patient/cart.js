@@ -102,7 +102,12 @@
     var tax = Math.round(subtotal * 0.06 * 100) / 100;
     var total = subtotal + shipping + tax;
 
-    el.innerHTML = '<div class="page-header">' +
+    var simBanner = (window.HM && HM.simulatedPaymentBanner)
+      ? HM.simulatedPaymentBanner.html()
+      : '';
+
+    el.innerHTML = simBanner +
+      '<div class="page-header">' +
       '<a href="#/cart" class="text-sm text-muted">← Back to Cart</a>' +
       '<h1 class="page-title mt-2">Checkout · 結帳</h1>' +
       '</div>' +
@@ -134,7 +139,7 @@
 
       '<div data-general-error class="alert alert--danger" style="display:none;"></div>' +
       '<button type="submit" class="btn btn--primary btn--block btn--lg mt-4">Pay ' + HM.format.money(total) + ' · 付款</button>' +
-      '<div class="text-xs text-muted text-center mt-2">Secured by Stripe Malaysia · 安全支付</div>' +
+      '<div class="text-xs text-muted text-center mt-2">Pilot build · Simulated payment — no real charge · 試運行 · 模擬付款</div>' +
       '</form>' +
 
       '<div class="card">' +

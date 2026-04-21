@@ -165,7 +165,7 @@
       '</div>' +
 
       '<button id="pay-confirm" class="btn btn--primary btn--block btn--lg">Pay ' + HM.format.money(o.total) + ' · 確認付款</button>' +
-      '<p class="text-xs text-muted text-center mt-3">Secured by Stripe Malaysia · 安全支付</p>';
+      '<p class="text-xs text-muted text-center mt-3">Pilot build · Simulated payment — no real charge · 試運行 · 模擬付款</p>';
 
     var m = HM.ui.modal({ title: 'Payment · 付款', content: html });
 

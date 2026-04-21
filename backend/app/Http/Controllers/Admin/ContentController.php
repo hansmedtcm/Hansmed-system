@@ -30,22 +30,25 @@ class ContentController extends Controller
             'locale'    => ['nullable', 'string', 'max:10'],
         ]);
 
-        DB::table('content_pages')->updateOrInsert(
-            ['slug' => $data['slug']],
-            [
-                'title'      => $data['title'],
-                'body_html'  => $data['body_html'],
-                'locale'     => $data['locale'] ?? 'en',
-                'updated_by' => $request->user()->id,
-                'updated_at' => now(),
-                // created_at intentionally omitted — the schema default
-                // (CURRENT_TIMESTAMP) fills it on INSERT, and UPDATE
-                // paths shouldn't touch it anyway. Passing a DB::raw()
-                // here breaks Laravel's updateOrInsert INSERT path
-                // (the raw expression is serialised as a string and
-                // MySQL rejects it as a DATETIME).
-            ]
-        );
+        // Same two-path pattern as seedCompliancePages — Railway
+        // MySQL is strict about zero dates and the schema default on
+        // created_at isn't being applied, so we set it explicitly on
+        // INSERT and leave it alone on UPDATE.
+        $row = [
+            'title'      => $data['title'],
+            'body_html'  => $data['body_html'],
+            'locale'     => $data['locale'] ?? 'en',
+            'updated_by' => $request->user()->id,
+            'updated_at' => now(),
+        ];
+        $existingId = DB::table('content_pages')->where('slug', $data['slug'])->value('id');
+        if ($existingId) {
+            DB::table('content_pages')->where('id', $existingId)->update($row);
+        } else {
+            $row['slug']       = $data['slug'];
+            $row['created_at'] = now();
+            DB::table('content_pages')->insert($row);
+        }
 
         DB::table('audit_logs')->insert([
             'user_id'     => $request->user()->id,
@@ -88,18 +91,29 @@ class ContentController extends Controller
             ],
         ];
 
+        // Manually split UPDATE vs INSERT so we can set created_at on
+        // INSERT only — avoids two MySQL edge cases we hit on Railway:
+        //   1. DB::raw('IFNULL(...)') inside updateOrInsert serialises
+        //      as a string and the driver rejects it as a DATETIME.
+        //   2. Strict mode (NO_ZERO_DATE) rejects a blank created_at
+        //      when the column's DEFAULT CURRENT_TIMESTAMP isn't being
+        //      applied.
         foreach ($pages as $p) {
-            DB::table('content_pages')->updateOrInsert(
-                ['slug' => $p['slug']],
-                [
-                    'title'      => $p['title'],
-                    'body_html'  => $p['body_html'],
-                    'locale'     => 'en',
-                    'updated_by' => $request->user()->id,
-                    'updated_at' => now(),
-                    'created_at' => DB::raw('IFNULL(created_at, NOW())'),
-                ]
-            );
+            $row = [
+                'title'      => $p['title'],
+                'body_html'  => $p['body_html'],
+                'locale'     => 'en',
+                'updated_by' => $request->user()->id,
+                'updated_at' => now(),
+            ];
+            $existingId = DB::table('content_pages')->where('slug', $p['slug'])->value('id');
+            if ($existingId) {
+                DB::table('content_pages')->where('id', $existingId)->update($row);
+            } else {
+                $row['slug']       = $p['slug'];
+                $row['created_at'] = now();
+                DB::table('content_pages')->insert($row);
+            }
         }
 
         DB::table('audit_logs')->insert([
