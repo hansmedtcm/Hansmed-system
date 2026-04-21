@@ -54,15 +54,21 @@
       '<button class="btn btn--danger" id="delete-btn">Delete Account · 刪除帳號</button>' +
       '</div>';
 
-    // Lang switcher
-    var currentLang = HM.i18n.currentLang();
+    // Lang switcher — wire via HM.langSwitch so the body class +
+    // DOM wrapping updates immediately (not just via localStorage).
+    // Also reflects the nav pill selection on the next render.
+    var currentLang = (HM.langSwitch && HM.langSwitch.get)
+      ? HM.langSwitch.get()
+      : (HM.i18n ? HM.i18n.currentLang() : 'en');
     document.querySelectorAll('.lang-btn').forEach(function (b) {
       if (b.getAttribute('data-lang') === currentLang) b.classList.add('is-active');
       b.addEventListener('click', function () {
         document.querySelectorAll('.lang-btn').forEach(function (x) { x.classList.remove('is-active'); });
         b.classList.add('is-active');
-        HM.i18n.setLang(b.getAttribute('data-lang'));
-        HM.ui.toast('Language changed · 語言已更改', 'success');
+        var lang = b.getAttribute('data-lang');
+        if (HM.langSwitch && HM.langSwitch.set) HM.langSwitch.set(lang);
+        else if (HM.i18n && HM.i18n.setLang) HM.i18n.setLang(lang);
+        HM.ui.toast(lang === 'zh' ? '語言已更改為中文' : 'Language changed to English', 'success');
       });
     });
 
