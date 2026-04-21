@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="assets/css/tcm.css">
 <link rel="stylesheet" href="assets/css/responsive.css">
 <link rel="stylesheet" href="assets/css/public.css">
+<link rel="stylesheet" href="assets/css/landing-v3.css">
 <style>
   .nav-cart-badge {
     display: inline-flex;
@@ -455,211 +456,34 @@
 
 <!-- ══════════════ HERO ══════════════ -->
 <main id="main">
-<section id="home" class="hero bg-washi-dotted">
-  <div class="hero-content">
-    <div class="hero-clinic-name">漢方現代中醫</div>
-    <div class="eyebrow"><span class="font-kaiti">傳統智慧</span> · MODERN CARE</div>
-    <h1>Healing Begins <em>with Harmony</em><br><span style="font-family: var(--font-kaiti); font-size: .7em; font-style: normal; color: var(--gold); letter-spacing: .08em;">調和身心 · 恢復健康</span></h1>
-    <p class="hero-tagline">
-      Licensed Traditional Chinese Medicine, from anywhere in Malaysia.
-      <br>
-      <span style="font-family: var(--font-zh); font-size: .95rem;">
-        持證中醫師 · 線上或臨診預約
-      </span>
-    </p>
-    <div class="hero-cta">
-      <button class="btn btn--primary btn--lg" onclick="location.href='portal.html#/book'">
-        📅 Book Appointment · 預約
-      </button>
-      <a class="btn btn--outline btn--lg" id="hero-whatsapp" href="#" target="_blank" rel="noopener">
-        💬 WhatsApp Us · 聯絡我們
-      </a>
-    </div>
-    <div class="hero-sub-actions">
-      <a href="portal.html#/ai-diagnosis">TCM Wellness Assessment · 中醫健康評估</a>
-      <span class="hero-sub-dot">·</span>
-      <a href="portal.html#/shop">Shop · 商店</a>
-    </div>
-  </div>
-  <div class="hero-visual">
-    <div class="kanji-watermark kanji-watermark--hero" aria-hidden="true">醫</div>
-    <div class="hero-drawer-wrap">
-      <svg class="hero-drawer-svg" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="漢方現代中醫 HansMed Apothecary Cabinet">
-        <defs>
-          <radialGradient id="cg0" cx="46%" cy="48%" r="54%">
-            <stop offset="0%" stop-color="rgba(184,148,72,.22)"/>
-            <stop offset="70%" stop-color="rgba(184,148,72,.06)"/>
-            <stop offset="100%" stop-color="rgba(184,148,72,0)"/>
-          </radialGradient>
-          <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#3c2212"/><stop offset="35%" stop-color="#281608"/><stop offset="100%" stop-color="#120a04"/>
-          </linearGradient>
-          <linearGradient id="cg2" x1="0" y1="0" x2="0.3" y2="1">
-            <stop offset="0%" stop-color="#5e3c22"/><stop offset="100%" stop-color="#3a2212"/>
-          </linearGradient>
-          <linearGradient id="cg3" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#140a04"/><stop offset="100%" stop-color="#0a0602"/>
-          </linearGradient>
-          <linearGradient id="cg4" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#4e321a"/><stop offset="100%" stop-color="#2a160a"/>
-          </linearGradient>
-          <linearGradient id="cg5" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#fefcf7"/><stop offset="30%" stop-color="#f5efe3"/><stop offset="78%" stop-color="#e4d9c8"/><stop offset="100%" stop-color="#c8baa6"/>
-          </linearGradient>
-          <linearGradient id="cg6" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#f2ece0"/><stop offset="100%" stop-color="#d8cebb"/>
-          </linearGradient>
-          <linearGradient id="cg7" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#2e2018"/><stop offset="22%" stop-color="#1a120e"/><stop offset="80%" stop-color="#0e0a06"/><stop offset="100%" stop-color="#060402"/>
-          </linearGradient>
-          <linearGradient id="cg8" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#201812"/><stop offset="100%" stop-color="#0a0806"/>
-          </linearGradient>
-          <linearGradient id="cg9" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#e0b84a"/><stop offset="45%" stop-color="#c09830"/><stop offset="100%" stop-color="#8a6e1a"/>
-          </linearGradient>
-          <linearGradient id="cg10" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#ece8e0"/><stop offset="50%" stop-color="#c8c0b0"/><stop offset="100%" stop-color="#a09080"/>
-          </linearGradient>
-          <linearGradient id="cg11" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="rgba(255,255,255,.38)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-          </linearGradient>
-          <linearGradient id="cg12" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,.55)"/>
-          </linearGradient>
-          <linearGradient id="cg13" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="rgba(0,0,0,.35)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
-          </linearGradient>
-          <linearGradient id="cg14" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#2e1a0c"/><stop offset="100%" stop-color="#1a0e06"/>
-          </linearGradient>
-          <filter id="cf1" x="-20%" y="-8%" width="160%" height="145%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="16" result="blur"/>
-            <feOffset dx="12" dy="18" result="off"/>
-            <feColorMatrix type="matrix" values="0 0 0 0 0.08  0 0 0 0 0.05  0 0 0 0 0.02  0 0 0 0.6 0" in="off" result="col"/>
-            <feMerge><feMergeNode in="col"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <filter id="cf2"><feGaussianBlur stdDeviation="10"/></filter>
-          <filter id="cf3" x="0" y="0" width="100%" height="100%" color-interpolation-filters="linearRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.016 0.62" numOctaves="4" seed="12" result="noise"/>
-            <feColorMatrix type="matrix" values="0.35 0 0 0 0.1  0 0.22 0 0 0.06  0 0 0.14 0 0.02  0 0 0 8 -3.8" in="noise" result="tinted"/>
-            <feBlend in="SourceGraphic" in2="tinted" mode="multiply" result="grained"/>
-            <feComposite in="grained" in2="SourceGraphic" operator="in"/>
-          </filter>
-        </defs>
-        <ellipse cx="185" cy="272" rx="198" ry="225" fill="url(#cg0)"/>
-        <ellipse cx="192" cy="500" rx="148" ry="12" fill="#1a1008" opacity=".32" filter="url(#cf2)"/>
-        <g filter="url(#cf1)">
-          <polygon points="308,90 346,62 346,460 308,460" fill="url(#cg3)"/>
-          <polygon points="42,90 308,90 346,62 80,62" fill="url(#cg2)"/>
-          <line x1="42" y1="90" x2="308" y2="90" stroke="rgba(255,248,220,.22)" stroke-width="1.5"/>
-          <polygon points="38,72 314,72 346,50 72,50" fill="#4a2e18"/>
-          <polygon points="314,72 314,90 346,62 346,50" fill="#261408"/>
-          <rect x="38" y="72" width="276" height="18" fill="url(#cg4)"/>
-          <rect x="38" y="88" width="276" height="3" fill="rgba(0,0,0,.5)"/>
-          <line x1="38" y1="72" x2="314" y2="72" stroke="rgba(255,240,180,.3)" stroke-width="1.5"/>
-          <rect x="42" y="90" width="266" height="370" fill="url(#cg1)" filter="url(#cf3)"/>
-          <rect x="42" y="90" width="266" height="50" fill="url(#cg11)" opacity=".6"/>
-          <rect x="42" y="370" width="266" height="90" fill="url(#cg12)"/>
-          <rect x="42" y="90" width="28" height="370" fill="url(#cg13)"/>
-          <rect x="42" y="90" width="266" height="370" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="2"/>
-        </g>
-
-        <!-- 9 DRAWERS -->
-        <g>
-          <rect x="56" y="104" width="76" height="108" fill="url(#cg5)" rx="1"/>
-          <rect x="62" y="110" width="64" height="72" fill="url(#cg6)" rx="1"/>
-          <rect x="56" y="104" width="76" height="10" fill="url(#cg11)" rx="1"/>
-          <text x="94" y="152" font-family="Noto Serif SC,serif" font-size="13" fill="rgba(90,60,30,.35)" text-anchor="middle" letter-spacing="2">當歸</text>
-          <rect x="79" y="188" width="30" height="8" rx="3" fill="url(#cg9)"/>
-          <path d="M82,188 Q82,176 94,175 Q106,176 106,188" fill="none" stroke="#c09030" stroke-width="3" stroke-linecap="round"/>
-          <path d="M83,188 Q83,178 94,177 Q105,178 105,188" fill="none" stroke="#e0b840" stroke-width="1.5" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="140" y="104" width="76" height="108" fill="url(#cg7)" rx="1"/>
-          <rect x="146" y="110" width="64" height="72" fill="url(#cg8)" rx="1"/>
-          <rect x="140" y="104" width="76" height="8" fill="rgba(255,255,255,.07)" rx="1"/>
-          <rect x="163" y="188" width="30" height="8" rx="3" fill="url(#cg10)"/>
-          <path d="M166,188 Q166,176 178,175 Q190,176 190,188" fill="none" stroke="#b0a898" stroke-width="3" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="224" y="104" width="76" height="108" fill="url(#cg5)" rx="1"/>
-          <rect x="230" y="110" width="64" height="72" fill="url(#cg6)" rx="1"/>
-          <rect x="224" y="104" width="76" height="10" fill="url(#cg11)" rx="1"/>
-          <text x="262" y="152" font-family="Noto Serif SC,serif" font-size="13" fill="rgba(90,60,30,.35)" text-anchor="middle" letter-spacing="2">黃耆</text>
-          <rect x="247" y="188" width="30" height="8" rx="3" fill="url(#cg9)"/>
-          <path d="M250,188 Q250,176 262,175 Q274,176 274,188" fill="none" stroke="#c09030" stroke-width="3" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="56" y="220" width="76" height="108" fill="url(#cg5)" rx="1"/>
-          <rect x="62" y="226" width="64" height="72" fill="url(#cg6)" rx="1"/>
-          <rect x="56" y="220" width="76" height="10" fill="url(#cg11)" rx="1"/>
-          <text x="94" y="268" font-family="Noto Serif SC,serif" font-size="13" fill="rgba(90,60,30,.35)" text-anchor="middle" letter-spacing="2">熟地</text>
-          <rect x="79" y="304" width="30" height="8" rx="3" fill="url(#cg9)"/>
-          <path d="M82,304 Q82,292 94,291 Q106,292 106,304" fill="none" stroke="#c09030" stroke-width="3" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="140" y="220" width="76" height="108" fill="url(#cg5)" rx="1"/>
-          <rect x="146" y="226" width="64" height="72" fill="url(#cg6)" rx="1"/>
-          <rect x="140" y="220" width="76" height="10" fill="url(#cg11)" rx="1"/>
-          <text x="178" y="268" font-family="Noto Serif SC,serif" font-size="13" fill="rgba(90,60,30,.35)" text-anchor="middle" letter-spacing="2">白芍</text>
-          <rect x="163" y="304" width="30" height="8" rx="3" fill="url(#cg9)"/>
-          <path d="M166,304 Q166,292 178,291 Q190,292 190,304" fill="none" stroke="#c09030" stroke-width="3" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="224" y="220" width="76" height="108" fill="url(#cg5)" rx="1"/>
-          <rect x="230" y="226" width="64" height="72" fill="url(#cg6)" rx="1"/>
-          <rect x="224" y="220" width="76" height="10" fill="url(#cg11)" rx="1"/>
-          <text x="262" y="268" font-family="Noto Serif SC,serif" font-size="13" fill="rgba(90,60,30,.35)" text-anchor="middle" letter-spacing="2">川芎</text>
-          <rect x="247" y="304" width="30" height="8" rx="3" fill="url(#cg9)"/>
-          <path d="M250,304 Q250,292 262,291 Q274,292 274,304" fill="none" stroke="#c09030" stroke-width="3" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="56" y="336" width="76" height="108" fill="url(#cg5)" rx="1"/>
-          <rect x="62" y="342" width="64" height="72" fill="url(#cg6)" rx="1"/>
-          <rect x="56" y="336" width="76" height="10" fill="url(#cg11)" rx="1"/>
-          <text x="94" y="384" font-family="Noto Serif SC,serif" font-size="13" fill="rgba(90,60,30,.35)" text-anchor="middle" letter-spacing="2">黨參</text>
-          <rect x="79" y="420" width="30" height="8" rx="3" fill="url(#cg9)"/>
-          <path d="M82,420 Q82,408 94,407 Q106,408 106,420" fill="none" stroke="#c09030" stroke-width="3" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="140" y="336" width="76" height="108" fill="url(#cg7)" rx="1"/>
-          <rect x="146" y="342" width="64" height="72" fill="url(#cg8)" rx="1"/>
-          <rect x="140" y="336" width="76" height="8" fill="rgba(255,255,255,.07)" rx="1"/>
-          <rect x="163" y="420" width="30" height="8" rx="3" fill="url(#cg10)"/>
-          <path d="M166,420 Q166,408 178,407 Q190,408 190,420" fill="none" stroke="#b0a898" stroke-width="3" stroke-linecap="round"/>
-        </g>
-        <g>
-          <rect x="224" y="336" width="76" height="108" fill="url(#cg5)" rx="1"/>
-          <rect x="230" y="342" width="64" height="72" fill="url(#cg6)" rx="1"/>
-          <rect x="224" y="336" width="76" height="10" fill="url(#cg11)" rx="1"/>
-          <text x="262" y="384" font-family="Noto Serif SC,serif" font-size="13" fill="rgba(90,60,30,.35)" text-anchor="middle" letter-spacing="2">茯苓</text>
-          <rect x="247" y="420" width="30" height="8" rx="3" fill="url(#cg9)"/>
-          <path d="M250,420 Q250,408 262,407 Q274,408 274,420" fill="none" stroke="#c09030" stroke-width="3" stroke-linecap="round"/>
-        </g>
-
-        <!-- Cabinet feet + plinth -->
-        <polygon points="56,460 72,460 72,486 56,486" fill="url(#cg14)"/>
-        <polygon points="72,460 80,450 80,476 72,486" fill="#1a0e06"/>
-        <polygon points="56,460 80,450 72,460" fill="#3a2210"/>
-        <polygon points="288,460 304,460 304,486 288,486" fill="url(#cg14)"/>
-        <polygon points="304,460 312,450 312,476 304,486" fill="#1a0e06"/>
-        <polygon points="288,460 312,450 304,460" fill="#3a2210"/>
-        <rect x="56" y="456" width="248" height="8" fill="#261408"/>
-        <polygon points="56,456 304,456 316,448 68,448" fill="#3a2010"/>
-      </svg>
-
-      <!-- Caption below cabinet -->
-      <div class="hero-drawer-caption">
-        <span class="hero-drawer-caption-zh">九宮藥閣 · 漢方精粹</span>
-        <span class="hero-drawer-caption-en">Traditional Apothecary · Essence of HansMed</span>
+<!-- ══════════════ HERO v3 ══════════════ -->
+<section id="home" class="hero-v3">
+  <div class="hero-v3-inner">
+    <div>
+      <div class="hero-v3-clinic">漢方現代中醫</div>
+      <div class="hero-v3-eyebrow">
+        <span class="font-kaiti">傳統智慧</span>· Modern Care
       </div>
-      <!-- Four pillars -->
-      <div class="hero-drawer-pillars">
-        <div class="hdp"><div class="hdp-icon">針</div><span class="hdp-zh">針灸</span><span class="hdp-en">Acupuncture</span></div>
-        <div class="hdp"><div class="hdp-icon">藥</div><span class="hdp-zh">草藥</span><span class="hdp-en">Herbal</span></div>
-        <div class="hdp"><div class="hdp-icon">心</div><span class="hdp-zh">身心</span><span class="hdp-en">Mind-Body</span></div>
-        <div class="hdp"><div class="hdp-icon">科</div><span class="hdp-zh">實證</span><span class="hdp-en">Evidence</span></div>
+      <h1>
+        Healing Begins <em>with Harmony</em>
+        <span class="hero-v3-sub-zh">調和身心 · 恢復健康</span>
+      </h1>
+      <p class="hero-v3-tagline">Licensed Traditional Chinese Medicine, from anywhere in Malaysia.</p>
+      <p class="hero-v3-tagline-zh">持證中醫師 · 線上或臨診預約</p>
+      <div class="hero-v3-cta">
+        <a class="btn btn--primary btn--lg" href="portal.html#/book">📅 Book Appointment · 預約</a>
+        <a class="btn btn--outline btn--lg" id="hero-whatsapp" href="#" target="_blank" rel="noopener">💬 WhatsApp Us · 聯絡</a>
+      </div>
+    </div>
+    <div class="hero-v3-card">
+      <img src="assets/img/brand/logo-mark.svg" class="hero-v3-card-logo" alt="">
+      <div class="hero-v3-card-caption-zh">九宮藥閣 · 漢方精粹</div>
+      <div class="hero-v3-card-caption-en">Traditional Apothecary · Essence of HansMed</div>
+      <div class="hero-v3-pillars">
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">針</div><span class="hero-v3-pillar-label">Acupuncture</span></div>
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">藥</div><span class="hero-v3-pillar-label">Herbal</span></div>
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">心</div><span class="hero-v3-pillar-label">Mind-Body</span></div>
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">科</div><span class="hero-v3-pillar-label">Evidence</span></div>
       </div>
     </div>
   </div>
@@ -944,6 +768,36 @@
     <button class="btn btn--primary btn--lg" onclick="location.href='portal.html#/book'">Start Now · 立即開始 →</button>
   </div>
 </section>
+
+<!-- ══════════════ WHY HANSMED / PILLARS v3 ══════════════ -->
+<section class="pillars-v3">
+  <div class="pillars-v3-container">
+    <div class="section-header-v3">
+      <div class="section-header-v3-eyebrow">Why HansMed · 為什麼選擇我們</div>
+      <h2 class="section-header-v3-title">Traditional Chinese Medicine, <em>Scientifically Proven</em></h2>
+      <p class="section-header-v3-sub">中醫智慧 · 科學實證</p>
+    </div>
+    <div class="pillars-v3-grid">
+      <div class="pillar-v3 is-sage">
+        <div class="pillar-v3-title">實證基礎 · Evidence-Based</div>
+        <div class="pillar-v3-desc">Every protocol supported by published clinical research and WHO-endorsed guidelines. · <span class="font-zh">基於實證研究與 WHO 準則。</span></div>
+      </div>
+      <div class="pillar-v3 is-gold">
+        <div class="pillar-v3-title">整合醫學 · Integrative</div>
+        <div class="pillar-v3-desc">TCM and modern diagnostics working together for more complete assessment. · <span class="font-zh">中醫與現代診斷結合。</span></div>
+      </div>
+      <div class="pillar-v3 is-red-seal">
+        <div class="pillar-v3-title">個人化診療 · Personalised</div>
+        <div class="pillar-v3-desc">Constitutional profiling through AI-assisted tongue assessment and symptom mapping. · <span class="font-zh">AI 體質分析與個人化診療。</span></div>
+      </div>
+      <div class="pillar-v3 is-sage">
+        <div class="pillar-v3-title">持牌醫師 · Licensed</div>
+        <div class="pillar-v3-desc">Practitioners are registered, certified and undergo continuous medical education. · <span class="font-zh">醫師皆持證並持續進修。</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 
 <!-- ══════════════ PARTNERS + CERTIFICATIONS ══════════════ -->
