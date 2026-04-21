@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" role="img" aria-label="Gold corner ornament (top-left)">
+  <path d="M 4 4 L 56 4 L 56 8 L 12 8 L 12 52 L 8 52 L 8 12 L 4 12 Z" fill="none" stroke="#B8965A" stroke-width="1.5"></path>
+  <path d="M 4 4 L 24 4 L 24 6 L 6 6 L 6 24 L 4 24 Z" fill="#B8965A"></path>
+  <circle cx="12" cy="12" r="2" fill="#B8965A"></circle>
+</svg>

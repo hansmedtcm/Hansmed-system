@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" role="img" aria-label="HansMed 3x3 logo mark">
+  <rect x="1" y="1" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"></rect><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"></circle>
+  <rect x="23" y="1" width="20" height="19" fill="#1a1612"></rect><circle cx="33" cy="10.5" r="3.5" fill="#fff"></circle>
+  <rect x="46" y="1" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"></rect><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"></circle>
+  <rect x="1" y="23" width="19" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"></rect><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"></circle>
+  <rect x="23" y="23" width="20" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"></rect><circle cx="33" cy="33" r="3.5" fill="#1a1612"></circle>
+  <rect x="46" y="23" width="19" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"></rect><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"></circle>
+  <rect x="1" y="46" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"></rect><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"></circle>
+  <rect x="23" y="46" width="20" height="19" fill="#1a1612"></rect><circle cx="33" cy="55.5" r="3.5" fill="#fff"></circle>
+  <rect x="46" y="46" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"></rect><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"></circle>
+</svg>

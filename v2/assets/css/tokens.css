@@ -1,119 +1,188 @@
 /* ============================================================
-   HansMed Design Tokens
+   HansMed Design Tokens — v3 (Design System refresh, 2026-04-21)
+   ============================================================
    Single source of truth for colors, typography, spacing, etc.
+   Values upgraded from the Claude Design handoff bundle for
+   40+ patient readability: body copy minimum 17px, heading
+   scale bumped, wider palette, warmer shadows.
+
+   Compatibility: legacy token aliases (--washi-dark, --surface-*,
+   --pill-*, --sidebar-width, --z-*) are preserved so existing
+   panel CSS continues to work. New semantic tokens (--fg-1/2/3,
+   --fg-invert, --cream-raised, --ink-soft, --gold-soft etc.) are
+   available to new code.
    ============================================================ */
 
 :root {
-  /* ── Color palette — Japanese apothecary ── */
-  --ink:          #1a1612;   /* primary text, borders */
-  --stone:        #7a7068;   /* secondary text, labels */
-  --sage:         #7a8c72;   /* success, positive states */
-  --gold:         #b8965a;   /* accent, highlights, links */
-  --washi:        #f5f0e8;   /* light background cards */
-  --washi-dark:   #ede7d8;   /* raised surfaces */
-  --cream:        #faf7f2;   /* page background */
-  --mist:         #e8e2d6;   /* borders, dividers */
-  --red-seal:     #c0392b;   /* errors, warnings, emergency */
+  /* ══════════════════════════════════════════════════════════
+     CORE PALETTE — five named brand colours + neutrals.
+     Do not introduce new hues; use sage/gold/red-seal as accents.
+     ══════════════════════════════════════════════════════════ */
+  --cream:        #F5F1EA;   /* primary page background — warm off-white */
+  --cream-raised: #FAF7F2;   /* elevated surfaces, modal body, cards on washi */
+  --washi:        #EDE7D8;   /* raised cards, dotted pattern base */
+  --washi-dark:   #EDE7D8;   /* legacy alias (was a separate tone pre-v3) */
+  --ink:          #1A1612;   /* primary text, primary button, borders */
+  --ink-soft:     #2B241E;   /* secondary heading tone */
+  --stone:        #7A7068;   /* secondary / muted text */
+  --stone-light:  #9A9088;   /* tertiary text on light surfaces */
+  --mist:         #E8E2D6;   /* hairline borders, dividers */
+  --sage:         #7A8C72;   /* success, positive, wood element */
+  --sage-soft:    #A9B8A2;   /* sage tint, muted success */
+  --gold:         #B8965A;   /* highlights, seals, eyebrows, links, earth element */
+  --gold-soft:    #D9BF88;   /* gold tint, hover surface */
+  --red-seal:     #C0392B;   /* seal stamp, danger, fire element */
 
-  /* ── Semantic colors ── */
-  --text-primary:    var(--ink);
-  --text-secondary:  var(--stone);
-  --text-inverse:    var(--washi);
-  --surface:         var(--cream);
-  --surface-raised:  var(--washi);
-  --surface-elevated: var(--washi-dark);
+  /* Five-element colour strip (used only in Brand motif bars) */
+  --elem-wood:    #7A8C72;   /* 木 green */
+  --elem-fire:    #C0392B;   /* 火 red */
+  --elem-earth:   #B8965A;   /* 土 gold */
+  --elem-metal:   #C8BAA6;   /* 金 pale */
+  --elem-water:   #1A3A5C;   /* 水 deep blue */
+
+  /* ══════════════════════════════════════════════════════════
+     SEMANTIC COLOR TOKENS — reference these from components.
+     ══════════════════════════════════════════════════════════ */
+  --fg-1:            var(--ink);
+  --fg-2:            var(--stone);
+  --fg-3:            var(--stone-light);
+  --fg-invert:       var(--cream-raised);
+  --fg-accent:       var(--gold);
+  --fg-link:         var(--gold);
+
+  --bg:              var(--cream);
+  --bg-raised:       var(--cream-raised);
+  --bg-elevated:     var(--washi);
+  --surface:         var(--cream);            /* legacy alias: page surface */
+  --surface-raised:  var(--cream-raised);     /* legacy alias: card surface */
+  --surface-elevated: var(--washi);           /* legacy alias: elevated card */
+
+  --text-primary:    var(--ink);              /* legacy alias */
+  --text-secondary:  var(--stone);            /* legacy alias */
+  --text-inverse:    var(--cream-raised);     /* legacy alias */
+
   --border:          var(--mist);
+  --border-strong:   #D3CBBC;
+  --divider:         var(--mist);
+
   --accent:          var(--gold);
   --success:         var(--sage);
   --danger:          var(--red-seal);
-  --warning:         #e6a817;
-  --info:            #6699bb;
+  --warning:         #D99B17;
+  --info:            #4A7CA6;
 
-  /* ── Status pills (order/appointment/prescription) ── */
-  --pill-pending:    #e6a817;
+  --focus-ring:      0 0 0 3px rgba(184, 150, 90, 0.40);
+  --selection:       rgba(184, 150, 90, 0.28);
+
+  /* ── Status pills (order/appointment/prescription) — legacy ── */
+  --pill-pending:    #D99B17;
   --pill-active:     var(--gold);
-  --pill-progress:   #4a90d9;
+  --pill-progress:   #4A7CA6;
   --pill-success:    var(--sage);
   --pill-danger:     var(--red-seal);
 
-  /* ── Typography ── */
-  --font-display: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
-  --font-zh:      'Noto Serif SC', 'Microsoft YaHei', serif;
+  /* ══════════════════════════════════════════════════════════
+     TYPOGRAPHY — families
+     Two heading families, two body families (EN + ZH pairing).
+     ══════════════════════════════════════════════════════════ */
+  --font-display: 'Cormorant Garamond', 'Noto Serif SC', Georgia, 'Times New Roman', serif;
+  --font-zh:      'Noto Serif SC', 'Microsoft YaHei', 'PingFang TC', serif;
   --font-kaiti:   'ZhengYanKaiTi', 'Ma Shan Zheng', 'Noto Serif SC', 'KaiTi', 'BiauKai', serif;
-  --font-body:    'Source Sans 3', 'Noto Serif SC', system-ui, -apple-system, sans-serif;
+  --font-body:    'Source Sans 3', 'Noto Serif SC', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono:    'SF Mono', Monaco, Consolas, 'Courier New', monospace;
 
-  /* ── Type scale ── */
-  --text-xs:   0.68rem;
-  --text-sm:   0.82rem;
-  --text-base: 0.95rem;
-  --text-lg:   1.1rem;
-  --text-xl:   1.35rem;
-  --text-2xl:  1.7rem;
-  --text-3xl:  2.2rem;
-  --text-4xl:  clamp(2.2rem, 4vw, 3.2rem);
-  --text-5xl:  clamp(2.6rem, 5vw, 4.2rem);
+  /* ══════════════════════════════════════════════════════════
+     TYPE SCALE — ENLARGED from v2 tokens for 40+ readability.
+     Body minimum is 17px so older patients can read comfortably.
+     ══════════════════════════════════════════════════════════ */
+  --text-xs:   0.8125rem;   /* 13px — micro labels only */
+  --text-sm:   0.9375rem;   /* 15px — captions, small meta */
+  --text-base: 1.0625rem;   /* 17px — body copy MINIMUM */
+  --text-md:   1.1875rem;   /* 19px — lead paragraph */
+  --text-lg:   1.375rem;    /* 22px — pull quotes, h4 */
+  --text-xl:   1.625rem;    /* 26px — h3 */
+  --text-2xl:  2.0rem;      /* 32px — h2 */
+  --text-3xl:  2.5rem;      /* 40px — section title */
+  --text-4xl:  clamp(2.25rem, 4vw, 3.5rem);    /* display h1 */
+  --text-5xl:  clamp(2.75rem, 5.5vw, 4.75rem); /* hero display */
 
-  --leading-tight:  1.2;
-  --leading-snug:   1.4;
-  --leading-normal: 1.6;
-  --leading-relaxed: 1.85;
-  --leading-loose:  2;
+  --leading-tight:    1.18;
+  --leading-snug:     1.35;
+  --leading-normal:   1.55;
+  --leading-relaxed:  1.75;
+  --leading-loose:    2.0;
 
-  --tracking-tight: -0.02em;
-  --tracking-normal: 0;
-  --tracking-wide:  0.1em;
-  --tracking-wider: 0.18em;
-  --tracking-widest: 0.3em;
+  --tracking-tight:   -0.015em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.08em;
+  --tracking-wider:   0.16em;
+  --tracking-widest:  0.28em;
 
-  /* ── Spacing scale ── */
+  /* ══════════════════════════════════════════════════════════
+     SPACING SCALE — geometric, generous
+     4 · 8 · 12 · 16 · 24 · 32 · 40 · 48 · 64 · 80 · 104 · 128
+     ══════════════════════════════════════════════════════════ */
   --s-0:  0;
-  --s-1:  0.25rem;
-  --s-2:  0.5rem;
-  --s-3:  0.75rem;
-  --s-4:  1rem;
-  --s-5:  1.25rem;
-  --s-6:  1.5rem;
-  --s-8:  2rem;
-  --s-10: 2.5rem;
-  --s-12: 3rem;
-  --s-16: 4rem;
-  --s-20: 5rem;
-  --s-24: 6rem;
+  --s-1:  0.25rem;   /* 4  */
+  --s-2:  0.5rem;    /* 8  */
+  --s-3:  0.75rem;   /* 12 */
+  --s-4:  1rem;      /* 16 */
+  --s-5:  1.5rem;    /* 24 */
+  --s-6:  2rem;      /* 32 */
+  --s-7:  2.5rem;    /* 40 */
+  --s-8:  3rem;      /* 48 */
+  --s-10: 4rem;      /* 64 */
+  --s-12: 5rem;      /* 80 */
+  --s-16: 6.5rem;    /* 104 */
+  --s-20: 8rem;      /* 128 */
+  /* Legacy aliases — pre-v3 tokens used a shorter scale; map to
+     nearest match so existing components keep working. */
+  --s-24: 8rem;      /* legacy: was 96; rounded up to 128 for rhythm */
 
-  /* ── Radii ── */
+  /* ══════════════════════════════════════════════════════════
+     RADII
+     ══════════════════════════════════════════════════════════ */
   --r-none: 0;
   --r-sm:   2px;
-  --r-md:   4px;
-  --r-lg:   8px;
-  --r-xl:   12px;
+  --r-md:   6px;
+  --r-lg:   12px;
+  --r-xl:   18px;
   --r-pill: 9999px;
 
-  /* ── Shadows ── */
-  --shadow-xs: 0 1px 2px rgba(26, 22, 18, 0.05);
-  --shadow-sm: 0 2px 4px rgba(26, 22, 18, 0.06);
-  --shadow-md: 0 4px 12px rgba(26, 22, 18, 0.08);
-  --shadow-lg: 0 8px 24px rgba(26, 22, 18, 0.12);
-  --shadow-xl: 0 16px 40px rgba(26, 22, 18, 0.16);
+  /* ══════════════════════════════════════════════════════════
+     SHADOWS — medical-journal feel, warm-tinted, subtle
+     ══════════════════════════════════════════════════════════ */
+  --shadow-xs:   0 1px 2px rgba(26, 22, 18, 0.04);
+  --shadow-sm:   0 2px 6px rgba(26, 22, 18, 0.05);
+  --shadow-md:   0 6px 16px rgba(26, 22, 18, 0.07);
+  --shadow-lg:   0 12px 32px rgba(26, 22, 18, 0.10);
+  --shadow-xl:   0 20px 48px rgba(26, 22, 18, 0.14);
+  --shadow-seal: 0 0 0 4px rgba(192, 57, 43, 0.08);
 
-  /* ── Layout ── */
+  /* ══════════════════════════════════════════════════════════
+     LAYOUT
+     ══════════════════════════════════════════════════════════ */
   --container-sm:  640px;
-  --container-md:  768px;
-  --container-lg:  1024px;
-  --container-xl:  1280px;
+  --container-md:  840px;
+  --container-lg:  1040px;   /* content-page max (medical-journal feel) */
+  --container-xl:  1280px;   /* marketing-page max */
   --container-2xl: 1440px;
 
-  --nav-height:     4rem;
-  --sidebar-width:  240px;
+  --nav-height:    4.5rem;   /* 72px (was 4rem in v2) */
+  --sidebar-width: 240px;    /* legacy — portal layouts */
 
-  /* ── Motion ── */
-  --ease-out:   cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* ══════════════════════════════════════════════════════════
+     MOTION
+     ══════════════════════════════════════════════════════════ */
+  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-fast:   150ms;
-  --dur-base:   250ms;
-  --dur-slow:   400ms;
+  --dur-fast:    160ms;
+  --dur-base:    260ms;
+  --dur-slow:    420ms;
 
-  /* ── Z-index ── */
+  /* ══════════════════════════════════════════════════════════
+     Z-INDEX — legacy scale, preserved
+     ══════════════════════════════════════════════════════════ */
   --z-base:    1;
   --z-raised:  10;
   --z-sticky:  100;
@@ -121,12 +190,9 @@
   --z-modal:   900;
   --z-toast:   1000;
   --z-max:     9999;
-
-  /* ── Focus ring ── */
-  --focus-ring: 0 0 0 3px rgba(184, 150, 90, 0.35);
 }
 
-/* Reduced motion preference */
+/* Reduced-motion preference — respected everywhere */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -136,3 +202,5 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+::selection { background: var(--selection); color: var(--ink); }
