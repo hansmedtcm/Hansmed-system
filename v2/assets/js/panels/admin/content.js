@@ -32,7 +32,14 @@
         HM.ui.toast('Seeded /privacy + /retention · 已植入', 'success');
         load();
       } catch (err) {
-        HM.ui.toast(err.message || 'Seed failed', 'danger');
+        // Truncate + strip HTML so a server-side SQL error dump doesn't
+        // render as a wall of page content in the toast.
+        var msg = (err.message || 'Seed failed')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (msg.length > 220) msg = msg.slice(0, 220) + '…';
+        HM.ui.toast('Seed failed: ' + msg, 'danger', 6000);
       } finally {
         this.disabled = false;
         this.textContent = '⚖️ Seed Compliance Pages';

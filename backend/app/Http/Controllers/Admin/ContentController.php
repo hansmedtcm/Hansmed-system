@@ -38,7 +38,12 @@ class ContentController extends Controller
                 'locale'     => $data['locale'] ?? 'en',
                 'updated_by' => $request->user()->id,
                 'updated_at' => now(),
-                'created_at' => DB::raw('IFNULL(created_at, NOW())'),
+                // created_at intentionally omitted — the schema default
+                // (CURRENT_TIMESTAMP) fills it on INSERT, and UPDATE
+                // paths shouldn't touch it anyway. Passing a DB::raw()
+                // here breaks Laravel's updateOrInsert INSERT path
+                // (the raw expression is serialised as a string and
+                // MySQL rejects it as a DATETIME).
             ]
         );
 
