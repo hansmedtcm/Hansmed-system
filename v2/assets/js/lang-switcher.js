@@ -52,6 +52,8 @@
     document.querySelectorAll('[data-lang-switch]').forEach(function (el) {
       el.classList.toggle('is-active', el.getAttribute('data-lang-switch') === lang);
     });
+    // Also reflect on any page-owned .lang-btn buttons (landing, settings).
+    reflectActiveOnExistingSwitchers();
     // Rewalk the current DOM so mixed bilingual strings rewrap.
     walkAndWrap(document.body);
     // Also poke HM.i18n if present so data-i18n texts update too.
@@ -74,6 +76,11 @@
         var p = n.parentNode;
         if (!p) return NodeFilter.FILTER_REJECT;
         if (p.closest('[data-lang-wrapped]')) return NodeFilter.FILTER_REJECT;
+        // CRITICAL: never wrap the language-switcher buttons. Their
+        // text IS the language identifier (EN / 中) — wrapping "中"
+        // in .hm-lang-zh would make the Chinese switch button
+        // disappear when English is selected.
+        if (p.closest('[data-lang], [data-lang-switch], .lang-btn, .lang-switcher, .hm-lang-pill')) return NodeFilter.FILTER_REJECT;
         var tag = p.nodeName;
         if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'CODE' || tag === 'PRE') return NodeFilter.FILTER_REJECT;
         // Skip nodes whose parent is already a lang-wrapper.
@@ -114,7 +121,9 @@
     // <span style="font-family: var(--font-zh);">中文</span> —
     // tag those as hm-lang-zh so the same CSS rule hides them.
     // This catches markup produced by the existing panel templates.
+    // Skip anything inside a language switcher.
     root.querySelectorAll('[style*="font-zh"]').forEach(function (el) {
+      if (el.closest('[data-lang], [data-lang-switch], .lang-btn, .lang-switcher, .hm-lang-pill')) return;
       if (! el.classList.contains('hm-lang-zh')) el.classList.add('hm-lang-zh');
     });
   }
@@ -162,11 +171,16 @@
   }
 
   /**
-   * Insert a switcher pill into the page navigation. Looks for
-   * <nav class="nav"> or falls back to floating top-right.
+   * Insert a switcher pill into the page navigation.
+   * Skipped on pages that already have a .lang-switcher / .lang-btn
+   * of their own (the landing page has its own — we just wire it
+   * up below instead of adding a second one).
    */
   function injectSwitcherInNav() {
-    if (document.querySelector('.hm-lang-pill')) return; // already there
+    if (document.querySelector('.hm-lang-pill')) return; // already injected
+    // Page already has its own switcher — don't duplicate it, just
+    // make sure it's wired (wireExistingSwitchers handles this).
+    if (document.querySelector('.lang-switcher, .lang-btn, [data-lang][data-lang]:not([data-lang-switch])')) return;
 
     var pill = document.createElement('span');
     pill.className = 'hm-lang-pill';
@@ -201,6 +215,29 @@
     });
   }
 
+  /**
+   * Wire the landing page's existing .lang-btn buttons to call our
+   * setLang(), and update their is-active state on lang change.
+   * Idempotent — safe to call multiple times.
+   */
+  function wireExistingSwitchers() {
+    document.querySelectorAll('.lang-btn[data-lang]').forEach(function (btn) {
+      if (btn._hmWired) return;
+      btn._hmWired = true;
+      btn.addEventListener('click', function () {
+        setLang(btn.getAttribute('data-lang'));
+      });
+    });
+    reflectActiveOnExistingSwitchers();
+  }
+
+  function reflectActiveOnExistingSwitchers() {
+    var cur = getLang();
+    document.querySelectorAll('.lang-btn[data-lang]').forEach(function (btn) {
+      btn.classList.toggle('is-active', btn.getAttribute('data-lang') === cur);
+    });
+  }
+
   // Re-run the DOM walker when the panel changes — the router
   // swaps #panel-container innerHTML on every route.
   var obs = null;
@@ -224,10 +261,14 @@
     document.body.classList.add('lang-' + cur);
     walkAndWrap(document.body);
     injectSwitcherInNav();
+    wireExistingSwitchers();
     startObserver();
     window.addEventListener('hashchange', function () {
       // After route change, let the router finish rendering, then wrap.
-      setTimeout(function () { walkAndWrap(document.body); }, 120);
+      setTimeout(function () {
+        walkAndWrap(document.body);
+        wireExistingSwitchers();
+      }, 120);
     });
   }
 
