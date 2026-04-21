@@ -1,0 +1,21 @@
+{
+  "name": "hansmed-agents",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HansMed agent pipeline system — dev / QA / marketing / compliance agents with orchestration.",
+  "scripts": {
+    "dev":        "ts-node src/index.ts",
+    "marketing":  "ts-node src/index.ts marketing",
+    "code":       "ts-node src/index.ts dev",
+    "full":       "ts-node src/index.ts full",
+    "auto":       "ts-node src/index.ts auto",
+    "build":      "tsc",
+    "start":      "node dist/index.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "ts-node":     "^10.9.2",
+    "typescript":  "^5.4.0"
+  }
+}
