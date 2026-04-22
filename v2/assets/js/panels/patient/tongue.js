@@ -218,7 +218,7 @@
         HM.state.empty(container, {
           icon: '👅',
           title: 'No scans yet · 暫無記錄',
-          text: 'Your tongue wellness scans will appear here · 您的舌診評估記錄將會顯示於此',
+          text: 'Your tongue wellness scans history will appear here · 您的舌健康掃描記錄將會顯示於此',
         });
         return;
       }
