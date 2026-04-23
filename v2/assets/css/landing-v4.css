@@ -290,16 +290,24 @@ body.landing-v4 .hero-zh{animation:heroIn-v4 0.7s 0.14s ease both;}
 body.landing-v4 .hero-sub{animation:heroIn-v4 0.7s 0.2s ease both;}
 body.landing-v4 .hero-ctas{animation:heroIn-v4 0.7s 0.26s ease both;}
 
-/* ── QI BREATH ── */
-@keyframes qiInner{0%,100%{transform:scale(0.95);opacity:0.82;}50%{transform:scale(1.05);opacity:1;}}
-@keyframes qiOuter{0%,100%{transform:scale(0.97);opacity:0.68;}50%{transform:scale(1.03);opacity:1;}}
-@keyframes qiOrbit{0%,100%{opacity:0.45;}50%{opacity:1;}}
-body.landing-v4 .hero-inner{will-change:transform,opacity;animation:qiInner 5.5s cubic-bezier(0.45,0,0.55,1) infinite;transform-origin:center;}
-body.landing-v4 .hero-circle{will-change:transform,opacity;animation:qiOuter 5.5s cubic-bezier(0.45,0,0.55,1) infinite;transform-origin:center;}
-body.landing-v4 .orbit:nth-child(1){will-change:opacity;animation:qiOrbit 5.5s cubic-bezier(0.45,0,0.55,1) 0s infinite;}
-body.landing-v4 .orbit:nth-child(2){will-change:opacity;animation:qiOrbit 5.5s cubic-bezier(0.45,0,0.55,1) 1.37s infinite;}
-body.landing-v4 .orbit:nth-child(3){will-change:opacity;animation:qiOrbit 5.5s cubic-bezier(0.45,0,0.55,1) 2.75s infinite;}
-body.landing-v4 .orbit:nth-child(4){will-change:opacity;animation:qiOrbit 5.5s cubic-bezier(0.45,0,0.55,1) 4.12s infinite;}
+/* ── QI BREATH ──
+   Subtle 5.5s scale + opacity pulse on the hero clock so it feels
+   "alive". Applied to the SVG itself so the whole wheel breathes
+   together (segments, hand, center glyph). GPU-friendly: only
+   transform + opacity animated. */
+@keyframes qiBreath {
+  0%, 100% { transform: scale(0.985); opacity: 0.92; }
+  50%      { transform: scale(1.015); opacity: 1;    }
+}
+body.landing-v4 #hero-clk {
+  will-change: transform, opacity;
+  transform-origin: center;
+  animation: qiBreath 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+/* Respect prefers-reduced-motion — no breath for users who disable it */
+@media (prefers-reduced-motion: reduce) {
+  body.landing-v4 #hero-clk { animation: none; }
+}
 
 /* RESPONSIVE */
 body.landing-v4 .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;margin-left:8px;border-radius:8px;-webkit-tap-highlight-color:transparent;}
