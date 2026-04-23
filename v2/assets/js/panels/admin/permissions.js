@@ -232,20 +232,48 @@
     /* Cache of account rows by role so we don't refetch on every role change. */
     var usersByRole = {};
 
+    /**
+     * Load users of a given role for the per-user override picker.
+     *
+     * Laravel's /admin/accounts returns a paginator envelope:
+     *   { data: [...users], current_page, per_page, total, ... }
+     * NOT a flat array and NOT { accounts: [...] }. Pull from .data first,
+     * then fall back to any other shape we've seen in old responses.
+     *
+     * /admin/accounts is capped at 30 per page — if a clinic grows past
+     * that we'll need to page or add ?per_page. For now first page is fine
+     * since most clinics have <30 doctors/admins combined.
+     */
     async function loadUsers(role) {
       if (usersByRole[role]) return usersByRole[role];
       try {
-        var res = await HM.api.admin.listAccounts('role=' + encodeURIComponent(role));
-        var list = (res.accounts || res || []).filter(function (u) { return u.role === role; });
+        var res = await HM.api.admin.listAccounts('role=' + encodeURIComponent(role) + '&per_page=100');
+        /* Laravel paginate() → res.data is the array. Fall through other shapes. */
+        var arr = Array.isArray(res) ? res
+                : Array.isArray(res.data) ? res.data
+                : Array.isArray(res.accounts) ? res.accounts
+                : [];
+        var list = arr.filter(function (u) { return u && u.role === role; });
+        /* Normalise — show name from doctor/pharmacy profile when available. */
+        list = list.map(function (u) {
+          var name = (u.doctor_profile && u.doctor_profile.full_name)
+                  || (u.pharmacy_profile && u.pharmacy_profile.name)
+                  || u.name || '';
+          return { id: u.id, email: u.email, name: name, role: u.role, status: u.status };
+        });
         usersByRole[role] = list;
         return list;
       } catch (e) {
-        /* Fallback: some deployments use /admin/doctors for doctor list */
+        /* Fallback: some deployments use /admin/doctors (also paginator). */
         if (role === 'doctor') {
           try {
             var d = await HM.api.admin.listDoctors();
-            var list2 = (d.doctors || d || []).map(function (x) {
-              return { id: x.user_id || x.id, email: x.email, name: x.name, role: 'doctor' };
+            var darr = Array.isArray(d) ? d
+                     : Array.isArray(d.data) ? d.data
+                     : Array.isArray(d.doctors) ? d.doctors
+                     : [];
+            var list2 = darr.map(function (x) {
+              return { id: x.user_id || x.id, email: x.email, name: x.full_name || x.name || '', role: 'doctor' };
             });
             usersByRole[role] = list2;
             return list2;
