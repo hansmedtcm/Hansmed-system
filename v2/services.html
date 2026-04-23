@@ -20,8 +20,16 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <title>HansMed Modern TCM · 漢方現代中醫</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;600&family=DM+Sans:wght@300;400;500&family=Ma+Shan+Zheng&display=swap" rel="stylesheet"/>
 <style>
+/* Kaiti brush font — tries system-installed CJK kaiti first, then
+   Ma Shan Zheng from Google Fonts. Used by the nav brand ZH wordmark. */
+@font-face {
+  font-family: 'ZhengYanKaiTi';
+  src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+       local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
+  font-display: swap;
+}
 :root {
   --wd:    #6B4E2E; --wd-md: #8C6340; --wd-lt: #B8895A; --wd-pl: #DFC9A8;
   --tc:    #9A6035; --tc-dk: #6E4020; --tc-lt: #F2E0CC; --tc-xl: #FCF6EF;
@@ -577,7 +585,7 @@ body.lang-zh #len, body.lang-zh #mlen { background: transparent; color: var(--mu
         <span class="nav-bz">漢方現代中醫</span>
       </span>
       <span lang="zh" style="display:inline-flex;align-items:baseline;gap:4px;">
-        <span class="nav-bn" style="font-family:'Noto Serif SC',serif;">漢方現代中醫</span>
+        <span class="nav-bn" style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-weight:400;">漢方現代中醫</span>
         <span class="nav-bz">醫師屋</span>
       </span>
     </button>
@@ -1380,7 +1388,7 @@ function setLang(l){ if(window.HM && HM.langSwitch && HM.langSwitch.set){ try{ H
   });
 }
 function syncMobLang(l){setLang(l);}
-setLang('en');
+setLang((function(){try{var p=localStorage.getItem('hm-lang-pref');return (p==='zh'||p==='en')?p:'en';}catch(_){return 'en';}})());
 /* WA number wiring — pulls from HM.config so the number is single-sourced in config.js */
 (function(){
   var num = (window.HM && HM.config && HM.config.CLINIC && HM.config.CLINIC.whatsapp) || '601165600393';
