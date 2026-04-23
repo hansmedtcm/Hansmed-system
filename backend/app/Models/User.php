@@ -40,37 +40,64 @@ class User extends Authenticatable
      */
     public function hasPermission(string $key): bool
     {
-        /* 1. Per-user override takes priority */
-        $row = \Illuminate\Support\Facades\DB::table('user_permission_overrides')
-            ->where('user_id', $this->id)
-            ->where('permission_key', $key)
-            ->first();
-        if ($row) return (bool) $row->granted;
+        /* 1. Per-user override takes priority — but gracefully handle the
+              case where the table doesn't exist yet (first boot after this
+              feature ships; migration endpoint hasn't been run). Falling
+              back to the role default means the admin can still reach the
+              Permissions page and click "Run migration" without being
+              locked out by a chicken-and-egg situation. */
+        try {
+            $row = \Illuminate\Support\Facades\DB::table('user_permission_overrides')
+                ->where('user_id', $this->id)
+                ->where('permission_key', $key)
+                ->first();
+            if ($row) return (bool) $row->granted;
+        } catch (\Throwable $e) {
+            /* Table missing or unreachable — treat as no overrides. */
+        }
 
         /* 2. Fall back to role default */
-        $raw = \Illuminate\Support\Facades\DB::table('system_configs')
-            ->where('config_key', 'role_permissions')
-            ->value('config_value');
+        try {
+            $raw = \Illuminate\Support\Facades\DB::table('system_configs')
+                ->where('config_key', 'role_permissions')
+                ->value('config_value');
+        } catch (\Throwable $e) {
+            $raw = null;
+        }
         $map = $raw ? (json_decode($raw, true) ?: []) : [];
         $roleMap = $map[$this->role] ?? [];
-        return (bool) ($roleMap[$key] ?? false);
+
+        /* 3. If admin and no explicit deny, grant by default — avoids
+              accidentally locking out all admins if role_permissions is
+              empty/missing. Other roles default to false. */
+        if (! isset($roleMap[$key])) {
+            return $this->role === 'admin';
+        }
+        return (bool) $roleMap[$key];
     }
 
     /** Full effective permission map for this user (role defaults merged with overrides). */
     public function effectivePermissions(): array
     {
-        $raw = \Illuminate\Support\Facades\DB::table('system_configs')
-            ->where('config_key', 'role_permissions')
-            ->value('config_value');
+        try {
+            $raw = \Illuminate\Support\Facades\DB::table('system_configs')
+                ->where('config_key', 'role_permissions')
+                ->value('config_value');
+        } catch (\Throwable $e) {
+            $raw = null;
+        }
         $map = $raw ? (json_decode($raw, true) ?: []) : [];
         $base = $map[$this->role] ?? [];
 
-        $overrides = \Illuminate\Support\Facades\DB::table('user_permission_overrides')
-            ->where('user_id', $this->id)
-            ->get(['permission_key', 'granted']);
-
-        foreach ($overrides as $o) {
-            $base[$o->permission_key] = (bool) $o->granted;
+        try {
+            $overrides = \Illuminate\Support\Facades\DB::table('user_permission_overrides')
+                ->where('user_id', $this->id)
+                ->get(['permission_key', 'granted']);
+            foreach ($overrides as $o) {
+                $base[$o->permission_key] = (bool) $o->granted;
+            }
+        } catch (\Throwable $e) {
+            /* Table missing — just return role defaults. */
         }
         return $base;
     }

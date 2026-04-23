@@ -70,12 +70,18 @@ class PermissionController extends Controller
         $roleMap = $raw ? (json_decode($raw, true) ?: []) : $this->defaultPermissions();
         $roleDefaults = $roleMap[$user->role] ?? [];
 
-        $overrides = DB::table('user_permission_overrides')
-            ->where('user_id', $id)
-            ->get(['permission_key', 'granted']);
         $overridesMap = [];
-        foreach ($overrides as $o) {
-            $overridesMap[$o->permission_key] = (bool) $o->granted;
+        try {
+            $overrides = DB::table('user_permission_overrides')
+                ->where('user_id', $id)
+                ->get(['permission_key', 'granted']);
+            foreach ($overrides as $o) {
+                $overridesMap[$o->permission_key] = (bool) $o->granted;
+            }
+        } catch (\Throwable $e) {
+            /* Table missing — migration not run yet. Return empty overrides
+               so the frontend still shows the role defaults; the admin can
+               hit "Run migration" and try again. */
         }
 
         /* Merge: start from role defaults, apply overrides on top */
