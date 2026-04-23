@@ -296,13 +296,13 @@ body.landing-v4 .hero-ctas{animation:heroIn-v4 0.7s 0.26s ease both;}
    together (segments, hand, center glyph). GPU-friendly: only
    transform + opacity animated. */
 @keyframes qiBreath {
-  0%, 100% { transform: scale(0.985); opacity: 0.92; }
-  50%      { transform: scale(1.015); opacity: 1;    }
+  0%, 100% { transform: scale(0.975); opacity: 0.9; }
+  50%      { transform: scale(1.025); opacity: 1;   }
 }
 body.landing-v4 #hero-clk {
   will-change: transform, opacity;
   transform-origin: center;
-  animation: qiBreath 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation: qiBreath 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 /* Respect prefers-reduced-motion — no breath for users who disable it */
 @media (prefers-reduced-motion: reduce) {
