@@ -2,34 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="description" content="Contact HansMed Modern TCM — Get in touch with our clinic for questions, appointments, or feedback.">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
+<meta name="description" content="About HansMed Modern TCM — our story, values, and why we built a Malaysia-wide telehealth platform for licensed TCM practitioners.">
 <meta name="theme-color" content="#1a1612">
-<title>Contact · HansMed Modern TCM · 漢方現代中醫</title>
+<title>About · HansMed Modern TCM · 漢方現代中醫</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 <style>
   @font-face { font-family: 'ZhengYanKaiTi'; src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'), local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai'); font-display: swap; }
 </style>
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
-<link rel="stylesheet" href="assets/css/layout.css">
 <link rel="stylesheet" href="assets/css/components.css">
-<link rel="stylesheet" href="assets/css/patterns.css">
-<link rel="stylesheet" href="assets/css/tcm.css">
-<link rel="stylesheet" href="assets/css/responsive.css">
-<link rel="stylesheet" href="assets/css/public.css">
 <link rel="stylesheet" href="assets/css/landing-v4.css">
 </head>
 <body class="landing-v4">
+<a href="#main" class="skip-link" style="position:absolute;left:-9999px;">Skip to main content</a>
 
-<a href="#main" class="skip-link">Skip to main content</a>
-
-<!-- ══ NAV v4 ══ -->
+<!-- ══ NAV ══ -->
 <nav id="nav-v4">
   <div class="nav-in">
     <a class="nav-brand-v4" href="index.html">
@@ -41,11 +34,11 @@
     </a>
     <div class="nav-links-v4">
       <a class="nl"     href="index.html">Home · 首頁</a>
-      <a class="nl"     href="about.html">About · 關於</a>
+      <a class="nl act" href="about.html">About · 關於</a>
       <a class="nl"     href="services.html">Services · 服務</a>
       <a class="nl"     href="shop.html">Shop · 商店</a>
       <a class="nl"     href="portal.html#/ai-diagnosis">Wellness · 健康評估</a>
-      <a class="nl act" href="contact.html">Contact · 聯絡</a>
+      <a class="nl"     href="contact.html">Contact · 聯絡</a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
@@ -57,6 +50,7 @@
   </div>
 </nav>
 
+<!-- MOBILE DRAWER -->
 <div class="mobile-menu" id="mob-menu">
   <div style="padding:20px 0;">
     <a class="mob-nl" href="index.html">首頁 Home</a>
@@ -72,10 +66,12 @@
     </div>
     <div class="mob-ctas">
       <a class="btn-v4 btn-dark" href="portal.html#/book" style="width:100%;padding:16px;font-size:16px;justify-content:center;">預約 Book Appointment</a>
+      <a class="btn-v4 btn-outline-cream" href="index.html#/register" style="width:100%;padding:15px;font-size:15px;justify-content:center;">建立帳號 Create Account</a>
     </div>
   </div>
 </div>
 
+<!-- STICKY BOTTOM BAR (mobile) -->
 <div class="bottom-bar" id="bottom-bar">
   <a class="bb-wa" id="hm-wa-bb" href="#" target="_blank" rel="noopener">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
@@ -86,92 +82,83 @@
 
 <main id="main">
 
-<!-- ══════════════ PAGE HEADER ══════════════ -->
-<section class="section--sm bg-washi">
-  <div class="container text-center">
-    <div class="section-label">Get in Touch · 聯絡我們</div>
-    <h1 class="section-title mt-3">Questions? <em>We're Here to Help</em></h1>
-    <p class="text-muted mt-2" style="font-family: var(--font-zh);">有任何疑問，歡迎聯絡我們</p>
+<!-- ABOUT HERO -->
+<section class="hero-page">
+  <div class="hp">
+    <div class="eyebrow">About Us · 關於我們</div>
+    <h1>Where Tradition Meets<br/><em>Modern Care</em></h1>
+    <p lang="zh">傳統中醫智慧，遇見現代科技 · Making quality TCM accessible to every Malaysian.</p>
   </div>
 </section>
 
-<!-- ══════════════ CONTACT ══════════════ -->
-<section class="section container">
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-6); max-width: 920px; margin: 0 auto;">
-
-    <!-- Contact info -->
+<!-- Why we built HansMed + stats -->
+<section class="sec sec-white">
+  <div class="g2">
     <div>
-      <h3 class="mb-4">How to reach us · 聯絡方式</h3>
-      <div class="card mb-3" style="padding: var(--s-4);">
-        <div class="flex gap-3" style="align-items: center;">
-          <span style="font-size: 1.8rem;">💬</span>
-          <div>
-            <div class="text-label mb-1">WhatsApp · 即時通訊</div>
-            <a href="#" id="contact-whatsapp" style="color: var(--ink); text-decoration: none; font-weight: 500;">Book via WhatsApp · 點我預約</a>
-            <div class="text-xs text-muted mt-1">Fastest response · 最快速回應</div>
-          </div>
-        </div>
+      <div class="sh">
+        <div class="eyebrow" lang="zh">HansMed 的由來</div>
+        <h2>Why we built <em>HansMed</em></h2>
       </div>
-
-      <div class="card mb-3" style="padding: var(--s-4);">
-        <div class="flex gap-3" style="align-items: center;">
-          <span style="font-size: 1.8rem;">📧</span>
-          <div>
-            <div class="text-label mb-1">Email · 電郵</div>
-            <a href="#" id="contact-email" style="color: var(--ink); text-decoration: none; font-weight: 500;">—</a>
-          </div>
-        </div>
+      <div class="bi" style="margin-bottom:18px;">
+        <div class="bi-en">HansMed was born from a simple idea — to help busy Malaysians see a qualified TCM practitioner with peace of mind, while freeing doctors from paperwork so they can focus on healing.</div>
+        <div class="bi-zh" lang="zh">為了方便大眾在忙碌的生活節奏中可以安心看上合格中醫，讓中醫師專心看病治病。</div>
       </div>
-
-      <div class="card mb-3" style="padding: var(--s-4);">
-        <div class="flex gap-3" style="align-items: center;">
-          <span style="font-size: 1.8rem;">📞</span>
-          <div>
-            <div class="text-label mb-1">Phone · 電話</div>
-            <a href="#" id="contact-phone" style="color: var(--ink); text-decoration: none; font-weight: 500;">—</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="alert alert--info mt-4">
-        <div class="alert-body">
-          <strong>Emergencies · 緊急情況</strong><br>
-          Not for emergency care. Please call <strong>999</strong> immediately if you are in a life-threatening situation.
-          <br><span style="font-family: var(--font-zh);">本平台不提供緊急醫療服務。如遇生命危急情況，請立即撥打 999。</span>
-        </div>
+      <div class="bi">
+        <div class="bi-en">Modern technology, traditional wisdom — bridging the generations.</div>
+        <div class="bi-zh" lang="zh">現代化的科技平台 · 傳統式的中醫智慧 · 造就了現代與傳統不再有代溝</div>
       </div>
     </div>
-
-    <!-- Contact form -->
-    <div>
-      <h3 class="mb-4">Send us a message · 留言給我們</h3>
-      <form id="contact-form" class="card card--pad-lg">
-        <div class="field">
-          <label class="field-label" data-required>Name · 姓名</label>
-          <input type="text" name="name" class="field-input field-input--boxed" required>
-        </div>
-        <div class="field">
-          <label class="field-label" data-required>Email · 電郵</label>
-          <input type="email" name="email" class="field-input field-input--boxed" required>
-        </div>
-        <div class="field">
-          <label class="field-label">Subject · 主題</label>
-          <input type="text" name="subject" class="field-input field-input--boxed">
-        </div>
-        <div class="field">
-          <label class="field-label" data-required>Message · 訊息</label>
-          <textarea name="message" class="field-input field-input--boxed" rows="5" required></textarea>
-        </div>
-        <button type="submit" class="btn btn--primary btn--block">Send Message · 傳送訊息</button>
-      </form>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div style="background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);text-align:center;padding:24px;border-radius:14px;"><div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--v4-tc);font-weight:400;">25+</div><div style="font-size:11px;color:var(--v4-mu);margin-top:6px;font-weight:300;">Licensed Doctors</div><div lang="zh" style="font-family:'Noto Serif SC',serif;font-size:10px;color:var(--v4-bdr);margin-top:2px;font-weight:300;">持證醫師</div></div>
+      <div style="background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);text-align:center;padding:24px;border-radius:14px;"><div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--v4-tc);font-weight:400;">12K</div><div style="font-size:11px;color:var(--v4-mu);margin-top:6px;font-weight:300;">Patients Treated</div><div lang="zh" style="font-family:'Noto Serif SC',serif;font-size:10px;color:var(--v4-bdr);margin-top:2px;font-weight:300;">累計病患</div></div>
+      <div style="background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);text-align:center;padding:24px;border-radius:14px;"><div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--v4-tc);font-weight:400;">10+</div><div style="font-size:11px;color:var(--v4-mu);margin-top:6px;font-weight:300;">TCM Specialties</div><div lang="zh" style="font-family:'Noto Serif SC',serif;font-size:10px;color:var(--v4-bdr);margin-top:2px;font-weight:300;">專科類別</div></div>
+      <div style="background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);text-align:center;padding:24px;border-radius:14px;"><div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--v4-tc);font-weight:400;">24/7</div><div style="font-size:11px;color:var(--v4-mu);margin-top:6px;font-weight:300;">Chat Support</div><div lang="zh" style="font-family:'Noto Serif SC',serif;font-size:10px;color:var(--v4-bdr);margin-top:2px;font-weight:300;">線上支援</div></div>
     </div>
+  </div>
+</section>
 
+<!-- Herb divider -->
+<div style="background:var(--v4-bg-3);padding:0 max(1.5rem,calc(50% - 540px));">
+  <div class="herb-div"><span class="hdl-l"></span><svg width="80" height="28" viewBox="0 0 80 28" fill="none"><path d="M6 22 Q40 10 74 8" stroke="#6E8C5A" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M26 18 Q30 8 23 3 Q19 11 26 18Z" fill="#6E8C5A" opacity="0.5"/><path d="M43 13 Q47 3 40 0 Q36 8 43 13Z" fill="#6E8C5A" opacity="0.45"/><path d="M60 10 Q64 1 58 0 Q54 7 60 10Z" fill="#6E8C5A" opacity="0.4"/><circle cx="6" cy="22" r="2" fill="#B5881A" opacity="0.55"/><circle cx="74" cy="8" r="2" fill="#B5881A" opacity="0.55"/></svg><span class="hdl-r"></span></div>
+</div>
+
+<!-- Our approach — three values -->
+<section class="sec sec-white dot-tex" style="padding-top:48px;">
+  <div class="sh center"><div class="eyebrow">Our Approach · 我們的原則</div><h2>Three things we <em>never compromise</em> on</h2></div>
+  <div class="g3">
+    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
+      <div class="card-icon" style="font-size:22px;">醫</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--v4-ink);margin-bottom:10px;">Clinical Integrity · 臨床誠信</h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;font-weight:300;">Every AI output and wellness report is reviewed by a licensed TCM practitioner before it reaches you. All practitioners are registered and undergo continuous education.</p>
+    </div>
+    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
+      <div class="card-icon" style="font-size:22px;">私</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--v4-ink);margin-bottom:10px;">Privacy First · 私隱優先</h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;font-weight:300;">Fully PDPA 2010 compliant. Explicit consent before any AI processing. Encrypted storage — export or delete your data at any time from settings.</p>
+    </div>
+    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
+      <div class="card-icon" style="font-size:22px;">質</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--v4-ink);margin-bottom:10px;">Quality Herbs · 品質藥材</h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;font-weight:300;">Only verified Malaysian and international suppliers. Every product labelled with Chinese name, pinyin, and transparent sourcing details.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA band — dark -->
+<section class="qb sec" style="text-align:center;">
+  <div style="position:relative;">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;font-weight:400;margin-bottom:12px;">Ready to begin? · <span lang="zh">準備好了嗎？</span></h2>
+    <p style="font-size:15px;color:rgba(255,255,255,0.5);margin-bottom:28px;font-weight:300;">Book your first consultation or create a free account today.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a class="btn-v4 btn-gold" href="portal.html#/book">Book Appointment · 預約</a>
+      <a class="btn-v4 btn-ghost" href="services.html">View Services</a>
+    </div>
   </div>
 </section>
 
 </main>
 
-<!-- ══ FOOTER v4 ══ -->
+<!-- ══ FOOTER ══ -->
 <footer class="footer-v4">
   <div class="fg">
     <div>
@@ -197,7 +184,7 @@
     </div>
     <div>
       <div class="flbl">Compliance · 合規</div>
-      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.</p>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span lang="zh" style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
     </div>
   </div>
   <div class="f-cert-row">
@@ -213,7 +200,6 @@
   </div>
 </footer>
 
-<!-- Floating WhatsApp (desktop) -->
 <a class="wa-f" id="hm-wa-fab" href="#" target="_blank" rel="noopener" title="WhatsApp us">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
 </a>
@@ -226,7 +212,6 @@
 <script src="assets/js/form.js"></script>
 <script src="assets/js/i18n.js"></script>
 <script src="assets/js/lang-switcher.js"></script>
-<script src="assets/js/panels/patient/cart-store.js"></script>
 <script src="assets/js/pages/public.js"></script>
 
 <script>

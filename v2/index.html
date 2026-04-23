@@ -44,12 +44,12 @@
       </div>
     </button>
     <div class="nav-links-v4">
-      <button class="nl act" data-p="home"      onclick="go('home')">Home · 首頁</button>
-      <button class="nl"     data-p="about"     onclick="go('about')">About · 關於</button>
-      <button class="nl"     data-p="services"  onclick="go('services')">Services · 服務</button>
-      <button class="nl"     data-p="shop"      onclick="go('shop')">Shop · 商店</button>
-      <button class="nl"     data-p="wellness"  onclick="go('wellness')">Wellness · 健康評估</button>
-      <button class="nl"     data-p="contact"   onclick="go('contact')">Contact · 聯絡</button>
+      <a class="nl act" href="index.html">Home · 首頁</a>
+      <a class="nl"     href="about.html">About · 關於</a>
+      <a class="nl"     href="services.html">Services · 服務</a>
+      <a class="nl"     href="shop.html">Shop · 商店</a>
+      <a class="nl"     href="portal.html#/ai-diagnosis">Wellness · 健康評估</a>
+      <a class="nl"     href="contact.html">Contact · 聯絡</a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
@@ -569,7 +569,7 @@
 /* ── Page navigation — routes all go() calls to real URLs ── */
 var LANDING_ROUTES = {
   home:     function () { window.scrollTo({ top: 0, behavior: 'smooth' }); },
-  about:    function () { location.href = 'services.html#about'; },
+  about:    function () { location.href = 'about.html'; },
   services: function () { location.href = 'services.html'; },
   shop:     function () { location.href = 'shop.html'; },
   book:     function () { location.href = 'portal.html#/book'; },

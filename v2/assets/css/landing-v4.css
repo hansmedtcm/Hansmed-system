@@ -322,6 +322,186 @@ body.landing-v4 .bb-book:active{transform:scale(0.97);background:var(--v4-wd);}
   body.landing-v4 .cert-pill{min-width:calc(50% - 4px);}
 }
 
+/* ══════════════════════════════════════════════
+   AUTH MODAL v4 POLISH
+   Restyles the existing #/login / #/register modal to match
+   the v4 palette and type scale. Same HTML template, better look.
+   ══════════════════════════════════════════════ */
+body.landing-v4 .modal-backdrop { background: rgba(36, 22, 8, 0.52); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+body.landing-v4 .modal {
+  background: var(--v4-bg-3);
+  border: 1px solid var(--v4-bdr);
+  border-radius: 18px;
+  box-shadow: 0 20px 64px rgba(36, 22, 8, 0.28), 0 2px 8px rgba(36, 22, 8, 0.12);
+  color: var(--v4-ink);
+  max-width: 460px;
+  overflow: hidden;
+}
+body.landing-v4 .modal::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2.5px;
+  background: linear-gradient(90deg, transparent, var(--v4-go) 25%, var(--v4-wd-lt) 75%, transparent);
+}
+body.landing-v4 .modal-close {
+  color: var(--v4-mu);
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 8px;
+  line-height: 1;
+  transition: color .18s;
+}
+body.landing-v4 .modal-close:hover { color: var(--v4-wd); }
+body.landing-v4 .auth-modal { font-family: 'DM Sans', sans-serif; padding: 8px 4px 4px; }
+
+/* Tabs — segmented pill */
+body.landing-v4 .auth-modal .tabs {
+  display: flex;
+  background: var(--v4-bg-2);
+  border: 1px solid var(--v4-bdr-l);
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 24px;
+}
+body.landing-v4 .auth-modal .tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--v4-mu);
+  letter-spacing: 0.01em;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all .18s;
+  -webkit-tap-highlight-color: transparent;
+}
+body.landing-v4 .auth-modal .tab:hover { color: var(--v4-ink); }
+body.landing-v4 .auth-modal .tab.is-active,
+body.landing-v4 .auth-modal .tab[aria-selected="true"] {
+  background: var(--v4-ink);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(36, 22, 8, 0.2);
+}
+
+/* Tab panels */
+body.landing-v4 .auth-modal .tab-panel { display: none; }
+body.landing-v4 .auth-modal .tab-panel.is-active,
+body.landing-v4 .auth-modal .tab-panel[aria-hidden="false"] { display: block; }
+
+/* Form headings inside modal */
+body.landing-v4 .auth-modal h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--v4-ink);
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin: 0 0 6px;
+}
+body.landing-v4 .auth-modal p { color: var(--v4-mu); font-weight: 300; font-size: 13.5px; line-height: 1.6; }
+
+/* Fields — refined v4 look */
+body.landing-v4 .auth-modal .field { margin-bottom: 16px; }
+body.landing-v4 .auth-modal .field-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--v4-ink-m);
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+  display: block;
+}
+body.landing-v4 .auth-modal .field-label[data-required]::after {
+  content: ' *'; color: var(--v4-tc);
+}
+body.landing-v4 .auth-modal .field-input {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--v4-bdr);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14.5px;
+  color: var(--v4-ink);
+  transition: border-color .18s, box-shadow .18s;
+}
+body.landing-v4 .auth-modal .field-input::placeholder { color: var(--v4-bdr); }
+body.landing-v4 .auth-modal .field-input:focus {
+  outline: none;
+  border-color: var(--v4-go);
+  box-shadow: 0 0 0 3px rgba(181, 136, 26, 0.15);
+}
+body.landing-v4 .auth-modal .field-hint {
+  font-size: 11.5px;
+  color: var(--v4-mu);
+  margin-top: 4px;
+  font-weight: 300;
+}
+body.landing-v4 .auth-modal .field-error {
+  font-size: 11.5px;
+  color: var(--v4-tc);
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+/* Submit button — ink-dark v4 primary */
+body.landing-v4 .auth-modal .btn--primary,
+body.landing-v4 .auth-modal .btn--block {
+  background: var(--v4-ink);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all .18s;
+}
+body.landing-v4 .auth-modal .btn--primary:hover,
+body.landing-v4 .auth-modal .btn--block:hover {
+  background: var(--v4-wd);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(36, 22, 8, 0.2);
+}
+body.landing-v4 .auth-modal .btn--block { width: 100%; display: block; }
+
+/* Inline links (forgot password, back to login) */
+body.landing-v4 .auth-modal a[data-action] {
+  color: var(--v4-tc);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color .15s;
+}
+body.landing-v4 .auth-modal a[data-action]:hover { color: var(--v4-wd); text-decoration: underline; }
+
+/* Alerts */
+body.landing-v4 .auth-modal .alert--danger {
+  background: var(--v4-tc-xl);
+  border: 1px solid var(--v4-tc-lt);
+  border-left: 3px solid var(--v4-tc);
+  color: var(--v4-tc-dk);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 400;
+}
+body.landing-v4 .auth-modal .alert--success {
+  background: var(--v4-sage-lt);
+  border: 1px solid rgba(110,140,90,0.3);
+  border-left: 3px solid var(--v4-sage);
+  color: #3a5228;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
 /* Ink brush scroll reveals */
 body.landing-v4 .ib-rule{display:block;height:1.5px;background:var(--v4-go);width:0%;border-radius:1px;margin-bottom:16px;transition:width 0.9s cubic-bezier(0.16,1,0.3,1);will-change:width;}
 body.landing-v4 .ib-rule.vis{width:48px;}
