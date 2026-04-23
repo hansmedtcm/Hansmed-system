@@ -241,6 +241,18 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 .wa-f{position:fixed;bottom:28px;right:28px;z-index:300;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(37,211,102,0.42);transition:all 0.22s;border:2px solid rgba(255,255,255,0.3);}
 .wa-f:hover{transform:scale(1.1);background:#1da851;box-shadow:0 8px 36px rgba(37,211,102,0.52);}
 
+
+/* ── Language toggle rules (added by fix-lang-toggle.mjs) ── */
+body.lang-en .bi-zh,
+body.lang-en [lang="zh"] { display: none !important; }
+body.lang-zh .bi-en,
+body.lang-zh [lang="en"] { display: none !important; }
+/* Active-state pill on EN/中 toggle follows body class */
+body.lang-en #len, body.lang-en #mlen { background: var(--ink); color: #fff; }
+body.lang-en #lzh, body.lang-en #mlzh { background: transparent; color: var(--mu); }
+body.lang-zh #lzh, body.lang-zh #mlzh { background: var(--ink); color: #fff; }
+body.lang-zh #len, body.lang-zh #mlen { background: transparent; color: var(--mu); }
+
 /* PAGES & ANIMS */
 .page{display:none;}
 .page.act{display:block;animation:pgIn 0.42s ease both;}
@@ -550,9 +562,9 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <span class="nav-bn">HansMed</span>
         <span class="nav-bz">漢方現代中醫</span>
       </span>
-      <span lang="zh" style="display:inline-flex;align-items:baseline;gap:6px;">
-        <span style="font-family:'Noto Serif SC',serif;font-size:19px;font-weight:500;color:#241608;letter-spacing:0.04em;line-height:1;">漢方現代中醫</span>
-        <span style="font-family:'Noto Serif SC',serif;font-size:10px;color:#7A6248;font-weight:300;">醫師屋</span>
+      <span lang="zh" style="display:inline-flex;align-items:baseline;gap:4px;">
+        <span class="nav-bn" style="font-family:'Noto Serif SC',serif;">漢方現代中醫</span>
+        <span class="nav-bz">醫師屋</span>
       </span>
     </button>
     <div class="nav-links">
