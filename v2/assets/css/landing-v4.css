@@ -183,6 +183,18 @@ body.landing-v4 .pnav-card:hover{transform:translateY(-3px);box-shadow:0 12px 40
 body.landing-v4 .pnc-t{font-size:14px;font-weight:500;color:var(--v4-ink);margin-bottom:3px;}
 body.landing-v4 .pnc-s{font-size:12px;color:var(--v4-mu);font-weight:300;}
 
+/* STATS (About page) */
+body.landing-v4 .stat-b{background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);text-align:center;padding:24px;border-radius:14px;}
+body.landing-v4 .stat-n{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--v4-tc);font-weight:400;}
+body.landing-v4 .stat-l{font-size:11px;color:var(--v4-mu);margin-top:6px;font-weight:300;}
+body.landing-v4 .stat-zh{font-family:'Noto Serif SC',serif;font-size:10px;color:var(--v4-bdr);margin-top:2px;font-weight:300;}
+
+/* SERVICE FEATURE BOX (Services page) */
+body.landing-v4 .svc-box{background:var(--v4-go-xl);border:1px solid var(--v4-bdr-l);padding:28px;border-radius:16px;}
+body.landing-v4 .sfi{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--v4-bdr-l);font-size:14px;color:var(--v4-ink-m);font-weight:300;}
+body.landing-v4 .sfi:last-child{border-bottom:none;}
+body.landing-v4 .sfi-dot{width:7px;height:7px;border-radius:50%;background:var(--v4-sage);flex-shrink:0;}
+
 /* EMERGENCY BANNER (preserved from old site) */
 body.landing-v4 .emergency-banner-v4{background:var(--v4-tc-xl);border:1px solid var(--v4-tc-lt);border-left:3px solid var(--v4-tc);padding:20px 28px;border-radius:10px;max-width:900px;margin:40px auto;}
 body.landing-v4 .emergency-banner-v4 .emergency-title{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:500;color:var(--v4-tc-dk);margin-bottom:10px;}
