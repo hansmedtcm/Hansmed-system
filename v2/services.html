@@ -550,16 +550,19 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
       <span class="nav-bz">漢方現代中醫</span>
     </button>
     <div class="nav-links">
-      <button class="nl" data-p="about"    onclick="go('about')">About</button>
-      <button class="nl" data-p="services" onclick="go('services')">Services</button>
-      <button class="nl" data-p="contact"  onclick="go('contact')">Contact</button>
+      <button class="nl"     data-p="home"     onclick="go('home')">Home</button>
+      <button class="nl"    data-p="about"    onclick="go('about')">About</button>
+      <button class="nl act" data-p="services" onclick="go('services')">Services</button>
+      <button class="nl"     data-p="shop"     onclick="go('shop')">Shop</button>
+      <button class="nl" data-p="wellness" onclick="go('wellness')">Wellness</button>
+      <button class="nl"  data-p="contact"  onclick="go('contact')">Contact</button>
       <div class="lang-wrap">
         <button id="len" class="lang-btn act" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn"     onclick="setLang('zh')">中</button>
       </div>
+      <button class="nl nav-signin" onclick="go('login')" style="color:var(--ink);font-weight:500;">Sign In</button>
       <button class="nav-cta" onclick="go('book')">預約 Book</button>
     </div>
-    <!-- Hamburger (mobile only) -->
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -572,7 +575,10 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
     <button class="mob-nl" onclick="go('home');closeMob();">首頁 Home</button>
     <button class="mob-nl" onclick="go('about');closeMob();">關於我們 About</button>
     <button class="mob-nl" onclick="go('services');closeMob();">服務項目 Services</button>
+    <button class="mob-nl" onclick="go('shop');closeMob();">中藥商店 Shop</button>
+    <button class="mob-nl" onclick="go('wellness');closeMob();">健康評估 Wellness Assessment</button>
     <button class="mob-nl" onclick="go('contact');closeMob();">聯絡我們 Contact</button>
+    <button class="mob-nl" onclick="go('login');closeMob();">登入 Sign In</button>
     <div class="mob-lang">
       <button id="mlen" class="mob-lb act" onclick="setLang('en');syncMobLang('en');">EN</button>
       <button id="mlzh" class="mob-lb"     onclick="setLang('zh');syncMobLang('zh');">中</button>
@@ -1345,7 +1351,7 @@ function syncMobLang(l){setLang(l);}
 setLang('en');
 /* WA number wiring — pulls from HM.config so the number is single-sourced in config.js */
 (function(){
-  var num = (window.HM && HM.config && HM.config.whatsappNumber) || '60123456789';
+  var num = (window.HM && HM.config && HM.config.CLINIC && HM.config.CLINIC.whatsapp) || '601165600393';
   var href = 'https://wa.me/' + num.replace(/^\+/, '').replace(/\D/g, '');
   document.querySelectorAll('[data-hm-wa]').forEach(function(el){ el.setAttribute('href', href); });
 })();

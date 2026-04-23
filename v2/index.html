@@ -558,7 +558,7 @@
 /* ── WhatsApp link wiring — read from HM.config so the number is
       single-sourced in config.js, not hardcoded in the page ── */
 (function () {
-  var num = (window.HM && HM.config && HM.config.whatsappNumber) || '60123456789';
+  var num = (window.HM && HM.config && HM.config.CLINIC && HM.config.CLINIC.whatsapp) || '601165600393';
   var href = 'https://wa.me/' + num.replace(/^\+/, '').replace(/\D/g, '');
   ['hm-wa-hero','hm-wa-drawer','hm-wa-bb','hm-wa-fab'].forEach(function (id) {
     var el = document.getElementById(id);
