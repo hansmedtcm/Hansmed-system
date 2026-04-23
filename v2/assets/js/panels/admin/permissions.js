@@ -129,18 +129,53 @@
       rows += '</tbody>';
 
       body.innerHTML = '<div class="alert alert--warning mb-4">' +
-        '<strong>⚠️ Changes take effect immediately for all users of that role.</strong> ' +
-        'Admin role has full access by default — unchecking admin cells reserves that permission for a future "super-admin" tier. ' +
-        '<span style="font-family: var(--font-zh);">修改立即生效。管理員預設擁有全部權限。</span>' +
+        '<strong>⚠️ Role defaults take effect immediately for all users of that role.</strong> ' +
+        'Use the <em>Per-user overrides</em> section below to grant or revoke permissions for individual accounts (e.g. give Doctor A finance access but not Doctor B). ' +
+        '<span style="font-family: var(--font-zh);">角色預設對整個角色生效。如需對個別帳號單獨調整，請使用下方「個別使用者覆寫」區塊。</span>' +
         '</div>' +
         '<div class="card"><div class="table-wrap"><table class="table">' + header + rows + '</table></div>' +
         '<div class="flex-between mt-4" style="flex-wrap:wrap;gap:var(--s-2);">' +
         '<div class="text-sm text-muted">' + ACTIONS.length + ' actions × ' + ROLES.length + ' roles · ' + GROUPS.length + ' groups</div>' +
         '<div class="flex gap-2">' +
           '<button class="btn btn--ghost" id="perm-reset">↺ Restore Defaults</button>' +
-          '<button class="btn btn--primary" id="save-perms">💾 Save Changes</button>' +
+          '<button class="btn btn--primary" id="save-perms">💾 Save Role Defaults</button>' +
         '</div></div></div>' +
-        '<style>.perm-col-toggle{background:none;border:none;color:var(--stone);cursor:pointer;text-decoration:underline;font-size:inherit;padding:0;} .perm-col-toggle:hover{color:var(--gold);}</style>';
+
+        /* ═══════ Per-user overrides section ═══════ */
+        '<div class="card mt-6" id="user-override-card">' +
+          '<h2 class="section-title" style="margin-bottom: var(--s-2);">Per-user overrides · 個別使用者覆寫</h2>' +
+          '<p class="text-muted mb-3">Grant or revoke a specific permission on a specific account. Overrides win over the role default.' +
+          ' <span style="font-family: var(--font-zh);">為個別帳號開啟或關閉某項權限。覆寫優先於角色預設。</span></p>' +
+          '<div class="flex gap-2 mb-3" style="flex-wrap:wrap;align-items:end;">' +
+            '<div style="flex:1;min-width:220px;">' +
+              '<label class="field-label">Role · 角色</label>' +
+              '<select id="uo-role" class="field-input">' +
+                '<option value="doctor">Doctor · 醫師</option>' +
+                '<option value="admin">Admin · 管理員</option>' +
+                '<option value="pharmacy">Pharmacy · 藥房</option>' +
+              '</select>' +
+            '</div>' +
+            '<div style="flex:2;min-width:260px;">' +
+              '<label class="field-label">User · 使用者</label>' +
+              '<select id="uo-user" class="field-input"><option value="">— Select account —</option></select>' +
+            '</div>' +
+            '<button class="btn btn--ghost" id="uo-migrate" title="Create the user_permission_overrides table on older deployments">🔧 Run migration</button>' +
+          '</div>' +
+          '<div id="uo-body"><div class="text-muted text-sm">Select a user above to load their permissions.</div></div>' +
+        '</div>' +
+
+        '<style>' +
+          '.perm-col-toggle{background:none;border:none;color:var(--stone);cursor:pointer;text-decoration:underline;font-size:inherit;padding:0;}' +
+          '.perm-col-toggle:hover{color:var(--gold);}' +
+          '.uo-row{display:grid;grid-template-columns:2fr 1fr;gap:var(--s-3);align-items:center;padding:var(--s-2) 0;border-bottom:1px solid var(--border);}' +
+          '.uo-tri{display:inline-flex;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;}' +
+          '.uo-tri button{background:transparent;border:0;padding:6px 12px;font-size:var(--text-xs);cursor:pointer;color:var(--stone);font-family:inherit;}' +
+          '.uo-tri button:hover{background:var(--washi);color:var(--ink);}' +
+          '.uo-tri button.is-default{background:var(--mist);color:var(--ink);}' +
+          '.uo-tri button.is-allow{background:var(--sage);color:white;}' +
+          '.uo-tri button.is-deny{background:var(--red-seal);color:white;}' +
+          '.uo-key{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--stone);display:block;margin-top:2px;}' +
+        '</style>';
 
       // Column bulk toggles (all / none per role)
       body.querySelectorAll('.perm-col-toggle').forEach(function (btn) {
@@ -165,18 +200,172 @@
         btn.disabled = true;
         var data = {};
         ROLES.forEach(function (r) { data[r] = {}; });
-        body.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+        body.querySelectorAll('#pm-body > .card:first-of-type input[type="checkbox"]').forEach(function (cb) {
           var r = cb.getAttribute('data-role');
           var a = cb.getAttribute('data-action');
           data[r][a] = cb.checked;
         });
         try {
           await HM.api.admin.setPermissions(data);
-          HM.ui.toast('Permissions saved · 權限已保存', 'success');
+          HM.ui.toast('Role defaults saved · 角色預設已保存', 'success');
         } catch (e) { HM.ui.toast(e.message, 'danger'); }
         finally { btn.disabled = false; }
       });
+
+      /* ═══════ Per-user overrides wiring ═══════ */
+      wireUserOverrides();
     } catch (e) { HM.state.error(body, e); }
+  }
+
+  /**
+   * Wire up the per-user override section: role dropdown filters the user
+   * picker, picking a user loads their effective permissions + overrides,
+   * each permission row is a tri-state (default / allow / deny) control,
+   * Save persists to /admin/users/{id}/permissions.
+   */
+  async function wireUserOverrides() {
+    var roleSel = document.getElementById('uo-role');
+    var userSel = document.getElementById('uo-user');
+    var uoBody  = document.getElementById('uo-body');
+    var migrateBtn = document.getElementById('uo-migrate');
+
+    /* Cache of account rows by role so we don't refetch on every role change. */
+    var usersByRole = {};
+
+    async function loadUsers(role) {
+      if (usersByRole[role]) return usersByRole[role];
+      try {
+        var res = await HM.api.admin.listAccounts('role=' + encodeURIComponent(role));
+        var list = (res.accounts || res || []).filter(function (u) { return u.role === role; });
+        usersByRole[role] = list;
+        return list;
+      } catch (e) {
+        /* Fallback: some deployments use /admin/doctors for doctor list */
+        if (role === 'doctor') {
+          try {
+            var d = await HM.api.admin.listDoctors();
+            var list2 = (d.doctors || d || []).map(function (x) {
+              return { id: x.user_id || x.id, email: x.email, name: x.name, role: 'doctor' };
+            });
+            usersByRole[role] = list2;
+            return list2;
+          } catch (_) {}
+        }
+        return [];
+      }
+    }
+
+    async function refreshUserList() {
+      var role = roleSel.value;
+      userSel.innerHTML = '<option value="">— Loading —</option>';
+      var list = await loadUsers(role);
+      userSel.innerHTML = '<option value="">— Select account —</option>' +
+        list.map(function (u) {
+          var label = (u.name || '') + (u.email ? ' (' + u.email + ')' : ('#' + u.id));
+          return '<option value="' + u.id + '">' + HM.format.esc(label.trim() || ('User #' + u.id)) + '</option>';
+        }).join('');
+      uoBody.innerHTML = '<div class="text-muted text-sm">Select a user above to load their permissions.</div>';
+    }
+
+    async function loadUserPerms(userId) {
+      HM.state.loading(uoBody);
+      try {
+        var data = await HM.api.admin.getUserPermissions(userId);
+        renderUserPerms(userId, data);
+      } catch (e) {
+        uoBody.innerHTML = '<div class="alert alert--danger">Failed to load: ' + HM.format.esc(e.message || '') +
+          '<div class="text-xs mt-2">If this is the first time, click "🔧 Run migration" above to create the override table.</div></div>';
+      }
+    }
+
+    function renderUserPerms(userId, data) {
+      var defaults  = data.role_defaults || {};
+      var overrides = data.overrides || {};
+      var allKeys   = data.all_keys || Object.keys(defaults);
+      if (!allKeys.length) {
+        uoBody.innerHTML = '<div class="alert alert--warning">No permission keys are defined for this role yet. Save role defaults first.</div>';
+        return;
+      }
+
+      var rows = allKeys.map(function (key) {
+        var hasOverride = Object.prototype.hasOwnProperty.call(overrides, key);
+        var state = hasOverride ? (overrides[key] ? 'allow' : 'deny') : 'default';
+        var defaultVal = !!defaults[key];
+        var defaultLabel = defaultVal ? 'ALLOW' : 'DENY';
+        var prettyKey = key.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        return '<div class="uo-row" data-key="' + key + '">' +
+          '<div><strong>' + HM.format.esc(prettyKey) + '</strong>' +
+          '<code class="uo-key">' + key + ' · role default: ' + defaultLabel + '</code></div>' +
+          '<div class="uo-tri" data-state="' + state + '">' +
+            '<button type="button" data-v="default" class="' + (state === 'default' ? 'is-default' : '') + '">Default</button>' +
+            '<button type="button" data-v="allow"   class="' + (state === 'allow'   ? 'is-allow'   : '') + '">Allow</button>' +
+            '<button type="button" data-v="deny"    class="' + (state === 'deny'    ? 'is-deny'    : '') + '">Deny</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      uoBody.innerHTML = rows +
+        '<div class="flex-between mt-4" style="flex-wrap:wrap;gap:var(--s-2);">' +
+          '<div class="text-sm text-muted">' + allKeys.length + ' permission keys · changes apply immediately on save</div>' +
+          '<button class="btn btn--primary" id="uo-save">💾 Save Overrides</button>' +
+        '</div>';
+
+      /* Tri-state pill click handler */
+      uoBody.querySelectorAll('.uo-tri').forEach(function (tri) {
+        tri.addEventListener('click', function (ev) {
+          var btn = ev.target.closest('button[data-v]');
+          if (!btn) return;
+          var v = btn.getAttribute('data-v');
+          tri.setAttribute('data-state', v);
+          tri.querySelectorAll('button').forEach(function (b) {
+            b.classList.remove('is-default', 'is-allow', 'is-deny');
+          });
+          btn.classList.add('is-' + v);
+        });
+      });
+
+      /* Save handler — collect all non-default pills */
+      document.getElementById('uo-save').addEventListener('click', async function () {
+        var btn = this;
+        btn.disabled = true;
+        var overrides = {};
+        uoBody.querySelectorAll('.uo-row').forEach(function (row) {
+          var key = row.getAttribute('data-key');
+          var state = row.querySelector('.uo-tri').getAttribute('data-state');
+          if (state === 'allow')     overrides[key] = true;
+          else if (state === 'deny') overrides[key] = false;
+          else                       overrides[key] = null; /* revert to role default — deletes row */
+        });
+        try {
+          await HM.api.admin.setUserPermissions(userId, overrides);
+          HM.ui.toast('User permissions saved · 個別權限已保存', 'success');
+        } catch (e) { HM.ui.toast(e.message || 'Save failed', 'danger'); }
+        finally { btn.disabled = false; }
+      });
+    }
+
+    /* Hook role dropdown */
+    roleSel.addEventListener('change', refreshUserList);
+    userSel.addEventListener('change', function () {
+      var uid = userSel.value;
+      if (!uid) {
+        uoBody.innerHTML = '<div class="text-muted text-sm">Select a user above to load their permissions.</div>';
+        return;
+      }
+      loadUserPerms(uid);
+    });
+    migrateBtn.addEventListener('click', async function () {
+      var btn = this;
+      btn.disabled = true;
+      try {
+        await HM.api.admin.migrateUserPermissions();
+        HM.ui.toast('Migration applied — per-user overrides ready', 'success');
+      } catch (e) { HM.ui.toast(e.message || 'Migration failed', 'danger'); }
+      finally { btn.disabled = false; }
+    });
+
+    /* Initial user list */
+    refreshUserList();
   }
 
   HM.adminPanels.permissions = { render: render };

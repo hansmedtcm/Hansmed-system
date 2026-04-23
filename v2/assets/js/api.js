@@ -327,6 +327,11 @@
     getPermissions: function () { return api.get('/admin/permissions'); },
     setPermissions: function (d) { return api.post('/admin/permissions', { permissions: d }); },
 
+    /* Per-user permission overrides — granular grant/deny on top of role. */
+    getUserPermissions: function (userId) { return api.get('/admin/users/' + userId + '/permissions'); },
+    setUserPermissions: function (userId, overrides) { return api.put('/admin/users/' + userId + '/permissions', { overrides: overrides }); },
+    migrateUserPermissions: function () { return api.post('/admin/migrate/user-permissions', {}); },
+
     auditLogs:      function (q) { return api.get('/admin/audit-logs' + (q ? '?' + q : '')); },
 
     listContent:    function () { return api.get('/admin/content'); },

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'registration.complete' => \App\Http\Middleware\EnsureRegistrationComplete::class,
+            'permission' => \App\Http\Middleware\EnsurePermission::class,
         ]);
         $middleware->statefulApi();
     })

@@ -494,4 +494,29 @@ CREATE TABLE consent_grants (
   CONSTRAINT fk_cg_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ─────────────────────────────────────────────────────────
+-- user_permission_overrides — per-user permission grants/denials.
+--
+-- Permissions default to the role-level map in system_configs.
+-- role_permissions. A row in this table overrides that default for a
+-- single user + single permission key:
+--   granted = 1  → force allow even if role default is false
+--   granted = 0  → force deny even if role default is true
+-- Delete the row to revert to role default.
+--
+-- Used by User::hasPermission($key) and the EnsurePermission middleware.
+-- Lets admins give Doctor A access to finance while Doctor B can't.
+-- ─────────────────────────────────────────────────────────
+CREATE TABLE user_permission_overrides (
+  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id         BIGINT UNSIGNED NOT NULL,
+  permission_key  VARCHAR(64) NOT NULL,
+  granted         TINYINT(1) NOT NULL DEFAULT 0,
+  created_at      TIMESTAMP NULL DEFAULT NULL,
+  updated_at      TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uniq_user_permission (user_id, permission_key),
+  KEY idx_user (user_id),
+  CONSTRAINT fk_upo_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

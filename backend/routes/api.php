@@ -261,10 +261,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/prescriptions/{id}/revoke', [DoctorPrescriptionController::class, 'revoke']);
         Route::post('/prescriptions/{id}/revise', [DoctorPrescriptionController::class, 'revise']);
 
-        Route::get('/earnings/summary', [DoctorEarningsController::class, 'summary']);
-        Route::get('/earnings/history', [DoctorEarningsController::class, 'history']);
-        Route::get('/withdrawals',      [DoctorEarningsController::class, 'withdrawals']);
-        Route::post('/withdrawals',     [DoctorEarningsController::class, 'requestWithdrawal']);
+        /* Earnings / withdrawals — gated by per-user permission so admins
+           can grant finance access to individual doctors instead of all. */
+        Route::middleware('permission:view_earnings')->group(function () {
+            Route::get('/earnings/summary', [DoctorEarningsController::class, 'summary']);
+            Route::get('/earnings/history', [DoctorEarningsController::class, 'history']);
+            Route::get('/withdrawals',      [DoctorEarningsController::class, 'withdrawals']);
+        });
+        Route::middleware('permission:request_withdrawal')->post('/withdrawals', [DoctorEarningsController::class, 'requestWithdrawal']);
 
         // Drug catalog (for Rx autocomplete + stock check)
         Route::get('/drug-catalog', [\App\Http\Controllers\Doctor\DrugCatalogController::class, 'index']);
@@ -278,9 +282,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/schedules',      [\App\Http\Controllers\Doctor\ScheduleController::class, 'store']);
         Route::delete('/schedules/{id}',[\App\Http\Controllers\Doctor\ScheduleController::class, 'destroy']);
 
-        // Document generation
-        Route::post('/documents/mc',       [\App\Http\Controllers\DocumentController::class, 'medicalCertificate']);
-        Route::post('/documents/referral', [\App\Http\Controllers\DocumentController::class, 'referralLetter']);
+        // Document generation — per-user gated
+        Route::middleware('permission:issue_mc')->post('/documents/mc', [\App\Http\Controllers\DocumentController::class, 'medicalCertificate']);
+        Route::middleware('permission:issue_referral')->post('/documents/referral', [\App\Http\Controllers\DocumentController::class, 'referralLetter']);
     });
 
     // ================== PHARMACY ==================
@@ -361,14 +365,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pharmacies/pending',              [VerificationController::class, 'pendingPharmacies']);
         Route::post('/pharmacies/{pharmacyId}/review', [VerificationController::class, 'reviewPharmacy']);
 
-        // Finance (M-08)
-        Route::get('/finance/overview',                 [FinanceController::class, 'overview']);
-        Route::get('/finance/doctor-breakdown',         [FinanceController::class, 'doctorBreakdown']);
-        Route::get('/finance/revenue-by-source',        [FinanceController::class, 'revenueBySource']);
-        Route::get('/finance/pharmacy-breakdown',       [FinanceController::class, 'pharmacyBreakdown']);
-        Route::get('/finance/withdrawals/pending',      [FinanceController::class, 'pendingWithdrawals']);
-        Route::post('/finance/withdrawals/{id}/review', [FinanceController::class, 'reviewWithdrawal']);
-        Route::get('/finance/orders',                   [FinanceController::class, 'orders']);
+        // Finance (M-08) — gated by per-user permission so only admins
+        // explicitly granted 'manage_finance' can see/act on finance.
+        Route::middleware('permission:manage_finance')->group(function () {
+            Route::get('/finance/overview',                 [FinanceController::class, 'overview']);
+            Route::get('/finance/doctor-breakdown',         [FinanceController::class, 'doctorBreakdown']);
+            Route::get('/finance/revenue-by-source',        [FinanceController::class, 'revenueBySource']);
+            Route::get('/finance/pharmacy-breakdown',       [FinanceController::class, 'pharmacyBreakdown']);
+            Route::get('/finance/withdrawals/pending',      [FinanceController::class, 'pendingWithdrawals']);
+            Route::post('/finance/withdrawals/{id}/review', [FinanceController::class, 'reviewWithdrawal']);
+            Route::get('/finance/orders',                   [FinanceController::class, 'orders']);
+        });
 
         // Appointments (admin view all)
         Route::get('/appointments',  [\App\Http\Controllers\Admin\AppointmentController::class, 'index']);
@@ -387,12 +394,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/tongue-config',  [\App\Http\Controllers\Admin\TongueDiagnosisConfigController::class, 'index']);
         Route::post('/tongue-config', [\App\Http\Controllers\Admin\TongueDiagnosisConfigController::class, 'update']);
 
-        // Permission management (M-10)
-        Route::get('/permissions',  [\App\Http\Controllers\Admin\PermissionController::class, 'index']);
-        Route::post('/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'update']);
+        // Permission management (M-10) — role defaults + per-user overrides
+        // All permission management requires 'manage_permissions'.
+        Route::middleware('permission:manage_permissions')->group(function () {
+            Route::get ('/permissions',        [\App\Http\Controllers\Admin\PermissionController::class, 'index']);
+            Route::post('/permissions',        [\App\Http\Controllers\Admin\PermissionController::class, 'update']);
+            /* Per-user overrides (Doctor A gets finance; Doctor B doesn't) */
+            Route::get ('/users/{id}/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'showForUser']);
+            Route::put ('/users/{id}/permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'updateForUser']);
+            /* One-shot schema migration endpoint — idempotent */
+            Route::post('/migrate/user-permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'migrate']);
+        });
 
         // Audit logs (M-11)
-        Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index']);
+        Route::middleware('permission:view_audit_logs')->get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index']);
 
         // Content management (M-12)
         Route::get('/content',              [\App\Http\Controllers\Admin\ContentController::class, 'index']);
