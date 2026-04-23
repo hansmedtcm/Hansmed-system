@@ -28,6 +28,30 @@ class User extends Authenticatable
     public function hasRole(string $role): bool { return $this->role === $role; }
 
     /**
+     * Master-account list — protected super-admin emails.
+     *
+     * Master accounts:
+     *   • Cannot be deleted (AccountController::destroy blocks)
+     *   • Cannot be suspended (AccountController::toggleStatus blocks)
+     *   • Cannot have their role changed (AccountController::updateAccount blocks)
+     *   • Cannot have their permissions overridden (PermissionController blocks)
+     *   • Always return true from hasPermission() — bypass all checks
+     *
+     * Hardcoded (not stored in the DB) so no admin UI action can
+     * accidentally strip master protection.
+     */
+    private const MASTER_EMAILS = [
+        'admin@hansmed.com',
+    ];
+
+    public function isMaster(): bool
+    {
+        return in_array(strtolower(trim($this->email ?? '')), self::MASTER_EMAILS, true);
+    }
+
+    public static function masterEmails(): array { return self::MASTER_EMAILS; }
+
+    /**
      * Resolve whether this user has a named permission.
      *
      * Check order:
@@ -40,6 +64,10 @@ class User extends Authenticatable
      */
     public function hasPermission(string $key): bool
     {
+        /* 0. Master accounts bypass every check — highest-power accounts
+              always return true regardless of role defaults or overrides. */
+        if ($this->isMaster()) return true;
+
         /* 1. Per-user override takes priority — but gracefully handle the
               case where the table doesn't exist yet (first boot after this
               feature ships; migration endpoint hasn't been run). Falling

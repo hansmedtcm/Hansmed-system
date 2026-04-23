@@ -310,6 +310,19 @@
       var defaults  = data.role_defaults || {};
       var overrides = data.overrides || {};
       var allKeys   = data.all_keys || Object.keys(defaults);
+
+      /* Master accounts — full bypass on the backend. Render a locked
+         state so admins understand why no toggles appear. */
+      if (data.is_master) {
+        uoBody.innerHTML =
+          '<div class="alert alert--info" style="background:var(--washi);border-left:3px solid var(--gold);">' +
+            '<strong>🔒 ★ MASTER account — ' + HM.format.esc(data.email || '') + '</strong><br>' +
+            'This is a protected super-admin account. It has <strong>full permanent access</strong> to every endpoint and cannot have its permissions overridden. ' +
+            '<span style="font-family: var(--font-zh);">主帳號擁有完整永久權限，不可覆寫。</span>' +
+          '</div>';
+        return;
+      }
+
       if (!allKeys.length) {
         uoBody.innerHTML = '<div class="alert alert--warning">No permission keys are defined for this role yet. Save role defaults first.</div>';
         return;

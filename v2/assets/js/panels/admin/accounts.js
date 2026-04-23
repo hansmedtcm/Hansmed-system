@@ -48,23 +48,46 @@
         var name = dp.full_name || ph.name || u.email;
         var roleColor = { doctor: 'badge--success', pharmacy: 'badge--active', admin: 'badge--danger' };
         var tr = document.createElement('tr');
+        /* Master-account detection — protected super-admin.
+           Keep this list in sync with User::MASTER_EMAILS on the backend. */
+        var MASTER_EMAILS = ['admin@hansmed.com'];
+        var isMaster = MASTER_EMAILS.indexOf((u.email || '').toLowerCase()) !== -1;
+
+        var roleBadge = '<span class="badge ' + (roleColor[u.role] || '') + '">' + u.role + '</span>';
+        if (isMaster) {
+          roleBadge += ' <span class="badge badge--gold" title="Master account — protected super-admin" style="background:var(--gold);color:#fff;">★ MASTER</span>';
+        }
+
+        /* Master accounts suppress destructive buttons (Suspend / Delete).
+           Server blocks these actions anyway — hiding the button is UX. */
+        var actionButtons =
+          '<button class="btn btn--ghost btn--sm" data-act="edit">✎ Edit</button> ' +
+          '<button class="btn btn--ghost btn--sm" data-act="pw">🔑 Password</button>';
+        if (!isMaster) {
+          actionButtons += ' ' +
+            '<button class="btn btn--outline btn--sm" data-act="toggle">' + (u.status === 'active' ? 'Suspend' : 'Activate') + '</button> ' +
+            '<button class="btn btn--danger btn--sm" data-act="delete" title="Permanently delete this account">🗑 Delete</button>';
+        } else {
+          actionButtons += ' <span class="text-xs text-muted" title="Master accounts are protected and cannot be suspended or deleted.">🔒 protected</span>';
+        }
+
         tr.innerHTML = '<td data-label="Name">' + HM.format.esc(name) + '</td>' +
           '<td data-label="Email">' + HM.format.esc(u.email) + '</td>' +
-          '<td data-label="Role"><span class="badge ' + (roleColor[u.role] || '') + '">' + u.role + '</span></td>' +
+          '<td data-label="Role">' + roleBadge + '</td>' +
           '<td data-label="Status">' + HM.format.statusBadge(u.status) + '</td>' +
-          '<td data-label="Actions" style="white-space:nowrap;">' +
-            '<button class="btn btn--ghost btn--sm" data-act="edit">✎ Edit</button> ' +
-            '<button class="btn btn--ghost btn--sm" data-act="pw">🔑 Password</button> ' +
-            '<button class="btn btn--outline btn--sm" data-act="toggle">' + (u.status === 'active' ? 'Suspend' : 'Activate') + '</button> ' +
-            '<button class="btn btn--danger btn--sm" data-act="delete" title="Permanently delete this account">🗑 Delete</button>' +
-          '</td>';
-        tr.querySelector('[data-act="toggle"]').addEventListener('click', async function () {
+          '<td data-label="Actions" style="white-space:nowrap;">' + actionButtons + '</td>';
+        /* Wire only the buttons that exist on this row — master rows
+           don't render Suspend / Delete, so querySelector would return
+           null and .addEventListener would throw. */
+        var tgl = tr.querySelector('[data-act="toggle"]');
+        if (tgl) tgl.addEventListener('click', async function () {
           try { await HM.api.admin.toggleAccount(u.id); HM.ui.toast('Account updated', 'success'); load(); }
           catch (e) { HM.ui.toast(e.message, 'danger'); }
         });
         tr.querySelector('[data-act="pw"]').addEventListener('click', function () { showResetPassword(u); });
         tr.querySelector('[data-act="edit"]').addEventListener('click', function () { showEditForm(u); });
-        tr.querySelector('[data-act="delete"]').addEventListener('click', function () { showDeleteConfirm(u); });
+        var del = tr.querySelector('[data-act="delete"]');
+        if (del) del.addEventListener('click', function () { showDeleteConfirm(u); });
         tbody.appendChild(tr);
       });
     } catch (e) { HM.state.error(container, e); }

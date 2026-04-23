@@ -100,10 +100,15 @@ class AccountController extends Controller
         });
     }
 
-    /** Toggle active/suspended */
+    /** Toggle active/suspended — blocked on master accounts */
     public function toggleStatus(int $id)
     {
         $user = User::findOrFail($id);
+        if ($user->isMaster()) {
+            return response()->json([
+                'message' => 'Master account cannot be suspended. This is a protected super-admin account.',
+            ], 422);
+        }
         $user->update(['status' => $user->status === 'active' ? 'suspended' : 'active']);
         return response()->json(['user' => $user->fresh()]);
     }
@@ -142,6 +147,13 @@ class AccountController extends Controller
         $data = $request->validate([
             'confirm' => ['required', 'accepted'],
         ]);
+
+        /* Safety 0: master accounts are immutable */
+        if ($target->isMaster()) {
+            return response()->json([
+                'message' => 'Master account cannot be deleted. This is a protected super-admin account.',
+            ], 422);
+        }
 
         /* Safety 1: can't delete yourself */
         if ($target->id === $actor->id) {
@@ -208,6 +220,16 @@ class AccountController extends Controller
         $user = User::findOrFail($id);
         $actor = $request->user();
 
+        /* Master account rules:
+           Only another MASTER can reset a master's password (even
+           non-master admins can't). Masters can always reset their
+           own password. */
+        if ($user->isMaster() && $user->id !== $actor->id && ! $actor->isMaster()) {
+            return response()->json([
+                'message' => 'Master account password can only be reset by the master account itself or another master account.',
+            ], 403);
+        }
+
         // Only another admin can reset another admin's password
         if ($user->role === 'admin' && $user->id !== $actor->id && $actor->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
@@ -260,6 +282,24 @@ class AccountController extends Controller
         ]);
 
         $user = User::findOrFail($id);
+
+        /* Master-account guard rails:
+           • email change would un-master the account, so block it
+           • status change (suspension) blocked
+           • role change is not exposed by this endpoint, but email
+             rename is functionally equivalent — blocking protects. */
+        if ($user->isMaster()) {
+            if (!empty($data['email']) && strtolower($data['email']) !== strtolower($user->email)) {
+                abort(response()->json([
+                    'errors' => ['email' => ['Master account email cannot be changed.']],
+                ], 422));
+            }
+            if (!empty($data['status']) && $data['status'] !== $user->status) {
+                abort(response()->json([
+                    'errors' => ['status' => ['Master account status cannot be changed.']],
+                ], 422));
+            }
+        }
 
         return DB::transaction(function () use ($data, $user, $request) {
             // Reject email collisions

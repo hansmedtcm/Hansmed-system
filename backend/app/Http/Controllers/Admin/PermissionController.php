@@ -90,9 +90,13 @@ class PermissionController extends Controller
             $effective[$k] = $v;
         }
 
+        $isMaster = in_array(strtolower((string) $user->email), \App\Models\User::masterEmails(), true);
+
         return response()->json([
             'user_id'       => (int) $user->id,
+            'email'         => $user->email,
             'role'          => $user->role,
+            'is_master'     => $isMaster,
             'role_defaults' => $roleDefaults,
             'overrides'     => $overridesMap,
             'effective'     => $effective,
@@ -115,6 +119,16 @@ class PermissionController extends Controller
         $user = DB::table('users')->where('id', $id)->first();
         if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
+        }
+
+        /* Master accounts have full bypass in hasPermission(); block any
+           override writes against them so the UI can't mislead (saving
+           an override would have no runtime effect anyway). */
+        $masterEmails = \App\Models\User::masterEmails();
+        if (in_array(strtolower((string) $user->email), $masterEmails, true)) {
+            return response()->json([
+                'message' => 'Master account permissions cannot be overridden. This account has full permanent access.',
+            ], 422);
         }
 
         $data = $request->validate([
