@@ -54,6 +54,7 @@
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
       </div>
+      <button class="nl nav-signin" onclick="go('login')" style="color:var(--v4-ink);font-weight:500;">Sign In · 登入</button>
       <button class="nav-cta" onclick="go('book')">預約 Book</button>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
@@ -71,6 +72,7 @@
     <button class="mob-nl" onclick="go('shop');closeMob();">中藥商店 Shop</button>
     <button class="mob-nl" onclick="go('wellness');closeMob();">健康評估 Wellness Assessment</button>
     <button class="mob-nl" onclick="go('contact');closeMob();">聯絡我們 Contact</button>
+    <button class="mob-nl" onclick="go('login');closeMob();">登入 Sign In</button>
     <div class="mob-lang">
       <button id="mlen" class="mob-lb act" data-lang="en" onclick="setLang('en')">EN</button>
       <button id="mlzh" class="mob-lb"     data-lang="zh" onclick="setLang('zh')">中</button>
@@ -123,8 +125,8 @@
       <div class="hero-circle">
         <button class="orbit" style="top:4%;right:-12%;" onclick="go('about')">About Us · 關於我們</button>
         <button class="orbit" style="bottom:14%;right:-16%;" onclick="go('services')">Our Services · 服務</button>
-        <button class="orbit" style="top:30%;left:-18%;" onclick="go('book')">Book Now · 預約</button>
-        <button class="orbit" style="bottom:4%;left:-4%;" onclick="go('contact')">Contact Us · 聯絡</button>
+        <button class="orbit" style="top:30%;left:-18%;" onclick="go('wellness')">Wellness Assessment · 健康評估</button>
+        <button class="orbit" style="bottom:4%;left:-4%;" onclick="go('shop')">Shop · 商店</button>
         <div class="hero-inner">
           <svg width="80" height="108" viewBox="0 0 80 108" fill="none">
             <path d="M40 104C39 84 37 64 34 46 32 28 28 12 24 2" stroke="rgba(155,114,72,0.28)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
@@ -226,10 +228,10 @@
         </svg>
       </div>
       <div style="padding:0 22px;text-align:center;">
-        <div class="step-zh">預約</div>
+        <div class="step-zh" lang="zh">預約</div>
         <div class="step-en">Book Appointment</div>
         <p class="step-desc">Pick your concern and a convenient time.</p>
-        <p class="step-desc2">選擇症狀與時段。</p>
+        <p class="step-desc2" lang="zh">選擇症狀與時段。</p>
       </div>
     </div>
     <div class="step-card">
@@ -250,10 +252,10 @@
         </svg>
       </div>
       <div style="padding:0 22px;text-align:center;">
-        <div class="step-zh">問診</div>
+        <div class="step-zh" lang="zh">問診</div>
         <div class="step-en">Online Consultation</div>
         <p class="step-desc">Licensed TCM doctor sees you by video.</p>
-        <p class="step-desc2">持證中醫師視訊問診。</p>
+        <p class="step-desc2" lang="zh">持證中醫師視訊問診。</p>
       </div>
     </div>
     <div class="step-card">
@@ -276,10 +278,10 @@
         </svg>
       </div>
       <div style="padding:0 22px;text-align:center;">
-        <div class="step-zh">送藥 / 上門</div>
+        <div class="step-zh" lang="zh">送藥 / 上門</div>
         <div class="step-en">Delivery / Home Visit</div>
         <p class="step-desc">Herbs delivered to your door, or a home visit.</p>
-        <p class="step-desc2">送藥到府，或上門服務。</p>
+        <p class="step-desc2" lang="zh">送藥到府，或上門服務。</p>
       </div>
     </div>
   </div>
