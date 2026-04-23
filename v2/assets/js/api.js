@@ -290,6 +290,7 @@
     listAccounts:       function (q) { return api.get('/admin/accounts' + (q ? '?' + q : '')); },
     createAccount:      function (d) { return api.post('/admin/accounts', d); },
     toggleAccount:      function (id) { return api.post('/admin/accounts/' + id + '/toggle'); },
+    deleteAccount:      function (id) { return api.delete('/admin/accounts/' + id + '?confirm=1'); },
     updateAccount:      function (id, d) { return api.patch('/admin/accounts/' + id, d); },
     resetAccountPassword: function (id, password) { return api.post('/admin/accounts/' + id + '/reset-password', { password: password }); },
 

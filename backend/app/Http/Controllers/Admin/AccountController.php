@@ -109,6 +109,88 @@ class AccountController extends Controller
     }
 
     /**
+     * Delete an account permanently.
+     *
+     * Safety rules:
+     *   • Cannot delete yourself (would lock you out mid-request).
+     *   • Cannot delete the last active admin (would lock everyone out).
+     *   • Requires explicit confirm=true in the request body (prevents
+     *     accidental DELETE from a mis-typed URL).
+     *   • Caller must have the 'manage_users' permission (enforced by
+     *     the route middleware).
+     *
+     * What happens:
+     *   • User row is deleted. FOREIGN KEY ... ON DELETE CASCADE on
+     *     user_permission_overrides, personal_access_tokens (Sanctum),
+     *     patient_profiles / doctor_profiles / pharmacy_profiles,
+     *     consent_grants, addresses cleans up the profile side.
+     *   • Historical records (prescriptions, appointments, orders,
+     *     audit_logs) retain their user_id foreign keys — those are
+     *     INT columns without ON DELETE CASCADE so they're preserved
+     *     for compliance/audit purposes even after the account is gone.
+     *     If that's unacceptable for any given table, add ON DELETE SET
+     *     NULL at the schema level.
+     *   • An audit_log row is written BEFORE the delete so the action
+     *     is traceable even though the target user's id is gone.
+     */
+    public function destroy(Request $request, int $id)
+    {
+        $actor = $request->user();
+        $target = User::findOrFail($id);
+
+        /* Confirmation gate — client must pass confirm=true explicitly. */
+        $data = $request->validate([
+            'confirm' => ['required', 'accepted'],
+        ]);
+
+        /* Safety 1: can't delete yourself */
+        if ($target->id === $actor->id) {
+            return response()->json([
+                'message' => 'You cannot delete your own account. Ask another admin to do it.',
+            ], 422);
+        }
+
+        /* Safety 2: can't delete the last active admin */
+        if ($target->role === 'admin') {
+            $remainingAdmins = User::where('role', 'admin')
+                ->where('status', 'active')
+                ->where('id', '!=', $target->id)
+                ->count();
+            if ($remainingAdmins === 0) {
+                return response()->json([
+                    'message' => 'Cannot delete the last active admin. Create another admin first.',
+                ], 422);
+            }
+        }
+
+        /* Write audit log BEFORE delete so the trail survives. */
+        DB::table('audit_logs')->insert([
+            'user_id'     => $actor->id,
+            'action'      => 'account.delete',
+            'target_type' => 'user',
+            'target_id'   => $target->id,
+            'payload'     => json_encode([
+                'deleted_email' => $target->email,
+                'deleted_role'  => $target->role,
+                'deleted_status'=> $target->status,
+            ]),
+            'created_at'  => now(),
+        ]);
+
+        /* Revoke any live Sanctum tokens so session dies instantly. */
+        try { $target->tokens()->delete(); } catch (\Throwable $e) { /* ignore if table missing */ }
+
+        /* Delete — ON DELETE CASCADE handles dependent profile rows. */
+        $target->delete();
+
+        return response()->json([
+            'message'      => 'Account deleted',
+            'deleted_id'   => $id,
+            'deleted_role' => $target->role,
+        ]);
+    }
+
+    /**
      * Reset the password for any user account (patient, doctor, pharmacy,
      * or fellow admin). Typically used when someone forgot their password
      * and there's no self-serve reset flow yet.

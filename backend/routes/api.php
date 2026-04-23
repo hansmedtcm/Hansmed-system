@@ -431,6 +431,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/accounts/{id}/toggle',[\App\Http\Controllers\Admin\AccountController::class, 'toggleStatus']);
         Route::patch('/accounts/{id}',      [\App\Http\Controllers\Admin\AccountController::class, 'updateAccount']);
         Route::post('/accounts/{id}/reset-password', [\App\Http\Controllers\Admin\AccountController::class, 'resetPassword']);
+        /* Permanent account deletion — requires manage_users permission.
+           Body must include {confirm: true} to prevent accidents. */
+        Route::middleware('permission:manage_users')
+            ->delete('/accounts/{id}', [\App\Http\Controllers\Admin\AccountController::class, 'destroy']);
 
         // Doctor management (full CRUD — admin creates doctor accounts)
         Route::get('/doctors',              [DoctorManagementController::class, 'index']);

@@ -55,7 +55,8 @@
           '<td data-label="Actions" style="white-space:nowrap;">' +
             '<button class="btn btn--ghost btn--sm" data-act="edit">✎ Edit</button> ' +
             '<button class="btn btn--ghost btn--sm" data-act="pw">🔑 Password</button> ' +
-            '<button class="btn btn--outline btn--sm" data-act="toggle">' + (u.status === 'active' ? 'Suspend' : 'Activate') + '</button>' +
+            '<button class="btn btn--outline btn--sm" data-act="toggle">' + (u.status === 'active' ? 'Suspend' : 'Activate') + '</button> ' +
+            '<button class="btn btn--danger btn--sm" data-act="delete" title="Permanently delete this account">🗑 Delete</button>' +
           '</td>';
         tr.querySelector('[data-act="toggle"]').addEventListener('click', async function () {
           try { await HM.api.admin.toggleAccount(u.id); HM.ui.toast('Account updated', 'success'); load(); }
@@ -63,6 +64,7 @@
         });
         tr.querySelector('[data-act="pw"]').addEventListener('click', function () { showResetPassword(u); });
         tr.querySelector('[data-act="edit"]').addEventListener('click', function () { showEditForm(u); });
+        tr.querySelector('[data-act="delete"]').addEventListener('click', function () { showDeleteConfirm(u); });
         tbody.appendChild(tr);
       });
     } catch (e) { HM.state.error(container, e); }
@@ -282,11 +284,73 @@
     });
   }
 
+  /**
+   * Confirm-and-delete modal.
+   *
+   * Destructive action — we require the admin to type the target email
+   * exactly before the Delete button enables. This is the same pattern
+   * GitHub uses for repo deletion: prevents muscle-memory misclicks.
+   * Server also enforces safeguards (can't delete self, can't delete
+   * last active admin) and writes an audit_log row before the delete.
+   */
+  function showDeleteConfirm(u) {
+    var label = u.doctor_profile && u.doctor_profile.full_name
+             || u.pharmacy_profile && u.pharmacy_profile.name
+             || u.email;
+    var m = HM.ui.modal({
+      size: 'md',
+      title: '🗑 Delete Account Permanently',
+      content:
+        '<div class="alert alert--danger mb-4">' +
+          '<strong>This cannot be undone.</strong> All profile data linked to this account will be removed. ' +
+          'Historical records (past prescriptions, appointments, orders, audit logs) are retained for compliance. ' +
+          '<span style="font-family: var(--font-zh);">此操作無法撤銷。帳號個人資料將永久刪除；既有病歷、處方、訂單、日誌依法保留。</span>' +
+        '</div>' +
+        '<div class="field mb-3">' +
+          '<div class="text-sm text-muted mb-2">Account: <strong>' + HM.format.esc(label) + '</strong> · <code>' + HM.format.esc(u.email) + '</code> · role: <em>' + HM.format.esc(u.role) + '</em></div>' +
+          '<label class="field-label" data-required>Type the email to confirm · 輸入電郵以確認</label>' +
+          '<input type="text" id="del-confirm-email" class="field-input field-input--boxed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + HM.format.esc(u.email) + '">' +
+          '<div class="field-hint">Must match exactly, including case.</div>' +
+        '</div>' +
+        '<div class="flex-between mt-4">' +
+          '<button type="button" class="btn btn--outline" id="del-cancel">Cancel · 取消</button>' +
+          '<button type="button" class="btn btn--danger" id="del-go" disabled>🗑 Delete permanently · 永久刪除</button>' +
+        '</div>',
+    });
+
+    var input = m.body.querySelector('#del-confirm-email');
+    var goBtn = m.body.querySelector('#del-go');
+    input.addEventListener('input', function () {
+      goBtn.disabled = input.value !== u.email;
+    });
+    m.body.querySelector('#del-cancel').addEventListener('click', function () { m.close(); });
+
+    goBtn.addEventListener('click', async function () {
+      if (input.value !== u.email) return;
+      goBtn.disabled = true;
+      goBtn.textContent = 'Deleting…';
+      try {
+        await HM.api.admin.deleteAccount(u.id);
+        HM.ui.toast('Account deleted · 帳號已刪除', 'success');
+        m.close();
+        /* load() is in IIFE scope — re-fetches and re-renders the list. */
+        try { load(); } catch (_) { location.reload(); }
+      } catch (e) {
+        HM.ui.toast(e.message || 'Delete failed', 'danger');
+        goBtn.disabled = false;
+        goBtn.textContent = '🗑 Delete permanently · 永久刪除';
+      }
+    });
+
+    setTimeout(function () { input.focus(); }, 50);
+  }
+
   HM.adminPanels.accounts = {
     render: render,
     // Exposed so other admin panels (e.g. patients) can reuse the modals
     // without duplicating the form markup.
     showResetPassword: showResetPassword,
     showEditForm: showEditForm,
+    showDeleteConfirm: showDeleteConfirm,
   };
 })();
