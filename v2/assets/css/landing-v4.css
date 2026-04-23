@@ -183,6 +183,64 @@ body.landing-v4 .pnav-card:hover{transform:translateY(-3px);box-shadow:0 12px 40
 body.landing-v4 .pnc-t{font-size:14px;font-weight:500;color:var(--v4-ink);margin-bottom:3px;}
 body.landing-v4 .pnc-s{font-size:12px;color:var(--v4-mu);font-weight:300;}
 
+/* INNER HERO (About / Services / other inner pages) */
+body.landing-v4 .hero-page{
+  background: var(--v4-bg-2);
+  position: relative;
+  overflow: hidden;
+  padding: 72px 24px 60px;
+}
+body.landing-v4 .hero-page::before{
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent, var(--v4-go) 25%, var(--v4-wd-lt) 75%, transparent);
+}
+body.landing-v4 .hero-page::after{
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--v4-bdr) 25%, var(--v4-bdr) 75%, transparent);
+}
+body.landing-v4 .hp{
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+body.landing-v4 .hp .eyebrow{ color: var(--v4-wd-md); }
+body.landing-v4 .hp h1{
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 5vw, 54px);
+  color: var(--v4-ink);
+  margin: 14px 0 16px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+body.landing-v4 .hp h1 em{ font-style: italic; color: var(--v4-wd-md); }
+body.landing-v4 .hp p{
+  font-size: 16px;
+  color: var(--v4-mu);
+  max-width: 560px;
+  line-height: 1.78;
+  font-weight: 300;
+}
+
+/* Section max-width wrapper — ensure .sec content is centered at 1080px
+   regardless of max() support quirks. */
+body.landing-v4 .sec > .g2,
+body.landing-v4 .sec > .g3,
+body.landing-v4 .sec > .g4,
+body.landing-v4 .sec > .sh,
+body.landing-v4 .sec > .cert-strip,
+body.landing-v4 .sec > .pnav{
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* STATS (About page) */
 body.landing-v4 .stat-b{background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);text-align:center;padding:24px;border-radius:14px;}
 body.landing-v4 .stat-n{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--v4-tc);font-weight:400;}
