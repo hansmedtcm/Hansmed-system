@@ -140,24 +140,42 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </div>
     </div>
     <div class="hero-right">
-      <div class="hero-circle">
-        <button class="orbit" style="top:4%;right:-12%;" onclick="go('about')">About Us · 關於我們</button>
-        <button class="orbit" style="bottom:14%;right:-16%;" onclick="go('services')">Our Services · 服務</button>
-        <button class="orbit" style="top:30%;left:-18%;" onclick="go('wellness')">Wellness Assessment · 健康評估</button>
-        <button class="orbit" style="bottom:4%;left:-4%;" onclick="go('shop')">Shop · 商店</button>
-        <div class="hero-inner">
-          <svg width="80" height="108" viewBox="0 0 80 108" fill="none">
-            <path d="M40 104C39 84 37 64 34 46 32 28 28 12 24 2" stroke="rgba(155,114,72,0.28)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-            <path d="M36 82C26 73 19 61 25 51 32 61 36 73 36 82Z" fill="rgba(196,154,90,0.2)"/>
-            <path d="M34 65C44 56 49 43 44 34 37 43 33 56 34 65Z" fill="rgba(196,154,90,0.18)"/>
-            <path d="M32 48C22 39 15 26 22 16 29 26 32 40 32 48Z" fill="rgba(196,154,90,0.16)"/>
-            <path d="M30 31C40 22 45 9 39 1 33 9 29 22 30 31Z" fill="rgba(196,154,90,0.13)"/>
-            <ellipse cx="36" cy="94" rx="3" ry="1.8" fill="rgba(110,140,90,0.22)" transform="rotate(-20 36 94)"/>
-            <ellipse cx="46" cy="75" rx="3" ry="1.8" fill="rgba(110,140,90,0.19)" transform="rotate(14 46 75)"/>
-            <ellipse cx="26" cy="58" rx="3" ry="1.8" fill="rgba(110,140,90,0.17)" transform="rotate(-14 26 58)"/>
-          </svg>
-          <div class="hero-char">漢方</div>
-          <div class="hero-char-sub">Traditional · Modern</div>
+      <!-- Live TCM Organ Clock — borderless, floats in hero -->
+      <div style="width:min(420px,44vw);display:flex;flex-direction:column;gap:0;">
+        <!-- Clock SVG -->
+        <svg id="hero-clk" viewBox="0 0 380 320" width="100%" style="display:block;overflow:visible;" aria-label="Live TCM organ clock"></svg>
+        <!-- Info panel -->
+        <div style="padding:4px 4px 0;">
+          <!-- Row 1: Chinese char + name + live digital time -->
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;line-height:1;color:var(--v4-tc);flex-shrink:0;">心</div>
+            <div id="hm-en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--v4-ink);flex-shrink:0;">Heart</div>
+            <div style="display:flex;align-items:baseline;gap:1px;margin-left:auto;flex-shrink:0;">
+              <span id="hm-dtime" style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#8C6340;letter-spacing:0.02em;line-height:1;">--:--</span>
+            </div>
+          </div>
+          <!-- Row 2: 3 pills -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+            <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Element</div><div class="cert-bot">Fire · 火</div></span>
+            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top">Peak window</div><div class="cert-bot">11am – 1pm</div></span>
+            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Next</div><div class="cert-bot">Small Intestine · 小腸</div></span>
+          </div>
+          <!-- Tip -->
+          <div id="hm-tip" style="font-size:13px;color:var(--v4-mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--v4-go);padding-left:12px;margin-bottom:12px;">
+            Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.
+          </div>
+          <!-- Progress bar -->
+          <div style="height:2px;background:var(--v4-bdr-l);border-radius:2px;overflow:hidden;margin-bottom:5px;">
+            <div id="hm-prog" style="height:100%;background:var(--v4-go);border-radius:2px;transition:width 2s linear;width:50%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+            <span id="hm-ps" style="font-size:10px;color:var(--v4-mu);">11:00</span>
+            <span style="font-size:10px;color:var(--v4-mu);">window progress</span>
+            <span id="hm-pe" style="font-size:10px;color:var(--v4-mu);">13:00</span>
+          </div>
+          <!-- CTA -->
+          <a class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="portal.html#/book">Book a TCM Consultation →</a>
+          <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
       </div>
     </div>
@@ -174,47 +192,9 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
 </div>
 
-<!-- ══ TCM LIVE ORGAN CLOCK ════════════════════════════════ -->
-<section class="sec sec-white" style="padding-top:64px;padding-bottom:64px;">
-  <div class="sh center" style="margin-bottom:32px;">
-    <div class="eyebrow">身體時鐘 · Right Now</div>
-    <h2>Your organs have a <em>schedule</em></h2>
-    <p>The 子午流注 organ clock — a 2,000‑year‑old TCM system — tells you which organ is at peak energy this very moment, and what your body needs right now.</p>
-  </div>
-  <div style="max-width:560px;margin:0 auto;">
-    <svg id="hm-clk" viewBox="0 0 560 380" width="100%" style="display:block;border-radius:18px 18px 0 0;background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);border-bottom:none;"></svg>
-    <div style="background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);border-top:none;border-radius:0 0 18px 18px;padding:22px 24px 20px;">
-      <div style="display:flex;align-items:flex-start;gap:16px;">
-        <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:52px;font-weight:300;line-height:1;color:var(--v4-tc);flex-shrink:0;">心</div>
-        <div style="flex:1;min-width:0;">
-          <div id="hm-en" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-style:italic;color:var(--v4-ink);margin-bottom:6px;">Heart</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-            <span id="hm-el" class="cert-pill"><div class="cert-top">Element</div><div class="cert-bot">Fire · 火</div></span>
-            <span id="hm-window" class="cert-pill"><div class="cert-top">Peak window</div><div class="cert-bot">11am – 1pm</div></span>
-            <span id="hm-next-pill" class="cert-pill"><div class="cert-top">Next</div><div class="cert-bot">Small Intestine · 小腸</div></span>
-          </div>
-          <div id="hm-tip" style="font-size:14px;color:var(--v4-mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--v4-go);padding-left:12px;margin-bottom:14px;">
-            Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.
-          </div>
-          <div style="height:3px;background:var(--v4-bdr-l);border-radius:2px;overflow:hidden;">
-            <div id="hm-prog" style="height:100%;background:var(--v4-go);border-radius:2px;transition:width 2s linear;width:50%;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:5px;">
-            <span id="hm-ps" style="font-size:11px;color:var(--v4-mu);">11:00</span>
-            <span style="font-size:11px;color:var(--v4-mu);">window progress</span>
-            <span id="hm-pe" style="font-size:11px;color:var(--v4-mu);">13:00</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <p style="font-size:11px;color:var(--v4-mu);text-align:center;margin-top:12px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">
-      子午流注 · Updates with your local time · 12-organ meridian theory
-    </p>
-  </div>
-  <div style="text-align:center;margin-top:28px;">
-    <button class="btn-v4 btn-wd" onclick="go('book')">Book a TCM Consultation →</button>
-  </div>
-</section>
+<!-- (The former stand-alone TCM Organ Clock section was removed — the
+     clock now lives inside the hero on the right side. Its info-panel
+     IDs (hm-zh, hm-en, hm-el etc.) moved there to avoid duplicate IDs.) -->
 
 <!-- HansMed 123 -->
 <section class="sec sec-alt">
@@ -691,107 +671,200 @@ function hmFmtH(h) {
   return h12 + ampm;
 }
 
-function drawHmClock() {
-  var svg = document.getElementById('hm-clk');
+/* Generic clock renderer — paints 12 organ segments + hand + optional
+   center 漢方 glyph. Supports two instances on the same page:
+     - hero-clk  (inside hero, with center 漢方 + label, no sub-time)
+     - hm-clk    (optional section clock, with sub-time, no center glyph) */
+function drawClock(svgId, cx, cy, ro, ri, rl, fontSize, showLabel, showHand, showCenter) {
+  var svg = document.getElementById(svgId);
   if (!svg) return;
   svg.innerHTML = '';
-  var CX = 280, CY = 185, RO = 145, RI = 86, RL = 162, GAP = 2.2;
   var now = new Date();
   var h = now.getHours(), m = now.getMinutes(), sec = now.getSeconds();
   var ai = hmGetOrgan(h);
+  var GAP = 2.5;
 
-  var css = getComputedStyle(document.documentElement);
-  var bdrL = (css.getPropertyValue('--v4-bdr-l').trim() || '#EAE0CF');
-  var mu   = (css.getPropertyValue('--v4-mu').trim()   || '#7A6248');
-  var bg3  = (css.getPropertyValue('--v4-bg-3').trim() || '#FEFCF8');
-
+  /* Outer + inner guide rings */
   var og = hmNs('circle');
-  og.setAttribute('cx', CX); og.setAttribute('cy', CY); og.setAttribute('r', RO + 12);
-  og.setAttribute('fill', 'none'); og.setAttribute('stroke', bdrL); og.setAttribute('stroke-width', '0.5');
+  og.setAttribute('cx', cx); og.setAttribute('cy', cy); og.setAttribute('r', ro + 14);
+  og.setAttribute('fill', 'none'); og.setAttribute('stroke', 'rgba(216,201,174,0.5)'); og.setAttribute('stroke-width', '0.5');
   svg.appendChild(og);
+  var ig = hmNs('circle');
+  ig.setAttribute('cx', cx); ig.setAttribute('cy', cy); ig.setAttribute('r', ri - 14);
+  ig.setAttribute('fill', 'none'); ig.setAttribute('stroke', 'rgba(216,201,174,0.3)'); ig.setAttribute('stroke-width', '0.5');
+  svg.appendChild(ig);
 
+  /* 12 organ segments */
   CLOCK_ORGANS.forEach(function (o, i) {
     var active = (i === ai);
-    var sag = hmRad(-90 + o.start * 15 + GAP / 2), eag = hmRad(-90 + (o.start + 2) * 15 - GAP / 2);
+    var startAngle = -90 + o.start * 15;
+    var endAngle   = startAngle + 30;
+    var sa = hmRad(startAngle + GAP / 2), ea = hmRad(endAngle - GAP / 2);
+    var activeRo = active ? ro + 10 : ro;
     var c = Math.cos, s = Math.sin;
-    var ro = active ? RO + 12 : RO;
     var path = hmNs('path');
     path.setAttribute('d',
-      'M' + (CX + ro * c(sag)) + ' ' + (CY + ro * s(sag)) +
-      'A' + ro + ' ' + ro + ' 0 0 1 ' + (CX + ro * c(eag)) + ' ' + (CY + ro * s(eag)) +
-      'L' + (CX + RI * c(eag)) + ' ' + (CY + RI * s(eag)) +
-      'A' + RI + ' ' + RI + ' 0 0 0 ' + (CX + RI * c(sag)) + ' ' + (CY + RI * s(sag)) + 'Z'
+      'M' + (cx + activeRo * c(sa)) + ' ' + (cy + activeRo * s(sa)) +
+      'A' + activeRo + ' ' + activeRo + ' 0 0 1 ' + (cx + activeRo * c(ea)) + ' ' + (cy + activeRo * s(ea)) +
+      'L' + (cx + ri * c(ea)) + ' ' + (cy + ri * s(ea)) +
+      'A' + ri + ' ' + ri + ' 0 0 0 ' + (cx + ri * c(sa)) + ' ' + (cy + ri * s(sa)) + 'Z'
     );
-    path.setAttribute('fill',   active ? o.col + 'CC' : o.col + '40');
-    path.setAttribute('stroke', active ? '#B5881A' : 'rgba(250,247,242,0.9)');
+    path.setAttribute('fill',   active ? o.col + 'CC' : o.col + '35');
+    path.setAttribute('stroke', active ? '#B5881A' : 'rgba(254,252,248,0.8)');
     path.setAttribute('stroke-width', active ? '1.5' : '1.2');
     svg.appendChild(path);
 
-    var mid = hmRad(-90 + o.start * 15 + 15);
-    var lx = CX + RL * c(mid), ly = CY + RL * s(mid);
-    var lt = hmNs('text');
-    lt.setAttribute('x', lx); lt.setAttribute('y', ly + 5);
-    lt.setAttribute('text-anchor', 'middle');
-    lt.setAttribute('font-family', "'Noto Serif SC',serif");
-    lt.setAttribute('font-size', active ? '15' : '12');
-    lt.setAttribute('font-weight', active ? '400' : '300');
-    lt.setAttribute('fill', active ? '#B5881A' : mu);
-    lt.setAttribute('pointer-events', 'none');
-    lt.textContent = o.zh.length > 2 ? o.zh[0] : o.zh;
-    svg.appendChild(lt);
+    if (showLabel) {
+      var mid = hmRad(startAngle + 15);
+      var lx = cx + rl * c(mid), ly = cy + rl * s(mid);
+      var lt = hmNs('text');
+      lt.setAttribute('x', lx); lt.setAttribute('y', ly + fontSize * 0.36);
+      lt.setAttribute('text-anchor', 'middle');
+      lt.setAttribute('font-family', "'Noto Serif SC',serif");
+      lt.setAttribute('font-size', active ? fontSize + 2 : fontSize);
+      lt.setAttribute('font-weight', active ? '400' : '300');
+      lt.setAttribute('fill', active ? '#B5881A' : 'rgba(122,98,72,0.55)');
+      lt.setAttribute('pointer-events', 'none');
+      lt.textContent = o.zh.length > 2 ? o.zh[0] : o.zh;
+      svg.appendChild(lt);
+    }
   });
 
+  /* Center fill */
   var cf = hmNs('circle');
-  cf.setAttribute('cx', CX); cf.setAttribute('cy', CY); cf.setAttribute('r', RI - 1);
-  cf.setAttribute('fill', bg3); cf.setAttribute('stroke', bdrL); cf.setAttribute('stroke-width', '0.5');
+  cf.setAttribute('cx', cx); cf.setAttribute('cy', cy); cf.setAttribute('r', ri - 1);
+  cf.setAttribute('fill', 'var(--v4-bg-3,#FEFCF8)');
+  cf.setAttribute('stroke', 'rgba(216,201,174,0.5)'); cf.setAttribute('stroke-width', '0.5');
   svg.appendChild(cf);
 
-  /* Clock hand — positioned by total minutes elapsed today */
-  var totalMins = h * 60 + m + sec / 60;
-  var handA = hmRad(-90 + (totalMins / (24 * 60)) * 360);
-  var hl = hmNs('line');
-  hl.setAttribute('x1', CX); hl.setAttribute('y1', CY);
-  hl.setAttribute('x2', CX + (RI - 14) * Math.cos(handA));
-  hl.setAttribute('y2', CY + (RI - 14) * Math.sin(handA));
-  hl.setAttribute('stroke', '#B5881A'); hl.setAttribute('stroke-width', '2'); hl.setAttribute('stroke-linecap', 'round');
-  svg.appendChild(hl);
-  var cd = hmNs('circle');
-  cd.setAttribute('cx', CX); cd.setAttribute('cy', CY); cd.setAttribute('r', '4.5'); cd.setAttribute('fill', '#B5881A');
-  svg.appendChild(cd);
+  /* Center 漢方 glyph + botanical sprig (hero clock only) */
+  if (showCenter) {
+    var bpaths = [
+      { d: 'M' + cx + ' ' + (cy - 18) + 'C' + (cx - 1) + ' ' + (cy - 32) + ' ' + (cx - 3) + ' ' + (cy - 46) + ' ' + (cx - 5) + ' ' + (cy - 58), sw: 1.4, col: 'rgba(155,114,72,0.22)' },
+      { d: 'M' + (cx - 3) + ' ' + (cy - 38) + 'C' + (cx - 12) + ' ' + (cy - 46) + ' ' + (cx - 16) + ' ' + (cy - 56) + ' ' + (cx - 10) + ' ' + (cy - 62) + ' C' + (cx - 4) + ' ' + (cy - 56) + ' ' + (cx - 1) + ' ' + (cy - 46) + ' ' + (cx - 3) + ' ' + (cy - 38) + 'Z', sw: 0, col: 'rgba(196,154,90,0.14)', fill: true },
+      { d: 'M' + (cx - 4) + ' ' + (cy - 50) + 'C' + (cx + 4) + ' ' + (cy - 58) + ' ' + (cx + 8) + ' ' + (cy - 68) + ' ' + (cx + 4) + ' ' + (cy - 74) + ' C' + (cx - 1) + ' ' + (cy - 68) + ' ' + (cx - 4) + ' ' + (cy - 60) + ' ' + (cx - 4) + ' ' + (cy - 50) + 'Z', sw: 0, col: 'rgba(196,154,90,0.12)', fill: true },
+    ];
+    bpaths.forEach(function (bp) {
+      var p = hmNs('path'); p.setAttribute('d', bp.d);
+      if (bp.fill) { p.setAttribute('fill', bp.col); p.setAttribute('stroke', 'none'); }
+      else { p.setAttribute('fill', 'none'); p.setAttribute('stroke', bp.col); p.setAttribute('stroke-width', bp.sw); p.setAttribute('stroke-linecap', 'round'); }
+      svg.appendChild(p);
+    });
 
-  var tt = hmNs('text');
-  tt.setAttribute('x', CX); tt.setAttribute('y', CY + 30);
-  tt.setAttribute('text-anchor', 'middle'); tt.setAttribute('font-size', '13');
-  tt.setAttribute('font-family', 'system-ui,sans-serif'); tt.setAttribute('fill', mu);
-  tt.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-  svg.appendChild(tt);
+    var ch = hmNs('text');
+    ch.setAttribute('x', cx); ch.setAttribute('y', cy + 18);
+    ch.setAttribute('text-anchor', 'middle');
+    ch.setAttribute('font-family', "'Noto Serif SC',serif");
+    ch.setAttribute('font-size', '40'); ch.setAttribute('font-weight', '300');
+    ch.setAttribute('fill', '#B8895A'); ch.setAttribute('pointer-events', 'none');
+    ch.textContent = '漢方';
+    svg.appendChild(ch);
 
-  var ttl = hmNs('text');
-  ttl.setAttribute('x', CX); ttl.setAttribute('y', CY - 50);
-  ttl.setAttribute('text-anchor', 'middle'); ttl.setAttribute('font-size', '9');
-  ttl.setAttribute('letter-spacing', '0.12em'); ttl.setAttribute('font-family', 'system-ui,sans-serif');
-  ttl.setAttribute('fill', mu);
-  ttl.textContent = '子午流注  ·  TCM ORGAN CLOCK';
-  svg.appendChild(ttl);
+    var organNow = CLOCK_ORGANS[ai];
+    var ol = hmNs('text');
+    ol.setAttribute('x', cx); ol.setAttribute('y', cy + 38);
+    ol.setAttribute('text-anchor', 'middle');
+    ol.setAttribute('font-family', 'system-ui,sans-serif');
+    ol.setAttribute('font-size', '8.5');
+    ol.setAttribute('letter-spacing', '0.09em');
+    ol.setAttribute('fill', 'rgba(181,136,26,0.65)');
+    ol.setAttribute('pointer-events', 'none');
+    ol.textContent = organNow.zh + ' · ' + organNow.name.toUpperCase();
+    svg.appendChild(ol);
 
-  /* Update info panel */
+    var ts = hmNs('text');
+    ts.setAttribute('x', cx); ts.setAttribute('y', cy + 52);
+    ts.setAttribute('text-anchor', 'middle');
+    ts.setAttribute('font-family', "'Cormorant Garamond',serif");
+    ts.setAttribute('font-size', '9.5'); ts.setAttribute('font-style', 'italic');
+    ts.setAttribute('fill', 'rgba(122,98,72,0.3)'); ts.setAttribute('pointer-events', 'none');
+    ts.textContent = 'Traditional · Modern';
+    svg.appendChild(ts);
+  }
+
+  /* Clock hand with short tail */
+  if (showHand) {
+    var totalMins = h * 60 + m + sec / 60;
+    var handA = hmRad(-90 + (totalMins / (24 * 60)) * 360);
+    var handLen = ri - 10;
+    var tailLen = 12;
+    var tail = hmNs('line');
+    tail.setAttribute('x1', cx); tail.setAttribute('y1', cy);
+    tail.setAttribute('x2', cx - tailLen * Math.cos(handA)); tail.setAttribute('y2', cy - tailLen * Math.sin(handA));
+    tail.setAttribute('stroke', 'rgba(181,136,26,0.35)'); tail.setAttribute('stroke-width', '1.5'); tail.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(tail);
+    var hl = hmNs('line');
+    hl.setAttribute('x1', cx); hl.setAttribute('y1', cy);
+    hl.setAttribute('x2', cx + handLen * Math.cos(handA)); hl.setAttribute('y2', cy + handLen * Math.sin(handA));
+    hl.setAttribute('stroke', '#B5881A'); hl.setAttribute('stroke-width', '2'); hl.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(hl);
+    var cd = hmNs('circle');
+    cd.setAttribute('cx', cx); cd.setAttribute('cy', cy); cd.setAttribute('r', '4');
+    cd.setAttribute('fill', '#B5881A');
+    svg.appendChild(cd);
+  }
+
+  /* Sub-clock digital time (section clock only, not hero clock) */
+  if (!showCenter) {
+    var tt = hmNs('text');
+    tt.setAttribute('x', cx); tt.setAttribute('y', cy + 28);
+    tt.setAttribute('text-anchor', 'middle');
+    tt.setAttribute('font-size', '13'); tt.setAttribute('font-family', 'system-ui,sans-serif');
+    tt.setAttribute('fill', 'rgba(122,98,72,0.6)');
+    tt.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    svg.appendChild(tt);
+    var ttl = hmNs('text');
+    ttl.setAttribute('x', cx); ttl.setAttribute('y', cy - 48);
+    ttl.setAttribute('text-anchor', 'middle');
+    ttl.setAttribute('font-size', '8.5');
+    ttl.setAttribute('letter-spacing', '0.12em');
+    ttl.setAttribute('font-family', 'system-ui,sans-serif');
+    ttl.setAttribute('fill', 'rgba(122,98,72,0.4)');
+    ttl.textContent = '子午流注  ·  TCM ORGAN CLOCK';
+    svg.appendChild(ttl);
+  }
+}
+
+function drawAllClocks() {
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes();
+  var ai = hmGetOrgan(h);
+  var hStr = String(h).padStart(2, '0');
+  var mStr = String(m).padStart(2, '0');
+
+  /* Hero clock — compact 380x320 viewport, with center 漢方 */
+  drawClock('hero-clk', 190, 155, 130, 74, 148, 11, true, true, true);
+
+  /* Update panel digital time */
+  var dt = document.getElementById('hm-dtime');
+  if (dt) dt.textContent = hStr + ':' + mStr;
+
+  /* Update info panel (shared between hero clock and section clock) */
   var organ = CLOCK_ORGANS[ai];
   var next  = CLOCK_ORGANS[(ai + 1) % 12];
   var endH  = (organ.start + 2) % 24;
   var byId  = function (id) { return document.getElementById(id); };
-  byId('hm-zh').textContent = organ.zh; byId('hm-zh').style.color = organ.col;
-  byId('hm-en').textContent = organ.name;
-  byId('hm-el').querySelector('.cert-bot').textContent    = organ.el + ' · ' + organ.elZh;
-  byId('hm-window').querySelector('.cert-bot').textContent = hmFmtH(organ.start) + ' – ' + hmFmtH(endH);
-  byId('hm-next-pill').querySelector('.cert-bot').textContent = next.name + ' · ' + next.zh;
-  byId('hm-tip').textContent = organ.tip;
-  byId('hm-ps').textContent  = String(organ.start).padStart(2, '0') + ':00';
-  byId('hm-pe').textContent  = String(endH).padStart(2, '0') + ':00';
+  var zh = byId('hm-zh');           if (zh) { zh.textContent = organ.zh; zh.style.color = organ.col; }
+  var en = byId('hm-en');           if (en) en.textContent = organ.name;
+  var el = byId('hm-el');           if (el) el.querySelector('.cert-bot').textContent = organ.el + ' · ' + organ.elZh;
+  var win = byId('hm-window');      if (win) win.querySelector('.cert-bot').textContent = hmFmtH(organ.start) + ' – ' + hmFmtH(endH);
+  var nxt = byId('hm-next-pill');   if (nxt) nxt.querySelector('.cert-bot').textContent = next.name + ' · ' + next.zh;
+  var tip = byId('hm-tip');         if (tip) tip.textContent = organ.tip;
+  var ps = byId('hm-ps');           if (ps) ps.textContent = String(organ.start).padStart(2, '0') + ':00';
+  var pe = byId('hm-pe');           if (pe) pe.textContent = String(endH).padStart(2, '0') + ':00';
   var elapsed = ((h - organ.start + 24) % 24) * 60 + m;
-  byId('hm-prog').style.width = Math.min(100, Math.max(0, (elapsed / 120) * 100)).toFixed(1) + '%';
+  var prog = byId('hm-prog');       if (prog) prog.style.width = Math.min(100, Math.max(0, (elapsed / 120) * 100)).toFixed(1) + '%';
 }
-drawHmClock();
-setInterval(drawHmClock, 30000);
+
+drawAllClocks();
+setInterval(drawAllClocks, 30000);
+
+/* Live digital-time ticker — updates panel hh:mm every second */
+setInterval(function () {
+  var now = new Date();
+  var dt = document.getElementById('hm-dtime');
+  if (dt) dt.textContent = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+}, 1000);
 
 /* ══════════════ INK-BRUSH SCROLL REVEALS ══════════════ */
 (function initInkBrush() {

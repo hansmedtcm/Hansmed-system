@@ -326,7 +326,9 @@ body.landing-v4 .bb-book:active{transform:scale(0.97);background:var(--v4-wd);}
 
 @media(max-width:860px){
   body.landing-v4 .hero-grid{grid-template-columns:1fr;padding:72px 0 60px;}
-  body.landing-v4 .hero-right{display:none;}
+  /* Hero clock — keep visible on mobile, stacked below hero text */
+  body.landing-v4 .hero-right{display:flex;justify-content:center;margin-top:var(--s-6, 32px);}
+  body.landing-v4 .hero-right > div{width:100% !important;max-width:420px;}
   body.landing-v4 .hero-left{padding-right:0;}
   body.landing-v4 .hero-v4 h1{font-size:clamp(42px,8vw,58px);}
   body.landing-v4 .sec{padding:60px max(1.5rem,calc(50% - 540px));}
