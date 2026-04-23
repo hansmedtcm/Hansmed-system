@@ -2,6 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>try{var p=localStorage.getItem('hm-lang-pref');if(p==='zh')document.documentElement.setAttribute('lang','zh');else document.documentElement.setAttribute('lang','en');}catch(_){}</script>
+<style>
+/* Synchronous language hide — applies before lang-switcher.js runs.
+   Uses html[lang] attribute set by the script above so no FOUC. */
+html[lang="en"] [lang="zh"],
+html[lang="en"] .hm-lang-zh,
+html[lang="en"] .bi-zh { display: none !important; }
+html[lang="zh"] [lang="en"],
+html[lang="zh"] .hm-lang-en,
+html[lang="zh"] .bi-en { display: none !important; }
+html[lang="en"] .hm-lang-sep { display: none; }
+html[lang="zh"] .hm-lang-sep { display: none; }
+</style>
+
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
 <meta name="description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI wellness analysis, herbal prescriptions, pharmacy delivery.">
 <meta name="theme-color" content="#1a1612">
