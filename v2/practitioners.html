@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>try{var p=localStorage.getItem('hm-lang-pref');if(p==='zh')document.documentElement.setAttribute('lang','zh');else document.documentElement.setAttribute('lang','en');}catch(_){}</script>
+<style>
+html[lang="en"] [lang="zh"],
+html[lang="en"] .hm-lang-zh,
+html[lang="en"] .bi-zh { display: none !important; }
+html[lang="zh"] [lang="en"],
+html[lang="zh"] .hm-lang-en,
+html[lang="zh"] .bi-en { display: none !important; }
+html[lang="en"] .hm-lang-sep { display: none; }
+html[lang="zh"] .hm-lang-sep { display: none; }
+</style>
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HansMed Modern TCM · 漢方現代中醫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;600&family=DM+Sans:wght@300;400;500&family=Ma+Shan+Zheng&display=swap" rel="stylesheet"/>
+<style>
+/* Kaiti brush font — tries system-installed CJK kaiti first, then
+   Ma Shan Zheng from Google Fonts. Used by the nav brand ZH wordmark. */
+@font-face {
+  font-family: 'ZhengYanKaiTi';
+  src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+       local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
+  font-display: swap;
+}
+
+/* ─── Readability bump: enlarge small labels ─── */
+.eyebrow { font-size: 12px !important; letter-spacing: 0.16em; }
+.hp .eyebrow, .sh .eyebrow { font-size: 12px !important; }
+.stat-l   { font-size: 13px !important; }
+.stat-zh  { font-size: 12px !important; }
+.bi-en    { font-size: 16px !important; }
+.bi-zh    { font-size: 14px !important; }
+.cert-top, .cert-bot { font-size: 11px !important; }
+.sfi      { font-size: 15px !important; }
+.step-desc, .step-desc2 { font-size: 15px !important; }
+.faq-q    { font-size: 15px !important; }
+.faq-a    { font-size: 14px !important; }
+
+/* Language toggle rules */
+body.lang-en .bi-zh,
+body.lang-en [lang="zh"] { display: none !important; }
+body.lang-zh .bi-en,
+body.lang-zh [lang="en"] { display: none !important; }
+body.lang-en #len, body.lang-en #mlen { background: var(--ink); color: #fff; }
+body.lang-en #lzh, body.lang-en #mlzh { background: transparent; color: var(--mu); }
+body.lang-zh #lzh, body.lang-zh #mlzh { background: var(--ink); color: #fff; }
+body.lang-zh #len, body.lang-zh #mlen { background: transparent; color: var(--mu); }
+
+:root {
+  --wd:    #6B4E2E; --wd-md: #8C6340; --wd-lt: #B8895A; --wd-pl: #DFC9A8;
+  --tc:    #9A6035; --tc-dk: #6E4020; --tc-lt: #F2E0CC; --tc-xl: #FCF6EF;
+  --go:    #B5881A; --go-dk: #8A6510; --go-lt: #F0E4C0; --go-xl: #FBF6E8;
+  --sage:  #6E8C5A; --sage-lt: #EEF3E8;
+  --bg:    #FAF7F2; --bg-2: #F3EDE1; --bg-3: #FEFCF8;
+  --ink:   #241608; --ink-m: #3D2610; --mu: #7A6248;
+  --bdr:   #D8C9AE; --bdr-l: #EAE0CF;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;}
+button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
+
+/* LAYOUT */
+.px{padding-left:max(1.5rem,calc(50% - 540px));padding-right:max(1.5rem,calc(50% - 540px));}
+.sec{padding:80px max(1.5rem,calc(50% - 540px));}
+.sec-alt{background:var(--bg-2);}
+.sec-white{background:var(--bg-3);}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:56px;align-items:center;}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px;}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
+.dot-tex{background-image:radial-gradient(circle,rgba(139,90,43,0.055) 1px,transparent 1px);background-size:28px 28px;}
+
+/* EYEBROW */
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--wd-lt);margin-bottom:16px;}
+.eyebrow::before{content:'';display:block;width:28px;height:1px;background:linear-gradient(90deg,var(--go),transparent);}
+.eyebrow::after{content:'';display:block;width:28px;height:1px;background:linear-gradient(270deg,var(--go),transparent);}
+
+/* HERB DIVIDER */
+.herb-div{display:flex;align-items:center;gap:16px;margin:0 auto;width:fit-content;padding:24px 0;}
+.hdl-l{width:56px;height:1px;background:linear-gradient(90deg,transparent,var(--go));}
+.hdl-r{width:56px;height:1px;background:linear-gradient(90deg,var(--go),transparent);}
+
+/* SECTION HEAD */
+.sh{margin-bottom:52px;}
+.sh.center{text-align:center;}
+.sh h2{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4.5vw,44px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;line-height:1.14;margin-bottom:14px;}
+.sh h2 em{font-style:italic;color:var(--wd-md);}
+.sh p{font-size:15px;color:var(--mu);line-height:1.82;max-width:560px;font-weight:300;}
+.sh.center p{margin:0 auto;}
+.sh-zh{font-family:'Noto Serif SC',serif;font-size:13px;color:var(--bdr);margin-top:6px;font-weight:300;}
+
+/* SEAL */
+.seal{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;flex-shrink:0;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.seal:hover{transform:rotate(8deg) scale(1.08);}
+.seal-go{background:transparent;color:var(--go);border:1.5px solid var(--go);}
+
+/* NAV */
+#nav{position:sticky;top:0;z-index:200;background:rgba(254,252,248,0.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--bdr-l);}
+#nav::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,transparent 0%,var(--go) 30%,var(--wd-lt) 70%,transparent 100%);}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;}
+.nav-brand{display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;padding:0;}
+.nav-logo{width:36px;height:36px;}
+.nav-bn{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;}
+.nav-bz{font-family:'Noto Serif SC',serif;font-size:10px;color:var(--mu);margin-left:4px;font-weight:300;}
+.nav-links{display:flex;align-items:center;gap:2px;}
+.nl{background:none;border:none;cursor:pointer;color:var(--mu);font-size:13.5px;padding:6px 14px;transition:all 0.18s;font-family:'DM Sans',sans-serif;border-radius:8px;}
+.nl:hover,.nl.act{background:var(--bg-2);color:var(--ink);}
+.lang-wrap{display:flex;align-items:center;margin:0 8px;border:1px solid var(--bdr);border-radius:8px;overflow:hidden;}
+.lang-btn{background:none;color:var(--mu);border:none;padding:5px 11px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.lang-btn.act{background:var(--ink);color:#fff;}
+.nav-cta{background:var(--ink);color:#fff;border:none;padding:9px 22px;font-size:13px;font-weight:500;cursor:pointer;margin-left:12px;transition:all 0.2s;font-family:'DM Sans',sans-serif;border-radius:8px;}
+.nav-cta:hover{background:var(--wd);transform:translateY(-1px);box-shadow:0 4px 16px rgba(36,22,8,0.18);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;font-size:14px;font-weight:500;letter-spacing:0.01em;transition:all 0.2s;border:none;font-family:'DM Sans',sans-serif;border-radius:10px;}
+.btn-dark{background:var(--ink);color:#fff;}
+.btn-dark:hover{background:var(--wd);transform:translateY(-1px);box-shadow:0 8px 24px rgba(36,22,8,0.2);}
+.btn-outline-cream{background:rgba(254,252,248,0.9);color:var(--ink);border:1px solid var(--bdr);}
+.btn-outline-cream:hover{background:#fff;transform:translateY(-1px);box-shadow:0 6px 20px rgba(36,22,8,0.1);}
+.btn-gold{background:var(--go);color:#fff;font-weight:600;}
+.btn-gold:hover{background:var(--go-dk);transform:translateY(-1px);box-shadow:0 8px 24px rgba(181,136,26,0.3);}
+.btn-wd{background:var(--wd);color:#fff;}
+.btn-wd:hover{background:var(--tc-dk);transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--tc);border:1.5px solid var(--tc);}
+.btn-outline:hover{background:var(--tc-lt);}
+.btn-ghost{background:rgba(255,255,255,0.13);color:#fff;border:1px solid rgba(255,255,255,0.3);}
+.btn-ghost:hover{background:rgba(255,255,255,0.22);}
+.btn-wa{background:#25D366;color:#fff;}
+.btn-wa:hover{background:#1da851;transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,211,102,0.3);}
+.btn-sm{padding:9px 20px;font-size:13px;}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;background:var(--bg-3);display:flex;align-items:center;padding:0 max(1.5rem,calc(50% - 540px));}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 65% 85% at 100% 50%,rgba(196,154,90,0.09) 0%,transparent 65%),radial-gradient(ellipse 45% 55% at 5% 95%,rgba(155,114,72,0.06) 0%,transparent 60%),radial-gradient(ellipse 75% 45% at 50% 0%,rgba(250,240,220,0.55) 0%,transparent 50%);pointer-events:none;}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,transparent,var(--go) 25%,var(--wd-lt) 75%,transparent);}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--bdr) 25%,var(--bdr) 75%,transparent);}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;width:100%;align-items:center;padding:108px 0 92px;position:relative;z-index:1;}
+.hero-left{padding-right:52px;}
+.hero-right{display:flex;align-items:center;justify-content:center;}
+.hero-tag{display:inline-flex;align-items:center;gap:10px;font-size:11px;color:var(--wd-md);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:26px;}
+.hero-tag::before{content:'';display:block;width:32px;height:1px;background:var(--go);}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(44px,5.5vw,74px);color:var(--ink);margin:0 0 8px;font-weight:400;line-height:1.03;letter-spacing:-0.03em;}
+.hero h1 em{font-style:italic;color:var(--wd-md);display:block;}
+.hero-zh{font-family:'Noto Serif SC',serif;font-size:15px;color:var(--mu);margin-bottom:22px;letter-spacing:0.06em;font-weight:300;}
+.hero-sub{font-size:16px;color:var(--ink-m);margin-bottom:42px;line-height:1.8;max-width:430px;font-weight:300;}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+
+/* Hero circle */
+.hero-circle{width:min(420px,42vw);aspect-ratio:1;border-radius:50%;border:1px solid var(--bdr);position:relative;display:flex;align-items:center;justify-content:center;}
+.hero-circle::before{content:'';position:absolute;inset:16px;border-radius:50%;border:1px solid var(--go-lt);}
+.hero-inner{width:66%;height:66%;border-radius:50%;background:linear-gradient(145deg,var(--bg-2) 0%,var(--bg-3) 100%);border:1px solid var(--bdr-l);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
+.hero-char{font-family:'Noto Serif SC',serif;font-size:clamp(48px,6.5vw,84px);color:var(--wd-lt);font-weight:300;line-height:1;letter-spacing:-2px;}
+.hero-char-sub{font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);letter-spacing:0.1em;font-weight:300;}
+.orbit{position:absolute;background:var(--bg-3);border:1px solid var(--bdr);padding:6px 14px;border-radius:20px;font-size:11px;color:var(--mu);white-space:nowrap;font-weight:400;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.18s,border-color 0.18s,color 0.18s,transform 0.2s;-webkit-tap-highlight-color:transparent;}
+.orbit:hover{background:var(--ink);color:#fff;border-color:var(--ink);transform:scale(1.06);}
+.orbit:active{transform:scale(0.97);}
+
+/* TRUST BAR */
+.trust{background:var(--wd);position:relative;overflow:hidden;}
+.trust::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 1px,rgba(255,255,255,0.018) 1px,rgba(255,255,255,0.018) 2px);pointer-events:none;}
+.trust-in{display:flex;justify-content:space-around;flex-wrap:wrap;padding:30px max(1.5rem,calc(50% - 540px));}
+.ti{text-align:center;padding:4px 28px;border-right:1px solid rgba(255,255,255,0.1);}
+.ti:last-child{border-right:none;}
+.ti-n{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--go-lt);font-weight:400;line-height:1.1;}
+.ti-l{font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.38);margin-top:5px;letter-spacing:0.06em;font-weight:300;}
+
+/* CARDS */
+.card{background:var(--bg-3);border:1px solid var(--bdr-l);padding:32px 28px;position:relative;transition:transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94),box-shadow 0.25s,border-color 0.25s;border-radius:18px;}
+.card:hover{transform:translateY(-5px);box-shadow:0 20px 64px rgba(107,78,46,0.11),0 4px 14px rgba(107,78,46,0.05);border-color:var(--wd-pl);}
+.card::before,.card::after,.card .ctr,.card .cbl{position:absolute;content:'';width:18px;height:18px;border-color:var(--go);border-style:solid;opacity:0.4;transition:opacity 0.25s;border-radius:2px;}
+.card:hover::before,.card:hover::after,.card:hover .ctr,.card:hover .cbl{opacity:0.9;}
+.card::before{top:8px;left:8px;border-width:1.5px 0 0 1.5px;border-radius:3px 0 0 0;}
+.card::after{bottom:8px;right:8px;border-width:0 1.5px 1.5px 0;border-radius:0 0 3px 0;}
+.card .ctr{top:8px;right:8px;border-width:1.5px 1.5px 0 0;border-radius:0 3px 0 0;}
+.card .cbl{bottom:8px;left:8px;border-width:0 0 1.5px 1.5px;border-radius:0 0 0 3px;}
+.card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px;background:var(--go-xl);border:1px solid var(--go-lt);}
+
+/* SERVICE FEATURE BOX */
+.svc-box{background:var(--go-xl);border:1px solid var(--bdr-l);padding:28px;border-radius:16px;}
+.sfi{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr-l);font-size:14px;color:var(--ink-m);font-weight:300;}
+.sfi:last-child{border-bottom:none;}
+.sfi-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);flex-shrink:0;}
+
+/* HANSMED 123 CARDS */
+.step-card{background:var(--bg-3);border:1px solid var(--bdr-l);border-radius:18px;padding:0 0 28px;position:relative;overflow:visible;transition:transform 0.2s,box-shadow 0.2s;}
+.step-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(107,78,46,0.1);}
+.step-badge{position:absolute;top:-18px;left:50%;transform:translateX(-50%);width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;z-index:1;box-shadow:0 4px 12px rgba(36,22,8,0.2);}
+.step-illo{background:var(--bg-2);border-radius:14px 14px 0 0;height:180px;display:flex;align-items:center;justify-content:center;margin-bottom:22px;}
+.step-zh{font-family:'Noto Serif SC',serif;font-size:22px;color:var(--ink);margin-bottom:4px;font-weight:400;}
+.step-en{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--wd-md);margin-bottom:12px;}
+.step-desc{font-size:14px;color:var(--mu);line-height:1.68;font-weight:300;}
+.step-desc2{font-family:'Noto Serif SC',serif;font-size:12px;color:var(--bdr);margin-top:4px;font-weight:300;}
+
+/* QUOTE BAND */
+.qb{background:var(--wd);position:relative;overflow:hidden;text-align:center;}
+.qb::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 90% 130% at 50% -10%,rgba(255,255,255,0.05) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 90% 100%,rgba(181,136,26,0.09) 0%,transparent 50%);}
+.qb-inner{position:relative;}
+.qt-text{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,3vw,29px);color:#fff;font-style:italic;font-weight:300;line-height:1.55;max-width:660px;margin:22px auto 14px;}
+.qt-text::before{content:'\201C';font-size:60px;color:var(--go-lt);opacity:0.42;vertical-align:-0.4em;line-height:0;margin-right:2px;font-style:normal;}
+.qt-text::after{content:'\201D';font-size:60px;color:var(--go-lt);opacity:0.42;vertical-align:-0.4em;line-height:0;margin-left:2px;font-style:normal;}
+.qt-zh{font-family:'Noto Serif SC',serif;font-size:12px;color:rgba(255,255,255,0.32);margin-bottom:12px;letter-spacing:0.05em;font-weight:300;}
+.qt-attr{font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:30px;}
+
+/* CERT STRIP */
+.cert-strip{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
+.cert-pill{background:var(--bg-3);border:1px solid var(--bdr);padding:12px 22px;border-radius:10px;text-align:center;transition:all 0.2s;cursor:default;}
+.cert-pill:hover{border-color:var(--wd-pl);box-shadow:0 6px 20px rgba(107,78,46,0.08);transform:translateY(-2px);}
+.cert-top{font-size:10px;font-weight:700;color:var(--wd);letter-spacing:0.1em;text-transform:uppercase;}
+.cert-bot{font-size:10px;color:var(--mu);margin-top:2px;font-weight:300;}
+
+/* PAGE NAV */
+.pnav{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+.pnav-card{background:var(--bg-3);border:1px solid var(--bdr-l);padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;transition:all 0.22s;width:100%;border-radius:14px;}
+.pnav-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(107,78,46,0.1);border-color:var(--wd-pl);}
+.pnc-t{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:3px;}
+.pnc-s{font-size:12px;color:var(--mu);font-weight:300;}
+
+/* STATS */
+.stat-b{background:var(--bg-3);border:1px solid var(--bdr-l);text-align:center;padding:24px;border-radius:14px;}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--tc);font-weight:400;}
+.stat-l{font-size:11px;color:var(--mu);margin-top:6px;font-weight:300;}
+.stat-zh{font-family:'Noto Serif SC',serif;font-size:10px;color:var(--bdr);margin-top:2px;font-weight:300;}
+
+/* BENEFITS */
+.benefit{display:flex;gap:14px;align-items:flex-start;background:var(--bg-3);border:1px solid var(--bdr-l);padding:18px 20px;border-radius:12px;}
+.bi-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.bt{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:4px;}
+.bd{font-size:13px;color:var(--mu);line-height:1.65;font-weight:300;}
+.bi{display:flex;flex-direction:column;gap:3px;}
+.bi-en{font-size:15px;color:var(--mu);line-height:1.78;font-weight:300;}
+.bi-zh{font-family:'Noto Serif SC',serif;font-size:12px;color:var(--bdr);margin-top:2px;font-weight:300;}
+
+/* INNER HERO */
+.hero-page{background:var(--bg-2);position:relative;overflow:hidden;padding:72px max(1.5rem,calc(50% - 540px)) 60px;}
+.hero-page::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,transparent,var(--go) 25%,var(--wd-lt) 75%,transparent);}
+.hero-page::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--bdr) 25%,var(--bdr) 75%,transparent);}
+.hp{position:relative;}
+.hp .eyebrow{color:var(--wd-md);}
+.hp h1{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,54px);color:var(--ink);margin:14px 0 16px;font-weight:400;letter-spacing:-0.025em;line-height:1.12;}
+.hp h1 em{font-style:italic;color:var(--wd-md);}
+.hp p{font-size:16px;color:var(--mu);max-width:500px;line-height:1.78;font-weight:300;}
+
+/* CONTACT */
+.hr-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr-l);font-size:13px;}
+.hr-row:last-child{border-bottom:none;}
+.hr-d{color:var(--mu);font-weight:300;}
+.hr-t{color:var(--ink);font-weight:500;}
+.faq-card{background:var(--bg-3);border:1px solid var(--bdr-l);padding:22px 24px;border-radius:14px;}
+.faq-q{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:8px;}
+.faq-a{font-size:13px;color:var(--mu);line-height:1.68;font-weight:300;}
+
+/* STEP ROWS (book page) */
+.step-row{display:flex;gap:20px;align-items:flex-start;padding:24px;background:var(--bg-3);border:1px solid var(--bdr-l);margin-bottom:14px;transition:all 0.2s;border-radius:14px;}
+.step-row:hover{box-shadow:0 8px 32px rgba(107,78,46,0.09);border-color:var(--wd-pl);}
+.step-num-big{font-family:'Cormorant Garamond',serif;font-size:44px;color:var(--wd-pl);font-weight:300;line-height:1;width:48px;flex-shrink:0;}
+.step-zh2{font-family:'Noto Serif SC',serif;font-size:16px;color:var(--wd);font-weight:600;margin-bottom:4px;}
+.step-desc2{font-size:13px;color:var(--mu);line-height:1.65;font-weight:300;}
+.step-zh-desc2{font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-top:3px;font-weight:300;}
+
+/* FOOTER */
+.footer{background:var(--wd);position:relative;padding:60px max(1.5rem,calc(50% - 540px)) 36px;}
+.footer::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,transparent,var(--go) 25%,var(--go) 75%,transparent);}
+.footer::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0,transparent 1px,rgba(255,255,255,0.012) 1px,rgba(255,255,255,0.012) 2px);}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:36px;margin-bottom:36px;position:relative;z-index:1;}
+.fn{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;font-weight:400;}
+.fzh{font-family:'Noto Serif SC',serif;font-size:11px;color:rgba(255,255,255,0.36);margin-top:2px;font-weight:300;}
+.fp{font-size:13px;color:rgba(255,255,255,0.36);line-height:1.78;margin-top:10px;font-weight:300;}
+.flbl{font-size:10px;color:rgba(255,255,255,0.26);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:14px;}
+.fl{display:block;background:none;border:none;color:rgba(255,255,255,0.46);font-size:14px;padding:4px 0;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;transition:color 0.15s;font-weight:300;}
+.fl:hover{color:rgba(255,255,255,0.9);}
+.f-cert-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;position:relative;z-index:1;}
+.f-cert{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);padding:7px 16px;border-radius:8px;text-align:center;}
+.f-cert-top{font-size:9.5px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:0.1em;text-transform:uppercase;}
+.f-cert-bot{font-size:9px;color:rgba(255,255,255,0.35);margin-top:1px;font-weight:300;}
+.fbot{border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;position:relative;z-index:1;}
+.fbot span{font-size:11px;color:rgba(255,255,255,0.2);}
+
+/* WA FLOAT */
+.wa-f{position:fixed;bottom:28px;right:28px;z-index:300;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(37,211,102,0.42);transition:all 0.22s;border:2px solid rgba(255,255,255,0.3);}
+.wa-f:hover{transform:scale(1.1);background:#1da851;box-shadow:0 8px 36px rgba(37,211,102,0.52);}
+
+/* PAGES & ANIMS */
+.page{display:none;}
+.page.act{display:block;animation:pgIn 0.42s ease both;}
+@keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes heroIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.hero-left .hero-tag{animation:heroIn 0.7s ease both;}
+.hero h1{animation:heroIn 0.7s 0.08s ease both;}
+.hero-zh{animation:heroIn 0.7s 0.14s ease both;}
+.hero-sub{animation:heroIn 0.7s 0.2s ease both;}
+.hero-ctas{animation:heroIn 0.7s 0.26s ease both;}
+
+/* ── QI BREATH — hero clock SVG breathes ── */
+@keyframes qiBreath{
+  0%,100%{transform:scale(0.96);opacity:0.82;}
+  50%    {transform:scale(1.04);opacity:1;}
+}
+#hero-clk{
+  will-change:transform,opacity;
+  animation:qiBreath 5.5s cubic-bezier(0.45,0,0.55,1) infinite;
+  transform-origin:center;
+}
+
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — MOBILE FIRST
+   Primary breakpoints:
+   ≤ 860px  tablet
+   ≤ 600px  mobile
+   ≤ 400px  small phone
+══════════════════════════════════════════════ */
+
+/* ── Hamburger menu (mobile nav drawer) ── */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;margin-left:8px;border-radius:8px;-webkit-tap-highlight-color:transparent;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+/* Mobile nav drawer */
+.mobile-menu{
+  display:none;
+  position:fixed;top:65px;left:0;right:0;bottom:0;
+  background:var(--bg-3);z-index:190;
+  flex-direction:column;
+  padding:0 24px 120px;
+  overflow-y:auto;
+  transform:translateY(-8px);opacity:0;
+  transition:all 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+.mobile-menu.open{transform:translateY(0);opacity:1;}
+.mob-nl{
+  display:block;width:100%;text-align:left;
+  background:none;border:none;border-bottom:1px solid var(--bdr-l);
+  padding:18px 0;font-size:18px;font-weight:400;
+  font-family:'Cormorant Garamond',serif;
+  color:var(--ink);cursor:pointer;letter-spacing:-0.01em;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-nl:last-of-type{border-bottom:none;}
+.mob-nl:active{color:var(--wd);}
+.mob-lang{display:flex;gap:0;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin:20px 0;width:fit-content;}
+.mob-lb{background:none;color:var(--mu);border:none;padding:10px 22px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;}
+.mob-lb.act{background:var(--ink);color:#fff;}
+.mob-ctas{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+
+/* ── Sticky bottom action bar (mobile only) ── */
+.bottom-bar{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:190;
+  background:rgba(254,252,248,0.97);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--bdr-l);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  gap:10px;
+  box-shadow:0 -4px 24px rgba(36,22,8,0.1);
+}
+.bb-wa{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  gap:6px;background:#25D366;color:#fff;border:none;
+  border-radius:10px;padding:13px 16px;font-size:14px;font-weight:500;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform 0.15s,background 0.15s;
+}
+.bb-wa:active{transform:scale(0.97);background:#1da851;}
+.bb-book{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  gap:6px;background:var(--ink);color:#fff;border:none;
+  border-radius:10px;padding:13px;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.01em;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform 0.15s,background 0.15s;
+}
+.bb-book:active{transform:scale(0.97);background:var(--wd);}
+
+/* ── TABLET (≤ 860px) ── */
+@media(max-width:860px){
+  .hero-grid{grid-template-columns:1fr;padding:72px 0 60px;}
+  .hero-right{display:none;}
+  .hero-left{padding-right:0;}
+  .hero h1{font-size:clamp(42px,8vw,58px);}
+  .sec{padding:60px max(1.5rem,calc(50% - 540px));}
+  .g2{gap:36px;}
+}
+
+/* ── MOBILE (≤ 600px) ── */
+@media(max-width:600px){
+
+  /* Nav — show hamburger, hide desktop links */
+  .nav-links{display:none;}
+  .hamburger{display:flex;}
+  .mobile-menu{display:flex;}
+  #nav{height:auto;}
+  .nav-in{height:60px;}
+
+  /* Add bottom padding to body so sticky bar doesn't cover content */
+  body{padding-bottom:76px;}
+
+  /* Bottom bar visible */
+  .bottom-bar{display:flex;}
+
+  /* Hide WA float on mobile (replaced by bottom bar) */
+  .wa-f{display:none;}
+
+  /* HERO */
+  .hero{min-height:auto;padding:0 20px;}
+  .hero-grid{padding:56px 0 48px;gap:0;}
+  .hero-tag{font-size:10px;margin-bottom:18px;}
+  .hero h1{font-size:clamp(36px,10vw,50px);line-height:1.06;}
+  .hero-zh{font-size:13px;margin-bottom:14px;}
+  .hero-sub{font-size:15px;margin-bottom:32px;line-height:1.72;}
+  .hero-ctas{flex-direction:column;gap:10px;}
+  .hero-ctas .btn{width:100%;padding:15px;font-size:15px;justify-content:center;}
+
+  /* Trust bar — 2×2 grid */
+  .trust-in{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:8px 20px;}
+  .ti{border-right:1px solid rgba(255,255,255,0.1);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 8px;}
+  .ti:nth-child(even){border-right:none;}
+  .ti:nth-child(n+3){border-bottom:none;}
+  .ti-n{font-size:24px;}
+  .ti-l{font-size:9.5px;}
+
+  /* Sections */
+  .sec{padding:48px 20px;}
+  .sh{margin-bottom:36px;}
+  .sh h2{font-size:clamp(24px,8vw,34px);}
+  .sh p{font-size:14px;}
+  .sh-zh{font-size:12px;}
+  .eyebrow{font-size:9px;gap:8px;margin-bottom:12px;}
+  .eyebrow::before,.eyebrow::after{width:18px;}
+
+  /* Grids go single column */
+  .g2,.g3,.g4{grid-template-columns:1fr;gap:16px;}
+
+  /* HansMed 123 */
+  .step-card{margin-bottom:28px;}
+  .step-illo{height:160px;}
+
+  /* Cards */
+  .card{padding:24px 20px;border-radius:14px;}
+  .card-icon{width:44px;height:44px;font-size:20px;margin-bottom:14px;}
+
+  /* Service feature box */
+  .svc-box{padding:20px;}
+  .sfi{font-size:13px;padding:10px 0;}
+
+  /* Stat grid */
+  .stat-b{padding:18px;}
+
+  /* Cert strip — 3 per row */
+  .cert-strip{gap:8px;}
+  .cert-pill{padding:10px 14px;flex:1;min-width:calc(33% - 6px);}
+  .cert-top{font-size:9px;}
+  .cert-bot{font-size:9px;}
+
+  /* Page nav */
+  .pnav{gap:12px;}
+  .pnav-card{padding:16px;}
+
+  /* Quote */
+  .qb .sec{padding:48px 20px;}
+  .qt-text{font-size:clamp(17px,5vw,22px);margin:16px auto 10px;}
+
+  /* Inner hero */
+  .hero-page{padding:52px 20px 44px;}
+  .hp h1{font-size:clamp(28px,9vw,44px);}
+  .hp p{font-size:15px;}
+
+  /* Contact */
+  .hr-row{font-size:13px;}
+
+  /* Steps (book page) */
+  .step-row{padding:18px;}
+  .step-num-big{font-size:36px;width:40px;}
+
+  /* Benefits */
+  .benefit{padding:14px 16px;}
+
+  /* Footer */
+  .footer{padding:44px 20px 28px;}
+  .fg{grid-template-columns:1fr;gap:28px;}
+  .fbot{flex-direction:column;gap:6px;text-align:center;}
+
+  /* Herb dividers — less padding */
+  .herb-div{padding:16px 0;}
+
+  /* CTA bar in 123 section */
+  #cta-italic{display:none;}
+  #cta-btn{width:100%;padding:14px;font-size:14px;}
+
+  /* Services page CTA strip */
+  section[style*="display:flex"]{flex-direction:column;gap:16px;}
+
+}
+
+/* ── SMALL PHONE (≤ 400px) ── */
+@media(max-width:400px){
+  .hero h1{font-size:34px;}
+  .nav-bn{font-size:18px;}
+  .cert-strip{gap:6px;}
+  .cert-pill{min-width:calc(50% - 4px);}
+}
+/* ══════════════════════════════════════════════
+   INK BRUSH SCROLL REVEALS
+   GPU-only: only transform + opacity animated
+   Three techniques:
+   1. ib-rule    – gold line draws left → right
+   2. ib-sweep   – text sweeps in via clip-path
+   3. ib-fade    – elements rise and fade in
+   4. ib-herb    – SVG paths trace themselves
+══════════════════════════════════════════════ */
+
+/* 1. Gold rule line */
+.ib-rule{
+  display:block;height:1.5px;
+  background:var(--go);width:0%;
+  border-radius:1px;margin-bottom:16px;
+  transition:width 0.9s cubic-bezier(0.16,1,0.3,1);
+  will-change:width;
+}
+.ib-rule.vis{width:48px;}
+
+/* 2. Brush sweep — clip-path only (no paint cost) */
+.ib-sweep{
+  clip-path:inset(0 100% 0 0);
+  transition:clip-path 1.05s cubic-bezier(0.16,1,0.3,1);
+  will-change:clip-path;
+}
+.ib-sweep.vis{clip-path:inset(0 0% 0 0);}
+
+/* 3. Fade-rise — transform + opacity only */
+.ib-fade{
+  opacity:0;transform:translateY(18px);
+  transition:opacity 0.65s ease,transform 0.65s ease;
+  will-change:transform,opacity;
+}
+.ib-fade.vis{opacity:1;transform:translateY(0);}
+
+/* Stagger delays */
+.ib-d1{transition-delay:0.08s;}
+.ib-d2{transition-delay:0.18s;}
+.ib-d3{transition-delay:0.28s;}
+.ib-d4{transition-delay:0.38s;}
+.ib-d5{transition-delay:0.48s;}
+.ib-d6{transition-delay:0.58s;}
+
+/* 4. SVG herb path draw — uses CSS var set by JS */
+.ib-herb{
+  stroke-dasharray:var(--plen,300);
+  stroke-dashoffset:var(--plen,300);
+  transition:stroke-dashoffset 2.2s cubic-bezier(0.25,0.46,0.45,0.94);
+  will-change:stroke-dashoffset;
+}
+.ib-herb.vis{stroke-dashoffset:0;}
+
+/* Stagger herb elements */
+.ib-herb-d1{transition-delay:0.2s;}
+.ib-herb-d2{transition-delay:0.5s;}
+.ib-herb-d3{transition-delay:0.8s;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-in px">
+    <button class="nav-brand" onclick="go('home');closeMob();">
+      <img class="nav-logo" src="assets/img/brand/logo-mark.svg" alt="HansMed"/>
+      <span lang="en" style="display:inline-flex;align-items:baseline;gap:4px;">
+        <span class="nav-bn">HansMed</span>
+        <span class="nav-bz">漢方現代中醫</span>
+      </span>
+      <span lang="zh" style="display:inline-flex;align-items:baseline;gap:4px;">
+        <span class="nav-bn" style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-weight:400;">漢方現代中醫</span>
+      </span>
+    </button>
+    <div class="nav-links">
+      <button class="nl" data-p="home" onclick="go('home')">Home · 首頁</button>
+      <button class="nl" data-p="about" onclick="go('about')">About · 關於</button>
+      <button class="nl" data-p="services" onclick="go('services')">Services · 服務</button>
+      <button class="nl" data-p="shop" onclick="go('shop')">Shop · 商店</button>
+      <button class="nl" data-p="wellness" onclick="go('wellness')">Wellness · 健康評估</button>
+      <button class="nl" data-p="contact" onclick="go('contact')">Contact · 聯絡</button>
+      <div class="lang-wrap">
+        <button id="len" class="lang-btn act" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn"     onclick="setLang('zh')">中</button>
+      </div>
+      <button class="nl nav-signin" onclick="go('login')" style="color:var(--ink);font-weight:500;">Sign In · 登入</button>
+      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
+    </div>
+    <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<script>
+/* About dropdown — isolated, loads independently of main script */
+(function(){
+  var aboutOpen = false;
+  var mobAboutOpen = false;
+
+  window.toggleAboutMenu = function(e){
+    e.stopPropagation();
+    aboutOpen = !aboutOpen;
+    var dd  = document.getElementById('about-dropdown');
+    var chv = document.getElementById('about-chevron');
+    var btn = document.getElementById('about-trigger');
+    if(dd)  dd.style.display = aboutOpen ? 'block' : 'none';
+    if(chv) chv.style.transform = aboutOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    if(btn) btn.setAttribute('aria-expanded', String(aboutOpen));
+  };
+
+  window.closeAboutMenu = function(){
+    aboutOpen = false;
+    var dd  = document.getElementById('about-dropdown');
+    var chv = document.getElementById('about-chevron');
+    var btn = document.getElementById('about-trigger');
+    if(dd)  dd.style.display = 'none';
+    if(chv) chv.style.transform = 'rotate(0deg)';
+    if(btn) btn.setAttribute('aria-expanded','false');
+  };
+
+  window.toggleMobAbout = function(){
+    mobAboutOpen = !mobAboutOpen;
+    var sub = document.getElementById('mob-about-sub');
+    var chv = document.getElementById('mob-about-chevron');
+    if(sub) sub.style.display = mobAboutOpen ? 'block' : 'none';
+    if(chv) chv.style.transform = mobAboutOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  };
+
+  window.resetMobAbout = function(){
+    mobAboutOpen = false;
+    var sub = document.getElementById('mob-about-sub');
+    var chv = document.getElementById('mob-about-chevron');
+    if(sub) sub.style.display = 'none';
+    if(chv) chv.style.transform = 'rotate(0deg)';
+  };
+
+  // Close on outside click
+  document.addEventListener('click', function(e){
+    var wrap = document.getElementById('about-wrap');
+    if(wrap && !wrap.contains(e.target)) window.closeAboutMenu();
+  });
+})();
+</script>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-menu" id="mob-menu">
+  <div style="padding-top:8px;">
+    <button class="mob-nl" onclick="go('home');closeMob();">Home · 首頁</button>
+    <button class="mob-nl" onclick="go('about');closeMob();">About · 關於</button>
+    <button class="mob-nl" onclick="go('services');closeMob();">Services · 服務</button>
+    <button class="mob-nl" onclick="go('shop');closeMob();">Shop · 商店</button>
+    <button class="mob-nl" onclick="go('wellness');closeMob();">Wellness Assessment · 健康評估</button>
+    <button class="mob-nl" onclick="go('contact');closeMob();">Contact · 聯絡</button>
+    <button class="mob-nl" onclick="go('login');closeMob();">Sign In · 登入</button>
+    <div class="mob-lang">
+      <button id="mlen" class="mob-lb act" onclick="setLang('en');syncMobLang('en');">EN</button>
+      <button id="mlzh" class="mob-lb"     onclick="setLang('zh');syncMobLang('zh');">中</button>
+    </div>
+    <div class="mob-ctas">
+      <button class="btn btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">預約</span></button>
+      <button class="btn btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();">建立帳號 Create Account</button>
+      <a class="btn btn-wa" href="#" data-hm-wa="1" target="_blank" style="width:100%;padding:15px;font-size:15px;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        WhatsApp Us · 聯絡我們
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY BOTTOM BAR (mobile) -->
+<div class="bottom-bar" id="bottom-bar">
+  <a class="bb-wa" href="#" data-hm-wa="1" target="_blank">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+    WhatsApp
+  </a>
+  <button class="bb-book" onclick="go('book')">
+    預約 Book Now
+  </button>
+</div>
+
+<!-- ══ HOME ══════════════════════════════════════════════════ -->
+<div class="page" id="page-home">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-tag">
+          <img src="assets/img/brand/logo-mark.svg" style="width:18px;height:18px;opacity:0.6;vertical-align:middle;margin-right:4px;" alt=""/>
+          漢方現代中醫 · Licensed TCM · Malaysia
+        </div>
+        <h1>Traditional<br/>wisdom.<br/><em>Modern care.</em></h1>
+        <div class="hero-zh">傳統智慧 · 現代中醫</div>
+        <p class="hero-sub">Licensed TCM practitioners, AI-assisted wellness insights, and quality herbs — all in one platform, built for Malaysia.</p>
+        <div class="hero-ctas">
+          <button class="btn btn-outline-cream" onclick="go('register')">建立帳號 Create Account</button>
+          <a class="btn btn-wa" href="#" data-hm-wa="1" target="_blank">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            WhatsApp Us
+          </a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <!-- Live TCM Organ Clock — borderless, floats in hero -->
+        <div style="width:min(420px,44vw);display:flex;flex-direction:column;gap:0;">
+          <!-- Clock SVG — no border, blends with hero bg -->
+          <svg id="hero-clk" viewBox="0 0 380 320" width="100%" style="display:block;overflow:visible;" aria-label="Live TCM organ clock"></svg>
+          <!-- Info — matches screenshot layout -->
+          <div style="padding:4px 4px 0;">
+            <!-- Row 1: Chinese char + name + live digital time -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;line-height:1;color:var(--tc);flex-shrink:0;">心</div>
+              <div id="hm-en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--ink);flex-shrink:0;">Heart</div>
+              <div style="display:flex;align-items:baseline;gap:1px;margin-left:auto;flex-shrink:0;">
+                <span id="hm-dtime" style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#8C6340;letter-spacing:0.02em;line-height:1;">16:58</span>
+              </div>
+            </div>
+            <!-- Row 2: 3 pills -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+              <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Element</div><div class="cert-bot">Fire · 火</div></span>
+              <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top">Peak window</div><div class="cert-bot">11am – 1pm</div></span>
+              <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Next</div><div class="cert-bot">Small Intestine · 小腸</div></span>
+            </div>
+            <!-- Tip -->
+            <div id="hm-tip" style="font-size:13px;color:var(--mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--go);padding-left:12px;margin-bottom:12px;">
+              Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.
+            </div>
+            <!-- Progress bar -->
+            <div style="height:2px;background:var(--bdr-l);border-radius:2px;overflow:hidden;margin-bottom:5px;">
+              <div id="hm-prog" style="height:100%;background:var(--go);border-radius:2px;transition:width 2s linear;width:50%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+              <span id="hm-ps" style="font-size:10px;color:var(--mu);">11:00</span>
+              <span style="font-size:10px;color:var(--mu);">window progress</span>
+              <span id="hm-pe" style="font-size:10px;color:var(--mu);">13:00</span>
+            </div>
+            <!-- CTA -->
+            <button class="btn btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;" onclick="go('book')">Book a TCM Consultation →</button>
+            <p style="font-size:10px;color:var(--bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust bar -->
+  <div class="trust">
+    <div class="trust-in">
+      <div class="ti"><div class="ti-n" id="ti-1n">25+</div><div class="ti-l" id="ti-1l">Licensed Doctors · 持證醫師</div></div>
+      <div class="ti"><div class="ti-n" id="ti-2n">AI +</div><div class="ti-l" id="ti-2l">Doctor Reviewed · 醫師審核報告</div></div>
+      <div class="ti"><div class="ti-n" id="ti-3n">24/7</div><div class="ti-l" id="ti-3l">Chat Support · 線上支援</div></div>
+      <div class="ti"><div class="ti-n" id="ti-4n">PDPA</div><div class="ti-l" id="ti-4l">Data Compliant · 資料保護</div></div>
+    </div>
+  </div>
+
+  <!-- HansMed 123 -->
+  <section class="sec sec-alt">
+    <div class="sh center">
+      <div class="eyebrow" id="hw-eyebrow">使用流程</div>
+      <h2>HansMed 123 · <span style="font-family:'Noto Serif SC',serif;font-weight:300;">簡單三步</span> <em>Easy Steps</em></h2>
+      <p id="hw-sub" style="margin:0 auto;">From the first tap to the herbs at your door — three steps, one trusted practitioner.</p>
+      <p id="hw-sub2" class="sh-zh">從預約到送藥，三個步驟，一次信任。</p>
+    </div>
+    <div class="g3" style="margin-bottom:28px;padding-top:22px;">
+      <!-- Card 1 -->
+      <div class="step-card">
+        <div class="step-badge">1</div>
+        <div class="step-illo">
+          <svg width="160" height="130" viewBox="0 0 160 130" fill="none">
+            <rect x="20" y="20" width="78" height="88" rx="8" fill="var(--bg-3)" stroke="var(--bdr)" stroke-width="1.5"/>
+            <rect x="20" y="20" width="78" height="26" rx="8" fill="#C05040"/>
+            <rect x="20" y="38" width="78" height="8" fill="#C05040"/>
+            <circle cx="36" cy="16" r="4" fill="var(--bdr)"/>
+            <circle cx="76" cy="16" r="4" fill="var(--bdr)"/>
+            <circle cx="34" cy="62" r="3" fill="var(--bdr-l)"/><circle cx="50" cy="62" r="3" fill="var(--bdr-l)"/><circle cx="66" cy="62" r="3" fill="var(--bdr-l)"/><circle cx="82" cy="62" r="3" fill="var(--bdr-l)"/>
+            <circle cx="34" cy="76" r="3" fill="var(--bdr-l)"/><circle cx="50" cy="76" r="3" fill="var(--bdr-l)"/><circle cx="66" cy="76" r="3" fill="var(--bdr-l)"/><circle cx="82" cy="76" r="3" fill="var(--bdr-l)"/>
+            <circle cx="34" cy="90" r="3" fill="var(--bdr-l)"/><circle cx="50" cy="90" r="3" fill="var(--bdr-l)"/>
+            <circle cx="66" cy="76" r="8" fill="var(--go)" opacity="0.9"/>
+            <text x="66" y="80" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">15</text>
+            <circle cx="122" cy="70" r="30" fill="var(--bg-3)" stroke="var(--bdr)" stroke-width="2"/>
+            <circle cx="122" cy="70" r="3" fill="var(--wd-md)"/>
+            <line x1="122" y1="70" x2="122" y2="50" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
+            <line x1="122" y1="70" x2="136" y2="78" stroke="var(--wd-md)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="padding:0 22px;text-align:center;">
+          <div class="step-zh" id="s1-zh">預約</div>
+          <div class="step-en" id="s1-en">Book Appointment</div>
+          <p class="step-desc" id="s1-desc">Pick your concern and a convenient time.</p>
+          <p class="step-desc2" id="s1-desc2">選擇症狀與時段。</p>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div class="step-card">
+        <div class="step-badge">2</div>
+        <div class="step-illo">
+          <svg width="160" height="130" viewBox="0 0 160 130" fill="none">
+            <rect x="22" y="28" width="116" height="76" rx="8" fill="var(--bg-3)" stroke="var(--bdr)" stroke-width="2"/>
+            <rect x="30" y="36" width="100" height="60" rx="4" fill="var(--bg-2)"/>
+            <circle cx="80" cy="62" r="18" fill="var(--bg-3)" stroke="var(--bdr)" stroke-width="1.5"/>
+            <circle cx="80" cy="56" r="8" fill="var(--wd-pl)"/>
+            <ellipse cx="80" cy="76" rx="14" ry="7" fill="var(--wd-pl)"/>
+            <circle cx="93" cy="43" r="5" fill="#4CAF50"/>
+            <rect x="32" y="40" width="22" height="14" rx="2" fill="var(--bdr-l)"/>
+            <rect x="32" y="58" width="22" height="4" rx="1" fill="var(--bdr-l)"/>
+            <rect x="32" y="65" width="22" height="4" rx="1" fill="var(--bdr-l)"/>
+            <rect x="10" y="104" width="140" height="8" rx="4" fill="var(--ink)" opacity="0.1"/>
+            <path d="M40 120 Q60 115 80 120 Q100 125 120 120" stroke="var(--wd-pl)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="padding:0 22px;text-align:center;">
+          <div class="step-zh" id="s2-zh">問診</div>
+          <div class="step-en" id="s2-en">Online Consultation</div>
+          <p class="step-desc" id="s2-desc">Licensed TCM doctor sees you by video.</p>
+          <p class="step-desc2" id="s2-desc2">持證中醫師視訊問診。</p>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div class="step-card">
+        <div class="step-badge">3</div>
+        <div class="step-illo">
+          <svg width="160" height="130" viewBox="0 0 160 130" fill="none">
+            <polygon points="80,16 126,54 126,108 34,108 34,54" fill="var(--wd-pl)" stroke="var(--bdr)" stroke-width="1.5"/>
+            <polygon points="80,16 34,54 126,54" fill="var(--wd-md)" opacity="0.65"/>
+            <rect x="64" y="80" width="32" height="28" rx="3" fill="var(--wd)" opacity="0.65"/>
+            <circle cx="88" cy="94" r="2.5" fill="var(--go)"/>
+            <rect x="40" y="66" width="20" height="20" rx="2" fill="#87C5A4" opacity="0.7"/>
+            <line x1="50" y1="66" x2="50" y2="86" stroke="var(--bg-3)" stroke-width="1"/>
+            <line x1="40" y1="76" x2="60" y2="76" stroke="var(--bg-3)" stroke-width="1"/>
+            <rect x="18" y="70" width="38" height="32" rx="5" fill="#6B9B8A"/>
+            <path d="M26 70 Q37 60 48 70" stroke="#6B9B8A" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <rect x="24" y="78" width="7" height="9" rx="1" fill="rgba(255,255,255,0.38)"/>
+            <rect x="34" y="78" width="7" height="9" rx="1" fill="rgba(255,255,255,0.38)"/>
+            <circle cx="118" cy="48" r="14" fill="#4CAF50"/>
+            <path d="M111 48 L116 53 L125 43" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div style="padding:0 22px;text-align:center;">
+          <div class="step-zh" id="s3-zh">送藥 / 上門</div>
+          <div class="step-en" id="s3-en">Delivery / Home Visit</div>
+          <p class="step-desc" id="s3-desc">Herbs delivered to your door, or a home visit.</p>
+          <p class="step-desc2" id="s3-desc2">送藥到府，或上門服務。</p>
+        </div>
+      </div>
+    </div>
+    <!-- CTA bar -->
+    <div style="background:var(--bg-3);border:1px solid var(--bdr-l);border-radius:14px;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <p id="cta-italic" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--mu);font-weight:300;">Three simple steps to feel better — the modern way.</p>
+      <button id="cta-btn" class="btn btn-dark" style="letter-spacing:0.09em;font-size:13px;font-weight:600;" onclick="go('book')">START NOW</button>
+    </div>
+  </section>
+
+  <!-- Quote -->
+  <section class="qb sec">
+    <div class="qb-inner" style="text-align:center;">
+      <svg width="72" height="28" viewBox="0 0 72 28" fill="none" style="margin:0 auto 18px;display:block;">
+        <path d="M4 22 Q36 10 68 7" stroke="rgba(196,154,42,0.45)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M22 17 Q26 7 19 2 Q15 10 22 17Z" fill="rgba(196,154,42,0.38)"/>
+        <path d="M40 12 Q44 2 37 0 Q33 8 40 12Z" fill="rgba(196,154,42,0.35)"/>
+        <path d="M57 9 Q61 0 55 0 Q51 7 57 9Z" fill="rgba(196,154,42,0.3)"/>
+      </svg>
+      <p class="qt-text">"Every AI output is reviewed by a licensed TCM practitioner before it reaches you. Our technology assists. Your doctor decides."</p>
+      <p class="qt-zh">每份 AI 報告皆由持證中醫師審核後才發送 · 科技輔助，醫師決策</p>
+      <p class="qt-attr">HansMed · PDPA Compliant · T&amp;CM Act 2016 · MOH Registered</p>
+      <button class="btn btn-ghost" onclick="go('about')">About our approach →</button>
+    </div>
+  </section>
+
+  <!-- Certifications -->
+  <section class="sec sec-white" style="padding-top:56px;padding-bottom:56px;">
+    <div class="sh center" style="margin-bottom:28px;">
+      <div class="eyebrow">認證與監管 · Certified &amp; Regulated</div>
+      <h2 style="font-size:clamp(22px,3.5vw,32px);">Practising with full <em>regulatory compliance</em></h2>
+    </div>
+    <div class="cert-strip">
+      <div class="cert-pill"><div class="cert-top">KKM Malaysia</div><div class="cert-bot">Ministry of Health</div></div>
+      <div class="cert-pill"><div class="cert-top">HALAL</div><div class="cert-bot">JAKIM Certified</div></div>
+      <div class="cert-pill"><div class="cert-top">NPRA</div><div class="cert-bot">Approved Products</div></div>
+      <div class="cert-pill"><div class="cert-top">MOH Registered</div><div class="cert-bot">TCM Clinic · 登記中醫診所</div></div>
+      <div class="cert-pill"><div class="cert-top">T&amp;CM Act 2016</div><div class="cert-bot">Licensed Practitioners</div></div>
+    </div>
+  </section>
+
+  <!-- Our Services -->
+  <section class="sec sec-alt dot-tex">
+    <div class="sh center">
+      <div class="eyebrow">Our Services · 我們的服務</div>
+      <h2>Care that <em>fits your life</em></h2>
+      <p>Every consultation is led by a licensed TCM practitioner. AI assists — it never replaces — clinical expertise.</p>
+    </div>
+    <div class="g3">
+      <div class="card"><div class="ctr"></div><div class="cbl"></div>
+        <div class="card-icon">🩺</div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">TCM Consultations · 問診</h3>
+        <p style="font-size:14px;color:var(--mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Book in-person or video sessions. Your doctor reviews your case, writes a treatment plan, and can prescribe herbs directly.</p>
+        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">持牌中醫師 · 親診或視訊</p>
+        <button class="btn btn-outline btn-sm" onclick="go('services')">See all services →</button>
+      </div>
+      <div class="card"><div class="ctr"></div><div class="cbl"></div>
+        <div class="card-icon">👅</div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">Wellness Assessment · 健康評估</h3>
+        <p style="font-size:14px;color:var(--mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Upload a tongue photo or complete a constitution questionnaire. A licensed practitioner reviews every AI report before it reaches you.</p>
+        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">AI 體質分析 · 非醫療診斷</p>
+        <button class="btn btn-outline btn-sm" onclick="go('services')">Learn more →</button>
+      </div>
+      <div class="card"><div class="ctr"></div><div class="cbl"></div>
+        <div class="card-icon">🌿</div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">Herb Shop · 中藥商店</h3>
+        <p style="font-size:14px;color:var(--mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Quality single herbs and classical formulas from verified Malaysian suppliers. Prescription-linked orders reviewed by your practitioner.</p>
+        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">品質驗證 · 藥師審核</p>
+        <button class="btn btn-outline btn-sm" onclick="go('services')">Browse herbs →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Explore -->
+  <section class="sec sec-white">
+    <div class="sh"><div class="eyebrow">Explore · 了解更多</div><h2>Want to know more?</h2></div>
+    <div class="pnav">
+      <button class="pnav-card" onclick="go('about')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">關</div><div><div class="pnc-t">About HansMed · 關於我們</div><div class="pnc-s">Our story, approach and team</div></div></button>
+      <button class="pnav-card" onclick="go('practitioners')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">醫</div><div><div class="pnc-t">Our Doctors · 我們的醫師</div><div class="pnc-s">Mr. Siew &amp; Mr. Lim — founders</div></div></button>
+      <button class="pnav-card" onclick="go('services')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">服</div><div><div class="pnc-t">Our Services · 服務項目</div><div class="pnc-s">Consultations, AI wellness, herbs</div></div></button>
+      <button class="pnav-card" onclick="go('blog')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">文</div><div><div class="pnc-t">Blog · 部落格</div><div class="pnc-s">TCM insights from our practitioners</div></div></button>
+      <button class="pnav-card" onclick="go('faq')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">問</div><div><div class="pnc-t">FAQ · 常見問題</div><div class="pnc-s">TCM, online consult, herbal meds</div></div></button>
+      <button class="pnav-card" onclick="go('contact')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">聯</div><div><div class="pnc-t">Get in Touch · 聯絡我們</div><div class="pnc-s">WhatsApp, location, hours</div></div></button>
+    </div>
+  </section>
+</div>
+
+<!-- ══ ABOUT ══════════════════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <section class="hero-page">
+    <div class="hp">
+      <div class="eyebrow">About Us · 關於我們</div>
+      <h1>Where Tradition Meets<br/><em>Modern Care</em></h1>
+      <p>傳統中醫智慧，遇見現代科技 · Making quality TCM accessible to every Malaysian.</p>
+    </div>
+  </section>
+
+  <!-- Hub sub-nav cards -->
+  <section class="sec sec-white" style="padding-bottom:40px;">
+    <div class="sh center" style="margin-bottom:28px;">
+      <div class="eyebrow">Explore · 了解更多</div>
+      <h2>What would you like to <em>know?</em></h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:52px;">
+      <button onclick="go('practitioners')" class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">醫</div><div><div class="pnc-t">Our Practitioners</div><div class="pnc-s">Meet the founders</div></div></button>
+      <button onclick="go('services')"      class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">服</div><div><div class="pnc-t">Our Services</div><div class="pnc-s">Consult, wellness, herbs</div></div></button>
+      <button onclick="go('blog')"          class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">文</div><div><div class="pnc-t">Blog · 部落格</div><div class="pnc-s">TCM insights</div></div></button>
+      <button onclick="go('faq')"           class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">問</div><div><div class="pnc-t">FAQ · 常見問題</div><div class="pnc-s">All your questions</div></div></button>
+      <button onclick="go('contact')"       class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">聯</div><div><div class="pnc-t">Contact Us</div><div class="pnc-s">WhatsApp, hours</div></div></button>
+    </div>
+
+    <!-- Our story -->
+    <div class="g2">
+      <div>
+        <div class="sh"><div class="eyebrow">HansMed 的由來</div><h2>Why we built <em>HansMed</em></h2></div>
+        <div class="bi" style="margin-bottom:18px;"><div class="bi-en">HansMed was born from a simple idea — to help busy Malaysians see a qualified TCM practitioner with peace of mind, while freeing doctors from paperwork so they can focus on healing.</div><div class="bi-zh">為了方便大眾在忙碌的生活節奏中可以安心看上合格中醫，讓中醫師專心看病治病。</div></div>
+        <div class="bi"><div class="bi-en">Modern technology, traditional wisdom — bridging the generations.</div><div class="bi-zh">現代化的科技平台 · 傳統式的中醫智慧 · 造就了現代與傳統不再有代溝</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="stat-b"><div class="stat-n">25+</div><div class="stat-l">Licensed Doctors</div><div class="stat-zh">持證醫師</div></div>
+        <div class="stat-b"><div class="stat-n">12K</div><div class="stat-l">Patients Treated</div><div class="stat-zh">累計病患</div></div>
+        <div class="stat-b"><div class="stat-n">10+</div><div class="stat-l">TCM Specialties</div><div class="stat-zh">專科類別</div></div>
+        <div class="stat-b"><div class="stat-n">24/7</div><div class="stat-l">Chat Support</div><div class="stat-zh">線上支援</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Herb divider -->
+  <div style="background:var(--bg-3);padding:0 max(1.5rem,calc(50% - 540px));"><div class="herb-div"><span class="hdl-l"></span><svg width="80" height="28" viewBox="0 0 80 28" fill="none"><path d="M6 22 Q40 10 74 8" stroke="#6E8C5A" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M26 18 Q30 8 23 3 Q19 11 26 18Z" fill="#6E8C5A" opacity="0.5"/><path d="M43 13 Q47 3 40 0 Q36 8 43 13Z" fill="#6E8C5A" opacity="0.45"/><path d="M60 10 Q64 1 58 0 Q54 7 60 10Z" fill="#6E8C5A" opacity="0.4"/><circle cx="6" cy="22" r="2" fill="#B5881A" opacity="0.55"/><circle cx="74" cy="8" r="2" fill="#B5881A" opacity="0.55"/></svg><span class="hdl-r"></span></div></div>
+
+  <!-- 3 principles -->
+  <section class="sec sec-white dot-tex" style="padding-top:48px;">
+    <div class="sh center"><div class="eyebrow">Our Approach · 我們的原則</div><h2>Three things we <em>never compromise</em> on</h2></div>
+    <div class="g3">
+      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">醫</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Clinical Integrity · 臨床誠信</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Every AI output and wellness report is reviewed by a licensed TCM practitioner before it reaches you. All practitioners are registered and undergo continuous education.</p></div>
+      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">私</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Privacy First · 私隱優先</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Fully PDPA 2010 compliant. Explicit consent before any AI processing. Encrypted storage — export or delete your data at any time from settings.</p></div>
+      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">質</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Quality Herbs · 品質藥材</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Only verified Malaysian and international suppliers. Every product labelled with Chinese name, pinyin, and transparent sourcing details.</p></div>
+    </div>
+  </section>
+
+  <section class="qb sec" style="text-align:center;">
+    <div style="position:relative;">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;font-weight:400;margin-bottom:12px;">Ready to begin? · 準備好了嗎？</h2>
+      <p style="font-size:15px;color:rgba(255,255,255,0.5);margin-bottom:28px;font-weight:300;">Book your first consultation or create a free account today.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="go('book')">Book Appointment · 預約</button>
+        <button class="btn btn-ghost" onclick="go('services')">View Services</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══ SERVICES ════════════════════════════════════════════════ -->
+<div class="page" id="page-services">
+  <section class="hero-page"><div class="hp"><div class="eyebrow">Services · 服務</div><h1>Everything you need,<br/><em>in one place</em></h1><p>From first consultation to herbs at your door. · 從問診到送藥，一站式中醫服務。</p></div></section>
+  <section class="sec sec-white">
+    <div class="g2">
+      <div><div class="eyebrow">問診 Consultation</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">TCM <em>Consultations</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Book in-person or video sessions with a licensed TCM practitioner. Doctor reviews your case, records consultation notes, and can prescribe herbs directly.</div><div class="bi-zh">持牌中醫師親診或視訊問診 · 醫師記錄病歷並直接開方</div></div><button class="btn btn-wd" onclick="go('book')">Book Now · 立即預約</button></div>
+      <div class="svc-box"><div style="font-size:36px;margin-bottom:16px;">🩺</div><div class="sfi"><span class="sfi-dot"></span>In-person &amp; video · 親診及視訊</div><div class="sfi"><span class="sfi-dot"></span>Secure consultation notes · 加密病歷</div><div class="sfi"><span class="sfi-dot"></span>Doctor-written treatment plans · 治療方案</div><div class="sfi"><span class="sfi-dot"></span>Direct prescription management · 直接開方</div><div class="sfi"><span class="sfi-dot"></span>Reschedule anytime · 隨時更改</div></div>
+    </div>
+  </section>
+  <div style="background:var(--bg-2);padding:0 max(1.5rem,calc(50% - 540px));"><div class="herb-div"><span class="hdl-l"></span><svg width="80" height="28" viewBox="0 0 80 28" fill="none"><path d="M6 22 Q40 10 74 8" stroke="#6E8C5A" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M26 18 Q30 8 23 3 Q19 11 26 18Z" fill="#6E8C5A" opacity="0.5"/><path d="M43 13 Q47 3 40 0 Q36 8 43 13Z" fill="#6E8C5A" opacity="0.45"/><path d="M60 10 Q64 1 58 0 Q54 7 60 10Z" fill="#6E8C5A" opacity="0.4"/><circle cx="6" cy="22" r="2" fill="#B5881A" opacity="0.55"/><circle cx="74" cy="8" r="2" fill="#B5881A" opacity="0.55"/></svg><span class="hdl-r"></span></div></div>
+  <section class="sec sec-alt">
+    <div class="g2">
+      <div class="svc-box" style="order:1;"><div style="font-size:36px;margin-bottom:16px;">👅</div><div class="sfi"><span class="sfi-dot"></span>Tongue photo analysis · 舌診分析</div><div class="sfi"><span class="sfi-dot"></span>10-dimension constitution questionnaire</div><div class="sfi"><span class="sfi-dot"></span>Doctor-approved reports · 醫師審核</div><div class="sfi"><span class="sfi-dot"></span>Qualitative wellness bands</div><div class="sfi"><span class="sfi-dot"></span>Educational only — not a diagnosis</div></div>
+      <div style="order:2;"><div class="eyebrow">健康評估 AI Wellness</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">AI <em>Wellness Analysis</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Upload a tongue photo or complete our constitution questionnaire. AI generates a wellness insight — reviewed by a licensed TCM practitioner before it reaches you.</div><div class="bi-zh">AI 體質分析 · 持牌中醫師審核後才發送 · 健康評估，非醫療診斷</div></div><button class="btn btn-wd" onclick="go('register')">Get Started · 立即開始</button></div>
+    </div>
+  </section>
+  <div style="background:var(--bg-3);padding:0 max(1.5rem,calc(50% - 540px));"><div class="herb-div"><span class="hdl-l"></span><svg width="80" height="28" viewBox="0 0 80 28" fill="none"><path d="M6 22 Q40 10 74 8" stroke="#6E8C5A" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M26 18 Q30 8 23 3 Q19 11 26 18Z" fill="#6E8C5A" opacity="0.5"/><path d="M43 13 Q47 3 40 0 Q36 8 43 13Z" fill="#6E8C5A" opacity="0.45"/><path d="M60 10 Q64 1 58 0 Q54 7 60 10Z" fill="#6E8C5A" opacity="0.4"/><circle cx="6" cy="22" r="2" fill="#B5881A" opacity="0.55"/><circle cx="74" cy="8" r="2" fill="#B5881A" opacity="0.55"/></svg><span class="hdl-r"></span></div></div>
+  <section class="sec sec-white">
+    <div class="g2">
+      <div><div class="eyebrow">中藥商店 Herb Shop</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">Quality <em>Herb Shop</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Browse single herbs and classical formulas from verified suppliers. Prescription-linked orders reviewed by your practitioner. Over-the-counter items offered as herbal food supplements only.</div><div class="bi-zh">品質驗證草藥 · 藥師審核 · 處方藥需醫師開方</div></div><button class="btn btn-wd" onclick="go('register')">Browse Shop · 瀏覽商店</button></div>
+      <div class="svc-box"><div style="font-size:36px;margin-bottom:16px;">🌿</div><div class="sfi"><span class="sfi-dot"></span>Verified supplier network · 驗證供應商</div><div class="sfi"><span class="sfi-dot"></span>Chinese name + pinyin labels</div><div class="sfi"><span class="sfi-dot"></span>Prescription-linked orders · 處方連結</div><div class="sfi"><span class="sfi-dot"></span>Pharmacist review gate · 藥師審核</div><div class="sfi"><span class="sfi-dot"></span>Transparent sourcing · 透明來源</div></div>
+    </div>
+  </section>
+  <section style="background:var(--ink);padding:52px max(1.5rem,calc(50% - 540px));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;">
+    <div><h2 style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#fff;font-weight:400;margin-bottom:8px;">Ready to start?</h2><p style="font-size:14px;color:rgba(255,255,255,0.4);font-weight:300;">Book a consultation or WhatsApp us with any questions.</p></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-gold" onclick="go('book')">Book Now · 預約</button><a class="btn btn-wa" href="#" data-hm-wa="1" target="_blank">💬 WhatsApp</a></div>
+  </section>
+</div>
+
+<!-- ══ CONTACT ════════════════════════════════════════════════ -->
+<div class="page" id="page-contact">
+  <section class="hero-page"><div class="hp"><div class="eyebrow">Contact · 聯絡我們</div><h1>We're here<br/>to <em>help.</em></h1><p>Ask anything — appointments, services, or general enquiries. We respond on WhatsApp during clinic hours.</p></div></section>
+  <section class="sec dot-tex">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:52px;">
+      <div class="card" style="padding:32px 28px;"><div class="ctr"></div><div class="cbl"></div>
+        <div style="font-size:36px;margin-bottom:16px;">💬</div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--ink);font-weight:400;margin-bottom:10px;">WhatsApp · 立即聯絡</h2>
+        <div class="bi" style="margin-bottom:24px;"><div class="bi-en">The fastest way to reach us. Ask anything — appointments, services, or general enquiries. We typically respond within a few hours during clinic hours.</div><div class="bi-zh">最快的聯絡方式 · 診所時段內數小時內回覆</div></div>
+        <a class="btn btn-wa" href="#" data-hm-wa="1" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          Chat on WhatsApp
+        </a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card"><div class="ctr"></div><div class="cbl"></div><div style="font-size:26px;margin-bottom:12px;">🕐</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);margin-bottom:12px;">Clinic Hours · 診所時段</h3><div class="hr-row"><span class="hr-d">Monday – Friday</span><span class="hr-t">9:00 am – 6:00 pm</span></div><div class="hr-row"><span class="hr-d">Saturday · 週六</span><span class="hr-t">9:00 am – 1:00 pm</span></div><div class="hr-row"><span class="hr-d">Sunday &amp; Public Holidays</span><span class="hr-t">Closed · 休息</span></div></div>
+        <div class="card"><div class="ctr"></div><div class="cbl"></div><div style="font-size:26px;margin-bottom:12px;">📍</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);margin-bottom:8px;">Location · 地址</h3><p style="font-size:14px;color:var(--mu);line-height:1.65;font-weight:300;">Kuala Lumpur, Malaysia · 馬來西亞吉隆坡<br/>Full address provided on appointment confirmation.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);">預約確認後提供完整地址</span></p></div>
+      </div>
+    </div>
+    <div class="sh"><div class="eyebrow">FAQ · 常見問題</div><h2>Common questions</h2></div>
+    <div class="g4">
+      <div class="faq-card"><div class="faq-q">Do I need an account? · 需要帳號嗎？</div><div class="faq-a">Yes — a free account lets you manage appointments, view records, and access AI wellness tools securely.</div></div>
+      <div class="faq-card"><div class="faq-q">Are doctors licensed? · 醫師持牌嗎？</div><div class="faq-a">Every practitioner holds a valid T&amp;CM registration certificate, verified before accepting patients. 所有醫師皆持證。</div></div>
+      <div class="faq-card"><div class="faq-q">Is my data safe? · 資料安全嗎？</div><div class="faq-a">Fully PDPA 2010 compliant. Explicit consent before any processing. Export or delete your data anytime.</div></div>
+      <div class="faq-card"><div class="faq-q">What is the AI tool? · AI 評估？</div><div class="faq-a">Educational wellness insight only — not a medical diagnosis. Every report reviewed by a licensed practitioner first. 非醫療診斷。</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- ══ BOOK ════════════════════════════════════════════════════ -->
+<div class="page" id="page-book">
+  <section class="hero-page"><div class="hp"><div class="eyebrow">Book · 預約</div><h1>Book your<br/><em>consultation.</em></h1><p>Takes less than 2 minutes. · 不需兩分鐘，輕鬆預約。</p></div></section>
+  <section class="sec dot-tex">
+    <div style="max-width:560px;margin:0 auto;">
+      <div class="sh center"><div class="eyebrow">HansMed 123 · 簡單三步</div><h2>How it <em>works</em></h2></div>
+      <!-- Five Elements selector -->
+      <div class="sh center" style="margin-bottom:16px;">
+        <div class="eyebrow">五行 · What brings you here?</div>
+        <h2 style="font-size:clamp(22px,4vw,32px);">Choose your <em>element concern</em></h2>
+        <p style="font-size:14px;">Touch the element that resonates. We'll match you with the right practitioner.</p>
+      </div>
+      <svg id="bk-fsv" viewBox="0 0 560 350" width="100%" style="display:block;max-width:560px;margin:0 auto;cursor:pointer;"></svg>
+      <div style="max-width:560px;margin:0 auto;">
+        <div style="background:var(--bg-3);border:1px solid var(--bdr-l);border-radius:14px;padding:16px 18px;margin:12px 0 24px;display:flex;align-items:center;gap:14px;">
+          <div id="bk-zh" style="font-family:'Noto Serif SC',serif;font-size:38px;font-weight:300;color:var(--tc);line-height:1;flex-shrink:0;">木</div>
+          <div style="flex:1;min-width:0;">
+            <div id="bk-name" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--ink);margin-bottom:4px;">Wood Element concerns</div>
+            <div id="bk-tags" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sh center" style="margin-bottom:20px;">
+        <div class="eyebrow" style="margin-bottom:8px;">HansMed 123 · 簡單三步</div>
+        <h2 style="font-size:clamp(22px,4vw,32px);">How it <em>works</em></h2>
+      </div>
+      <div style="max-width:560px;margin:0 auto;">
+      <div class="step-row"><div class="step-num-big">01</div><div><div class="step-zh2">預約 Book Appointment</div><div class="step-desc2">Pick your concern and a convenient time. In-person or teleconsult.</div><div class="step-zh-desc2">選擇症狀與時段 · 親診或視訊</div></div></div>
+      <div class="step-row"><div class="step-num-big">02</div><div><div class="step-zh2">問診 Consultation</div><div class="step-desc2">A licensed TCM doctor sees you and writes your personalised treatment plan.</div><div class="step-zh-desc2">持證中醫師視訊或親診</div></div></div>
+      <div class="step-row"><div class="step-num-big">03</div><div><div class="step-zh2">送藥 / 上門 Delivery</div><div class="step-desc2">Prescribed herbs delivered to your door, or a home visit anywhere in Malaysia.</div><div class="step-zh-desc2">送藥到府 · 或上門服務</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;">
+        <button id="bk-btn" class="btn btn-dark" style="width:100%;padding:16px;font-size:15px;font-weight:600;" onclick="go('register')">Book a Wood Element Consultation</button>
+        <div style="text-align:center;font-size:13px;color:var(--mu);padding:4px 0;font-weight:300;">or · 或者</div>
+        <a class="btn btn-wa" href="#" data-hm-wa="1" target="_blank" style="width:100%;padding:14px;font-size:15px;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          WhatsApp Us to Book · WhatsApp 預約
+        </a>
+      </div>
+      <div style="background:var(--tc-xl);border:1px solid var(--tc-lt);padding:14px 18px;margin-top:24px;border-radius:10px;">
+        <p style="font-size:12px;color:var(--tc-dk);line-height:1.7;text-align:center;font-weight:300;">⚠ HansMed is for non-emergency consultations only. For chest pain, difficulty breathing, or life-threatening symptoms, call <strong>999</strong> immediately.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--mu);">漢方僅提供非緊急醫療諮詢。如遇緊急情況，請立即撥打 999。</span></p>
+      </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══ REGISTER ════════════════════════════════════════════════ -->
+<div class="page" id="page-register">
+  <section class="hero-page"><div class="hp"><div class="eyebrow">建立帳號 Create Account</div><h1>Your wellness journey<br/><em>starts here.</em></h1><p>A free HansMed account — all your TCM care in one place. 免費帳號 · 一站式中醫服務</p></div></section>
+  <section class="sec dot-tex">
+    <div style="max-width:640px;margin:0 auto;">
+      <div class="sh center"><div class="eyebrow">Free account includes · 免費帳號包含</div><h2>Everything you <em>need</em></h2></div>
+      <div class="g4" style="margin-bottom:36px;">
+        <div class="benefit"><div class="bi-icon">🗓️</div><div><div class="bt">Easy Booking · 輕鬆預約</div><div class="bd">Book and manage appointments with licensed TCM practitioners.</div></div></div>
+        <div class="benefit"><div class="bi-icon">📋</div><div><div class="bt">Health Records · 健康記錄</div><div class="bd">Consultation notes, prescriptions and reports — all secure.</div></div></div>
+        <div class="benefit"><div class="bi-icon">👅</div><div><div class="bt">Wellness Analysis · 健康評估</div><div class="bd">Tongue photo and constitution questionnaire, doctor-reviewed.</div></div></div>
+        <div class="benefit"><div class="bi-icon">🌿</div><div><div class="bt">Herb Shop · 中藥商店</div><div class="bd">Order quality herbs with practitioner review.</div></div></div>
+        <div class="benefit"><div class="bi-icon">🔒</div><div><div class="bt">Private &amp; Secure · 私隱保護</div><div class="bd">PDPA compliant. Export or delete your data anytime.</div></div></div>
+        <div class="benefit"><div class="bi-icon">💬</div><div><div class="bt">Chat with Doctor · 醫患溝通</div><div class="bd">Secure in-platform messaging between visits.</div></div></div>
+      </div>
+      <div style="text-align:center;">
+        <button class="btn btn-dark" style="padding:16px 52px;font-size:16px;font-weight:600;margin-bottom:14px;">建立帳號 Create Free Account</button>
+        <div style="font-size:13px;color:var(--mu);font-weight:300;">Already have an account? <button onclick="go('book')" style="background:none;border:none;color:var(--tc);cursor:pointer;font-size:13px;font-weight:500;">Sign in to book</button></div>
+      </div>
+      <p style="font-size:12px;color:var(--mu);text-align:center;margin-top:22px;line-height:1.72;font-weight:300;">By registering you agree to our Privacy Policy and PDPA-compliant data processing.<br/><span style="font-family:'Noto Serif SC',serif;color:var(--bdr);">AI 健康評估僅供教育用途，非醫療診斷。</span></p>
+    </div>
+  </section>
+</div>
+
+<!-- ══ PRACTITIONERS ══════════════════════════════════════════ -->
+<div class="page act" id="page-practitioners">
+  <section class="hero-page">
+    <div class="hp">
+      <div class="eyebrow">Our Practitioners · 我們的醫師</div>
+      <h1>Meet the doctors<br/>behind <em>HansMed</em></h1>
+      <p>Founders, head practitioners, and the clinical heart of HansMed. Every AI report, every treatment plan passes through their hands.</p>
+    </div>
+  </section>
+
+  <section class="sec sec-white">
+    <div class="sh center" style="margin-bottom:44px;">
+      <div class="eyebrow">Founders &amp; Head Practitioners</div>
+      <h2>Practitioners you can <em>trust</em></h2>
+      <p>Both practitioners hold T&amp;CM Act 2016 registration certificates and are MOH-registered. All patient records, AI wellness reports, and herb prescriptions are reviewed and signed off by a licensed practitioner before reaching you.</p>
+    </div>
+
+    <!-- Practitioner cards -->
+    <div class="g2" style="gap:32px;align-items:start;">
+
+      <!-- Dr Siew -->
+      <div class="card" style="padding:36px 32px;">
+        <div class="ctr"></div><div class="cbl"></div>
+        <!-- Avatar placeholder -->
+        <div style="width:88px;height:88px;border-radius:50%;background:var(--bg-2);border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <span style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:300;color:var(--wd-md);">蕭</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;">Mr. Siew Kuen Xian</h2>
+          <span style="font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);font-weight:300;">蕭坤賢</span>
+        </div>
+        <div style="font-size:13px;color:var(--wd-md);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">Co-Founder · Head Practitioner</div>
+
+        <!-- Credentials -->
+        <div style="background:var(--go-xl);border:1px solid var(--bdr-l);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+          <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;font-weight:500;">Credentials · 資歷</div>
+          <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);font-weight:400;">BSc (Hons) TCM — First Class Honours</span></div>
+          <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">International Medical University (IMU)</span></div>
+          <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">T&amp;CM Act 2016 Registered · MOH Licensed</span></div>
+          <div class="sfi" style="border-bottom:none;"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">Co-Founder, HansMed Modern TCM</span></div>
+        </div>
+
+        <!-- Specialties -->
+        <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-weight:500;">Areas of Practice · 專科</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;">
+          <span class="cert-pill">Internal Pain</span>
+          <span class="cert-pill">External Pain</span>
+          <span class="cert-pill">Acupuncture</span>
+          <span class="cert-pill">Manipulation</span>
+          <span class="cert-pill">Herbal Medicine</span>
+        </div>
+
+        <p style="font-size:14px;color:var(--mu);line-height:1.78;font-weight:300;font-style:italic;border-left:2px solid var(--go);padding-left:12px;">
+          "Mr. Siew graduated with First Class Honours and brings deep clinical rigour to every consultation — from complex internal conditions to musculoskeletal pain and rehabilitation."
+        </p>
+        <div style="margin-top:20px;">
+          <button class="btn btn-dark btn-sm" onclick="go('book')" style="border-radius:8px;">Book with Mr. Siew →</button>
+        </div>
+      </div>
+
+      <!-- Dr Lim -->
+      <div class="card" style="padding:36px 32px;">
+        <div class="ctr"></div><div class="cbl"></div>
+        <div style="width:88px;height:88px;border-radius:50%;background:var(--bg-2);border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <span style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:300;color:var(--wd-md);">林</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;">Mr. Lim Gao Hong</h2>
+          <span style="font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);font-weight:300;">林高鴻</span>
+        </div>
+        <div style="font-size:13px;color:var(--wd-md);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">Co-Founder · Head Practitioner</div>
+
+        <div style="background:var(--go-xl);border:1px solid var(--bdr-l);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+          <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;font-weight:500;">Credentials · 資歷</div>
+          <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);font-weight:400;">BSc (Hons) TCM — Honours</span></div>
+          <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">International Medical University (IMU)</span></div>
+          <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">T&amp;CM Act 2016 Registered · MOH Licensed</span></div>
+          <div class="sfi" style="border-bottom:none;"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">Co-Founder, HansMed Modern TCM</span></div>
+        </div>
+
+        <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-weight:500;">Areas of Practice · 專科</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;">
+          <span class="cert-pill">Internal Pain</span>
+          <span class="cert-pill">External Pain</span>
+          <span class="cert-pill">Acupuncture</span>
+          <span class="cert-pill">Manipulation</span>
+          <span class="cert-pill">Herbal Medicine</span>
+        </div>
+
+        <p style="font-size:14px;color:var(--mu);line-height:1.78;font-weight:300;font-style:italic;border-left:2px solid var(--go);padding-left:12px;">
+          "Mr. Lim brings a holistic and patient-centred approach to practice, excelling in pain management — both internal and external — through acupuncture, manipulation, and carefully prescribed herbal formulas."
+        </p>
+        <div style="margin-top:20px;">
+          <button class="btn btn-dark btn-sm" onclick="go('book')" style="border-radius:8px;">Book with Mr. Lim →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compliance note -->
+    <div style="background:var(--go-xl);border:1px solid var(--bdr-l);border-radius:12px;padding:16px 20px;margin-top:36px;text-align:center;">
+      <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;">All HansMed practitioners hold valid T&amp;CM Act 2016 registration certificates, verified before accepting patients. AI wellness reports are reviewed and approved by a licensed practitioner before reaching you.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);">所有醫師皆持有效 T&amp;CM 執照 · AI 報告由持牌醫師審核後發送</span></p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="qb sec" style="text-align:center;">
+    <div style="position:relative;">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#fff;font-weight:400;margin-bottom:10px;">Ready to consult?</h2>
+      <p style="font-size:15px;color:rgba(255,255,255,0.5);margin-bottom:28px;font-weight:300;">Book a session with Mr. Siew or Mr. Lim — in-person or video.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="go('book')">Book a Consultation · 預約</button>
+        <a class="btn btn-ghost" href="#" data-hm-wa="1" target="_blank">💬 WhatsApp us</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══ BLOG ═══════════════════════════════════════════════════ -->
+<div class="page" id="page-blog">
+  <section class="hero-page">
+    <div class="hp">
+      <div class="eyebrow">HansMed Blog · 部落格</div>
+      <h1>TCM knowledge,<br/><em>made accessible.</em></h1>
+      <p>Clinical insights, wellness guides, and the science behind traditional Chinese medicine — written by our licensed practitioners.</p>
+    </div>
+  </section>
+
+  <section class="sec dot-tex">
+    <div class="sh" style="margin-bottom:36px;">
+      <div class="eyebrow">Latest Articles · 最新文章</div>
+      <h2>From our <em>practitioners</em></h2>
+    </div>
+    <div class="g3">
+
+      <!-- Blog 1 -->
+      <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
+        <div class="ctr"></div><div class="cbl"></div>
+        <!-- Cover area -->
+        <div style="background:linear-gradient(135deg,var(--bg-2) 0%,var(--go-xl) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
+          <div style="text-align:center;">
+            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--wd-lt);line-height:1;">針藥</div>
+            <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Treatment</div>
+          </div>
+        </div>
+        <div style="padding:24px 24px 28px;">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <span class="cert-pill">Acupuncture</span>
+            <span class="cert-pill">Herbal Medicine</span>
+            <span class="cert-pill">Beginner Guide</span>
+          </div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">Understanding TCM Treatment Types: Acupuncture, Herbal Medicine &amp; Manipulation</h3>
+          <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">TCM is not one treatment — it is a system. Discover the three core modalities our practitioners use and how they work together to restore balance in the body.</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Siew Kuen Xian</div>
+              <div style="font-size:11px;color:var(--mu);font-weight:300;">5 min read · March 2026</div>
+            </div>
+            <button class="btn btn-outline btn-sm" style="border-radius:8px;" onclick="alert('Full article coming soon.')">Read →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blog 2 -->
+      <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
+        <div class="ctr"></div><div class="cbl"></div>
+        <div style="background:linear-gradient(135deg,var(--sage-lt,#EEF3E8) 0%,var(--bg-2) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
+          <div style="text-align:center;">
+            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--sage);line-height:1;">線診</div>
+            <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Online Care</div>
+          </div>
+        </div>
+        <div style="padding:24px 24px 28px;">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <span class="cert-pill">Teleconsult</span>
+            <span class="cert-pill">Accessibility</span>
+            <span class="cert-pill">Modern TCM</span>
+          </div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">The Pros of Online TCM Consultation — And When to Come In Person</h3>
+          <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">Video consultations are not a compromise — for many conditions, they are just as effective as in-person visits. Here is what online TCM can and cannot do.</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Lim Gao Hong</div>
+              <div style="font-size:11px;color:var(--mu);font-weight:300;">4 min read · February 2026</div>
+            </div>
+            <button class="btn btn-outline btn-sm" style="border-radius:8px;" onclick="alert('Full article coming soon.')">Read →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blog 3 -->
+      <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
+        <div class="ctr"></div><div class="cbl"></div>
+        <div style="background:linear-gradient(135deg,var(--tc-xl,#FCF6EF) 0%,var(--bg-2) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
+          <div style="text-align:center;">
+            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--tc);line-height:1;">舌診</div>
+            <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Tongue Diagnosis</div>
+          </div>
+        </div>
+        <div style="padding:24px 24px 28px;">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <span class="cert-pill">Tongue Analysis</span>
+            <span class="cert-pill">AI Wellness</span>
+            <span class="cert-pill">Diagnosis</span>
+          </div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">How We Diagnose With Your Tongue: The Ancient Art of 舌診</h3>
+          <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">Your tongue is a map of your internal health. Colour, coating, shape, and moisture all tell a practitioner things your symptoms alone cannot. Here is how it works.</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Siew Kuen Xian</div>
+              <div style="font-size:11px;color:var(--mu);font-weight:300;">6 min read · January 2026</div>
+            </div>
+            <button class="btn btn-outline btn-sm" style="border-radius:8px;" onclick="alert('Full article coming soon.')">Read →</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div style="text-align:center;margin-top:36px;">
+      <p style="font-size:13px;color:var(--mu);font-weight:300;margin-bottom:16px;">More articles coming soon · 更多文章即將推出</p>
+      <button class="btn btn-dark" style="border-radius:10px;" onclick="go('register')">Subscribe for updates · 訂閱最新資訊</button>
+    </div>
+  </section>
+</div>
+
+<!-- ══ FAQ ════════════════════════════════════════════════════ -->
+<div class="page" id="page-faq">
+  <section class="hero-page">
+    <div class="hp">
+      <div class="eyebrow">FAQ · 常見問題</div>
+      <h1>Answers to your<br/><em>questions.</em></h1>
+      <p>Everything you need to know before your first HansMed consultation. 預約前的所有問題，我們都為您解答。</p>
+    </div>
+  </section>
+
+  <section class="sec dot-tex">
+
+    <!-- About TCM -->
+    <div class="sh" style="margin-bottom:20px;">
+      <div class="eyebrow">About TCM · 關於中醫</div>
+      <h2>Traditional Chinese <em>Medicine</em></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:48px;">
+      <div class="faq-card">
+        <div class="faq-q">What is Traditional Chinese Medicine (TCM)?</div>
+        <div class="faq-a">TCM is a comprehensive medical system developed over 2,000 years. It views the body as an interconnected whole — using acupuncture, herbal medicine, manipulation, and dietary guidance to restore balance and address the root cause of illness, not just symptoms. 中醫將人體視為一個整體，以陰陽平衡為核心，通過針灸、中藥、推拿等方式調理身心。</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">Does TCM work alongside Western medicine?</div>
+        <div class="faq-a">Yes — integrative care is increasingly common. Many patients use TCM to complement Western treatment, particularly for chronic pain, recovery, digestive health, and stress. Our practitioners will always advise you if your condition requires urgent conventional medical attention. Please continue any existing prescribed medication unless advised otherwise by your Western doctor.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">How many sessions will I need?</div>
+        <div class="faq-a">This varies by condition and individual constitution. Acute concerns (recent pain, mild digestive issues) often respond within 2–4 sessions. Chronic or complex conditions may require longer-term care. Your practitioner will give you an honest assessment at the first consultation.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">Is TCM safe? Are there side effects?</div>
+        <div class="faq-a">When practised by a licensed, registered practitioner, TCM is generally safe. Acupuncture may cause mild soreness or bruising at needle points. Herbal medicine is prescribed specifically to your constitution — we never use a one-size-fits-all formula. Our practitioners are T&amp;CM Act 2016 registered and MOH licensed. Always disclose existing medications and health conditions at consultation.</div>
+      </div>
+    </div>
+
+    <!-- Online consultation -->
+    <div class="sh" style="margin-bottom:20px;">
+      <div class="eyebrow">Online Consultation · 線上問診</div>
+      <h2>Video consultations &amp; <em>accuracy</em></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:48px;">
+      <div class="faq-card">
+        <div class="faq-q">How accurate is an online TCM consultation?</div>
+        <div class="faq-a">For many conditions — especially those involving pain, stress, sleep, digestion, and constitution-based concerns — a video consultation with tongue photo analysis is clinically comparable to an in-person visit. Our practitioners conduct a thorough intake: tongue assessment, symptom history, lifestyle, and pulse description. Physical acupuncture and manipulation require an in-person visit, and your practitioner will advise you if this is necessary.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">What happens during an online consultation?</div>
+        <div class="faq-a">You will join a secure video session with a licensed practitioner. They will ask about your symptoms, lifestyle, and medical history. You may be asked to show your tongue and describe your pulse. After the session, your practitioner writes a personalised treatment plan, which may include a herbal prescription, dietary recommendations, and follow-up guidance.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">What conditions are NOT suitable for online consultation?</div>
+        <div class="faq-a">Any emergency or acute condition requiring urgent medical care should go directly to A&amp;E — call 999. Conditions requiring hands-on physical assessment (e.g. complex spinal injuries, post-surgical care) require an in-person visit. Your practitioner will tell you clearly at the start of the session if an in-person assessment is needed.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">What is the AI Wellness Assessment — is it a diagnosis?</div>
+        <div class="faq-a">No. The AI Wellness Assessment is an educational tool — it analyses your tongue photo and constitution questionnaire to generate a wellness insight about your body type and likely imbalances. It is not a medical diagnosis. Every AI report is reviewed and approved by a licensed TCM practitioner before it is sent to you. Do not use it to self-treat or replace a clinical consultation. 此評估報告為健康教育參考，非醫療診斷。所有 AI 報告均由持牌中醫師審核後才發送。</div>
+      </div>
+    </div>
+
+    <!-- Herbal medicine -->
+    <div class="sh" style="margin-bottom:20px;">
+      <div class="eyebrow">Herbal Medicine · 中藥</div>
+      <h2>Questions about <em>our herbs</em></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:48px;">
+      <div class="faq-card">
+        <div class="faq-q">Where do your herbs come from?</div>
+        <div class="faq-a">All herbs and formulas are sourced from verified Malaysian and international suppliers who meet our quality standards. Every product is labelled with its Chinese name, pinyin, and sourcing information. Prescription herbs are reviewed by your practitioner before dispatch. Over-the-counter items in the herb shop are listed as herbal food supplements — not medicinal products — unless prescribed.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">Can I order herbs without a consultation?</div>
+        <div class="faq-a">Selected over-the-counter items (general wellness teas, single herbs) are available in the shop without a prescription. Prescription-grade formulas require a consultation with a HansMed practitioner, who will review and approve the order before it is fulfilled. We do not dispense prescription herbs without practitioner sign-off — this protects your safety.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">Do the herbs interact with Western medications?</div>
+        <div class="faq-a">Some herbs can interact with pharmaceutical medications — particularly blood thinners, diabetes medication, and immunosuppressants. Always disclose all medications at your consultation. Our practitioners are trained to identify and avoid interactions. Never self-prescribe herbal medicine if you are on long-term pharmaceutical treatment without practitioner advice.</div>
+      </div>
+      <div class="faq-card">
+        <div class="faq-q">Are your products HALAL certified?</div>
+        <div class="faq-a">We are committed to HALAL-compliant sourcing. Products carrying the HALAL label have been certified by JAKIM-recognised bodies. If you have specific requirements, please ask your practitioner or contact us via WhatsApp before purchase. 我們致力提供清真合規產品，如有特別需求，歡迎通過 WhatsApp 聯絡我們。</div>
+      </div>
+    </div>
+
+    <!-- Still have questions -->
+    <div style="background:var(--bg-3);border:1px solid var(--bdr-l);border-radius:16px;padding:32px;text-align:center;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--ink);font-weight:400;margin-bottom:10px;">Still have questions? · 還有疑問？</div>
+      <p style="font-size:14px;color:var(--mu);font-weight:300;margin-bottom:22px;line-height:1.72;">WhatsApp us — our team responds within a few hours during clinic hours. Or book a consultation and ask your practitioner directly.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a class="btn btn-wa" href="#" data-hm-wa="1" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          WhatsApp Us
+        </a>
+        <button class="btn btn-dark" style="border-radius:10px;" onclick="go('book')">Book a Consultation →</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="fg">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <svg viewBox="0 0 66 66" width="44" height="44" aria-hidden="true" style="opacity:0.9;flex-shrink:0;">
+          <rect x="1"  y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="1"  width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="10.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="23" width="20" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="33" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="46" y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="46" width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="55.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
+        </svg>
+        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+      </div>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+    </div>
+    <div>
+      <div class="flbl">Platform · 平台</div>
+      <button class="fl" onclick="go('home')">Home · 首頁</button>
+      <button class="fl" onclick="go('about')">About · 關於</button>
+      <button class="fl" onclick="go('practitioners')">Our Doctors · 醫師</button>
+      <button class="fl" onclick="go('services')">Services · 服務</button>
+      <button class="fl" onclick="go('blog')">Blog · 部落格</button>
+      <button class="fl" onclick="go('faq')">FAQ · 常見問題</button>
+      <button class="fl" onclick="go('book')">Book · 預約</button>
+      <button class="fl" onclick="go('register')">Sign Up · 註冊</button>
+    </div>
+    <div>
+      <div class="flbl">Compliance · 合規</div>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+    </div>
+  </div>
+  <div class="f-cert-row">
+    <div class="f-cert"><div class="f-cert-top">KKM</div><div class="f-cert-bot">Malaysia</div></div>
+    <div class="f-cert"><div class="f-cert-top">HALAL</div><div class="f-cert-bot">JAKIM</div></div>
+    <div class="f-cert"><div class="f-cert-top">NPRA</div><div class="f-cert-bot">Approved</div></div>
+    <div class="f-cert"><div class="f-cert-top">MOH</div><div class="f-cert-bot">Registered TCM</div></div>
+    <div class="f-cert"><div class="f-cert-top">T&CM Act</div><div class="f-cert-bot">2016</div></div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心於馬來西亞</span>
+    <span>PDPA · T&amp;CM Act 2016</span>
+  </div>
+</footer>
+
+<!-- WA Float -->
+<a class="wa-f" href="#" data-hm-wa="1" target="_blank" title="WhatsApp us">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+</a>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/bus.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/lang-switcher.js"></script>
+<script>
+/* ── Page navigation ── */
+/* ── TCM Organ Clock ── */
+
+const CLOCK_ORGANS=[
+  {name:'Gallbladder',zh:'膽',start:23,el:'Wood',elZh:'木',col:'#7A9060',tip:'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.'},
+  {name:'Liver',zh:'肝',start:1,el:'Wood',elZh:'木',col:'#6E8858',tip:'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.'},
+  {name:'Lung',zh:'肺',start:3,el:'Metal',elZh:'金',col:'#A09888',tip:'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.'},
+  {name:'Large Intestine',zh:'大腸',start:5,el:'Metal',elZh:'金',col:'#909080',tip:'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.'},
+  {name:'Stomach',zh:'胃',start:7,el:'Earth',elZh:'土',col:'#C49840',tip:'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.'},
+  {name:'Spleen',zh:'脾',start:9,el:'Earth',elZh:'土',col:'#B88A38',tip:'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.'},
+  {name:'Heart',zh:'心',start:11,el:'Fire',elZh:'火',col:'#B85840',tip:'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.'},
+  {name:'Small Intestine',zh:'小腸',start:13,el:'Fire',elZh:'火',col:'#A84830',tip:'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.'},
+  {name:'Bladder',zh:'膀胱',start:15,el:'Water',elZh:'水',col:'#4A7890',tip:'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.'},
+  {name:'Kidney',zh:'腎',start:17,el:'Water',elZh:'水',col:'#3A6080',tip:'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.'},
+  {name:'Pericardium',zh:'心包',start:19,el:'Fire',elZh:'火',col:'#8A6070',tip:'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.'},
+  {name:'Triple Warmer',zh:'三焦',start:21,el:'Fire',elZh:'火',col:'#705058',tip:'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.'},
+];
+
+/* ── TCM Organ Clock — draws hero circle + section clock ── */
+function hmNs(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+function hmRad(d){return d*Math.PI/180;}
+function hmGetOrgan(h){
+  for(let i=0;i<CLOCK_ORGANS.length;i++){
+    const s=CLOCK_ORGANS[i].start,e=(s+2)%24;
+    if(s>e){if(h>=s||h<e)return i;}
+    else{if(h>=s&&h<e)return i;}
+  }
+  return 0;
+}
+function hmFmtH(h){const ampm=h<12?'am':'pm';const h12=h%12===0?12:h%12;return h12+ampm;}
+
+function drawClock(svgId,cx,cy,ro,ri,rl,fontSize,showLabel,showHand,showCenter){
+  const svg=document.getElementById(svgId);
+  if(!svg)return;
+  svg.innerHTML='';
+  const now=new Date();
+  const h=now.getHours(),m=now.getMinutes(),sec=now.getSeconds();
+  const ai=hmGetOrgan(h);
+  const GAP=2.5;
+
+  // Outer guide ring
+  const og=hmNs('circle');
+  og.setAttribute('cx',cx);og.setAttribute('cy',cy);og.setAttribute('r',ro+14);
+  og.setAttribute('fill','none');og.setAttribute('stroke','rgba(216,201,174,0.5)');og.setAttribute('stroke-width','0.5');
+  svg.appendChild(og);
+
+  // Inner guide ring
+  const ig=hmNs('circle');
+  ig.setAttribute('cx',cx);ig.setAttribute('cy',cy);ig.setAttribute('r',ri-14);
+  ig.setAttribute('fill','none');ig.setAttribute('stroke','rgba(216,201,174,0.3)');ig.setAttribute('stroke-width','0.5');
+  svg.appendChild(ig);
+
+  // 12 organ segments
+  CLOCK_ORGANS.forEach((o,i)=>{
+    const active=i===ai;
+    const startAngle=-90+o.start*15;
+    const endAngle=startAngle+30;
+    const sa=hmRad(startAngle+GAP/2),ea=hmRad(endAngle-GAP/2);
+    const activeRo=active?ro+10:ro;
+    const c=Math.cos,s=Math.sin;
+    const path=hmNs('path');
+    path.setAttribute('d',
+      `M${cx+activeRo*c(sa)} ${cy+activeRo*s(sa)}` +
+      `A${activeRo} ${activeRo} 0 0 1 ${cx+activeRo*c(ea)} ${cy+activeRo*s(ea)}` +
+      `L${cx+ri*c(ea)} ${cy+ri*s(ea)}` +
+      `A${ri} ${ri} 0 0 0 ${cx+ri*c(sa)} ${cy+ri*s(sa)}Z`
+    );
+    path.setAttribute('fill', active ? o.col+'CC' : o.col+'35');
+    path.setAttribute('stroke', active ? '#B5881A' : 'rgba(254,252,248,0.8)');
+    path.setAttribute('stroke-width', active ? '1.5' : '1.2');
+    svg.appendChild(path);
+
+    // Segment label
+    if(showLabel){
+      const mid=hmRad(startAngle+15);
+      const lx=cx+rl*c(mid),ly=cy+rl*s(mid);
+      const lt=hmNs('text');
+      lt.setAttribute('x',lx);lt.setAttribute('y',ly+fontSize*0.36);
+      lt.setAttribute('text-anchor','middle');
+      lt.setAttribute('font-family',"'Noto Serif SC',serif");
+      lt.setAttribute('font-size',active?fontSize+2:fontSize);
+      lt.setAttribute('font-weight',active?'400':'300');
+      lt.setAttribute('fill',active?'#B5881A':'rgba(122,98,72,0.55)');
+      lt.setAttribute('pointer-events','none');
+      lt.textContent=o.zh.length>2?o.zh[0]:o.zh;
+      svg.appendChild(lt);
+    }
+  });
+
+  // Center fill
+  const cf=hmNs('circle');
+  cf.setAttribute('cx',cx);cf.setAttribute('cy',cy);cf.setAttribute('r',ri-1);
+  cf.setAttribute('fill','var(--bg-3,#FEFCF8)');
+  cf.setAttribute('stroke','rgba(216,201,174,0.5)');cf.setAttribute('stroke-width','0.5');
+  svg.appendChild(cf);
+
+  if(showCenter){
+    // Botanical sprig — above center
+    const bpaths=[
+      {d:'M'+cx+' '+(cy-18)+'C'+(cx-1)+' '+(cy-32)+' '+(cx-3)+' '+(cy-46)+' '+(cx-5)+' '+(cy-58),sw:1.4,col:'rgba(155,114,72,0.22)'},
+      {d:'M'+(cx-3)+' '+(cy-38)+'C'+(cx-12)+' '+(cy-46)+' '+(cx-16)+' '+(cy-56)+' '+(cx-10)+' '+(cy-62)+' C'+(cx-4)+' '+(cy-56)+' '+(cx-1)+' '+(cy-46)+' '+(cx-3)+' '+(cy-38)+'Z',sw:0,col:'rgba(196,154,90,0.14)',fill:true},
+      {d:'M'+(cx-4)+' '+(cy-50)+'C'+(cx+4)+' '+(cy-58)+' '+(cx+8)+' '+(cy-68)+' '+(cx+4)+' '+(cy-74)+' C'+(cx-1)+' '+(cy-68)+' '+(cx-4)+' '+(cy-60)+' '+(cx-4)+' '+(cy-50)+'Z',sw:0,col:'rgba(196,154,90,0.12)',fill:true},
+    ];
+    bpaths.forEach(bp=>{
+      const p=hmNs('path');p.setAttribute('d',bp.d);
+      if(bp.fill){p.setAttribute('fill',bp.col);p.setAttribute('stroke','none');}
+      else{p.setAttribute('fill','none');p.setAttribute('stroke',bp.col);p.setAttribute('stroke-width',bp.sw);p.setAttribute('stroke-linecap','round');}
+      svg.appendChild(p);
+    });
+
+    // 漢方 — center
+    const ch=hmNs('text');
+    ch.setAttribute('x',cx);ch.setAttribute('y',cy+18);
+    ch.setAttribute('text-anchor','middle');
+    ch.setAttribute('font-family',"'Noto Serif SC',serif");
+    ch.setAttribute('font-size','40');ch.setAttribute('font-weight','300');
+    ch.setAttribute('fill','#B8895A');ch.setAttribute('pointer-events','none');
+    ch.textContent='漢方';
+    svg.appendChild(ch);
+
+    // Current organ label
+    const organNow=CLOCK_ORGANS[hmGetOrgan(new Date().getHours())];
+    const ol=hmNs('text');
+    ol.setAttribute('x',cx);ol.setAttribute('y',cy+38);
+    ol.setAttribute('text-anchor','middle');
+    ol.setAttribute('font-family','system-ui,sans-serif');
+    ol.setAttribute('font-size','8.5');
+    ol.setAttribute('letter-spacing','0.09em');
+    ol.setAttribute('fill','rgba(181,136,26,0.65)');
+    ol.setAttribute('pointer-events','none');
+    ol.textContent=organNow.zh+' · '+organNow.name.toUpperCase();
+    svg.appendChild(ol);
+
+    // Traditional · Modern
+    const ts=hmNs('text');
+    ts.setAttribute('x',cx);ts.setAttribute('y',cy+52);
+    ts.setAttribute('text-anchor','middle');
+    ts.setAttribute('font-family',"'Cormorant Garamond',serif");
+    ts.setAttribute('font-size','9.5');ts.setAttribute('font-style','italic');
+    ts.setAttribute('fill','rgba(122,98,72,0.3)');ts.setAttribute('pointer-events','none');
+    ts.textContent='Traditional · Modern';
+    svg.appendChild(ts);
+  }
+
+  // Clock hand — longer, with short tail for readability
+  if(showHand){
+    const totalMins=h*60+m+sec/60;
+    const handA=hmRad(-90+(totalMins/(24*60))*360);
+    const handLen=ri-10; // longer — reaches near the segments
+    const tailLen=12;
+    // Tail (opposite direction)
+    const tail=hmNs('line');
+    tail.setAttribute('x1',cx);tail.setAttribute('y1',cy);
+    tail.setAttribute('x2',cx-tailLen*Math.cos(handA));tail.setAttribute('y2',cy-tailLen*Math.sin(handA));
+    tail.setAttribute('stroke','rgba(181,136,26,0.35)');tail.setAttribute('stroke-width','1.5');tail.setAttribute('stroke-linecap','round');
+    svg.appendChild(tail);
+    // Main hand
+    const hl=hmNs('line');
+    hl.setAttribute('x1',cx);hl.setAttribute('y1',cy);
+    hl.setAttribute('x2',cx+handLen*Math.cos(handA));hl.setAttribute('y2',cy+handLen*Math.sin(handA));
+    hl.setAttribute('stroke','#B5881A');hl.setAttribute('stroke-width','2');hl.setAttribute('stroke-linecap','round');
+    svg.appendChild(hl);
+    // Center pin
+    const cd=hmNs('circle');
+    cd.setAttribute('cx',cx);cd.setAttribute('cy',cy);cd.setAttribute('r','4');
+    cd.setAttribute('fill','#B5881A');
+    svg.appendChild(cd);
+  }
+
+  // Sub-clock time display
+  if(!showCenter){
+    const tt=hmNs('text');
+    tt.setAttribute('x',cx);tt.setAttribute('y',cy+28);
+    tt.setAttribute('text-anchor','middle');
+    tt.setAttribute('font-size','13');
+    tt.setAttribute('font-family','system-ui,sans-serif');
+    tt.setAttribute('fill','rgba(122,98,72,0.6)');
+    tt.textContent=h.toString().padStart(2,'0')+':'+m.toString().padStart(2,'0');
+    svg.appendChild(tt);
+    const ttl=hmNs('text');
+    ttl.setAttribute('x',cx);ttl.setAttribute('y',cy-48);
+    ttl.setAttribute('text-anchor','middle');ttl.setAttribute('font-size','8.5');
+    ttl.setAttribute('letter-spacing','0.12em');
+    ttl.setAttribute('font-family','system-ui,sans-serif');
+    ttl.setAttribute('fill','rgba(122,98,72,0.4)');
+    ttl.textContent='子午流注  ·  TCM ORGAN CLOCK';
+    svg.appendChild(ttl);
+  }
+}
+
+function drawAllClocks(){
+  const now=new Date();
+  const h=now.getHours(),m=now.getMinutes();
+  const ai=hmGetOrgan(h);
+  const hStr=h.toString().padStart(2,'0');
+  const mStr=m.toString().padStart(2,'0');
+
+  // Hero clock
+  drawClock('hero-clk', 190,155, 130,74, 148, 11, true, true, true);
+
+  // Panel digital time
+  const dt=document.getElementById('hm-dtime');
+  if(dt) dt.textContent=hStr+':'+mStr;
+
+  // Update info panel
+  const organ=CLOCK_ORGANS[ai];
+  const next=CLOCK_ORGANS[(ai+1)%12];
+  const endH=(organ.start+2)%24;
+  const zh=document.getElementById('hm-zh');if(zh){zh.textContent=organ.zh;zh.style.color=organ.col;}
+  const en=document.getElementById('hm-en');if(en)en.textContent=organ.name;
+  const el=document.getElementById('hm-el');if(el)el.querySelector('.cert-bot').textContent=organ.el+' · '+organ.elZh;
+  const win=document.getElementById('hm-window');if(win)win.querySelector('.cert-bot').textContent=hmFmtH(organ.start)+' – '+hmFmtH(endH);
+  const nxt=document.getElementById('hm-next-pill');if(nxt)nxt.querySelector('.cert-bot').textContent=next.name+' · '+next.zh;
+  const tip=document.getElementById('hm-tip');if(tip)tip.textContent=organ.tip;
+  const ps=document.getElementById('hm-ps');if(ps)ps.textContent=organ.start.toString().padStart(2,'0')+':00';
+  const pe=document.getElementById('hm-pe');if(pe)pe.textContent=endH.toString().padStart(2,'0')+':00';
+  const elapsed=((h-organ.start+24)%24)*60+m;
+  const prog=document.getElementById('hm-prog');if(prog)prog.style.width=Math.min(100,Math.max(0,(elapsed/120)*100)).toFixed(1)+'%';
+}
+
+drawAllClocks();
+setInterval(drawAllClocks,30000);
+
+// Live time ticker — updates panel digital time every second
+setInterval(()=>{
+  const now=new Date();
+  const dt=document.getElementById('hm-dtime');
+  if(dt) dt.textContent=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+},1000);
+
+/* ── Five Elements Booking Selector ── */
+const BK_EL=[
+  {n:'Wood',zh:'木',col:'#7A9860',s:-99,tags:['Stress & tension','Headaches','Eye strain','PMS','Muscle aches','Mood swings']},
+  {n:'Fire',zh:'火',col:'#C05840',s:-27,tags:['Insomnia','Anxiety','Palpitations','Poor circulation','Memory & focus','Restlessness']},
+  {n:'Earth',zh:'土',col:'#C49840',s:45,tags:['Bloating','Fatigue','Poor appetite','Weight management','Digestive pain','Overthinking']},
+  {n:'Metal',zh:'金',col:'#858470',s:117,tags:['Respiratory health','Skin issues','Low immunity','Constipation','Grief & loss','Chronic cough']},
+  {n:'Water',zh:'水',col:'#4878A0',s:189,tags:['Lower back pain','Deep fatigue','Fertility','Urinary health','Premature ageing','Low vitality']},
+];
+let bkSel=0;
+
+function bkNs(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+
+function drawBkElem(){
+  const svg=document.getElementById('bk-fsv');
+  if(!svg)return;
+  svg.innerHTML='';
+  const CX=280,CY=168,RO=118,RI=55,RL=88,RS=132,GAP=5;
+
+  const ht=bkNs('text');ht.setAttribute('x',CX);ht.setAttribute('y',11);ht.setAttribute('text-anchor','middle');ht.setAttribute('font-size','8.5');ht.setAttribute('letter-spacing','0.14em');ht.setAttribute('fill','var(--mu)');ht.setAttribute('font-family','system-ui,sans-serif');ht.textContent='五行  ·  TOUCH YOUR CONCERN';svg.appendChild(ht);
+
+  BK_EL.forEach((e,i)=>{
+    const active=i===bkSel;
+    const ro=active?RS:RO;
+    const sa=hmRad(e.s+GAP/2),ea=hmRad(e.s+72-GAP/2);
+    const c=Math.cos,s=Math.sin;
+    const p=bkNs('path');
+    p.setAttribute('d',`M${CX+ro*c(sa)} ${CY+ro*s(sa)}A${ro} ${ro} 0 0 1 ${CX+ro*c(ea)} ${CY+ro*s(ea)}L${CX+RI*c(ea)} ${CY+RI*s(ea)}A${RI} ${RI} 0 0 0 ${CX+RI*c(sa)} ${CY+RI*s(sa)}Z`);
+    p.setAttribute('fill',active?e.col+'BB':e.col+'3A');
+    p.setAttribute('stroke',active?'#B5881A':'rgba(250,247,242,0.9)');
+    p.setAttribute('stroke-width',active?'1.5':'1.5');
+    p.style.cursor='pointer';
+    p.onclick=()=>{bkSel=i;drawBkElem();updateBkPanel();};
+    svg.appendChild(p);
+
+    const mid=hmRad(e.s+36),lx=CX+RL*c(mid),ly=CY+RL*s(mid);
+    const zt=bkNs('text');zt.setAttribute('x',lx);zt.setAttribute('y',ly+6);zt.setAttribute('text-anchor','middle');zt.setAttribute('font-family',"'Noto Serif SC',serif");zt.setAttribute('font-size',active?'16':'13');zt.setAttribute('fill',active?'rgba(255,253,248,0.95)':'var(--mu)');zt.setAttribute('pointer-events','none');zt.textContent=e.zh;svg.appendChild(zt);
+    const et=bkNs('text');et.setAttribute('x',lx);et.setAttribute('y',ly+20);et.setAttribute('text-anchor','middle');et.setAttribute('font-size','7.5');et.setAttribute('letter-spacing','0.06em');et.setAttribute('font-family','system-ui,sans-serif');et.setAttribute('fill',active?'rgba(255,253,248,0.55)':'var(--mu)');et.setAttribute('pointer-events','none');et.textContent=e.n.toUpperCase();svg.appendChild(et);
+  });
+
+  const cf=bkNs('circle');cf.setAttribute('cx',CX);cf.setAttribute('cy',CY);cf.setAttribute('r',RI-1);cf.setAttribute('fill','var(--bg-3)');cf.setAttribute('stroke','var(--bdr-l)');cf.setAttribute('stroke-width','0.5');svg.appendChild(cf);
+  const cz=bkNs('text');cz.setAttribute('x',CX);cz.setAttribute('cy',CY);cz.setAttribute('y',CY+16);cz.setAttribute('text-anchor','middle');cz.setAttribute('font-family',"'Noto Serif SC',serif");cz.setAttribute('font-size','34');cz.setAttribute('font-weight','300');cz.setAttribute('fill',BK_EL[bkSel].col);cz.setAttribute('pointer-events','none');cz.textContent=BK_EL[bkSel].zh;svg.appendChild(cz);
+}
+
+function updateBkPanel(){
+  const e=BK_EL[bkSel];
+  const zh=document.getElementById('bk-zh');if(zh){zh.textContent=e.zh;zh.style.color=e.col;}
+  const nm=document.getElementById('bk-name');if(nm)nm.textContent=e.n+' Element concerns';
+  const tags=document.getElementById('bk-tags');
+  if(tags){tags.innerHTML='';e.tags.forEach(t=>{const s=document.createElement('span');s.style.cssText='font-size:11px;padding:4px 10px;border-radius:12px;background:var(--bg-2);color:var(--mu);border:0.5px solid var(--bdr-l);';s.textContent=t;tags.appendChild(s);});}
+  const btn=document.getElementById('bk-btn');if(btn)btn.textContent='Book a '+e.n+' Element Consultation';
+}
+drawBkElem();updateBkPanel();
+
+
+/* ── Cross-page router (replaces the design file's in-page SPA go()).
+      Each v4 landing page is a standalone HTML file. ── */
+function go(id) {
+  closeMob();
+  var routes = {
+    home:          'index.html',
+    about:         'about.html',
+    services:      'services.html',
+    contact:       'contact.html',
+    shop:          'shop.html',
+    book:          'portal.html#/book',
+    wellness:      'portal.html#/ai-diagnosis',
+    register:      'index.html#/register',
+    login:         'index.html#/login',
+    practitioners: 'practitioners.html',
+    blog:          'blog.html',
+    faq:           'faq.html',
+  };
+  if (routes[id]) { location.href = routes[id]; return; }
+  document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('act'); });
+  var el = document.getElementById('page-' + id);
+  if (el) el.classList.add('act');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+/* ── Mobile hamburger / drawer ── */
+let mobOpen=false;
+function toggleMob(){
+  mobOpen=!mobOpen;
+  const ham=document.getElementById('ham');
+  const menu=document.getElementById('mob-menu');
+  ham.classList.toggle('open',mobOpen);
+  menu.classList.toggle('open',mobOpen);
+  // Prevent body scroll when drawer open
+  document.body.style.overflow=mobOpen?'hidden':'';
+}
+function closeMob(){
+  if(!mobOpen)return;
+  mobOpen=false;
+  document.getElementById('ham').classList.remove('open');
+  document.getElementById('mob-menu').classList.remove('open');
+  document.body.style.overflow='';
+  if(window.resetMobAbout) window.resetMobAbout();
+}
+// Close drawer on backdrop tap
+document.getElementById('mob-menu').addEventListener('click',function(e){
+  if(e.target===this)closeMob();
+});
+// Close on Escape
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMob();});
+
+/* ── Language switcher ── */
+const S={
+  en:{
+    'hw-eyebrow':'How it works',
+    'hw-sub':'From the first tap to the herbs at your door — three steps, one trusted practitioner.',
+    'hw-sub2':'從預約到送藥，三個步驟，一次信任。',
+    's1-zh':'預約','s1-en':'Book Appointment',
+    's1-desc':'Pick your concern and a convenient time.','s1-desc2':'選擇症狀與時段。',
+    's2-zh':'問診','s2-en':'Online Consultation',
+    's2-desc':'Licensed TCM doctor sees you by video.','s2-desc2':'持證中醫師視訊問診。',
+    's3-zh':'送藥 / 上門','s3-en':'Delivery / Home Visit',
+    's3-desc':'Herbs delivered to your door, or a home visit.','s3-desc2':'送藥到府，或上門服務。',
+    'cta-italic':'Three simple steps to feel better — the modern way.','cta-btn':'START NOW',
+    'ti-1n':'25+','ti-1l':'Licensed Doctors · 持證醫師',
+    'ti-2n':'AI +','ti-2l':'Doctor Reviewed · 醫師審核報告',
+    'ti-3n':'24/7','ti-3l':'Chat Support · 線上支援',
+    'ti-4n':'PDPA','ti-4l':'Data Compliant · 資料保護',
+  },
+  zh:{
+    'hw-eyebrow':'使用流程',
+    'hw-sub':'從預約到送藥，三個步驟，一次信任。','hw-sub2':'',
+    's1-zh':'預約','s1-en':'預約掛號',
+    's1-desc':'選擇您的症狀與方便的時段。','s1-desc2':'',
+    's2-zh':'問診','s2-en':'線上問診',
+    's2-desc':'持證中醫師視訊問診。','s2-desc2':'',
+    's3-zh':'送藥 / 上門','s3-en':'送藥 / 上門服務',
+    's3-desc':'送藥到府，或上門服務。','s3-desc2':'',
+    'cta-italic':'三個簡單步驟，現代中醫，輕鬆體驗。','cta-btn':'立即開始',
+    'ti-1n':'25+','ti-1l':'持證醫師',
+    'ti-2n':'AI +','ti-2l':'醫師審核報告',
+    'ti-3n':'24/7','ti-3l':'線上支援',
+    'ti-4n':'PDPA','ti-4l':'資料保護合規',
+  }
+};
+const IDS=Object.keys(S.en);
+
+function setLang(l){ if(window.HM && HM.langSwitch && HM.langSwitch.set){ try{ HM.langSwitch.set(l); }catch(_){} }
+  // Desktop toggles
+  document.getElementById('len').classList.toggle('act',l==='en');
+  document.getElementById('lzh').classList.toggle('act',l==='zh');
+  // Mobile toggles
+  const ml=document.getElementById('mlen');
+  const mz=document.getElementById('mlzh');
+  if(ml)ml.classList.toggle('act',l==='en');
+  if(mz)mz.classList.toggle('act',l==='zh');
+  // Content
+  IDS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const v=S[l][id]??'';
+    el.textContent=v;
+    el.style.display=v===''?'none':'';
+  });
+}
+function syncMobLang(l){setLang(l);}
+setLang((function(){try{var p=localStorage.getItem('hm-lang-pref');return (p==='zh'||p==='en')?p:'en';}catch(_){return 'en';}})());
+/* WA number wiring */
+(function(){
+  var num = (window.HM && HM.config && HM.config.CLINIC && HM.config.CLINIC.whatsapp) || '601165600393';
+  var href = 'https://wa.me/' + num.replace(/^\+/, '').replace(/\D/g, '');
+  document.querySelectorAll('[data-hm-wa]').forEach(function(el){ el.setAttribute('href', href); });
+})();
+
+/* ── About nav dropdown ── */
+.nav-dropdown-wrap{position:relative;display:inline-flex;}
+.nl-about{display:flex;align-items:center;}
+.about-dropdown{
+  position:absolute;top:calc(100% + 10px);left:50%;
+  transform:translateX(-50%);
+  width:260px;
+  background:var(--bg-3);
+  border:1px solid var(--bdr-l);
+  border-radius:14px;
+  box-shadow:0 16px 48px rgba(36,22,8,0.12),0 4px 12px rgba(36,22,8,0.06);
+  z-index:300;
+  overflow:hidden;
+  animation:ddIn 0.18s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes ddIn{
+  from{opacity:0;transform:translateX(-50%) translateY(-6px);}
+  to  {opacity:1;transform:translateX(-50%) translateY(0);}
+}
+/* Gold top border */
+.about-dropdown::before{
+  content:'';display:block;height:2px;
+  background:linear-gradient(90deg,transparent,var(--go) 30%,var(--go) 70%,transparent);
+}
+.about-dd-inner{padding:8px;}
+.about-dd-item{
+  display:flex;align-items:center;gap:12px;
+  width:100%;background:none;border:none;
+  padding:10px 12px;border-radius:9px;
+  cursor:pointer;text-align:left;
+  transition:background 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.about-dd-item:hover{background:var(--bg-2);}
+.add-icon{
+  width:34px;height:34px;flex-shrink:0;
+  border-radius:8px;background:var(--go-xl);
+  border:1px solid var(--bdr-l);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif SC',serif;font-size:14px;
+  color:var(--wd-md);
+}
+.add-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.2;}
+.add-sub{font-size:11px;color:var(--mu);font-weight:300;margin-top:2px;}
+
+/* ── Mobile sub-items ── */
+.mob-sub-item{
+  display:block;width:100%;text-align:left;
+  background:none;border:none;
+  padding:11px 12px;font-size:16px;
+  font-family:'DM Sans',sans-serif;font-weight:300;
+  color:var(--ink-m);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:color 0.15s;
+}
+.mob-sub-item:active{color:var(--wd);}
+</style> ─────────────────
+   Applies classes via JS so HTML stays clean.
+   IntersectionObserver fires once per section.
+─────────────────────────────────────────────── */
+function initInkBrush(){
+  /* Skip: hero already has heroIn animation */
+  const skip=el=>el.closest('.hero,.hero-page,.hero-circle,.hero-inner,.trust,.mobile-menu,.bottom-bar,#nav');
+
+  /* ① Eyebrows — prepend gold rule + sweep */
+  document.querySelectorAll('.sh .eyebrow, .hp .eyebrow').forEach(el=>{
+    if(skip(el))return;
+    const rule=document.createElement('span');
+    rule.className='ib-rule';
+    el.parentNode.insertBefore(rule,el);
+    el.classList.add('ib-sweep');
+  });
+
+  /* ② h2 headings — brush sweep */
+  document.querySelectorAll('.sh h2, .hp h1').forEach(el=>{
+    if(skip(el))return;
+    el.classList.add('ib-sweep','ib-d1');
+  });
+
+  /* ③ Section paragraphs — fade rise */
+  document.querySelectorAll('.sh p, .sh .sh-zh, .hp p').forEach(el=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d2');
+  });
+
+  /* ④ Cards — staggered fade */
+  document.querySelectorAll('.card').forEach((el,i)=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d'+(i%3+1));
+  });
+  document.querySelectorAll('.step-card').forEach((el,i)=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d'+(i+1));
+  });
+  document.querySelectorAll('.pnav-card').forEach((el,i)=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d'+(i+1));
+  });
+  document.querySelectorAll('.cert-pill').forEach((el,i)=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d'+Math.min(i%5+1,6));
+  });
+  document.querySelectorAll('.stat-b').forEach((el,i)=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d'+(i%4+1));
+  });
+  document.querySelectorAll('.benefit').forEach((el,i)=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d'+Math.min(i%3+1,6));
+  });
+  document.querySelectorAll('.faq-card,.step-row').forEach((el,i)=>{
+    if(skip(el))return;
+    el.classList.add('ib-fade','ib-d'+(i%4+1));
+  });
+
+  /* ⑤ Herb divider SVG paths — stroke draw */
+  document.querySelectorAll('.herb-div svg path, .herb-div svg circle').forEach((el,i)=>{
+    if(skip(el))return;
+    try{
+      const len=Math.ceil(el.getTotalLength());
+      el.style.setProperty('--plen',len+'px');
+    }catch(e){el.style.setProperty('--plen','300px');}
+    el.classList.add('ib-herb','ib-herb-d'+(Math.min(i+1,3)));
+  });
+
+  /* ⑥ Trust bar items — stagger fade */
+  document.querySelectorAll('.ti').forEach((el,i)=>{
+    el.classList.add('ib-fade','ib-d'+(i+1));
+  });
+
+  /* ⑦ HansMed 123 CTA bar */
+  const ctaBar=document.getElementById('cta-italic');
+  const ctaWrap=ctaBar?ctaBar.closest('div[style]'):null;
+  if(ctaWrap)ctaWrap.classList.add('ib-fade','ib-d3');
+
+  /* ── IntersectionObserver ── */
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting)return;
+      const sec=entry.target;
+      const vis=cls=>{
+        sec.querySelectorAll('.'+cls).forEach(el=>el.classList.add('vis'));
+      };
+      /* Sequence: rule → sweep → fade → herb */
+      vis('ib-rule');
+      setTimeout(()=>vis('ib-sweep'),90);
+      setTimeout(()=>{vis('ib-fade');vis('ib-herb');},220);
+      io.unobserve(sec);
+    });
+  },{threshold:0.1,rootMargin:'0px 0px -48px 0px'});
+
+  /* Observe every section + trust bar */
+  document.querySelectorAll('.sec, .trust, .hero-page').forEach(el=>io.observe(el));
+}
+
+/* Run once DOM is settled */
+setTimeout(initInkBrush, 100);
+
+</script>
+<script>
+/* ─── Sign In → My Portal swap ─── */
+(function () {
+  var PORTAL_URL = {
+    patient:  'portal.html',
+    doctor:   'doctor.html',
+    pharmacy: 'pharmacy.html',
+    admin:    'admin.html',
+  };
+  function applySignInSwap() {
+    var user = (window.HM && HM.auth && typeof HM.auth.user === 'function') ? HM.auth.user() : null;
+    if (!user || !user.role) return;
+    var dest = PORTAL_URL[user.role] || 'portal.html';
+    document.querySelectorAll('.nav-signin, .nl.nav-signin').forEach(function (el) {
+      if (el.tagName === 'A') el.setAttribute('href', dest);
+      else el.setAttribute('onclick', "location.href='" + dest + "'");
+      el.innerHTML = 'My Portal · 我的入口';
+    });
+    document.querySelectorAll('.mob-nl').forEach(function (el) {
+      var txt = (el.textContent || '').trim();
+      if (txt === 'Sign In · 登入' || txt === '登入 Sign In' || txt === 'Sign In' || txt === '登入') {
+        el.textContent = 'My Portal · 我的入口';
+        if (el.tagName === 'A') el.setAttribute('href', dest);
+        else el.setAttribute('onclick', "location.href='" + dest + "';closeMob();");
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySignInSwap);
+  } else {
+    applySignInSwap();
+  }
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'hm_user' || e.key === 'hm_token') applySignInSwap();
+  });
+})();
+</script>
+</body>
+</html>
