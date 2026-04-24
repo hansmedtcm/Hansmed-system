@@ -63,9 +63,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <a class="nl act" href="index.html">Home · 首頁</a>
       <!-- About dropdown wrapper -->
       <div style="position:relative;display:inline-block;" id="about-wrap">
-        <button id="about-trigger" class="nl"
-          onclick="toggleAboutMenu(event)"
-          style="display:inline-flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:inherit;padding:6px 13px;">
+        <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
           About · 關於
           <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none"
             style="transition:transform 0.2s;flex-shrink:0;">
@@ -87,10 +85,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <a id="dd-contact" href="contact.html"         class="dd-item">Contact Us · 聯絡</a>
         </div>
       </div>
-      <a class="nl"     href="services.html">Services · 服務</a>
       <a class="nl"     href="shop.html">Shop · 商店</a>
       <a class="nl"     href="portal.html#/wellness-assessment">Wellness · 健康評估</a>
-      <a class="nl"     href="contact.html">Contact · 聯絡</a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>

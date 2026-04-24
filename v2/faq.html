@@ -585,7 +585,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
     <div class="nav-links">
       <button class="nl" data-p="home" onclick="go('home')">Home · 首頁</button>
       <div style="position:relative;" id="about-wrap">
-        <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
+        <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)" style="display:inline-flex;align-items:center;gap:5px;line-height:inherit;">
           About · 關於
           <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
             <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -606,10 +606,8 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
           <a href="contact.html"         class="dd-item">Contact Us · 聯絡</a>
         </div>
       </div>
-      <button class="nl" data-p="services" onclick="go('services')">Services · 服務</button>
       <button class="nl" data-p="shop" onclick="go('shop')">Shop · 商店</button>
       <button class="nl" data-p="wellness" onclick="go('wellness')">Wellness · 健康評估</button>
-      <button class="nl" data-p="contact" onclick="go('contact')">Contact · 聯絡</button>
       <div class="lang-wrap">
         <button id="len" class="lang-btn act" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn"     onclick="setLang('zh')">中</button>
