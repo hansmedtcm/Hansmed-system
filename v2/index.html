@@ -143,16 +143,16 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <!-- Row 1: Chinese char + name + live digital time -->
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
             <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;line-height:1;color:var(--v4-tc);flex-shrink:0;">心</div>
-            <div id="hm-en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--v4-ink);flex-shrink:0;">Heart</div>
+            <div id="hm-en" lang="en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--v4-ink);flex-shrink:0;">Heart</div>
             <div style="display:flex;align-items:baseline;gap:1px;margin-left:auto;flex-shrink:0;">
               <span id="hm-dtime" style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#8C6340;letter-spacing:0.02em;line-height:1;">--:--</span>
             </div>
           </div>
           <!-- Row 2: 3 pills -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-            <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Element</div><div class="cert-bot">Fire · 火</div></span>
-            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top">Peak window</div><div class="cert-bot">11am – 1pm</div></span>
-            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Next</div><div class="cert-bot">Small Intestine · 小腸</div></span>
+            <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Element</span><span lang="zh">元素</span></div><div class="cert-bot">Fire · 火</div></span>
+            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top"><span lang="en">Peak window</span><span lang="zh">當令時段</span></div><div class="cert-bot">11am – 1pm</div></span>
+            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Next</span><span lang="zh">下一個</span></div><div class="cert-bot">Small Intestine · 小腸</div></span>
           </div>
           <!-- Tip -->
           <div id="hm-tip" style="font-size:13px;color:var(--v4-mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--v4-go);padding-left:12px;margin-bottom:12px;">
@@ -164,11 +164,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
             <span id="hm-ps" style="font-size:10px;color:var(--v4-mu);">11:00</span>
-            <span style="font-size:10px;color:var(--v4-mu);">window progress</span>
+            <span style="font-size:10px;color:var(--v4-mu);"><span lang="en">window progress</span><span lang="zh">時段進度</span></span>
             <span id="hm-pe" style="font-size:10px;color:var(--v4-mu);">13:00</span>
           </div>
           <!-- CTA -->
-          <a class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="portal.html#/book">Book a TCM Consultation →</a>
+          <a class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="portal.html#/book"><span lang="en">Book a TCM Consultation →</span><span lang="zh">預約中醫問診 →</span></a>
           <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
       </div>
@@ -645,18 +645,18 @@ window.setLang = setLang;
    and the info panel updates as real time passes.
    ══════════════════════════════════════════════════════════════════ */
 var CLOCK_ORGANS = [
-  { name: 'Gallbladder',     zh: '膽',   start: 23, el: 'Wood',  elZh: '木', col: '#7A9060', tip: 'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.' },
-  { name: 'Liver',           zh: '肝',   start: 1,  el: 'Wood',  elZh: '木', col: '#6E8858', tip: 'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.' },
-  { name: 'Lung',            zh: '肺',   start: 3,  el: 'Metal', elZh: '金', col: '#A09888', tip: 'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.' },
-  { name: 'Large Intestine', zh: '大腸', start: 5,  el: 'Metal', elZh: '金', col: '#909080', tip: 'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.' },
-  { name: 'Stomach',         zh: '胃',   start: 7,  el: 'Earth', elZh: '土', col: '#C49840', tip: 'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.' },
-  { name: 'Spleen',          zh: '脾',   start: 9,  el: 'Earth', elZh: '土', col: '#B88A38', tip: 'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.' },
-  { name: 'Heart',           zh: '心',   start: 11, el: 'Fire',  elZh: '火', col: '#B85840', tip: 'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.' },
-  { name: 'Small Intestine', zh: '小腸', start: 13, el: 'Fire',  elZh: '火', col: '#A84830', tip: 'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.' },
-  { name: 'Bladder',         zh: '膀胱', start: 15, el: 'Water', elZh: '水', col: '#4A7890', tip: 'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.' },
-  { name: 'Kidney',          zh: '腎',   start: 17, el: 'Water', elZh: '水', col: '#3A6080', tip: 'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.' },
-  { name: 'Pericardium',     zh: '心包', start: 19, el: 'Fire',  elZh: '火', col: '#8A6070', tip: 'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.' },
-  { name: 'Triple Warmer',   zh: '三焦', start: 21, el: 'Fire',  elZh: '火', col: '#705058', tip: 'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.' },
+  { name: 'Gallbladder',     zh: '膽',   start: 23, el: 'Wood',  elZh: '木', col: '#7A9060', tip: 'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.',            tipZh: '晚上 11 時前就寢。膽經此時排濁更新，休息就是最好的養生。' },
+  { name: 'Liver',           zh: '肝',   start: 1,  el: 'Wood',  elZh: '木', col: '#6E8858', tip: 'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.',                  tipZh: '肝經當令，深度排毒時段。應臥床休息，忌飲酒、強光與壓力。' },
+  { name: 'Lung',            zh: '肺',   start: 3,  el: 'Metal', elZh: '金', col: '#A09888', tip: 'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.',                            tipZh: '肺氣最旺。此時做深呼吸或太極，最能養肺補氣。' },
+  { name: 'Large Intestine', zh: '大腸', start: 5,  el: 'Metal', elZh: '金', col: '#909080', tip: 'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.',                      tipZh: '起床喝溫水、排便。身體正準備排濁，順應之即養生。' },
+  { name: 'Stomach',         zh: '胃',   start: 7,  el: 'Earth', elZh: '土', col: '#C49840', tip: 'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.',                                    tipZh: '脾胃消化力最強。此時宜吃最豐盛、溫熱的一餐。' },
+  { name: 'Spleen',          zh: '脾',   start: 9,  el: 'Earth', elZh: '土', col: '#B88A38', tip: 'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.',                                    tipZh: '思慮最清明。適合專注學習、分析與精細創作。' },
+  { name: 'Heart',           zh: '心',   start: 11, el: 'Fire',  elZh: '火', col: '#B85840', tip: 'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.',                            tipZh: '心氣最旺。午後小憩 20 分鐘，長年護心。' },
+  { name: 'Small Intestine', zh: '小腸', start: 13, el: 'Fire',  elZh: '火', col: '#A84830', tip: 'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.',                         tipZh: '小腸分清別濁。午後散步片刻，有助消化吸收。' },
+  { name: 'Bladder',         zh: '膀胱', start: 15, el: 'Water', elZh: '水', col: '#4A7890', tip: 'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.',                             tipZh: '體力腦力俱佳時段。多飲水，膀胱經主水液代謝。' },
+  { name: 'Kidney',          zh: '腎',   start: 17, el: 'Water', elZh: '水', col: '#3A6080', tip: 'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.',                        tipZh: '腎為先天之本。宜節飲食、忌生冷，漸入晚間收斂。' },
+  { name: 'Pericardium',     zh: '心包', start: 19, el: 'Fire',  elZh: '火', col: '#8A6070', tip: 'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.',                                   tipZh: '心包經當令。此時宜歡聚、溫情相伴，養神安心。' },
+  { name: 'Triple Warmer',   zh: '三焦', start: 21, el: 'Fire',  elZh: '火', col: '#705058', tip: 'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.',                      tipZh: '三焦通調，準備入眠。調暗燈光、靜心收攝，迎接安眠。' },
 ];
 
 function hmNs(t)  { return document.createElementNS('http://www.w3.org/2000/svg', t); }
@@ -849,11 +849,21 @@ function drawAllClocks() {
   var endH  = (organ.start + 2) % 24;
   var byId  = function (id) { return document.getElementById(id); };
   var zh = byId('hm-zh');           if (zh) { zh.textContent = organ.zh; zh.style.color = organ.col; }
-  var en = byId('hm-en');           if (en) en.textContent = organ.name;
-  var el = byId('hm-el');           if (el) el.querySelector('.cert-bot').textContent = organ.el + ' · ' + organ.elZh;
+  /* Write bilingual dual-span HTML so the html[lang="en"]/[lang="zh"]
+     CSS rules hide the inactive half. No need to read current lang
+     here — the DOM stays in sync with whatever lang the user picks. */
+  function _esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function _dual(en, zh) {
+    return '<span lang="en">' + _esc(en) + '</span><span lang="zh">' + _esc(zh) + '</span>';
+  }
+  var en = byId('hm-en');           if (en) en.textContent = organ.name; /* lang="en" already on element → hides in ZH mode */
+  var el = byId('hm-el');           if (el) el.querySelector('.cert-bot').innerHTML = _dual(organ.el, organ.elZh);
   var win = byId('hm-window');      if (win) win.querySelector('.cert-bot').textContent = hmFmtH(organ.start) + ' – ' + hmFmtH(endH);
-  var nxt = byId('hm-next-pill');   if (nxt) nxt.querySelector('.cert-bot').textContent = next.name + ' · ' + next.zh;
-  var tip = byId('hm-tip');         if (tip) tip.textContent = organ.tip;
+  var nxt = byId('hm-next-pill');   if (nxt) nxt.querySelector('.cert-bot').innerHTML = _dual(next.name, next.zh);
+  var tip = byId('hm-tip');         if (tip) tip.innerHTML = _dual(organ.tip, organ.tipZh || organ.tip);
   var ps = byId('hm-ps');           if (ps) ps.textContent = String(organ.start).padStart(2, '0') + ':00';
   var pe = byId('hm-pe');           if (pe) pe.textContent = String(endH).padStart(2, '0') + ':00';
   var elapsed = ((h - organ.start + 24) % 24) * 60 + m;
