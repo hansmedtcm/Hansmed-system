@@ -156,11 +156,21 @@
   router.on('#/tongue/:id', function (params) {
     HM.patientPanels.tongue.renderDetail(panel(), params.id);
   });
-  router.on('#/ai-diagnosis', function () {
+  router.on('#/wellness-assessment', function () {
     HM.patientPanels.aiDiagnosis.render(panel());
   });
-  router.on('#/ai-diagnosis/:id', function (p) {
+  router.on('#/wellness-assessment/:id', function (p) {
     HM.patientPanels.aiDiagnosis.renderDetail(panel(), p.id);
+  });
+  // Legacy aliases — redirect old #/ai-diagnosis links to the new route
+  // so bookmarks, email notifications (tongue.approved route payloads),
+  // and external docs keep working. Replace the hash so browser Back
+  // doesn't ping-pong between old and new.
+  router.on('#/ai-diagnosis', function () {
+    location.replace('#/wellness-assessment');
+  });
+  router.on('#/ai-diagnosis/:id', function (p) {
+    location.replace('#/wellness-assessment/' + p.id);
   });
   router.on('#/prescriptions', function () {
     HM.patientPanels.prescriptions.render(panel());

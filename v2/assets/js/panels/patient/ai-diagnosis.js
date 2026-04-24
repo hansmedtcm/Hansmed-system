@@ -530,7 +530,7 @@
 
     card.addEventListener('click', function () {
       if (it.kind === 'tongue') location.hash = '#/tongue/' + it.id;
-      else                      location.hash = '#/ai-diagnosis/' + it.id;
+      else                      location.hash = '#/wellness-assessment/' + it.id;
     });
     return card;
   }
@@ -1003,7 +1003,7 @@
     }
 
     el.innerHTML = '<div class="page-header">' +
-      '<button class="btn btn--ghost" onclick="location.hash=\'#/ai-diagnosis\'">← New Assessment · 新測評</button>' +
+      '<button class="btn btn--ghost" onclick="location.hash=\'#/wellness-assessment\'">← New Assessment · 新測評</button>' +
       '<h1 class="page-title mt-2">Full TCM Wellness Report · 完整體質評估報告</h1>' +
       '<p class="text-muted mt-1">Combined tongue observation and 10-dimension constitution assessment · 舌象與體質問卷綜合報告</p>' +
       '</div>' +
@@ -1061,7 +1061,7 @@
 
       '<div class="flex gap-2 mt-4 flex-wrap">' +
       '<button class="btn btn--primary" onclick="location.hash=\'#/book\'">Book Consultation · 預約問診</button>' +
-      '<button class="btn btn--outline" onclick="location.hash=\'#/ai-diagnosis\'">New Assessment · 新測評</button>' +
+      '<button class="btn btn--outline" onclick="location.hash=\'#/wellness-assessment\'">New Assessment · 新測評</button>' +
       '</div>';
 
     injectStyle();
@@ -1439,7 +1439,7 @@
       // in-review view (dimensions only + pending banner).
       var qId = res && res.questionnaire ? res.questionnaire.id : null;
       if (qId) {
-        location.hash = '#/ai-diagnosis/' + qId;
+        location.hash = '#/wellness-assessment/' + qId;
       } else {
         btn.textContent = '✓ Submitted · 已送出';
       }
