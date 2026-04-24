@@ -9,7 +9,7 @@
 import { Agent } from "./agents";
 
 const API_URL = "https://api.anthropic.com/v1/messages";
-const MODEL   = "claude-sonnet-4-20250514";
+const MODEL   = "claude-sonnet-4-5-20250929";
 
 // Fail fast if the API key isn't set — the original code had no
 // Authorization header at all, so every call would have 401'd.

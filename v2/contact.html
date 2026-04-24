@@ -81,7 +81,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </div>
       <a class="nl"     href="services.html">Services · 服務</a>
       <a class="nl"     href="shop.html">Shop · 商店</a>
-      <a class="nl"     href="portal.html#/ai-diagnosis">Wellness · 健康評估</a>
+      <a class="nl"     href="portal.html#/wellness-assessment">Wellness · 健康評估</a>
       <a class="nl act" href="contact.html">Contact · 聯絡</a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
@@ -100,7 +100,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <a class="mob-nl" href="about.html">關於我們 About</a>
     <a class="mob-nl" href="services.html">服務項目 Services</a>
     <a class="mob-nl" href="shop.html">中藥商店 Shop</a>
-    <a class="mob-nl" href="portal.html#/ai-diagnosis">健康評估 Wellness Assessment</a>
+    <a class="mob-nl" href="portal.html#/wellness-assessment">健康評估 Wellness Assessment</a>
     <a class="mob-nl" href="contact.html">聯絡我們 Contact</a>
     <a class="mob-nl" href="index.html#/login">登入 Sign In</a>
     <div class="mob-lang">
@@ -203,8 +203,32 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <label class="field-label" data-required>Message · 訊息</label>
           <textarea name="message" class="field-input field-input--boxed" rows="5" required></textarea>
         </div>
+        <div class="field form-consent">
+          <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#666;cursor:pointer">
+            <input type="checkbox" id="contact-consent" name="consent" required style="margin-top:3px;flex-shrink:0">
+            <span>I consent to HansMed collecting my name and email address to respond to this enquiry, in accordance with our <a href="privacy-policy.html" style="color:#0F6E56">Privacy Policy</a>. · 本人同意漢方收集姓名及電郵以回覆此查詢。</span>
+          </label>
+        </div>
         <button type="submit" class="btn btn--primary btn--block">Send Message · 傳送訊息</button>
       </form>
+      <script>
+        (function(){
+          var f = document.getElementById('contact-form');
+          if (!f) return;
+          f.addEventListener('submit', function(e){
+            var c = document.getElementById('contact-consent');
+            if (c && !c.checked) {
+              e.preventDefault();
+              var zh = document.documentElement.lang === 'zh';
+              var msg = zh ? '請先勾選同意條款以繼續。'
+                           : 'Please tick the consent box to continue. · 請先勾選同意條款。';
+              if (window.HM && HM.ui && HM.ui.toast) HM.ui.toast(msg, 'error');
+              else alert(msg);
+              c.focus();
+            }
+          });
+        })();
+      </script>
     </div>
 
   </div>
@@ -238,7 +262,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <a class="fl" href="about.html">About · 關於</a>
       <a class="fl" href="services.html">Services · 服務</a>
       <a class="fl" href="shop.html">Shop · 商店</a>
-      <a class="fl" href="portal.html#/ai-diagnosis">Wellness · 健康評估</a>
+      <a class="fl" href="portal.html#/wellness-assessment">Wellness · 健康評估</a>
     </div>
     <div>
       <div class="flbl">Account · 帳號</div>

@@ -158,6 +158,10 @@ class AuthController extends Controller
         return response()->json([
             'user'  => $user,
             'token' => $token,
+            // BUG-015 — surface the flag explicitly at the top level so the
+            // frontend can gate the session and route straight to a
+            // mandatory password-change screen without digging into $user.
+            'must_change_password' => (bool) $user->must_change_password,
         ]);
     }
 

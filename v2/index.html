@@ -89,7 +89,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </div>
       <a class="nl"     href="services.html">Services · 服務</a>
       <a class="nl"     href="shop.html">Shop · 商店</a>
-      <a class="nl"     href="portal.html#/ai-diagnosis">Wellness · 健康評估</a>
+      <a class="nl"     href="portal.html#/wellness-assessment">Wellness · 健康評估</a>
       <a class="nl"     href="contact.html">Contact · 聯絡</a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
@@ -167,33 +167,38 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <div style="padding:4px 4px 0;">
           <!-- Row 1: Chinese char + name + live digital time -->
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-            <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;line-height:1;color:var(--v4-tc);flex-shrink:0;">心</div>
-            <div id="hm-en" lang="en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--v4-ink);flex-shrink:0;">Heart</div>
+            <!-- BUG-018 — placeholders until the clock script populates
+                 real values; prevents a false "Heart window" flash when
+                 the actual local time is elsewhere in the 12-organ cycle. -->
+            <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;line-height:1;color:var(--v4-tc);flex-shrink:0;">·</div>
+            <div id="hm-en" lang="en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--v4-ink);flex-shrink:0;">—</div>
             <div style="display:flex;align-items:baseline;gap:1px;margin-left:auto;flex-shrink:0;">
               <span id="hm-dtime" style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#8C6340;letter-spacing:0.02em;line-height:1;">--:--</span>
             </div>
           </div>
           <!-- Row 2: 3 pills -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-            <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Element</span><span lang="zh">元素</span></div><div class="cert-bot">Fire · 火</div></span>
-            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top"><span lang="en">Peak window</span><span lang="zh">當令時段</span></div><div class="cert-bot">11am – 1pm</div></span>
-            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Next</span><span lang="zh">下一個</span></div><div class="cert-bot">Small Intestine · 小腸</div></span>
+            <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Element</span><span lang="zh">元素</span></div><div class="cert-bot">—</div></span>
+            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top"><span lang="en">Peak window</span><span lang="zh">當令時段</span></div><div class="cert-bot">--:-- – --:--</div></span>
+            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Next</span><span lang="zh">下一個</span></div><div class="cert-bot">—</div></span>
           </div>
           <!-- Tip -->
           <div id="hm-tip" style="font-size:13px;color:var(--v4-mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--v4-go);padding-left:12px;margin-bottom:12px;">
-            Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.
+            <span lang="en">Reading your local time…</span><span lang="zh">讀取本地時間…</span>
           </div>
           <!-- Progress bar -->
           <div style="height:2px;background:var(--v4-bdr-l);border-radius:2px;overflow:hidden;margin-bottom:5px;">
             <div id="hm-prog" style="height:100%;background:var(--v4-go);border-radius:2px;transition:width 2s linear;width:50%;"></div>
           </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
-            <span id="hm-ps" style="font-size:10px;color:var(--v4-mu);">11:00</span>
+            <span id="hm-ps" style="font-size:10px;color:var(--v4-mu);">--:--</span>
             <span style="font-size:10px;color:var(--v4-mu);"><span lang="en">window progress</span><span lang="zh">時段進度</span></span>
-            <span id="hm-pe" style="font-size:10px;color:var(--v4-mu);">13:00</span>
+            <span id="hm-pe" style="font-size:10px;color:var(--v4-mu);">--:--</span>
           </div>
-          <!-- CTA -->
-          <a class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="portal.html#/book"><span lang="en">Book a TCM Consultation →</span><span lang="zh">預約中醫問診 →</span></a>
+          <!-- CTA — BUG-013: label and target update dynamically with the
+               current peak-organ/element. Clicking pre-fills the booking
+               flow with the organ/element as a concern hint. -->
+          <a id="hm-book-cta" class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="portal.html#/book"><span lang="en" id="hm-book-cta-en">Book a TCM Consultation →</span><span lang="zh" id="hm-book-cta-zh">預約中醫問診 →</span></a>
           <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
       </div>
@@ -236,8 +241,9 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <circle cx="34" cy="62" r="3" fill="var(--v4-bdr-l)"/><circle cx="50" cy="62" r="3" fill="var(--v4-bdr-l)"/><circle cx="66" cy="62" r="3" fill="var(--v4-bdr-l)"/><circle cx="82" cy="62" r="3" fill="var(--v4-bdr-l)"/>
           <circle cx="34" cy="76" r="3" fill="var(--v4-bdr-l)"/><circle cx="50" cy="76" r="3" fill="var(--v4-bdr-l)"/><circle cx="66" cy="76" r="3" fill="var(--v4-bdr-l)"/><circle cx="82" cy="76" r="3" fill="var(--v4-bdr-l)"/>
           <circle cx="34" cy="90" r="3" fill="var(--v4-bdr-l)"/><circle cx="50" cy="90" r="3" fill="var(--v4-bdr-l)"/>
-          <circle cx="66" cy="76" r="8" fill="var(--v4-go)" opacity="0.9"/>
-          <text x="66" y="80" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">15</text>
+          <!-- Selected-day marker (dot only — text "15" removed per BUG-019;
+               it read as a stray digit next to the step badge "1"). -->
+          <circle cx="66" cy="76" r="5" fill="var(--v4-go)" opacity="0.9"/>
           <circle cx="122" cy="70" r="30" fill="var(--v4-bg-3)" stroke="var(--v4-bdr)" stroke-width="2"/>
           <circle cx="122" cy="70" r="3" fill="var(--v4-wd-md)"/>
           <line x1="122" y1="70" x2="122" y2="50" stroke="var(--v4-ink)" stroke-width="2" stroke-linecap="round"/>
@@ -419,7 +425,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <a class="fl" href="services.html">Services · 服務</a>
       <a class="fl" href="shop.html">Shop · 商店</a>
       <a class="fl" href="portal.html#/book">Book · 預約</a>
-      <a class="fl" href="portal.html#/ai-diagnosis">Wellness · 健康評估</a>
+      <a class="fl" href="portal.html#/wellness-assessment">Wellness · 健康評估</a>
       <a class="fl" href="contact.html">Contact · 聯絡</a>
     </div>
     <div>
@@ -505,9 +511,21 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <div class="field-hint">Min 8 characters · 至少8字元</div>
         <div class="field-error"></div>
       </div>
+      <div class="field" style="margin-bottom: var(--s-3);">
+        <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--stone);cursor:pointer;line-height:1.5">
+          <input type="checkbox" name="consent_pdpa" required style="margin-top:3px;flex-shrink:0">
+          <span>I consent to HansMed processing my personal data (name, email, phone, health information) in accordance with the <a href="privacy-policy.html" style="color:var(--jade)" target="_blank">Privacy Policy</a> and Malaysia's PDPA 2010. · 本人同意依據私隱政策及《2010年個人資料保護法》處理個人資料。</span>
+        </label>
+      </div>
+      <div class="field" style="margin-bottom: var(--s-4);">
+        <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--stone);cursor:pointer;line-height:1.5">
+          <input type="checkbox" name="consent_ai" required style="margin-top:3px;flex-shrink:0">
+          <span>I understand that HansMed uses AI-assisted wellness tools (tongue image analysis, constitution questionnaires) which are <strong>not medical diagnoses</strong>. Licensed practitioners review all AI-generated suggestions. · 本人知悉 AI 輔助工具並非醫療診斷，所有結果均由持牌中醫師審核。</span>
+        </label>
+      </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <button type="submit" class="btn btn--primary btn--block">Create Account · 建立帳號</button>
-      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">By registering you agree to our Privacy Policy and PDPA-compliant data processing.</p>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">Both consents are required by Malaysian law and T&amp;CM Act 2016. · 兩項同意均為法例要求。</p>
     </form>
 
     <form class="tab-panel" data-panel="forgot">
@@ -600,7 +618,7 @@ var LANDING_ROUTES = {
   services: function () { location.href = 'services.html'; },
   shop:     function () { location.href = 'shop.html'; },
   book:     function () { location.href = 'portal.html#/book'; },
-  wellness: function () { location.href = 'portal.html#/ai-diagnosis'; },
+  wellness: function () { location.href = 'portal.html#/wellness-assessment'; },
   register: function () { location.hash = '#/register'; },
   login:    function () { location.hash = '#/login'; },
   contact:  function () { location.href = 'contact.html'; },
@@ -893,6 +911,21 @@ function drawAllClocks() {
   var pe = byId('hm-pe');           if (pe) pe.textContent = String(endH).padStart(2, '0') + ':00';
   var elapsed = ((h - organ.start + 24) % 24) * 60 + m;
   var prog = byId('hm-prog');       if (prog) prog.style.width = Math.min(100, Math.max(0, (elapsed / 120) * 100)).toFixed(1) + '%';
+
+  /* BUG-013 — Book CTA follows the current peak organ/element.
+     Label reflects the organ ("Book a Heart-window consult") and
+     href passes element + organ as query hints so the booking
+     wizard can pre-select the matching concern chip. */
+  var cta = byId('hm-book-cta');
+  var ctaEn = byId('hm-book-cta-en');
+  var ctaZh = byId('hm-book-cta-zh');
+  if (cta) {
+    cta.setAttribute('href',
+      'portal.html#/book?element=' + encodeURIComponent(organ.el) +
+      '&organ=' + encodeURIComponent(organ.name));
+  }
+  if (ctaEn) ctaEn.textContent = 'Book a ' + organ.name + '-window consult →';
+  if (ctaZh) ctaZh.textContent = '預約「' + organ.zh + '」時段問診 →';
 }
 
 drawAllClocks();

@@ -60,6 +60,9 @@ class AccountController extends Controller
                 'password_hash' => Hash::make($data['password']),
                 'role'          => $data['role'],
                 'status'        => 'active',
+                // BUG-015 — admin-created accounts ship with a temp password.
+                // Force the user to change it on first login.
+                'must_change_password' => 1,
             ]);
 
             if ($data['role'] === 'doctor') {
@@ -235,7 +238,13 @@ class AccountController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $user->update(['password_hash' => Hash::make($data['password'])]);
+        // BUG-015 — admin-reset passwords are temporary; force change on
+        // next login. Users resetting their own password go through a
+        // separate self-serve flow that clears this flag.
+        $user->update([
+            'password_hash'        => Hash::make($data['password']),
+            'must_change_password' => $user->id === $actor->id ? 0 : 1,
+        ]);
         // Kick all of this user's API tokens so the old password stops working.
         try { $user->tokens()->delete(); } catch (\Throwable $e) { /* Sanctum not set up? ignore */ }
 
