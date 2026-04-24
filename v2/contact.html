@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
 <script>try{var p=localStorage.getItem('hm-lang-pref');if(p==='zh')document.documentElement.setAttribute('lang','zh');else document.documentElement.setAttribute('lang','en');}catch(_){}</script>
 <style>
 /* Synchronous language hide — applies before lang-switcher.js runs.
@@ -86,7 +87,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
       </div>
-      <a class="nl nav-signin" href="index.html#/login" style="color:var(--v4-ink);font-weight:500;">Sign In · 登入</a>
+      <a class="nl nav-signin" href="index.html#/login" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin">Sign In · 登入</span><span class="lbl-portal">My Portal · 我的入口</span></a>
       <a class="nav-cta" href="portal.html#/book"><span lang="en">Book</span><span lang="zh">預約</span></a>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
@@ -340,7 +341,7 @@ window.setLang = setLang;
       if (el.tagName === 'A' || el.tagName === 'BUTTON') {
         if (el.tagName === 'A') el.setAttribute('href', dest);
         else el.setAttribute('onclick', "location.href='" + dest + "'");
-        el.innerHTML = 'My Portal · 我的入口';
+        /* disabled — CSS handles label swap */
       }
     });
     /* Mobile drawer link labeled 登入 Sign In — if walker wrapped it,
@@ -348,7 +349,7 @@ window.setLang = setLang;
     document.querySelectorAll('.mob-nl').forEach(function (el) {
       var txt = (el.textContent || '').trim();
       if (txt === 'Sign In · 登入' || txt === '登入 Sign In' || txt === 'Sign In' || txt === '登入') {
-        el.textContent = 'My Portal · 我的入口';
+        /* disabled — CSS handles label swap */
         if (el.tagName === 'A') el.setAttribute('href', dest);
         else el.setAttribute('onclick', "location.href='" + dest + "';closeMob();");
       }
@@ -366,5 +367,6 @@ window.setLang = setLang;
 })();
 </script>
 <script src="assets/js/about-dropdown.js"></script>
+<script src="assets/js/nav-auth.js"></script>
 </body>
 </html>

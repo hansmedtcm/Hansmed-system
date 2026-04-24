@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
 <script>try{var p=localStorage.getItem('hm-lang-pref');if(p==='zh')document.documentElement.setAttribute('lang','zh');else document.documentElement.setAttribute('lang','en');}catch(_){}</script>
 <style>
 html[lang="en"] [lang="zh"],
@@ -567,8 +568,10 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 .ib-herb-d3{transition-delay:0.8s;}
 </style>
 <link rel="stylesheet" href="assets/css/dropdown.css">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/landing-v4.css">
 </head>
-<body>
+<body class="landing-v4">
 
 <!-- NAV -->
 <nav id="nav">
@@ -583,7 +586,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <span class="nav-bn" style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-weight:400;">漢方現代中醫</span>
       </span>
     </button>
-    <div class="nav-links">
+    <div class="nav-links-v4">
       <button class="nl" data-p="home" onclick="go('home')">Home · 首頁</button>
       <div style="position:relative;" id="about-wrap">
         <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)" style="display:inline-flex;align-items:center;gap:5px;line-height:inherit;">
@@ -610,10 +613,10 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
       <button class="nl" data-p="shop" onclick="go('shop')">Shop · 商店</button>
       <button class="nl" data-p="wellness" onclick="go('wellness')">Wellness · 健康評估</button>
       <div class="lang-wrap">
-        <button id="len" class="lang-btn act" onclick="setLang('en')">EN</button>
-        <button id="lzh" class="lang-btn"     onclick="setLang('zh')">中</button>
+        <button id="len" class="lang-btn-v4 act" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn-v4"     onclick="setLang('zh')">中</button>
       </div>
-      <button class="nl nav-signin" onclick="go('login')" style="color:var(--ink);font-weight:500;">Sign In · 登入</button>
+      <button class="nl nav-signin" onclick="go('login')" style="color:var(--ink);font-weight:500;"><span class="lbl-signin">Sign In · 登入</span><span class="lbl-portal">My Portal · 我的入口</span></button>
       <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
@@ -2051,12 +2054,12 @@ setTimeout(initInkBrush, 100);
     document.querySelectorAll('.nav-signin, .nl.nav-signin').forEach(function (el) {
       if (el.tagName === 'A') el.setAttribute('href', dest);
       else el.setAttribute('onclick', "location.href='" + dest + "'");
-      el.innerHTML = 'My Portal · 我的入口';
+      /* disabled — CSS handles label swap */
     });
     document.querySelectorAll('.mob-nl').forEach(function (el) {
       var txt = (el.textContent || '').trim();
       if (txt === 'Sign In · 登入' || txt === '登入 Sign In' || txt === 'Sign In' || txt === '登入') {
-        el.textContent = 'My Portal · 我的入口';
+        /* disabled — CSS handles label swap */
         if (el.tagName === 'A') el.setAttribute('href', dest);
         else el.setAttribute('onclick', "location.href='" + dest + "';closeMob();");
       }
@@ -2071,5 +2074,6 @@ setTimeout(initInkBrush, 100);
     if (e.key === 'hm_user' || e.key === 'hm_token') applySignInSwap();
   });
 })();
-</script></body>
+</script><script src="assets/js/nav-auth.js"></script>
+</body>
 </html>

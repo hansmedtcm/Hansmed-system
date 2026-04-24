@@ -74,3 +74,15 @@ body:not(.landing-v4) #about-trigger {
   font-size: 13.5px !important;
   padding: 6px 14px !important;
 }
+
+/* Auth-aware Sign In / My Portal label — CSS-only toggle so the
+   correct label appears on first paint (no flash). An inline head
+   script reads localStorage synchronously and adds html.is-auth
+   before the body renders. */
+.nav-signin .lbl-portal { display: none; }
+html.is-auth .nav-signin .lbl-signin { display: none; }
+html.is-auth .nav-signin .lbl-portal { display: inline; }
+/* Same toggle for the mobile drawer link. */
+.mob-nl-signin .lbl-portal { display: none; }
+html.is-auth .mob-nl-signin .lbl-signin { display: none; }
+html.is-auth .mob-nl-signin .lbl-portal { display: inline; }
