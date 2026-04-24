@@ -1,0 +1,38 @@
+/* About-dropdown menu — shared across all 8 landing pages.
+   Before this file existed, the .dd-item styling lived only in
+   landing-v4.css which about/services/practitioners/blog/faq don't
+   load. That made the menu render as default browser links (purple,
+   underlined, inline-flow). This file is included on every page so
+   the dropdown looks the same everywhere. */
+
+.dd-item {
+  display: block;
+  padding: 10px 18px;
+  color: #4A3B2A;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.dd-item:hover,
+.dd-item:focus {
+  background: #F5EFE2;
+  color: #1F1810;
+  text-decoration: none;
+  outline: none;
+}
+.dd-item:visited { color: #4A3B2A; }
+
+/* Ensure the wrapper positions correctly on all pages even when a
+   page-local style sheet clobbers display rules. */
+#about-wrap { position: relative; display: inline-block; vertical-align: middle; }
+#about-trigger {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  line-height: inherit;
+}
