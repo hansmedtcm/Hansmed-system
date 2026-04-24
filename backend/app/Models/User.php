@@ -15,8 +15,9 @@ class User extends Authenticatable
     public const ROLE_PHARMACY = 'pharmacy';
     public const ROLE_ADMIN    = 'admin';
 
-    protected $fillable = ['email', 'password_hash', 'role', 'status'];
+    protected $fillable = ['email', 'password_hash', 'role', 'status', 'must_change_password'];
     protected $hidden   = ['password_hash', 'remember_token'];
+    protected $casts    = ['must_change_password' => 'boolean'];
 
     // map Laravel's expected "password" attribute to password_hash column
     public function getAuthPassword() { return $this->password_hash; }

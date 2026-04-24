@@ -26,7 +26,12 @@ class SecurityController extends Controller
             return response()->json(['message' => 'Current password is incorrect. · 目前密碼不正確。'], 422);
         }
 
-        $user->update(['password_hash' => Hash::make($data['new_password'])]);
+        // BUG-015 — self-serve change clears the must_change_password flag
+        // set by admin-create or admin-reset. User is now unblocked.
+        $user->update([
+            'password_hash'        => Hash::make($data['new_password']),
+            'must_change_password' => 0,
+        ]);
 
         DB::table('audit_logs')->insert([
             'user_id'    => $user->id,

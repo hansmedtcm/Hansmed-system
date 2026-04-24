@@ -19,5 +19,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // BUG-011 — Unauthenticated API requests should return HTTP 401,
+        // not 403. Laravel 11's default exception renderer returns 403
+        // when an AuthenticationException is thrown on an API route
+        // that has no redirect target. Force JSON 401 for anything
+        // under /api/* so the frontend can distinguish "not logged in"
+        // (prompt login) from "logged in but forbidden" (show denied).
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+        });
     })->create();

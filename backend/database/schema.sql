@@ -18,6 +18,11 @@ CREATE TABLE users (
   email_verified_at DATETIME NULL,
   remember_token  VARCHAR(100) NULL,
   last_login_at   DATETIME NULL,
+  -- BUG-015: force a password change on first login after the account
+  -- was created or had its password reset by an admin. Cleared to 0
+  -- by the change-password endpoint. Frontend inspects this in the
+  -- login response and routes to a mandatory change-password screen.
+  must_change_password TINYINT(1) NOT NULL DEFAULT 0,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_users_role_status (role, status)
