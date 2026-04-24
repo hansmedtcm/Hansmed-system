@@ -130,13 +130,13 @@ class NotificationService
     {
         if ($decision === 'approved') {
             $this->notify($patientId, 'tongue.approved',
-                'Tongue diagnosis approved · 舌診審核通過',
-                'A doctor has reviewed your tongue analysis. Check your report for personalised advice. · 醫師已完成審核，請查看您的報告與建議。',
+                'Wellness assessment reviewed · 健康評估已審核',
+                'A practitioner has reviewed your tongue wellness analysis. Check your report for personalised advice. · 持牌中醫師已完成審核，請查看您的報告與建議。',
                 ['diagnosis_id' => $diagnosisId, 'route' => '#/tongue/' . $diagnosisId]);
         } else {
             $this->notify($patientId, 'tongue.changes',
-                'Tongue diagnosis — more info needed · 舌診需補充資料',
-                'The reviewing doctor has added notes to your tongue analysis. Please read them and consider booking a consultation. · 醫師已留下備註，請查看。',
+                'Wellness assessment — more info needed · 健康評估需補充資料',
+                'The reviewing practitioner has added notes to your tongue wellness analysis. Please read them and consider booking a consultation. · 持牌中醫師已留下備註，請查看。',
                 ['diagnosis_id' => $diagnosisId, 'route' => '#/tongue/' . $diagnosisId]);
         }
     }
@@ -152,10 +152,10 @@ class NotificationService
     public function reviewPendingForDoctors(string $kind, int $refId, int $patientId): void
     {
         $title = $kind === 'tongue'
-            ? 'New tongue diagnosis to review · 新舌診待審核'
+            ? 'New tongue wellness assessment to review · 新舌診評估待審核'
             : 'New constitution report to review · 新體質報告待審核';
         $body  = $kind === 'tongue'
-            ? 'A patient has submitted a tongue analysis for your review.'
+            ? 'A patient has submitted a tongue wellness assessment for your review.'
             : 'A patient has submitted a constitution questionnaire for your review.';
         $type  = 'review.pending.' . $kind;
         $route = $kind === 'tongue'
