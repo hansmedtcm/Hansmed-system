@@ -103,7 +103,9 @@
       "Bash(mkdir -p E:/Hansmed-system/.design-pkg/v5)",
       "Bash(cp \"C:/Users/xian/.claude/projects/E--Hansmed-system/2636c55c-f277-40d6-80cb-aa213ee46743/tool-results/webfetch-1777003090824-b9woy9.bin\" E:/Hansmed-system/.design-pkg/v5/pkg.tar.gz)",
       "Bash(node .design-pkg/v5/bug001-wa-links.mjs)",
-      "Bash(node .design-pkg/v5/bug003-false-stats.mjs)"
+      "Bash(node .design-pkg/v5/bug003-false-stats.mjs)",
+      "Bash(curl -sS https://hansmedtcm.github.io/Hansmed-system/v2/index.html)",
+      "Bash(curl -sS \"https://hansmedtcm.github.io/Hansmed-system/v2/index.html\" -o /tmp/index-live.html)"
     ]
   }
 }
