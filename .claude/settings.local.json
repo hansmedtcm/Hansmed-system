@@ -105,7 +105,8 @@
       "Bash(node .design-pkg/v5/bug001-wa-links.mjs)",
       "Bash(node .design-pkg/v5/bug003-false-stats.mjs)",
       "Bash(curl -sS https://hansmedtcm.github.io/Hansmed-system/v2/index.html)",
-      "Bash(curl -sS \"https://hansmedtcm.github.io/Hansmed-system/v2/index.html\" -o /tmp/index-live.html)"
+      "Bash(curl -sS \"https://hansmedtcm.github.io/Hansmed-system/v2/index.html\" -o /tmp/index-live.html)",
+      "Bash(grep -nA 25 \"CREATE TABLE doctor_profiles\" E:/Hansmed-system/backend/database/schema.sql)"
     ]
   }
 }

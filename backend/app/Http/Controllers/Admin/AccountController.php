@@ -44,6 +44,11 @@ class AccountController extends Controller
             // Doctor-specific
             'specialties'      => ['nullable', 'string', 'max:500'],
             'license_no'       => ['nullable', 'string', 'max:120'],
+            // T&CM Council Malaysia registration (T&CM Act 2016 §14).
+            // Required before a doctor sees patients, but stored
+            // nullable so admin can create the account and fill this
+            // in after sighting the physical certificate.
+            'tcm_council_no'   => ['nullable', 'string', 'max:80'],
             'bio'              => ['nullable', 'string', 'max:2000'],
             'consultation_fee' => ['nullable', 'numeric', 'min:0'],
             // Pharmacy-specific
@@ -66,10 +71,17 @@ class AccountController extends Controller
             ]);
 
             if ($data['role'] === 'doctor') {
+                $hasTcmNo = !empty($data['tcm_council_no']);
                 $user->doctorProfile()->create([
                     'full_name'              => $data['name'],
                     'specialties'            => $data['specialties'] ?? null,
                     'license_no'             => $data['license_no'] ?? null,
+                    'tcm_council_no'         => $data['tcm_council_no'] ?? null,
+                    // If the admin provided the council number at
+                    // creation time we treat this as the verification
+                    // event — stamp who verified and when.
+                    'tcm_council_verified_at' => $hasTcmNo ? now() : null,
+                    'tcm_council_verified_by' => $hasTcmNo ? $request->user()->id : null,
                     'bio'                    => $data['bio'] ?? null,
                     'consultation_fee'       => $data['consultation_fee'] ?? 0,
                     'verification_status'    => 'approved',
@@ -276,6 +288,7 @@ class AccountController extends Controller
             // Doctor-specific
             'specialties'      => ['nullable', 'string', 'max:500'],
             'license_no'       => ['nullable', 'string', 'max:120'],
+            'tcm_council_no'   => ['nullable', 'string', 'max:80'],
             'bio'              => ['nullable', 'string', 'max:2000'],
             'consultation_fee' => ['nullable', 'numeric', 'min:0'],
             // Pharmacy-specific
@@ -326,13 +339,21 @@ class AccountController extends Controller
             // Role-specific profile updates
             if ($user->role === 'doctor') {
                 $profile = $user->doctorProfile()->firstOrCreate([], ['full_name' => '']);
-                $profile->fill(array_filter([
+                $updates = array_filter([
                     'full_name'        => $data['name'] ?? null,
                     'specialties'      => $data['specialties'] ?? null,
                     'license_no'       => $data['license_no'] ?? null,
+                    'tcm_council_no'   => $data['tcm_council_no'] ?? null,
                     'bio'              => $data['bio'] ?? null,
                     'consultation_fee' => $data['consultation_fee'] ?? null,
-                ], fn($v) => $v !== null))->save();
+                ], fn($v) => $v !== null);
+                // If tcm_council_no just changed or was added, stamp
+                // the admin who verified it and when. Audit trail.
+                if (isset($updates['tcm_council_no']) && $updates['tcm_council_no'] !== $profile->tcm_council_no) {
+                    $updates['tcm_council_verified_at'] = now();
+                    $updates['tcm_council_verified_by'] = $request->user()->id;
+                }
+                $profile->fill($updates)->save();
             } elseif ($user->role === 'pharmacy') {
                 $profile = $user->pharmacyProfile()->firstOrCreate([], ['name' => '']);
                 $profile->fill(array_filter([

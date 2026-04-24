@@ -13,6 +13,7 @@ class DoctorProfile extends Model
     protected $fillable = [
         'user_id', 'full_name', 'avatar_url', 'bio', 'specialties',
         'license_no', 'license_doc_url', 'verification_status',
+        'tcm_council_no', 'tcm_council_verified_at', 'tcm_council_verified_by',
         'rating', 'consultation_count', 'consultation_fee',
         'accepting_appointments',
     ];
@@ -21,6 +22,7 @@ class DoctorProfile extends Model
         'rating'                 => 'decimal:2',
         'consultation_fee'       => 'decimal:2',
         'accepting_appointments' => 'boolean',
+        'tcm_council_verified_at' => 'datetime',
     ];
 
     public function user() { return $this->belongsTo(User::class, 'user_id'); }

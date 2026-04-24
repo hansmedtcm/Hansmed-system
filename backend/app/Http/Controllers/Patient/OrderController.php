@@ -188,7 +188,7 @@ class OrderController extends Controller
                 'subtotal'        => $subtotal,
                 'shipping_fee'    => $shipping,
                 'total'           => $total,
-                'currency'        => 'CNY',
+                'currency'        => 'MYR',
             ]);
 
             foreach ($lines as $line) {
@@ -197,7 +197,7 @@ class OrderController extends Controller
 
             $intent = $this->stripe->createPaymentIntent(
                 amountMinor: (int) round($total * 100),
-                currency: 'cny',
+                currency: 'myr',
                 metadata: ['order_id' => $order->id, 'patient_id' => $request->user()->id],
             );
 
@@ -208,7 +208,7 @@ class OrderController extends Controller
                 'provider'     => 'stripe',
                 'provider_ref' => $intent['id'] ?? null,
                 'amount'       => $total,
-                'currency'     => 'CNY',
+                'currency'     => 'MYR',
                 'status'       => 'pending',
                 'raw_payload'  => $intent,
             ]);

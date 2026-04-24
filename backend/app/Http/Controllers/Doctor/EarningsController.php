@@ -90,7 +90,7 @@ class EarningsController extends Controller
             $w = Withdrawal::create([
                 'user_id'   => $doctorId,
                 'amount'    => $data['amount'],
-                'currency'  => 'CNY',
+                'currency'  => 'MYR',
                 'status'    => 'pending',
                 'bank_info' => $data['bank_info'],
             ]);

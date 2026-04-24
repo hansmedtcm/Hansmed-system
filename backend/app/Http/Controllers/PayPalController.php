@@ -102,7 +102,7 @@ class PayPalController extends Controller
             if ($appt->status !== 'pending_payment') {
                 throw ValidationException::withMessages(['payable_id' => 'Appointment not awaiting payment.']);
             }
-            return [(float) $appt->fee, 'CNY'];
+            return [(float) $appt->fee, 'MYR'];
         }
         $order = Order::where('patient_id', $userId)->findOrFail($id);
         if ($order->status !== 'pending_payment') {

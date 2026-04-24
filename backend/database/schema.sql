@@ -64,6 +64,14 @@ CREATE TABLE doctor_profiles (
   specialties       VARCHAR(500) NULL,
   license_no        VARCHAR(120) NULL,
   license_doc_url   VARCHAR(500) NULL,
+  -- T&CM Council Malaysia registration metadata (T&CM Act 2016 §14).
+  -- tcm_council_no is the formal registration number on the MOH-issued
+  -- practice certificate; tcm_council_verified_at records when admin
+  -- sighted the certificate; tcm_council_verified_by is the admin user
+  -- id who did the verification (audit trail).
+  tcm_council_no    VARCHAR(80) NULL,
+  tcm_council_verified_at DATETIME NULL,
+  tcm_council_verified_by BIGINT UNSIGNED NULL,
   verification_status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
   rating            DECIMAL(3,2) NOT NULL DEFAULT 0,
   consultation_count INT UNSIGNED NOT NULL DEFAULT 0,
