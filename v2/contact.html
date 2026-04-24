@@ -192,7 +192,17 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="fg">
     <div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <img src="assets/img/brand/logo-mark.svg" style="width:28px;height:28px;filter:brightness(0) invert(1);opacity:0.7;" alt=""/>
+        <svg viewBox="0 0 66 66" width="28" height="28" aria-hidden="true" style="opacity:0.9;flex-shrink:0;">
+          <rect x="1"  y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="1"  width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="10.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="23" width="20" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="33" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="46" y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="46" width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="55.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.3)" stroke-width="1"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
+        </svg>
         <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
       </div>
       <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span lang="zh" style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
@@ -259,6 +269,53 @@ window.toggleMob = toggleMob; window.closeMob = closeMob;
 function setLang(l) { if (l !== 'en' && l !== 'zh') return; if (window.HM && HM.langSwitch && HM.langSwitch.set) HM.langSwitch.set(l); ['len','mlen'].forEach(function (id) { var el = document.getElementById(id); if (el) el.classList.toggle('act', l === 'en'); }); ['lzh','mlzh'].forEach(function (id) { var el = document.getElementById(id); if (el) el.classList.toggle('act', l === 'zh'); }); }
 window.setLang = setLang;
 (function () { var stored = (window.HM && HM.langSwitch && HM.langSwitch.get) ? HM.langSwitch.get() : 'en'; setLang(stored); })();
+</script>
+<script>
+/* ─── Sign In → My Portal swap (auth-aware nav) ───
+   When the visitor is signed in, the "Sign In · 登入" nav button
+   becomes "My Portal · 我的入口" linking to their role-appropriate
+   portal page. Re-runs on storage changes so logging out in another
+   tab immediately reverts the button. */
+(function () {
+  var PORTAL_URL = {
+    patient:  'portal.html',
+    doctor:   'doctor.html',
+    pharmacy: 'pharmacy.html',
+    admin:    'admin.html',
+  };
+  function applySignInSwap() {
+    var user = (window.HM && HM.auth && typeof HM.auth.user === 'function') ? HM.auth.user() : null;
+    if (!user || !user.role) return; /* not signed in — leave "Sign In" as-is */
+    var dest = PORTAL_URL[user.role] || 'portal.html';
+    /* Desktop nav */
+    document.querySelectorAll('.nav-signin, .nl.nav-signin').forEach(function (el) {
+      if (el.tagName === 'A' || el.tagName === 'BUTTON') {
+        if (el.tagName === 'A') el.setAttribute('href', dest);
+        else el.setAttribute('onclick', "location.href='" + dest + "'");
+        el.innerHTML = 'My Portal · 我的入口';
+      }
+    });
+    /* Mobile drawer link labeled 登入 Sign In — if walker wrapped it,
+       its combined text is "Sign In · 登入". Replace both possibilities. */
+    document.querySelectorAll('.mob-nl').forEach(function (el) {
+      var txt = (el.textContent || '').trim();
+      if (txt === 'Sign In · 登入' || txt === '登入 Sign In' || txt === 'Sign In' || txt === '登入') {
+        el.textContent = 'My Portal · 我的入口';
+        if (el.tagName === 'A') el.setAttribute('href', dest);
+        else el.setAttribute('onclick', "location.href='" + dest + "';closeMob();");
+      }
+    });
+  }
+  /* Run once DOM is ready, and re-run on storage events (cross-tab sync) */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySignInSwap);
+  } else {
+    applySignInSwap();
+  }
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'hm_user' || e.key === 'hm_token') applySignInSwap();
+  });
+})();
 </script>
 </body>
 </html>
