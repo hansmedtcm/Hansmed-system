@@ -89,6 +89,16 @@ button [lang="zh"],
   font-family: 'Noto Serif SC', 'Noto Sans SC', 'PingFang SC',
                'Microsoft JhengHei', 'Microsoft YaHei',
                'DM Sans', sans-serif;
+  /* tokens.css has a global [lang="zh"] { color: var(--ink-soft) }
+     rule that paints ALL Chinese text in a dark brown. That's fine
+     for body copy on cream backgrounds, but it clobbers the white
+     text on dark buttons (.btn-dark, .nav-cta) → dark-on-dark,
+     invisible. Force color to inherit from the button here. */
+  color: inherit !important;
+  /* Reset the letter-spacing + font-weight the tokens.css rule also
+     applied, so buttons keep their intended look. */
+  letter-spacing: inherit;
+  font-weight: inherit;
 }
 
 /* Auth-aware Sign In / My Portal label — CSS-only toggle so the
