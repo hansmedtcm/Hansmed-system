@@ -75,6 +75,22 @@ body:not(.landing-v4) #about-trigger {
   padding: 6px 14px !important;
 }
 
+/* ZH character fallback — DM Sans (our nav font) has no Han glyphs,
+   and on Windows the sans-serif fallback often resolves to Arial
+   which also lacks them, so button text in ZH mode rendered as
+   invisible empty buttons. Force a Chinese font in the chain for
+   any [lang="zh"] span inside a button/nav/CTA element. */
+.nav-cta [lang="zh"],
+.nl [lang="zh"],
+.btn-v4 [lang="zh"],
+.nav-signin [lang="zh"],
+button [lang="zh"],
+.mob-nl [lang="zh"] {
+  font-family: 'Noto Serif SC', 'Noto Sans SC', 'PingFang SC',
+               'Microsoft JhengHei', 'Microsoft YaHei',
+               'DM Sans', sans-serif;
+}
+
 /* Auth-aware Sign In / My Portal label — CSS-only toggle so the
    correct label appears on first paint (no flash). An inline head
    script reads localStorage synchronously and adds html.is-auth

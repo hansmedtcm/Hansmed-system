@@ -108,7 +108,8 @@
       "Bash(curl -sS \"https://hansmedtcm.github.io/Hansmed-system/v2/index.html\" -o /tmp/index-live.html)",
       "Bash(grep -nA 25 \"CREATE TABLE doctor_profiles\" E:/Hansmed-system/backend/database/schema.sql)",
       "Bash(curl -sS -o /dev/null -w \"health:%{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/up)",
-      "Bash(curl -sS -o /tmp/out.txt -w \"auth_me:%{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/auth/me)"
+      "Bash(curl -sS -o /tmp/out.txt -w \"auth_me:%{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/auth/me)",
+      "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/index.html')"
     ]
   }
 }
