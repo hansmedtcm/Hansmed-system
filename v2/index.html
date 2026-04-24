@@ -167,33 +167,38 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <div style="padding:4px 4px 0;">
           <!-- Row 1: Chinese char + name + live digital time -->
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-            <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;line-height:1;color:var(--v4-tc);flex-shrink:0;">心</div>
-            <div id="hm-en" lang="en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--v4-ink);flex-shrink:0;">Heart</div>
+            <!-- BUG-018 — placeholders until the clock script populates
+                 real values; prevents a false "Heart window" flash when
+                 the actual local time is elsewhere in the 12-organ cycle. -->
+            <div id="hm-zh" style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;line-height:1;color:var(--v4-tc);flex-shrink:0;">·</div>
+            <div id="hm-en" lang="en" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--v4-ink);flex-shrink:0;">—</div>
             <div style="display:flex;align-items:baseline;gap:1px;margin-left:auto;flex-shrink:0;">
               <span id="hm-dtime" style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#8C6340;letter-spacing:0.02em;line-height:1;">--:--</span>
             </div>
           </div>
           <!-- Row 2: 3 pills -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-            <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Element</span><span lang="zh">元素</span></div><div class="cert-bot">Fire · 火</div></span>
-            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top"><span lang="en">Peak window</span><span lang="zh">當令時段</span></div><div class="cert-bot">11am – 1pm</div></span>
-            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Next</span><span lang="zh">下一個</span></div><div class="cert-bot">Small Intestine · 小腸</div></span>
+            <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Element</span><span lang="zh">元素</span></div><div class="cert-bot">—</div></span>
+            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top"><span lang="en">Peak window</span><span lang="zh">當令時段</span></div><div class="cert-bot">--:-- – --:--</div></span>
+            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Next</span><span lang="zh">下一個</span></div><div class="cert-bot">—</div></span>
           </div>
           <!-- Tip -->
           <div id="hm-tip" style="font-size:13px;color:var(--v4-mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--v4-go);padding-left:12px;margin-bottom:12px;">
-            Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.
+            <span lang="en">Reading your local time…</span><span lang="zh">讀取本地時間…</span>
           </div>
           <!-- Progress bar -->
           <div style="height:2px;background:var(--v4-bdr-l);border-radius:2px;overflow:hidden;margin-bottom:5px;">
             <div id="hm-prog" style="height:100%;background:var(--v4-go);border-radius:2px;transition:width 2s linear;width:50%;"></div>
           </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
-            <span id="hm-ps" style="font-size:10px;color:var(--v4-mu);">11:00</span>
+            <span id="hm-ps" style="font-size:10px;color:var(--v4-mu);">--:--</span>
             <span style="font-size:10px;color:var(--v4-mu);"><span lang="en">window progress</span><span lang="zh">時段進度</span></span>
-            <span id="hm-pe" style="font-size:10px;color:var(--v4-mu);">13:00</span>
+            <span id="hm-pe" style="font-size:10px;color:var(--v4-mu);">--:--</span>
           </div>
-          <!-- CTA -->
-          <a class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="portal.html#/book"><span lang="en">Book a TCM Consultation →</span><span lang="zh">預約中醫問診 →</span></a>
+          <!-- CTA — BUG-013: label and target update dynamically with the
+               current peak-organ/element. Clicking pre-fills the booking
+               flow with the organ/element as a concern hint. -->
+          <a id="hm-book-cta" class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="portal.html#/book"><span lang="en" id="hm-book-cta-en">Book a TCM Consultation →</span><span lang="zh" id="hm-book-cta-zh">預約中醫問診 →</span></a>
           <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
       </div>
@@ -906,6 +911,21 @@ function drawAllClocks() {
   var pe = byId('hm-pe');           if (pe) pe.textContent = String(endH).padStart(2, '0') + ':00';
   var elapsed = ((h - organ.start + 24) % 24) * 60 + m;
   var prog = byId('hm-prog');       if (prog) prog.style.width = Math.min(100, Math.max(0, (elapsed / 120) * 100)).toFixed(1) + '%';
+
+  /* BUG-013 — Book CTA follows the current peak organ/element.
+     Label reflects the organ ("Book a Heart-window consult") and
+     href passes element + organ as query hints so the booking
+     wizard can pre-select the matching concern chip. */
+  var cta = byId('hm-book-cta');
+  var ctaEn = byId('hm-book-cta-en');
+  var ctaZh = byId('hm-book-cta-zh');
+  if (cta) {
+    cta.setAttribute('href',
+      'portal.html#/book?element=' + encodeURIComponent(organ.el) +
+      '&organ=' + encodeURIComponent(organ.name));
+  }
+  if (ctaEn) ctaEn.textContent = 'Book a ' + organ.name + '-window consult →';
+  if (ctaZh) ctaZh.textContent = '預約「' + organ.zh + '」時段問診 →';
 }
 
 drawAllClocks();
