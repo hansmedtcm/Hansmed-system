@@ -30,9 +30,47 @@
 /* Ensure the wrapper positions correctly on all pages even when a
    page-local style sheet clobbers display rules. */
 #about-wrap { position: relative; display: inline-block; vertical-align: middle; }
-#about-trigger {
+
+/* The About trigger is a native <button> while its nav siblings are
+   <a class="nl">. Browsers apply subtle defaults to buttons
+   (font-family, line-height, focus outline, -webkit-appearance) that
+   make it look bigger/boxier. Force every one of those to match the
+   anchor siblings exactly. */
+#about-trigger,
+button#about-trigger {
   display: inline-flex !important;
-  align-items: center;
-  gap: 5px;
-  line-height: inherit;
+  align-items: center !important;
+  gap: 5px !important;
+  /* Match .nl sizing exactly — do NOT inherit from the flex container
+     (which can be larger than the intended 15.5px). */
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 15.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  padding: 7px 16px !important;
+  margin: 0 !important;
+  /* Kill all native-button chrome. */
+  background: none !important;
+  border: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  box-shadow: none !important;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+/* Remove the focus ring that sticks around after click. Keyboard users
+   still get a visible ring via :focus-visible. */
+#about-trigger:focus { outline: none !important; }
+#about-trigger:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* On pages using local nav CSS (about/services/practitioners/blog/faq)
+   the .nl class resolves to font-size:13.5px — match that when the
+   body is NOT landing-v4. */
+body:not(.landing-v4) #about-trigger {
+  font-size: 13.5px !important;
+  padding: 6px 14px !important;
 }
