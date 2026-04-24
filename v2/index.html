@@ -61,7 +61,32 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     </button>
     <div class="nav-links-v4">
       <a class="nl act" href="index.html">Home · 首頁</a>
-      <a class="nl"     href="about.html">About · 關於</a>
+      <!-- About dropdown wrapper -->
+      <div style="position:relative;display:inline-block;" id="about-wrap">
+        <button id="about-trigger" class="nl"
+          onclick="toggleAboutMenu(event)"
+          style="display:inline-flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:inherit;padding:6px 13px;">
+          About · 關於
+          <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none"
+            style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="about-dropdown"
+          style="display:none;position:absolute;top:calc(100% + 6px);left:0;
+                 min-width:190px;background:#FEFCF8;border:1px solid #D8C9AE;
+                 border-radius:10px;box-shadow:0 8px 32px rgba(36,22,8,0.12);
+                 z-index:9999;overflow:hidden;padding:4px 0;">
+          <div style="height:2px;background:linear-gradient(90deg,transparent,#B5881A,transparent);"></div>
+          <a id="dd-about"   href="about.html"           class="dd-item">About HansMed</a>
+          <a id="dd-prac"    href="practitioners.html"   class="dd-item">Our Practitioners</a>
+          <a id="dd-svc"     href="services.html"        class="dd-item">Our Services</a>
+          <a id="dd-blog"    href="blog.html"            class="dd-item">Blog · 部落格</a>
+          <a id="dd-faq"     href="faq.html"             class="dd-item">FAQ · 常見問題</a>
+          <a id="dd-contact" href="contact.html"         class="dd-item">Contact Us · 聯絡</a>
+        </div>
+      </div>
       <a class="nl"     href="services.html">Services · 服務</a>
       <a class="nl"     href="shop.html">Shop · 商店</a>
       <a class="nl"     href="portal.html#/ai-diagnosis">Wellness · 健康評估</a>
@@ -978,6 +1003,34 @@ setInterval(function () {
   }
   window.addEventListener('storage', function (e) {
     if (e.key === 'hm_user' || e.key === 'hm_token') applySignInSwap();
+  });
+})();
+</script>
+<!-- About-nav dropdown toggle (index.html only) -->
+<script>
+(function () {
+  var open = false;
+
+  window.toggleAboutMenu = function (e) {
+    e.stopPropagation();
+    open = !open;
+    var dd  = document.getElementById('about-dropdown');
+    var chv = document.getElementById('about-chevron');
+    if (dd)  dd.style.display = open ? 'block' : 'none';
+    if (chv) chv.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+  };
+
+  /* Close on outside click */
+  document.addEventListener('click', function (e) {
+    if (!open) return;
+    var wrap = document.getElementById('about-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      open = false;
+      var dd  = document.getElementById('about-dropdown');
+      var chv = document.getElementById('about-chevron');
+      if (dd)  dd.style.display = 'none';
+      if (chv) chv.style.transform = 'rotate(0deg)';
+    }
   });
 })();
 </script>

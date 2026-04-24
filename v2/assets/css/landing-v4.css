@@ -600,3 +600,16 @@ body.landing-v4 .ib-herb.vis{stroke-dashoffset:0;}
 body.landing-v4 .ib-herb-d1{transition-delay:0.2s;}
 body.landing-v4 .ib-herb-d2{transition-delay:0.5s;}
 body.landing-v4 .ib-herb-d3{transition-delay:0.8s;}
+
+/* ── About-dropdown menu items (used by the About nav dropdown in index.html) ── */
+.dd-item {
+  display: block;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #241608;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s;
+}
+.dd-item:hover { background: #F3EDE1; }
