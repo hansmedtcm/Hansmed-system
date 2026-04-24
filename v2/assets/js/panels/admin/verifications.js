@@ -56,12 +56,11 @@
         '<div><strong>' + HM.format.esc(item.full_name || item.name || 'Unknown') + '</strong>' +
         '<div class="text-xs text-muted">' + HM.format.esc(user.email || '') + '</div>' +
         (item.specialties ? '<div class="text-sm text-muted">' + HM.format.esc(item.specialties) + '</div>' : '') +
-        (item.license_no ? '<div class="text-xs">License: ' + HM.format.esc(item.license_no) + '</div>' : '') +
-        (type === 'doctor' && item.tcm_council_no
-          ? '<div class="text-xs" style="color:var(--sage);">T&amp;CM Council: ' + HM.format.esc(item.tcm_council_no) + '</div>'
-          : type === 'doctor'
-            ? '<div class="text-xs" style="color:var(--red-seal);">⚠ T&amp;CM Council No not yet entered</div>'
-            : '') +
+        (type === 'doctor'
+          ? (item.license_no
+              ? '<div class="text-xs" style="color:var(--sage);">T&amp;CM Council: ' + HM.format.esc(item.license_no) + '</div>'
+              : '<div class="text-xs" style="color:var(--red-seal);">⚠ T&amp;CM Council No not yet entered</div>')
+          : (item.license_no ? '<div class="text-xs">License: ' + HM.format.esc(item.license_no) + '</div>' : '')) +
         '</div>' +
         '<div class="flex flex-gap-2">' +
         '<button class="btn btn--primary btn--sm" data-action="approve">✓ Approve</button>' +

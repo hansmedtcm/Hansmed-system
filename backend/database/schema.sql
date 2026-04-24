@@ -62,13 +62,16 @@ CREATE TABLE doctor_profiles (
   avatar_url        VARCHAR(500) NULL,
   bio               TEXT NULL,
   specialties       VARCHAR(500) NULL,
+  -- license_no stores the T&CM Council Malaysia registration number
+  -- (T&CM Act 2016 §14). Malaysian TCM practitioners hold a single
+  -- Council-issued registration which serves as their practice
+  -- licence, so we don't keep a separate column. The
+  -- tcm_council_verified_* pair records the audit trail — when admin
+  -- sighted the certificate and which admin user id did it.
   license_no        VARCHAR(120) NULL,
   license_doc_url   VARCHAR(500) NULL,
-  -- T&CM Council Malaysia registration metadata (T&CM Act 2016 §14).
-  -- tcm_council_no is the formal registration number on the MOH-issued
-  -- practice certificate; tcm_council_verified_at records when admin
-  -- sighted the certificate; tcm_council_verified_by is the admin user
-  -- id who did the verification (audit trail).
+  -- Legacy column from an earlier design; unused now. Left in place
+  -- to avoid a destructive migration on the live DB.
   tcm_council_no    VARCHAR(80) NULL,
   tcm_council_verified_at DATETIME NULL,
   tcm_council_verified_by BIGINT UNSIGNED NULL,

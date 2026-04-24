@@ -114,9 +114,8 @@
         '<div class="field-grid field-grid--2">' +
         '<div class="field"><label class="field-label">Specialties · 專長</label><input name="specialties" class="field-input field-input--boxed" placeholder="e.g. General TCM, Gynecology"></div>' +
         '<div class="field"><label class="field-label">Consultation Fee (RM)</label><input name="consultation_fee" type="number" class="field-input field-input--boxed" value="120"></div>' +
-        '<div class="field"><label class="field-label">License No · 執照</label><input name="license_no" class="field-input field-input--boxed"></div>' +
-        '<div class="field"><label class="field-label">T&amp;CM Council No · 中醫理事會註冊號</label><input name="tcm_council_no" class="field-input field-input--boxed" placeholder="e.g. TCMC-123456"></div>' +
-        '<div class="field field-hint" style="grid-column: span 2; font-size: 12px; color: var(--stone);">Required by T&amp;CM Act 2016 §14 before this doctor sees patients. Leave blank if certificate not yet sighted; admin will be recorded as the verifier when this field is filled.</div>' +
+        '<div class="field" style="grid-column: span 2;"><label class="field-label">T&amp;CM Council Registration No · 中醫理事會註冊號</label><input name="license_no" class="field-input field-input--boxed" placeholder="e.g. TCMC-123456"></div>' +
+        '<div class="field field-hint" style="grid-column: span 2; font-size: 12px; color: var(--stone);">T&amp;CM Act 2016 §14 requires this before the doctor sees patients. Admin is auto-stamped as the verifier once entered.</div>' +
         '</div></div>' +
 
         '<div id="ca-pharmacy-fields" style="display:none;">' +
@@ -224,13 +223,11 @@
         '<input name="specialties" class="field-input field-input--boxed" value="' + HM.format.esc(dp.specialties || '') + '"></div>' +
         '<div class="field"><label class="field-label">Consultation Fee (RM)</label>' +
         '<input name="consultation_fee" type="number" class="field-input field-input--boxed" value="' + HM.format.esc(dp.consultation_fee || '') + '"></div>' +
-        '<div class="field"><label class="field-label">License No · 執照</label>' +
-        '<input name="license_no" class="field-input field-input--boxed" value="' + HM.format.esc(dp.license_no || '') + '"></div>' +
-        '<div class="field"><label class="field-label">T&amp;CM Council No · 中醫理事會註冊號</label>' +
-        '<input name="tcm_council_no" class="field-input field-input--boxed" value="' + HM.format.esc(dp.tcm_council_no || '') + '" placeholder="e.g. TCMC-123456"></div>' +
+        '<div class="field" style="grid-column: span 2;"><label class="field-label">T&amp;CM Council Registration No · 中醫理事會註冊號</label>' +
+        '<input name="license_no" class="field-input field-input--boxed" value="' + HM.format.esc(dp.license_no || '') + '" placeholder="e.g. TCMC-123456"></div>' +
         (dp.tcm_council_verified_at
-          ? '<div class="field field-hint" style="grid-column: span 2; font-size: 12px; color: var(--sage);">✓ Verified ' + HM.format.date(dp.tcm_council_verified_at) + (dp.tcm_council_verified_by ? ' by admin #' + dp.tcm_council_verified_by : '') + '. Editing the number re-stamps this.</div>'
-          : '<div class="field field-hint" style="grid-column: span 2; font-size: 12px; color: var(--stone);">Not yet verified. Enter the registration number from the sighted MOH certificate.</div>') +
+          ? '<div class="field field-hint" style="grid-column: span 2; font-size: 12px; color: var(--sage);">✓ Verified ' + HM.format.date(dp.tcm_council_verified_at) + (dp.tcm_council_verified_by ? ' by admin #' + dp.tcm_council_verified_by : '') + '. Changing the number re-stamps this.</div>'
+          : '<div class="field field-hint" style="grid-column: span 2; font-size: 12px; color: var(--stone);">Not yet verified. Enter the number from the sighted MOH certificate.</div>') +
         '<div class="field" style="grid-column: span 2;"><label class="field-label">Bio · 簡介</label>' +
         '<textarea name="bio" class="field-input field-input--boxed" rows="3">' + HM.format.esc(dp.bio || '') + '</textarea></div>' +
         '</div>';

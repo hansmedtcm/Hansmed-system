@@ -43,12 +43,14 @@ class AccountController extends Controller
             'name'     => ['required', 'string', 'max:160'],
             // Doctor-specific
             'specialties'      => ['nullable', 'string', 'max:500'],
+            // For doctors this is the T&CM Council Malaysia
+            // registration number (T&CM Act 2016 §14). One field,
+            // because Malaysian TCM practitioners have a single
+            // Council-issued registration — no separate "general
+            // medical licence". Stored nullable so admin can create
+            // the account first and fill it in after sighting the
+            // physical certificate.
             'license_no'       => ['nullable', 'string', 'max:120'],
-            // T&CM Council Malaysia registration (T&CM Act 2016 §14).
-            // Required before a doctor sees patients, but stored
-            // nullable so admin can create the account and fill this
-            // in after sighting the physical certificate.
-            'tcm_council_no'   => ['nullable', 'string', 'max:80'],
             'bio'              => ['nullable', 'string', 'max:2000'],
             'consultation_fee' => ['nullable', 'numeric', 'min:0'],
             // Pharmacy-specific
@@ -71,17 +73,17 @@ class AccountController extends Controller
             ]);
 
             if ($data['role'] === 'doctor') {
-                $hasTcmNo = !empty($data['tcm_council_no']);
+                // license_no on doctors = T&CM Council registration
+                // number. If admin entered one at create time, stamp
+                // the verification metadata (who verified, when) so
+                // the audit trail is complete from day one.
+                $hasLicense = !empty($data['license_no']);
                 $user->doctorProfile()->create([
                     'full_name'              => $data['name'],
                     'specialties'            => $data['specialties'] ?? null,
                     'license_no'             => $data['license_no'] ?? null,
-                    'tcm_council_no'         => $data['tcm_council_no'] ?? null,
-                    // If the admin provided the council number at
-                    // creation time we treat this as the verification
-                    // event — stamp who verified and when.
-                    'tcm_council_verified_at' => $hasTcmNo ? now() : null,
-                    'tcm_council_verified_by' => $hasTcmNo ? $request->user()->id : null,
+                    'tcm_council_verified_at' => $hasLicense ? now() : null,
+                    'tcm_council_verified_by' => $hasLicense ? $request->user()->id : null,
                     'bio'                    => $data['bio'] ?? null,
                     'consultation_fee'       => $data['consultation_fee'] ?? 0,
                     'verification_status'    => 'approved',
@@ -288,7 +290,6 @@ class AccountController extends Controller
             // Doctor-specific
             'specialties'      => ['nullable', 'string', 'max:500'],
             'license_no'       => ['nullable', 'string', 'max:120'],
-            'tcm_council_no'   => ['nullable', 'string', 'max:80'],
             'bio'              => ['nullable', 'string', 'max:2000'],
             'consultation_fee' => ['nullable', 'numeric', 'min:0'],
             // Pharmacy-specific
@@ -343,13 +344,13 @@ class AccountController extends Controller
                     'full_name'        => $data['name'] ?? null,
                     'specialties'      => $data['specialties'] ?? null,
                     'license_no'       => $data['license_no'] ?? null,
-                    'tcm_council_no'   => $data['tcm_council_no'] ?? null,
                     'bio'              => $data['bio'] ?? null,
                     'consultation_fee' => $data['consultation_fee'] ?? null,
                 ], fn($v) => $v !== null);
-                // If tcm_council_no just changed or was added, stamp
-                // the admin who verified it and when. Audit trail.
-                if (isset($updates['tcm_council_no']) && $updates['tcm_council_no'] !== $profile->tcm_council_no) {
+                // license_no on doctors IS the T&CM Council number. If
+                // admin just added or changed it, re-stamp the
+                // verification audit metadata.
+                if (isset($updates['license_no']) && $updates['license_no'] !== $profile->license_no) {
                     $updates['tcm_council_verified_at'] = now();
                     $updates['tcm_council_verified_by'] = $request->user()->id;
                 }
