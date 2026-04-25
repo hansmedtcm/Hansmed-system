@@ -46,11 +46,15 @@
      Mirrors the desktop go('login') wrapper above — guests go to the
      login screen, signed-in users to their portal. */
   window.navMobSignin = function () {
-    if (document.documentElement.classList.contains('is-auth')) {
-      location.href = portalHref();
-    } else {
-      location.href = 'index.html#/login';
+    var dest = document.documentElement.classList.contains('is-auth')
+      ? portalHref()
+      : 'index.html#/login';
+    if (typeof window.closeMob === 'function') {
+      try { window.closeMob(); } catch (_) {}
     }
+    // Use assign() inside a microtask so the drawer-close paint
+    // doesn't swallow the navigation on slow phones.
+    setTimeout(function () { location.assign(dest); }, 0);
   };
 
   /* Mobile drawer "Sign Out" tap handler. Clears the cached session
@@ -65,7 +69,10 @@
     if (window.HM && HM.api && typeof HM.api.authLogout === 'function') {
       try { HM.api.authLogout(); } catch (_) {}
     }
-    location.href = 'index.html';
+    if (typeof window.closeMob === 'function') {
+      try { window.closeMob(); } catch (_) {}
+    }
+    setTimeout(function () { location.assign('index.html'); }, 0);
   };
 
   if (document.readyState === 'loading') {
