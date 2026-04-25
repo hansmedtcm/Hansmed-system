@@ -126,7 +126,10 @@
       "Bash(git commit -m 'Fix mobile black-bar at top — was meta theme-color painting URL bar dark *)",
       "Bash(grep -nA 12 \"^\\\\.skip-link\" E:/Hansmed-system/v2/assets/css/base.css)",
       "Bash(git commit -m 'Add explicit html { background: cream } as defensive fix for top-bar *)",
-      "Bash(git commit -m 'Found it — skip-link was painting as the dark bar at the top *)"
+      "Bash(git commit -m 'Found it — skip-link was painting as the dark bar at the top *)",
+      "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/assets/css/base.css')",
+      "Bash(grep -nB 1 -A 10 \"background.*var\\(--ink\\)\" E:/Hansmed-system/v2/assets/css/components.css)",
+      "Bash(git commit -m 'Replace clip-pattern skip-link hide with battle-tested left:-9999px *)"
     ]
   }
 }
