@@ -99,7 +99,7 @@ html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
     <a class="sidebar-link" data-route="#/config" href="#/config"><span class="sidebar-link-icon">⚙️</span><span class="sidebar-link-label">Settings · 設定</span></a>
     <a class="sidebar-link" data-route="#/my-account" href="#/my-account"><span class="sidebar-link-icon">🔒</span><span class="sidebar-link-label">My Account · 我的帳號</span></a>
     <!-- Language toggle inside the drawer so mobile users can reach it -->
-    <div class="sidebar-link" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;cursor:default;">
+    <div class="sidebar-link sidebar-mobile-only" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;cursor:default;">
       <span class="sidebar-link-icon">🌐</span>
       <span class="sidebar-link-label" style="display:flex;align-items:center;gap:6px;">
         <span lang="en">Language</span><span lang="zh">語言</span>
@@ -109,7 +109,7 @@ html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
         </span>
       </span>
     </div>
-    <button class="sidebar-link" type="button" onclick="HM.auth.logout().then(function(){location.href='index.html';})" style="background:none;border:none;width:100%;cursor:pointer;text-align:left;color:#9a3a2a;font:inherit;margin-top:var(--s-2);"><span class="sidebar-link-icon">🚪</span><span class="sidebar-link-label">Sign Out · 登出</span></button>
+    <button class="sidebar-link sidebar-mobile-only" type="button" onclick="HM.auth.logout().then(function(){location.href='index.html';})" style="background:none;border:none;width:100%;cursor:pointer;text-align:left;color:#9a3a2a;font:inherit;margin-top:var(--s-2);"><span class="sidebar-link-icon">🚪</span><span class="sidebar-link-label">Sign Out · 登出</span></button>
   </aside>
 
   <main class="main" id="main">

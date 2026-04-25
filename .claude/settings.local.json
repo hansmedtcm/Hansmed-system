@@ -129,7 +129,8 @@
       "Bash(git commit -m 'Found it — skip-link was painting as the dark bar at the top *)",
       "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/assets/css/base.css')",
       "Bash(grep -nB 1 -A 10 \"background.*var\\(--ink\\)\" E:/Hansmed-system/v2/assets/css/components.css)",
-      "Bash(git commit -m 'Replace clip-pattern skip-link hide with battle-tested left:-9999px *)"
+      "Bash(git commit -m 'Replace clip-pattern skip-link hide with battle-tested left:-9999px *)",
+      "Bash(git commit -m 'Hide sidebar Sign Out + Language toggle on desktop \\(still on mobile\\) *)"
     ]
   }
 }

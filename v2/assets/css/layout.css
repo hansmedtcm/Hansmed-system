@@ -497,6 +497,12 @@
   .sidebar-backdrop {
     display: none !important;
   }
+  /* Sign Out + Language toggle live in the top nav on desktop, so
+     hide their sidebar duplicates. They stay visible on mobile
+     where the top nav collapses behind a hamburger. */
+  .sidebar-mobile-only {
+    display: none !important;
+  }
 }
 
 /* ── SECTION ───────────────────────────────────── */
