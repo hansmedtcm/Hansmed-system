@@ -112,3 +112,6 @@ html.is-auth .nav-signin .lbl-portal { display: inline; }
 .mob-nl-signin .lbl-portal { display: none; }
 html.is-auth .mob-nl-signin .lbl-signin { display: none; }
 html.is-auth .mob-nl-signin .lbl-portal { display: inline; }
+
+/* Mobile logout button — only visible when signed in. */
+html.is-auth .mob-nl-logout { display: block !important; }

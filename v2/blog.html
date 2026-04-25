@@ -684,7 +684,8 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
     <button class="mob-nl" onclick="go('shop');closeMob();">Shop · 商店</button>
     <button class="mob-nl" onclick="go('wellness');closeMob();">Wellness Assessment · 健康評估</button>
     <button class="mob-nl" onclick="go('contact');closeMob();">Contact · 聯絡</button>
-    <button class="mob-nl" onclick="go('login');closeMob();">Sign In · 登入</button>
+    <button class="mob-nl mob-nl-signin" onclick="navMobSignin();closeMob();"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
+    <button class="mob-nl mob-nl-logout" onclick="navLogout();closeMob();" style="display:none;color:#9a3a2a;"><span lang="en">Sign Out</span><span lang="zh">登出</span></button>
     <div class="mob-lang">
       <button id="mlen" class="mob-lb act" onclick="setLang('en');syncMobLang('en');">EN</button>
       <button id="mlzh" class="mob-lb"     onclick="setLang('zh');syncMobLang('zh');">中</button>

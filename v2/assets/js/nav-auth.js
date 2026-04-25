@@ -42,6 +42,32 @@
     });
   }
 
+  /* Mobile drawer "Sign In / My Portal" tap handler.
+     Mirrors the desktop go('login') wrapper above — guests go to the
+     login screen, signed-in users to their portal. */
+  window.navMobSignin = function () {
+    if (document.documentElement.classList.contains('is-auth')) {
+      location.href = portalHref();
+    } else {
+      location.href = 'index.html#/login';
+    }
+  };
+
+  /* Mobile drawer "Sign Out" tap handler. Clears the cached session
+     and lands on the home page. Tries the API logout in the
+     background so the server-side Sanctum token is revoked too —
+     but doesn't block the UX on it. */
+  window.navLogout = function () {
+    try { localStorage.removeItem('hm_token'); } catch (_) {}
+    try { localStorage.removeItem('hm_user');  } catch (_) {}
+    document.documentElement.classList.remove('is-auth');
+    delete document.documentElement.dataset.role;
+    if (window.HM && HM.api && typeof HM.api.authLogout === 'function') {
+      try { HM.api.authLogout(); } catch (_) {}
+    }
+    location.href = 'index.html';
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', install);
   } else {
