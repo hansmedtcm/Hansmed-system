@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \App\Http\Middleware\EnsurePermission::class,
         ]);
         $middleware->statefulApi();
+        // Defensive HTTP security headers on every API response —
+        // CSP, HSTS, X-Frame-Options, X-Content-Type-Options,
+        // Referrer-Policy, Permissions-Policy. See the middleware
+        // file for what each one does and why.
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // BUG-011 — Unauthenticated API requests should return HTTP 401,
