@@ -98,6 +98,17 @@ html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
     <a class="sidebar-link" data-route="#/vouchers" href="#/vouchers"><span class="sidebar-link-icon">🎟️</span><span class="sidebar-link-label">Vouchers · 優惠券</span></a>
     <a class="sidebar-link" data-route="#/config" href="#/config"><span class="sidebar-link-icon">⚙️</span><span class="sidebar-link-label">Settings · 設定</span></a>
     <a class="sidebar-link" data-route="#/my-account" href="#/my-account"><span class="sidebar-link-icon">🔒</span><span class="sidebar-link-label">My Account · 我的帳號</span></a>
+    <!-- Language toggle inside the drawer so mobile users can reach it -->
+    <div class="sidebar-link" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;cursor:default;">
+      <span class="sidebar-link-icon">🌐</span>
+      <span class="sidebar-link-label" style="display:flex;align-items:center;gap:6px;">
+        <span lang="en">Language</span><span lang="zh">語言</span>
+        <span style="display:inline-flex;border:1px solid rgba(245,240,232,0.25);border-radius:6px;overflow:hidden;margin-left:auto;">
+          <button type="button" class="portal-lang-btn" data-lang="en" onclick="setPortalLang('en')" style="background:none;border:none;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:inherit;font-family:inherit;">EN</button>
+          <button type="button" class="portal-lang-btn" data-lang="zh" onclick="setPortalLang('zh')" style="background:none;border:none;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:inherit;font-family:inherit;">中</button>
+        </span>
+      </span>
+    </div>
     <button class="sidebar-link" type="button" onclick="HM.auth.logout().then(function(){location.href='index.html';})" style="background:none;border:none;width:100%;cursor:pointer;text-align:left;color:#9a3a2a;font:inherit;margin-top:var(--s-2);"><span class="sidebar-link-icon">🚪</span><span class="sidebar-link-label">Sign Out · 登出</span></button>
   </aside>
 
