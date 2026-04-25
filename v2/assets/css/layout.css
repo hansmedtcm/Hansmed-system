@@ -361,15 +361,31 @@
   /* Hidden by default; slides in from the left when .is-open is set. */
   .sidebar {
     position: fixed;
-    top: var(--nav-height);
+    /* Cover from the very top of the viewport down. Previously top
+       was set to nav-height, which on mobile (where .nav uses
+       position:relative and scrolls away) left a thin transparent
+       gap above the drawer that read as a black bar against the
+       page background. */
+    top: 0;
     bottom: 0;
     left: 0;
     width: 82vw;
     max-width: 320px;
-    height: calc(100vh - var(--nav-height));
+    /* Use 100dvh (dynamic viewport height) so URL-bar collapse on
+       mobile browsers doesn't make the drawer taller than the
+       visible area. Falls back to 100vh on older browsers. */
+    height: 100vh;
+    height: 100dvh;
     padding: var(--s-5) var(--s-3);
+    /* Extra top padding for the device safe-area / status bar, and
+       extra bottom padding so the last item (Sign Out) clears any
+       home-indicator overlay and stays scrollable into view. */
+    padding-top: calc(var(--s-5) + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(var(--s-8) + env(safe-area-inset-bottom, 0px));
     gap: var(--s-1);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     overflow-x: hidden;
     z-index: 1200;
     transform: translateX(-100%);
