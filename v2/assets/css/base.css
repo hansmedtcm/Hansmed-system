@@ -172,18 +172,37 @@ input, textarea, select {
   border: 0;
 }
 
+/* Visually-hidden-until-focused pattern. The previous version used
+   `top: -40px` to hide the link off-screen, but on some browsers
+   (especially after a page reload while a related tab held focus)
+   the link painted as a thin dark bar at the top of the viewport
+   even though it was never the active element. Using clip+sr-only
+   technique instead — the link occupies a 1×1 pixel slot and can't
+   paint anywhere visible until :focus expands it. */
 .skip-link {
   position: absolute;
-  top: -40px;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link:focus {
+  position: fixed;
+  top: 0;
   left: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
   background: var(--ink);
   color: var(--washi);
   padding: 0.5rem 1rem;
   z-index: var(--z-max);
-  transition: top var(--dur-fast) var(--ease-out);
-}
-.skip-link:focus {
-  top: 0;
 }
 
 /* Prevent text overflow */
