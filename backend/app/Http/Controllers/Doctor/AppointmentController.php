@@ -115,8 +115,8 @@ class AppointmentController extends Controller
             ->with(['patient.patientProfile'])
             ->findOrFail($id);
 
-        $tongue = $appt->tongue_diagnosis_id
-            ? \App\Models\TongueDiagnosis::find($appt->tongue_diagnosis_id)
+        $tongue = $appt->tongue_assessment_id
+            ? \App\Models\TongueAssessment::find($appt->tongue_assessment_id)
             : null;
 
         // Same fee enrichment as index() so the detail page can render
@@ -164,9 +164,12 @@ class AppointmentController extends Controller
         }
 
         return response()->json([
-            'appointment'      => $appt,
-            'tongue_diagnosis' => $tongue,
-            'fee_breakdown'    => [
+            'appointment'        => $appt,
+            'tongue_assessment'  => $tongue,
+            // Legacy key for one release so older frontend builds don't
+            // break mid-deploy. Remove after frontend is fully cycled.
+            'tongue_diagnosis'   => $tongue,
+            'fee_breakdown'      => [
                 'consult_fee'    => $consultFee,
                 'treatment_fee'  => $treatmentFee,
                 'treatments'     => $treatmentList,

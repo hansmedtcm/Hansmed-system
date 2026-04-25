@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
-use App\Models\TongueDiagnosis;
+use App\Models\TongueAssessment;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -57,7 +57,7 @@ class PatientListController extends Controller
             ->where('patient_id', $patientId)->exists();
         if (!$hasSeen) return response()->json(['message' => 'Forbidden'], 403);
 
-        $diagnoses = TongueDiagnosis::where('patient_id', $patientId)
+        $diagnoses = TongueAssessment::where('patient_id', $patientId)
             ->orderByDesc('created_at')
             ->paginate(20);
 

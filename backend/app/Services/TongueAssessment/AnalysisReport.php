@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\TongueDiagnosis;
+namespace App\Services\TongueAssessment;
 
 /**
  * Generates a structured TCM tongue diagnosis report.

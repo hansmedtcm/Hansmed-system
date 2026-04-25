@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\TongueDiagnosis;
+namespace App\Services\TongueAssessment;
 
 /**
  * Structured knowledge base for AI tongue diagnosis.

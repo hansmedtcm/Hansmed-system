@@ -91,8 +91,8 @@ class BadgeController extends Controller
             }),
             // Pending tongue diagnosis reviews
             'tongue_reviews' => $this->safeCount(function () {
-                if (! \Illuminate\Support\Facades\Schema::hasColumn('tongue_diagnoses', 'review_status')) return 0;
-                return DB::table('tongue_diagnoses')
+                if (! \Illuminate\Support\Facades\Schema::hasColumn('tongue_assessments', 'review_status')) return 0;
+                return DB::table('tongue_assessments')
                     ->where('review_status', 'pending')
                     ->whereIn('status', ['completed', 'uploaded'])
                     ->count();

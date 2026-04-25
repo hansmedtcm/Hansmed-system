@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\TongueDiagnosis\KnowledgeBase;
+use App\Services\TongueAssessment\KnowledgeBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class TongueDiagnosisConfigController extends Controller
+class TongueAssessmentConfigController extends Controller
 {
-    /** Get current tongue diagnosis configuration */
+    /** Get current tongue assessment configuration */
     public function index()
     {
         $configs = DB::table('system_configs')
@@ -38,7 +38,7 @@ class TongueDiagnosisConfigController extends Controller
         ]);
     }
 
-    /** Update tongue diagnosis configuration */
+    /** Update tongue assessment configuration */
     public function update(Request $request)
     {
         $data = $request->validate([
@@ -72,3 +72,6 @@ class TongueDiagnosisConfigController extends Controller
         return response()->json(['message' => 'Configuration updated']);
     }
 }
+
+/* Class alias for one release cycle. */
+class_alias(TongueAssessmentConfigController::class, 'App\\Http\\Controllers\\Admin\\TongueDiagnosisConfigController');

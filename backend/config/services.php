@@ -23,7 +23,10 @@ return [
         'app_certificate' => env('AGORA_APP_CERT'),
     ],
 
-    'tongue_diagnosis' => [
+    // Renamed from 'tongue_diagnosis' on 2026-04-25 — see
+    // BACKEND_RENAME_TODO.md. Same env var names so Railway secrets
+    // don't need to change.
+    'tongue_assessment' => [
         'endpoint' => env('TONGUE_API_URL'),
         'key'      => env('TONGUE_API_KEY'),
     ],

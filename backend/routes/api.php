@@ -19,7 +19,7 @@ use App\Http\Controllers\Patient\DoctorBrowseController;
 use App\Http\Controllers\Patient\OrderController as PatientOrderController;
 use App\Http\Controllers\Patient\PharmacyBrowseController;
 use App\Http\Controllers\Patient\ProfileController as PatientProfileController;
-use App\Http\Controllers\Patient\TongueDiagnosisController;
+use App\Http\Controllers\Patient\TongueAssessmentController;
 use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\Pharmacy\OrderController as PharmacyOrderController;
 use App\Http\Controllers\Pharmacy\ProductController as PharmacyProductController;
@@ -159,7 +159,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/consultations/{appointmentId}/finish', [ConsultationController::class, 'finish']);
 
     // Tongue diagnosis knowledge base (public glossary, no role restriction)
-    Route::get('/tongue-knowledge', [TongueDiagnosisController::class, 'knowledgeBase']);
+    Route::get('/tongue-knowledge', [TongueAssessmentController::class, 'knowledgeBase']);
 
     // PayPal (patient initiates + captures)
     Route::post('/payments/paypal/create',  [PayPalController::class, 'create']);
@@ -192,10 +192,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('registration.complete')->group(function () {
             Route::apiResource('addresses', AddressController::class)->except(['show']);
 
-            Route::get('/tongue-diagnoses',         [TongueDiagnosisController::class, 'index']);
-            Route::post('/tongue-diagnoses',        [TongueDiagnosisController::class, 'store']);
-            Route::get('/tongue-diagnoses/{id}',    [TongueDiagnosisController::class, 'show']);
-            Route::delete('/tongue-diagnoses/{id}', [TongueDiagnosisController::class, 'destroy']);
+            // New canonical paths (PDPA / MDA-friendly wording).
+            Route::get('/tongue-assessments',         [TongueAssessmentController::class, 'index']);
+            Route::post('/tongue-assessments',        [TongueAssessmentController::class, 'store']);
+            Route::get('/tongue-assessments/{id}',    [TongueAssessmentController::class, 'show']);
+            Route::delete('/tongue-assessments/{id}', [TongueAssessmentController::class, 'destroy']);
+            // Deprecated legacy paths — kept alive for one release so any
+            // bookmarks / cached frontend builds keep working. Remove
+            // after all callers confirmed migrated.
+            Route::get('/tongue-diagnoses',         [TongueAssessmentController::class, 'index']);
+            Route::post('/tongue-diagnoses',        [TongueAssessmentController::class, 'store']);
+            Route::get('/tongue-diagnoses/{id}',    [TongueAssessmentController::class, 'show']);
+            Route::delete('/tongue-diagnoses/{id}', [TongueAssessmentController::class, 'destroy']);
 
             // Health questionnaire (C-08)
             Route::post('/questionnaires',      [\App\Http\Controllers\Patient\QuestionnaireController::class, 'store']);
@@ -230,6 +238,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Patient list (D-05) + tongue reports (D-06) + consultation history (D-10)
         Route::get('/patients',                          [\App\Http\Controllers\Doctor\PatientListController::class, 'index']);
+        Route::get('/patients/{id}/tongue-assessments',  [\App\Http\Controllers\Doctor\PatientListController::class, 'tongueDiagnoses']);
+        // Deprecated alias — remove after one release cycle.
         Route::get('/patients/{id}/tongue-diagnoses',    [\App\Http\Controllers\Doctor\PatientListController::class, 'tongueDiagnoses']);
         Route::get('/patients/{id}/consultations',       [\App\Http\Controllers\Doctor\PatientListController::class, 'consultationHistory']);
 
@@ -391,8 +401,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/configs', [SystemConfigController::class, 'upsert']);
 
         // Tongue diagnosis config (M-05)
-        Route::get('/tongue-config',  [\App\Http\Controllers\Admin\TongueDiagnosisConfigController::class, 'index']);
-        Route::post('/tongue-config', [\App\Http\Controllers\Admin\TongueDiagnosisConfigController::class, 'update']);
+        Route::get('/tongue-config',  [\App\Http\Controllers\Admin\TongueAssessmentConfigController::class, 'index']);
+        Route::post('/tongue-config', [\App\Http\Controllers\Admin\TongueAssessmentConfigController::class, 'update']);
 
         // Permission management (M-10) — role defaults + per-user overrides
         // All permission management requires 'manage_permissions'.

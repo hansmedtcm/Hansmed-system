@@ -69,7 +69,7 @@ class ConstitutionReviewController extends Controller
                 // Linkage so the frontend can fold the matching tongue
                 // diagnosis card into this constitution card — the
                 // patient submitted them as one session.
-                'tongue_diagnosis_id' => isset($s['tongue_diagnosis_id']) ? (int) $s['tongue_diagnosis_id'] : null,
+                'tongue_assessment_id' => isset($s['tongue_assessment_id']) ? (int) $s['tongue_assessment_id'] : null,
                 'tongue_image_url'    => $s['tongue_image_url'] ?? null,
                 'tongue_health_score' => $s['tongue_health_score'] ?? null,
                 'tongue_constitution' => $s['tongue_constitution'] ?? null,

@@ -133,7 +133,9 @@
       "Bash(git commit -m 'Hide sidebar Sign Out + Language toggle on desktop \\(still on mobile\\) *)",
       "Bash(grep -nA 3 \"allowed_origins\" E:/Hansmed-system/backend/config/cors.php)",
       "Bash(curl -sS -I 'https://hansmed-system-production.up.railway.app/api/auth/me')",
-      "Bash(git commit -m 'Privacy Policy: honest disclosure of Singapore hosting, PDPA §129 basis *)"
+      "Bash(git commit -m 'Privacy Policy: honest disclosure of Singapore hosting, PDPA §129 basis *)",
+      "Bash(node E:/Hansmed-system/.tmp-rename.mjs)",
+      "Bash(node E:/Hansmed-system/.tmp-fe-rename.mjs)"
     ]
   }
 }

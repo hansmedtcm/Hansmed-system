@@ -122,9 +122,13 @@ CREATE TABLE pharmacy_profiles (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =========================================================
--- 2. HEALTH RECORDS / TONGUE DIAGNOSIS / QUESTIONNAIRES
+-- 2. HEALTH RECORDS / TONGUE WELLNESS ASSESSMENT / QUESTIONNAIRES
+-- (Renamed from tongue_diagnoses on 2026-04-25 — see
+--  BACKEND_RENAME_TODO.md. The table holds AI-driven wellness
+--  analysis reviewed by a licensed practitioner; it is not a
+--  diagnosis in the MDA 2012 sense.)
 -- =========================================================
-CREATE TABLE tongue_diagnoses (
+CREATE TABLE tongue_assessments (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   patient_id      BIGINT UNSIGNED NOT NULL,
   image_url       VARCHAR(500) NOT NULL,
@@ -143,8 +147,8 @@ CREATE TABLE tongue_diagnoses (
   health_score    SMALLINT NULL,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_td_patient FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
-  KEY idx_td_patient_created (patient_id, created_at)
+  CONSTRAINT fk_ta_patient FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+  KEY idx_ta_patient_created (patient_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE questionnaires (
@@ -171,7 +175,7 @@ CREATE TABLE appointments (
   status          ENUM('pending_payment','confirmed','in_progress','completed','cancelled','no_show') NOT NULL DEFAULT 'pending_payment',
   fee             DECIMAL(10,2) NOT NULL,
   payment_id      BIGINT UNSIGNED NULL,
-  tongue_diagnosis_id BIGINT UNSIGNED NULL,
+  tongue_assessment_id BIGINT UNSIGNED NULL,
   questionnaire_id BIGINT UNSIGNED NULL,
   notes           TEXT NULL,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -28,7 +28,7 @@ class AppointmentController extends Controller
             'doctor_id'       => ['nullable', 'integer', 'exists:users,id'],
             'scheduled_start' => ['required', 'date'],
             'scheduled_end'   => ['required', 'date', 'after:scheduled_start'],
-            'tongue_diagnosis_id' => ['nullable', 'integer'],
+            'tongue_assessment_id' => ['nullable', 'integer'],
             'questionnaire_id'    => ['nullable', 'integer'],
             'notes'               => ['nullable', 'string', 'max:2000'],
             // Pool booking fields
@@ -74,7 +74,7 @@ class AppointmentController extends Controller
                 // Pool appointments go straight to 'confirmed' so any doctor can pick them.
                 'status'              => $isPool ? 'confirmed' : 'pending_payment',
                 'fee'                 => $fee,
-                'tongue_diagnosis_id' => $data['tongue_diagnosis_id'] ?? null,
+                'tongue_assessment_id' => $data['tongue_assessment_id'] ?? null,
                 'questionnaire_id'    => $data['questionnaire_id']    ?? null,
                 'notes'               => $data['notes']               ?? null,
                 'concern'              => $data['concern']              ?? null,

@@ -107,7 +107,7 @@
 
       // Index tongues by id so we can fold matched ones into their
       // constitution sibling. The patient submits both as one
-      // session; the questionnaire payload carries tongue_diagnosis_id
+      // session; the questionnaire payload carries tongue_assessment_id
       // pointing at the tongue row, so we have a direct join key.
       var tongueById = {};
       tongues.forEach(function (t) { tongueById[t.id] = t; });
@@ -115,7 +115,7 @@
 
       var items = [];
       constitutions.forEach(function (c) {
-        var matchedTongue = c.tongue_diagnosis_id ? tongueById[c.tongue_diagnosis_id] : null;
+        var matchedTongue = c.tongue_assessment_id ? tongueById[c.tongue_assessment_id] : null;
         var report = matchedTongue && matchedTongue.constitution_report ? matchedTongue.constitution_report : {};
         var tongueConst = report.constitution || c.tongue_constitution || {};
         if (matchedTongue) foldedTongueIds[matchedTongue.id] = true;
@@ -134,7 +134,7 @@
             patterns: c.patterns || [],
             safety_alerts: c.safety_alerts || [],
             health_concerns: c.health_concerns || null,
-            tongue_id: matchedTongue ? matchedTongue.id : (c.tongue_diagnosis_id || null),
+            tongue_id: matchedTongue ? matchedTongue.id : (c.tongue_assessment_id || null),
             image_url: matchedTongue ? matchedTongue.image_url : (c.tongue_image_url || null),
             constitution_en: tongueConst.name_en || null,
             constitution_zh: tongueConst.name_zh || null,

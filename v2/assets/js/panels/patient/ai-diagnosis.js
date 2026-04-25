@@ -963,7 +963,7 @@
     // sees the whole TCM picture together with the constitution quiz,
     // not spread across two pages.
     var tongueSection = '';
-    if (report.tongue_diagnosis_id || report.tongue_image_url || report.tongue_constitution) {
+    if (report.tongue_assessment_id || report.tongue_image_url || report.tongue_constitution) {
       var tc = report.tongue_constitution || {};
       var tBand = healthBand(report.tongue_health_score);
       var tColor = tBand.color;
@@ -1424,7 +1424,7 @@
         submitted_at:     new Date().toISOString(),
         // Link this questionnaire to the tongue scan from the same session
         // so the reviewing doctor sees both sides of the assessment together.
-        tongue_diagnosis_id:     state.tongueId || null,
+        tongue_assessment_id:     state.tongueId || null,
         tongue_health_score:     state.tongueReport ? state.tongueReport.health_score : null,
         tongue_constitution:     state.tongueReport && state.tongueReport.constitution_report
           ? state.tongueReport.constitution_report.constitution || null
@@ -1468,9 +1468,9 @@
       // (including the deep 三焦 / 全息圖 / 六經 / 臨床特徵 / 升降 analysis)
       // and inline it into the combined report so the patient sees tongue
       // + constitution together in one view.
-      if (s.tongue_diagnosis_id) {
+      if (s.tongue_assessment_id) {
         try {
-          var tr = await HM.api.patient.getDiagnosis(s.tongue_diagnosis_id);
+          var tr = await HM.api.patient.getDiagnosis(s.tongue_assessment_id);
           s._tongue_full = tr && tr.diagnosis ? tr.diagnosis : null;
         } catch (_) { s._tongue_full = null; }
       }

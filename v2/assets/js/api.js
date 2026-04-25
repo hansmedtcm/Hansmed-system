@@ -168,16 +168,16 @@
     updateAddress:   function (id, d) { return api.put('/patient/addresses/' + id, d); },
     deleteAddress:   function (id) { return api.delete('/patient/addresses/' + id); },
 
-    listDiagnoses: function (page) { return api.get('/patient/tongue-diagnoses?page=' + (page || 1)); },
-    getDiagnosis:  function (id) { return api.get('/patient/tongue-diagnoses/' + id); },
-    deleteDiagnosis: function (id) { return api.delete('/patient/tongue-diagnoses/' + id); },
+    listDiagnoses: function (page) { return api.get('/patient/tongue-assessments?page=' + (page || 1)); },
+    getDiagnosis:  function (id) { return api.get('/patient/tongue-assessments/' + id); },
+    deleteDiagnosis: function (id) { return api.delete('/patient/tongue-assessments/' + id); },
     uploadTongue: function (file) {
       var fd = new FormData();
       fd.append('image', file);
       // Backend runs the Claude Vision call inline in this request, so allow
       // up to 90s — image fetch + AI round-trip usually lands in 10–20s but
       // slow mobile uploads + cold-start backends can occasionally stretch.
-      return api.post('/patient/tongue-diagnoses', fd, { timeout: 90000 });
+      return api.post('/patient/tongue-assessments', fd, { timeout: 90000 });
     },
 
     saveQuestionnaire:  function (d)  { return api.post('/patient/questionnaires', d); },
@@ -215,7 +215,7 @@
     completeAppointment: function (id) { return api.post('/doctor/appointments/' + id + '/complete'); },
 
     listPatients:      function (q) { return api.get('/doctor/patients' + (q ? '?' + q : '')); },
-    patientTongue:     function (id) { return api.get('/doctor/patients/' + id + '/tongue-diagnoses'); },
+    patientTongue:     function (id) { return api.get('/doctor/patients/' + id + '/tongue-assessments'); },
     patientConsults:   function (id) { return api.get('/doctor/patients/' + id + '/consultations'); },
 
     listPrescriptions: function (page) { return api.get('/doctor/prescriptions?page=' + (page || 1)); },

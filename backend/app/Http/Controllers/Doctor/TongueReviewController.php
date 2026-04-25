@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
-use App\Models\TongueDiagnosis;
+use App\Models\TongueAssessment;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
  * Doctor Tongue Diagnosis review queue.
  *
  * Workflow:
- *   1. Patient uploads tongue photo (Patient\TongueDiagnosisController).
+ *   1. Patient uploads tongue photo (Patient\TongueAssessmentController).
  *   2. Analysis completes, AI writes result into constitution_report.
  *      review_status starts as 'pending'.
  *   3. Doctor sees the entry in this queue.
@@ -27,7 +27,7 @@ class TongueReviewController extends Controller
     public function index(Request $request)
     {
         $filter = $request->query('filter', 'pending');
-        $q = TongueDiagnosis::query()
+        $q = TongueAssessment::query()
             ->with(['patient:id,email,role', 'patient.patientProfile'])
             ->orderByDesc('created_at');
 
@@ -44,7 +44,7 @@ class TongueReviewController extends Controller
     // GET /doctor/tongue-reviews/{id}
     public function show(int $id)
     {
-        $d = TongueDiagnosis::with('patient:id,email')->findOrFail($id);
+        $d = TongueAssessment::with('patient:id,email')->findOrFail($id);
         return response()->json(['diagnosis' => $d]);
     }
 
@@ -61,7 +61,7 @@ class TongueReviewController extends Controller
             'medicine_suggestions.*.note'   => ['nullable', 'string', 'max:500'],
         ]);
 
-        $d = TongueDiagnosis::findOrFail($id);
+        $d = TongueAssessment::findOrFail($id);
         $d->review_status        = $data['decision'];
         $d->doctor_comment       = $data['comment'] ?? null;
         $d->medicine_suggestions = $data['medicine_suggestions'] ?? [];

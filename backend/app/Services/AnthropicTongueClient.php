@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Services\TongueDiagnosis\AnalysisReport;
-use App\Services\TongueDiagnosis\KnowledgeBase;
+use App\Services\TongueAssessment\AnalysisReport;
+use App\Services\TongueAssessment\KnowledgeBase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -31,7 +31,7 @@ class AnthropicTongueClient
 
     /**
      * Analyze a tongue image via Claude Vision. Returns the same shape as
-     * TongueDiagnosisClient::map() so the existing controller code works
+     * TongueAssessmentClient::map() so the existing controller code works
      * without any changes.
      */
     public function analyze(string $imageUrl): array
@@ -425,7 +425,7 @@ PROMPT;
 
     /**
      * Build a failure response that actually surfaces the reason. Shoves
-     * the error into raw_response (which IS fillable on TongueDiagnosis)
+     * the error into raw_response (which IS fillable on TongueAssessment)
      * so the doctor review modal can show the real reason instead of an
      * opaque "failed" status, and admins can debug from the DB.
      */

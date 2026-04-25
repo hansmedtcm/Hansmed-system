@@ -48,7 +48,7 @@ class MigrationController extends Controller
         $orphans = 0;
         $rowsInDb = 0;
         try {
-            $rows = DB::table('tongue_diagnoses')->whereNotNull('image_url')->pluck('image_url');
+            $rows = DB::table('tongue_assessments')->whereNotNull('image_url')->pluck('image_url');
             $rowsInDb = $rows->count();
             foreach ($rows as $url) {
                 // Expected URL shape is `{APP_URL}/api/uploads/tongue/xxx.jpg`.
@@ -250,12 +250,12 @@ class MigrationController extends Controller
             'medicine_suggestions' => "ADD COLUMN medicine_suggestions JSON NULL AFTER reviewed_at",
         ];
         foreach ($columns as $col => $sql) {
-            if (Schema::hasColumn('tongue_diagnoses', $col)) {
+            if (Schema::hasColumn('tongue_assessments', $col)) {
                 $log[] = "column {$col} already exists, skipped";
                 continue;
             }
             try {
-                DB::statement("ALTER TABLE tongue_diagnoses {$sql}");
+                DB::statement("ALTER TABLE tongue_assessments {$sql}");
                 $log[] = "added column {$col}";
             } catch (\Throwable $e) {
                 $errors[] = "add {$col}: " . $e->getMessage();
@@ -263,7 +263,7 @@ class MigrationController extends Controller
         }
 
         try {
-            DB::statement('ALTER TABLE tongue_diagnoses ADD INDEX idx_td_review (review_status, created_at)');
+            DB::statement('ALTER TABLE tongue_assessments ADD INDEX idx_td_review (review_status, created_at)');
             $log[] = 'added review index';
         } catch (\Throwable $e) {
             $log[] = 'review index: ' . $e->getMessage();
@@ -285,7 +285,7 @@ class MigrationController extends Controller
     public function fixTongueImageUrls(Request $request)
     {
         $log = [];
-        $rows = DB::table('tongue_diagnoses')->select('id', 'image_url')->get();
+        $rows = DB::table('tongue_assessments')->select('id', 'image_url')->get();
         $base = rtrim(url('/api/uploads'), '/');
         $updated = 0;
         foreach ($rows as $r) {
@@ -298,7 +298,7 @@ class MigrationController extends Controller
             elseif (strpos($u, 'tongue/') === 0)       $path = $u;
             elseif (preg_match('#^https?://[^/]+/storage/(.+)$#', $u, $m)) $path = $m[1];
             if (! $path) continue;
-            DB::table('tongue_diagnoses')->where('id', $r->id)->update([
+            DB::table('tongue_assessments')->where('id', $r->id)->update([
                 'image_url'  => $base . '/' . ltrim($path, '/'),
                 'updated_at' => now(),
             ]);

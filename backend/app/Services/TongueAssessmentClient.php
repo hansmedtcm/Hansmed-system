@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Services\TongueDiagnosis\AnalysisReport;
-use App\Services\TongueDiagnosis\KnowledgeBase;
+use App\Services\TongueAssessment\AnalysisReport;
+use App\Services\TongueAssessment\KnowledgeBase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Adapter for tongue diagnosis (PDF E-60).
+ * Adapter for tongue wellness assessment (PDF E-60).
  *
  * Two modes:
  *  1. Third-party API: sends image to external provider, normalizes response.
@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Log;
  * grounded in the Yin's Modern Tongue Diagnosis (殷氏现代舌诊) framework.
  *
  * config/services.php:
- *   'tongue_diagnosis' => ['endpoint' => env('TONGUE_API_URL'), 'key' => env('TONGUE_API_KEY')],
+ *   'tongue_assessment' => ['endpoint' => env('TONGUE_API_URL'), 'key' => env('TONGUE_API_KEY')],
  */
-class TongueDiagnosisClient
+class TongueAssessmentClient
 {
     public function __construct(private AnalysisReport $report) {}
 
@@ -34,8 +34,8 @@ class TongueDiagnosisClient
      */
     public function analyze(string $imageUrl): array
     {
-        $endpoint = config('services.tongue_diagnosis.endpoint');
-        $key      = config('services.tongue_diagnosis.key');
+        $endpoint = config('services.tongue_assessment.endpoint');
+        $key      = config('services.tongue_assessment.key');
 
         // Short-circuit to Anthropic Claude Vision when configured.
         if (is_string($endpoint) && strtolower(trim($endpoint)) === 'anthropic') {
@@ -56,7 +56,7 @@ class TongueDiagnosisClient
                 ->throw()
                 ->json();
         } catch (\Throwable $e) {
-            Log::error('tongue_diagnosis_failed', ['err' => $e->getMessage()]);
+            Log::error('tongue_assessment_failed', ['err' => $e->getMessage()]);
             return ['status' => 'failed', 'error' => $e->getMessage()];
         }
 
@@ -165,3 +165,8 @@ class TongueDiagnosisClient
         return $allowed[0] ?? null; // safe default
     }
 }
+
+/* Class alias so anything still resolving the old name keeps working
+ * for one release. Remove once all dispatched jobs and config refs
+ * have been fully cycled through. */
+class_alias(TongueAssessmentClient::class, 'App\Services\TongueDiagnosisClient');

@@ -7,7 +7,7 @@ use App\Models\Address;
 use App\Models\Appointment;
 use App\Models\Order;
 use App\Models\Prescription;
-use App\Models\TongueDiagnosis;
+use App\Models\TongueAssessment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -120,7 +120,7 @@ class DataExportController extends Controller
                 ];
             });
 
-        $tongueDiagnoses = TongueDiagnosis::where('patient_id', $userId)
+        $tongueDiagnoses = TongueAssessment::where('patient_id', $userId)
             ->orderByDesc('created_at')
             ->get()
             ->map(function ($t) {

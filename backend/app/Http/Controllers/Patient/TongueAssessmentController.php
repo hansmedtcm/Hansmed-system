@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Patient;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\AnalyzeTongueDiagnosis;
-use App\Models\TongueDiagnosis;
-use App\Services\TongueDiagnosis\KnowledgeBase;
+use App\Jobs\AnalyzeTongueAssessment;
+use App\Models\TongueAssessment;
+use App\Services\TongueAssessment\KnowledgeBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class TongueDiagnosisController extends Controller
+class TongueAssessmentController extends Controller
 {
     // C-04: upload tongue image and run analysis synchronously.
     //
@@ -36,7 +36,7 @@ class TongueDiagnosisController extends Controller
         // which isn't reliable on Railway's split frontend/backend setup.
         $url = url('/api/uploads/' . $path);
 
-        $diag = TongueDiagnosis::create([
+        $assessment = TongueAssessment::create([
             'patient_id' => $request->user()->id,
             'image_url'  => $url,
             'status'     => 'processing',
@@ -45,24 +45,28 @@ class TongueDiagnosisController extends Controller
         try {
             // dispatchSync runs the job inline in this request — no queue
             // worker required. If the AI provider errors out, the job's
-            // handle() still writes status=failed via $diag->fill()->save()
+            // handle() still writes status=failed via $assessment->fill()->save()
             // so the patient sees a clean error instead of an indefinite spinner.
-            AnalyzeTongueDiagnosis::dispatchSync($diag->id);
+            AnalyzeTongueAssessment::dispatchSync($assessment->id);
         } catch (\Throwable $e) {
-            \Log::error('tongue_analysis_sync_failed', ['id' => $diag->id, 'err' => $e->getMessage()]);
-            TongueDiagnosis::where('id', $diag->id)->update([
+            \Log::error('tongue_analysis_sync_failed', ['id' => $assessment->id, 'err' => $e->getMessage()]);
+            TongueAssessment::where('id', $assessment->id)->update([
                 'status' => 'failed',
             ]);
         }
 
-        return response()->json(['diagnosis' => $diag->fresh()], 202);
+        // Response key kept as 'diagnosis' for frontend backward-compat.
+        // Frontend reads `res.diagnosis` everywhere; renaming the JSON key
+        // would force a parallel frontend deploy. Safe to keep — the row's
+        // table name is what matters legally, not the JSON key.
+        return response()->json(['diagnosis' => $assessment->fresh()], 202);
     }
 
     // C-07: history
     public function index(Request $request)
     {
         return response()->json(
-            TongueDiagnosis::where('patient_id', $request->user()->id)
+            TongueAssessment::where('patient_id', $request->user()->id)
                 ->orderByDesc('created_at')
                 ->paginate(20)
         );
@@ -70,13 +74,13 @@ class TongueDiagnosisController extends Controller
 
     public function show(Request $request, int $id)
     {
-        $diag = TongueDiagnosis::where('patient_id', $request->user()->id)->findOrFail($id);
-        return response()->json(['diagnosis' => $diag]);
+        $assessment = TongueAssessment::where('patient_id', $request->user()->id)->findOrFail($id);
+        return response()->json(['diagnosis' => $assessment]);
     }
 
     public function destroy(Request $request, int $id)
     {
-        TongueDiagnosis::where('patient_id', $request->user()->id)->findOrFail($id)->delete();
+        TongueAssessment::where('patient_id', $request->user()->id)->findOrFail($id)->delete();
         return response()->json(['ok' => true]);
     }
 
@@ -86,3 +90,7 @@ class TongueDiagnosisController extends Controller
         return response()->json(KnowledgeBase::getFullSchema());
     }
 }
+
+/* Class alias so older route definitions or queue payloads referring
+ * to the old class name keep working through one release cycle. */
+class_alias(TongueAssessmentController::class, 'App\\Http\\Controllers\\Patient\\TongueDiagnosisController');
