@@ -615,7 +615,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <button id="len" class="lang-btn-v4 act" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     onclick="setLang('zh')">中</button>
       </div>
-      <button class="nl nav-signin" onclick="go('login')" style="color:var(--ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
+      <button class="nl nav-signin" onclick="window.open('index.html#/login','_blank','noopener')" style="color:var(--ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
       <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
@@ -1309,7 +1309,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
               <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Siew Kuen Xian</div>
               <div style="font-size:11px;color:var(--mu);font-weight:300;">5 min read · March 2026</div>
             </div>
-            <button class="btn btn-outline btn-sm" style="border-radius:8px;" onclick="alert('Full article coming soon.')">Read →</button>
+            <a class="btn btn-outline btn-sm" style="border-radius:8px;" href="blog/tcm-treatment-types.html">Read →</a>
           </div>
         </div>
       </div>
@@ -1336,7 +1336,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
               <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Lim Gao Hong</div>
               <div style="font-size:11px;color:var(--mu);font-weight:300;">4 min read · February 2026</div>
             </div>
-            <button class="btn btn-outline btn-sm" style="border-radius:8px;" onclick="alert('Full article coming soon.')">Read →</button>
+            <a class="btn btn-outline btn-sm" style="border-radius:8px;" href="blog/online-tcm-consultation.html">Read →</a>
           </div>
         </div>
       </div>
@@ -1363,7 +1363,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
               <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Siew Kuen Xian</div>
               <div style="font-size:11px;color:var(--mu);font-weight:300;">6 min read · January 2026</div>
             </div>
-            <button class="btn btn-outline btn-sm" style="border-radius:8px;" onclick="alert('Full article coming soon.')">Read →</button>
+            <a class="btn btn-outline btn-sm" style="border-radius:8px;" href="blog/tongue-diagnosis-guide.html">Read →</a>
           </div>
         </div>
       </div>
@@ -1885,7 +1885,7 @@ const S={
     's3-zh':'送藥 / 上門','s3-en':'Delivery / Home Visit',
     's3-desc':'Herbs delivered to your door, or a home visit.','s3-desc2':'送藥到府，或上門服務。',
     'cta-italic':'Three simple steps to feel better — the modern way.','cta-btn':'START NOW',
-    'ti-1n':'25+','ti-1l':'Licensed Doctors · 持證醫師',
+    'ti-1n':'2','ti-1l':'Licensed Doctors · 持證醫師',
     'ti-2n':'AI +','ti-2l':'Doctor Reviewed · 醫師審核報告',
     'ti-3n':'24/7','ti-3l':'Chat Support · 線上支援',
     'ti-4n':'PDPA','ti-4l':'Data Compliant · 資料保護',
