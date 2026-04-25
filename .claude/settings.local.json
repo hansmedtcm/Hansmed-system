@@ -113,7 +113,12 @@
       "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/assets/css/dropdown.css')",
       "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/assets/js/nav-auth.js')",
       "Bash(node E:/Hansmed-system/v2/.tmp-mobile-split.mjs)",
-      "Bash(git commit -m 'Fix mobile drawer black bar + unreachable Sign Out + bilingual landing nav *)"
+      "Bash(git commit -m 'Fix mobile drawer black bar + unreachable Sign Out + bilingual landing nav *)",
+      "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/assets/css/layout.css')",
+      "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/portal.html')",
+      "Bash(grep -nA 5 \"sidebar-user\\\\|sidebar-link\\\\s*[{,]\" E:/Hansmed-system/v2/assets/css/layout.css)",
+      "Bash(node E:/Hansmed-system/v2/.tmp-portal-lang.mjs)",
+      "Bash(git commit -m 'Add EN/中 language toggle to all 4 portal navs + close mobile-drawer black-bar gap *)"
     ]
   }
 }

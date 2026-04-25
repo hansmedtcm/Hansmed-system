@@ -435,7 +435,10 @@
   .sidebar-backdrop {
     display: none;
     position: fixed;
-    top: var(--nav-height);
+    /* Cover the whole viewport including the nav row, matching the
+       drawer's top:0 — otherwise a sliver of the page nav stayed
+       visible above the dim layer. */
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
@@ -444,6 +447,10 @@
     opacity: 0;
     transition: opacity 220ms ease;
   }
+  /* When the drawer is open, push the page nav below the drawer +
+     backdrop so its white background can't leak through above the
+     drawer's top edge. */
+  body:has(.sidebar.is-open) .nav { z-index: 1; }
   .sidebar-backdrop.is-visible {
     display: block;
     opacity: 1;

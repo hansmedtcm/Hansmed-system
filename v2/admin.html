@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1a1612">
+<script>try{var p=localStorage.getItem('hm-lang-pref');document.documentElement.setAttribute('lang',p==='zh'?'zh':'en');}catch(_){}</script>
+<style>
+html[lang="en"] [lang="zh"] { display: none !important; }
+html[lang="zh"] [lang="en"] { display: none !important; }
+html[lang="en"] .portal-lang-btn[data-lang="en"],
+html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
+  background: var(--ink, #1a1612) !important;
+  color: #fff !important;
+}
+</style>
 <title>Admin Console · HansMed</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +52,13 @@
   <ul class="nav-menu" style="gap: 0.75rem;">
     <li><a href="index.html?stay=1" class="nav-link" style="font-size: var(--text-sm);">🏠 Home · 首頁</a></li>
     <li style="color: var(--stone); font-size: var(--text-sm);" id="user-greeting">—</li>
-    <li><button class="btn btn--ghost btn--sm" onclick="HM.auth.logout().then(function(){location.href='index.html';})">Sign Out · 登出</button></li>
+    <li>
+      <div class="portal-lang-toggle" style="display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+        <button type="button" class="portal-lang-btn" data-lang="en" onclick="setPortalLang('en')" style="background:none;border:none;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--stone);font-family:inherit;">EN</button>
+        <button type="button" class="portal-lang-btn" data-lang="zh" onclick="setPortalLang('zh')" style="background:none;border:none;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--stone);font-family:inherit;">中</button>
+      </div>
+    </li>
+    <li><button class="btn btn--ghost btn--sm" onclick="HM.auth.logout().then(function(){location.href='index.html';})"><span lang="en">Sign Out</span><span lang="zh">登出</span></button></li>
   </ul>
 </nav>
 
