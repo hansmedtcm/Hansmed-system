@@ -227,6 +227,11 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Explicit background on html so the area above body content
+     (over-scroll bounce, address-bar collapse zone, etc.) paints
+     cream instead of any default white/transparent that could read
+     as a dark bar against the page surface. */
+  background: var(--cream);
 }
 
 body {

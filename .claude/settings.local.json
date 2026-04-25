@@ -123,7 +123,9 @@
       "Bash(grep -nA 10 \"^\\\\.nav\\\\s*{\" E:/Hansmed-system/v2/assets/css/layout.css)",
       "Bash(grep -nA 8 \"^body\\\\s*[{,]\" E:/Hansmed-system/v2/assets/css/base.css E:/Hansmed-system/v2/assets/css/tokens.css)",
       "Bash(git commit -m 'Remove :has\\(\\) rule that was painting a dark line on desktop too *)",
-      "Bash(git commit -m 'Fix mobile black-bar at top — was meta theme-color painting URL bar dark *)"
+      "Bash(git commit -m 'Fix mobile black-bar at top — was meta theme-color painting URL bar dark *)",
+      "Bash(grep -nA 12 \"^\\\\.skip-link\" E:/Hansmed-system/v2/assets/css/base.css)",
+      "Bash(git commit -m 'Add explicit html { background: cream } as defensive fix for top-bar *)"
     ]
   }
 }
