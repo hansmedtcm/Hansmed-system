@@ -1507,8 +1507,23 @@
     var s = document.createElement('style');
     s.id = 'consult-style';
     s.textContent =
-      '.consult-layout--online{display:grid;grid-template-columns:1fr 460px;gap:var(--s-4);}' +
-      '@media (max-width: 980px){.consult-layout--online{grid-template-columns:1fr;}}' +
+      // Online (teleconsult) layout: video pinned on the left so the
+      // doctor can keep watching the patient, case record scrolls
+      // independently on the right. align-items:start so the right
+      // column can grow tall without the left column stretching.
+      '.consult-layout--online{display:grid;grid-template-columns:1fr 460px;gap:var(--s-4);align-items:start;}' +
+      // The video block — sticky to the top of the visible area while
+      // the right column scrolls. Calculation accounts for the page
+      // nav height + a small buffer.
+      '.consult-layout--online > div:first-child{position:sticky;top:calc(var(--nav-height) + var(--s-3));align-self:start;}' +
+      // The right column (#consult-side) — scrolls inside itself so
+      // the doctor can move through long case-record sections without
+      // losing sight of the video.
+      '.consult-layout--online #consult-side{max-height:calc(100vh - var(--nav-height) - var(--s-6));overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;}' +
+      '.consult-layout--online #consult-side::-webkit-scrollbar{width:8px;}' +
+      '.consult-layout--online #consult-side::-webkit-scrollbar-thumb{background:rgba(154,122,62,0.35);border-radius:4px;}' +
+      '.consult-layout--online #consult-side::-webkit-scrollbar-thumb:hover{background:rgba(154,122,62,0.55);}' +
+      '@media (max-width: 980px){.consult-layout--online{grid-template-columns:1fr;}.consult-layout--online > div:first-child{position:static;}.consult-layout--online #consult-side{max-height:none;overflow:visible;}}' +
       // Walk-in split layout: case record left, Rx + treatments right
       '.consult-layout--split{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4);align-items:start;}' +
       '@media (max-width: 1100px){.consult-layout--split{grid-template-columns:1fr;}}' +

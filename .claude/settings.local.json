@@ -135,7 +135,12 @@
       "Bash(curl -sS -I 'https://hansmed-system-production.up.railway.app/api/auth/me')",
       "Bash(git commit -m 'Privacy Policy: honest disclosure of Singapore hosting, PDPA §129 basis *)",
       "Bash(node E:/Hansmed-system/.tmp-rename.mjs)",
-      "Bash(node E:/Hansmed-system/.tmp-fe-rename.mjs)"
+      "Bash(node E:/Hansmed-system/.tmp-fe-rename.mjs)",
+      "Bash(curl -sS -o /dev/null -w \"up: %{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/up)",
+      "Bash(curl -sS -o /tmp/new.txt -w \"tongue-assessments: %{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/patient/tongue-assessments)",
+      "Bash(curl -sS -o /tmp/old.txt -w \"tongue-diagnoses: %{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/patient/tongue-diagnoses)",
+      "Bash(curl -sS -o /tmp/k.txt -w \"tongue-knowledge: %{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/tongue-knowledge)",
+      "Bash(git commit -m 'Make teleconsult case-record scroll independently of the video *)"
     ]
   }
 }
