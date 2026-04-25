@@ -102,8 +102,13 @@
         '<div class="card mb-4">' +
         '<div class="card-title">Video Provider · 視訊平台</div>' +
         '<div class="field"><label class="check-item">' +
+        '<input type="radio" name="video_provider" value="daily" ' +
+        ((c.video_provider === 'daily') ? 'checked' : '') + '> ' +
+        '<strong>Daily.co</strong> (recommended) — managed cloud video, free for first 10,000 participant-minutes/month, then pay-per-minute. Singapore edge servers. Requires <code>DAILY_API_KEY</code> + <code>DAILY_DOMAIN</code> env vars on Railway (see Daily.co dashboard). · 託管視訊服務，每月前一萬參與者分鐘免費，新加坡邊緣節點。' +
+        '</label></div>' +
+        '<div class="field"><label class="check-item">' +
         '<input type="radio" name="video_provider" value="jitsi" ' +
-        ((c.video_provider !== 'google_meet') ? 'checked' : '') + '> ' +
+        ((c.video_provider !== 'google_meet' && c.video_provider !== 'daily') ? 'checked' : '') + '> ' +
         '<strong>Jitsi</strong> — embedded video, no signup required. · 嵌入式視訊，免登入。' +
         '</label></div>' +
         '<div class="field"><label class="check-item">' +

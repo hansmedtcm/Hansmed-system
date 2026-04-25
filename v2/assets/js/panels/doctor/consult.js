@@ -125,6 +125,11 @@
       // room in their Google account; both sides then click Join
       // which opens the Meet in a new tab.
       videoBlock = renderMeetSetupBlock(state.appt);
+    } else if (provider === 'daily') {
+      // Daily.co — backend mints a private room URL + meeting token
+      // tied to this user/appointment. Container starts empty and is
+      // filled by the Daily SDK in wireDailyConsult() below.
+      videoBlock = '<div class="consult-video" id="daily-container"></div>';
     } else {
       // Admin can override the Jitsi domain (self-hosted = no 5-min
       // limit). Falls back to meet.jit.si if not configured.
@@ -144,10 +149,59 @@
       footerActions();
 
     if (provider === 'google_meet') wireMeetSetup(state.appt);
+    if (provider === 'daily')      wireDailyConsult(appointmentId);
 
     injectStyle();
     wireSidebar();
     wireActions();
+  }
+
+  // ── Daily.co bootstrapper ─────────────────────────────
+  // Loads the Daily SDK on first use, fetches the room URL + token
+  // from the backend, then attaches an iframe inside #daily-container.
+  function wireDailyConsult(appointmentId) {
+    function ensureSdk(cb) {
+      if (window.DailyIframe) return cb();
+      var s = document.createElement('script');
+      s.src = 'https://unpkg.com/@daily-co/daily-js';
+      s.onload = cb;
+      s.onerror = function () {
+        var box = document.getElementById('daily-container');
+        if (box) box.innerHTML = '<div style="color:#fff;padding:1rem;text-align:center;">' +
+          'Failed to load Daily.co SDK. Check your internet connection or fall back to Jitsi via Admin → System Settings.' +
+          '</div>';
+      };
+      document.head.appendChild(s);
+    }
+    ensureSdk(function () {
+      HM.api.consultation.dailyRoom(appointmentId).then(function (res) {
+        var box = document.getElementById('daily-container');
+        if (! box) return;
+        if (! res || ! res.room_url) {
+          box.innerHTML = '<div style="color:#fff;padding:1rem;text-align:center;">' +
+            'Could not create the video room. ' + HM.format.esc(res && res.message ? res.message : '') +
+            '</div>';
+          return;
+        }
+        // Reuse existing frame if rerendering
+        if (window._dailyFrame) {
+          try { window._dailyFrame.destroy(); } catch (_) {}
+          window._dailyFrame = null;
+        }
+        window._dailyFrame = window.DailyIframe.createFrame(box, {
+          showLeaveButton: true,
+          iframeStyle: { width: '100%', height: '100%', border: '0', borderRadius: '12px' },
+        });
+        window._dailyFrame.join({
+          url: res.room_url,
+          token: res.token,
+        });
+      }).catch(function (e) {
+        var box = document.getElementById('daily-container');
+        if (box) box.innerHTML = '<div style="color:#fff;padding:1rem;text-align:center;">' +
+          'Could not start the video session. ' + HM.format.esc((e && e.message) || '') + '</div>';
+      });
+    });
   }
 
   // ── WALK-IN view (no video) ─────────────────────────────

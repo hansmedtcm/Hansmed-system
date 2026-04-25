@@ -5,11 +5,80 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\Consultation;
 use App\Services\AgoraTokenService;
+use App\Services\DailyClient;
 use Illuminate\Http\Request;
 
 class ConsultationController extends Controller
 {
     public function __construct(private AgoraTokenService $agora) {}
+
+    /**
+     * Issue a Daily.co room URL + meeting token for an appointment.
+     * Replaces the meet.jit.si iframe approach when admin has set
+     * video_provider=daily AND DAILY_API_KEY env vars are configured.
+     *
+     * Doctor and patient both call this; the response embeds a
+     * pre-signed token tying the requester to the room as the right
+     * role (doctor=owner, patient=guest).
+     */
+    public function dailyRoom(Request $request, int $appointmentId)
+    {
+        $user = $request->user();
+        $appt = Appointment::findOrFail($appointmentId);
+
+        // Pool-claim parity with joinToken — doctor entering an
+        // unclaimed pool appointment grabs it.
+        if (! $appt->doctor_id && $user->role === 'doctor') {
+            $appt->doctor_id = $user->id;
+            $appt->is_pool   = 0;
+            if (! in_array($appt->status, ['in_progress', 'completed'], true)) {
+                $appt->status = 'confirmed';
+            }
+            $appt->save();
+        }
+
+        if ($appt->patient_id !== $user->id && $appt->doctor_id !== $user->id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $joinable = ['pending_payment', 'paid', 'confirmed', 'in_progress'];
+        if (! in_array($appt->status, $joinable, true)) {
+            return response()->json(['message' => 'Appointment ' . $appt->status . ' — cannot join'], 422);
+        }
+
+        $client = DailyClient::fromConfig();
+        if (! $client) {
+            return response()->json([
+                'message' => 'Daily.co not configured. Set DAILY_API_KEY and DAILY_DOMAIN env vars on the backend.',
+            ], 503);
+        }
+
+        $consult = Consultation::firstOrCreate(
+            ['appointment_id' => $appt->id],
+            ['room_id'        => 'appt-' . $appt->id]
+        );
+        // Daily room names: lowercase, hyphenated, ≤ 80 chars
+        $roomName = 'hansmed-appt-' . $appt->id;
+
+        $room = $client->getOrCreateRoom($roomName);
+        if (! $room) {
+            return response()->json(['message' => 'Failed to create video room'], 502);
+        }
+
+        $isDoctor = $user->id === $appt->doctor_id;
+        $displayName = $isDoctor ? ('Dr. ' . ($user->doctorProfile->full_name ?? 'Practitioner'))
+                                 : ($user->patientProfile->nickname ?? 'Patient');
+        $token = $client->createMeetingToken($roomName, $displayName, $isDoctor);
+
+        return response()->json([
+            'consultation' => $consult,
+            'room_url'     => $room['url'] ?? null,
+            'room_name'    => $roomName,
+            'token'        => $token,
+            'role'         => $user->role,
+            'is_owner'     => $isDoctor,
+        ]);
+    }
 
     /**
      * Issue an Agora RTC join token for an appointment.

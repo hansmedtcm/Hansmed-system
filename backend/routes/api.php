@@ -103,15 +103,18 @@ Route::get('/public/features', function () {
     };
     $shop = isset($rows['shop_enabled']) ? $boolish($rows['shop_enabled']->config_value) : null;
     $videoRaw = isset($rows['video_provider']) ? trim((string) $rows['video_provider']->config_value) : '';
-    $video = in_array($videoRaw, ['jitsi','google_meet'], true) ? $videoRaw : 'jitsi';
+    $video = in_array($videoRaw, ['jitsi','google_meet','daily'], true) ? $videoRaw : 'jitsi';
     // Self-hosted Jitsi domain — admin can swap meet.jit.si (5-min
     // limits) for their own server (no limits) without touching code.
     $jitsiDomainRaw = isset($rows['jitsi_domain']) ? trim((string) $rows['jitsi_domain']->config_value) : '';
     $jitsiDomain = $jitsiDomainRaw !== '' ? $jitsiDomainRaw : 'meet.jit.si';
     return response()->json([
         'shop_enabled'    => $shop === null ? true : $shop, // default ON
-        'video_provider'  => $video,                         // 'jitsi' or 'google_meet'
+        'video_provider'  => $video,                         // 'jitsi' | 'google_meet' | 'daily'
         'jitsi_domain'    => $jitsiDomain,                   // e.g. 'meet.jit.si' or 'meet.example.com'
+        // daily_domain is NOT exposed — frontend doesn't need it
+        // because the room URL comes back from /consultations/{id}/daily
+        // already as a fully-qualified hansmed.daily.co URL.
     ]);
 });
 
@@ -156,6 +159,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Consultation video join — both patient & doctor, permission enforced inside
     Route::get('/consultations/{appointmentId}/join',   [ConsultationController::class, 'joinToken']);
+    // Daily.co room URL + meeting token (used when video_provider=daily)
+    Route::get('/consultations/{appointmentId}/daily',  [ConsultationController::class, 'dailyRoom']);
     Route::post('/consultations/{appointmentId}/finish', [ConsultationController::class, 'finish']);
 
     // Tongue diagnosis knowledge base (public glossary, no role restriction)

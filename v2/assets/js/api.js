@@ -398,6 +398,8 @@
   // ── Consultation (video) ──
   var consultation = {
     joinToken: function (apptId) { return api.get('/consultations/' + apptId + '/join'); },
+    // Daily.co room URL + meeting token (used when video_provider=daily)
+    dailyRoom: function (apptId) { return api.get('/consultations/' + apptId + '/daily'); },
     finish:    function (apptId, d) { return api.post('/consultations/' + apptId + '/finish', d); },
   };
 
