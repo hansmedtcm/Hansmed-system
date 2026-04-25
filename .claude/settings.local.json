@@ -142,7 +142,8 @@
       "Bash(curl -sS -o /tmp/k.txt -w \"tongue-knowledge: %{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/tongue-knowledge)",
       "Bash(git commit -m 'Make teleconsult case-record scroll independently of the video *)",
       "Bash(awk '/AUTH MODAL/,/<\\\\/template>/' E:/Hansmed-system/v2/index.html)",
-      "Bash(git commit -m 'Remove dead '\\\\''Wood Element booking'\\\\'' widget from practitioners.html *)"
+      "Bash(git commit -m 'Remove dead '\\\\''Wood Element booking'\\\\'' widget from practitioners.html *)",
+      "Bash(git commit -m 'Apply '\\\\''Shop disabled'\\\\'' admin toggle to public landing pages too *)"
     ]
   }
 }
