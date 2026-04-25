@@ -131,7 +131,9 @@
       "Bash(grep -nB 1 -A 10 \"background.*var\\(--ink\\)\" E:/Hansmed-system/v2/assets/css/components.css)",
       "Bash(git commit -m 'Replace clip-pattern skip-link hide with battle-tested left:-9999px *)",
       "Bash(git commit -m 'Hide sidebar Sign Out + Language toggle on desktop \\(still on mobile\\) *)",
-      "Bash(grep -nA 3 \"allowed_origins\" E:/Hansmed-system/backend/config/cors.php)"
+      "Bash(grep -nA 3 \"allowed_origins\" E:/Hansmed-system/backend/config/cors.php)",
+      "Bash(curl -sS -I 'https://hansmed-system-production.up.railway.app/api/auth/me')",
+      "Bash(git commit -m 'Privacy Policy: honest disclosure of Singapore hosting, PDPA §129 basis *)"
     ]
   }
 }
