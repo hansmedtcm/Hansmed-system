@@ -447,10 +447,11 @@
     opacity: 0;
     transition: opacity 220ms ease;
   }
-  /* When the drawer is open, push the page nav below the drawer +
-     backdrop so its white background can't leak through above the
-     drawer's top edge. */
-  body:has(.sidebar.is-open) .nav { z-index: 1; }
+  /* (Earlier: body:has(.sidebar.is-open) .nav { z-index: 1 } —
+     removed because :has() was suspected of triggering an extra
+     stacking-context paint that showed as a thin dark line at the
+     top of the viewport on desktop. Drawer z-index 1200 + backdrop
+     z-index 1100 already overlay the nav z-index of 100.) */
   .sidebar-backdrop.is-visible {
     display: block;
     opacity: 1;
