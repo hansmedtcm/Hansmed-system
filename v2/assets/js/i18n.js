@@ -22,12 +22,12 @@
       signout: 'Sign Out',
       required: 'Required',
 
-      // TCM Wellness Assessment feature (renamed from "AI Diagnosis" 2026-04-21)
-      'feature.assessment.title':     'TCM Wellness Assessment',
+      // TCM AI Wellness Assessment feature (renamed from "AI Diagnosis" 2026-04-21)
+      'feature.assessment.title':     'TCM AI Wellness Assessment',
       'feature.assessment.subtitle':  'Understand your body through the lens of traditional Chinese medicine.',
       'feature.assessment.cta.start': 'Start Assessment',
       'feature.assessment.cta.view':  'View Your Assessment',
-      'nav.assessment':               'Wellness Assessment',
+      'nav.assessment':               'AI Wellness Assessment',
       'tongue.upload.title':          'Tongue Wellness Scan',
 
       // Disclaimers (compliance-copy-changes.md)

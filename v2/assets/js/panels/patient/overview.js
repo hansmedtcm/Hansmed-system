@@ -85,7 +85,7 @@
       html += '<div class="card" style="padding: var(--s-5);">' +
         '<p class="text-muted text-sm">No tongue scans yet</p>' +
         '<p class="text-muted text-sm" style="font-family: var(--font-zh);">暫無記錄</p>' +
-        '<button class="btn btn--outline btn--sm mt-4" onclick="location.hash=\'#/wellness-assessment\'">Start Wellness Assessment · 開始健康評估 →</button>' +
+        '<button class="btn btn--outline btn--sm mt-4" onclick="location.hash=\'#/wellness-assessment\'">Start AI Wellness Assessment · 開始 AI 健康評估 →</button>' +
         '</div>';
     } else {
       var c = (d.constitution_report && d.constitution_report.constitution) || {};
@@ -106,7 +106,7 @@
       '<div class="text-label mb-3">Quick Actions · 快捷操作</div>' +
       '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">' +
       actionCard('📅', 'Book Appointment', '預約', '#/book') +
-      actionCard('🧭', 'Wellness Assessment', '健康評估', '#/wellness-assessment') +
+      actionCard('🧭', 'AI Wellness Assessment', '健康評估', '#/wellness-assessment') +
       actionCard('🛍️', 'Shop', '商店', '#/shop') +
       actionCard('💊', 'Prescriptions', '處方', '#/prescriptions') +
       '</div>' +

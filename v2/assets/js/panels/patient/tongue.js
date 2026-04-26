@@ -280,7 +280,7 @@
       }
 
       var html = '<div class="page-header">' +
-        '<button class="btn btn--ghost" onclick="location.hash=\'#/wellness-assessment\'">← Back to Wellness Assessment · 返回健康評估</button>' +
+        '<button class="btn btn--ghost" onclick="location.hash=\'#/wellness-assessment\'">← Back to AI Wellness Assessment · 返回 AI 健康評估</button>' +
         '</div>' +
         reviewBanner +
         '<div class="grid-2" style="gap: var(--s-6); align-items: start;">' +

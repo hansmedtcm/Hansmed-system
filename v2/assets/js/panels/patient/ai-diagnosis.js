@@ -222,7 +222,7 @@
       aidStepCard('4', '🩺', 'Doctor Review', '醫師審核', 'Personalised plan') +
       '</div>' +
       '<div class="flex gap-2 mt-4 flex-wrap">' +
-      '<button class="btn btn--primary btn--lg" id="aid-start-combined">🚀 Start Wellness Assessment · 開始健康評估 →</button>' +
+      '<button class="btn btn--primary btn--lg" id="aid-start-combined">🚀 Start AI Wellness Assessment · 開始 AI 健康評估 →</button>' +
       '</div>' +
       '<p class="text-xs text-muted mt-3">Both the tongue photo AND the 10-question quiz are required for a complete constitution assessment — your reviewing doctor needs both to interpret accurately. Takes about 3–5 minutes. All data stays encrypted. ' +
       '<span style="font-family: var(--font-zh);">舌診與問卷皆為必須，醫師需兩項資料方能完整審核。約 3–5 分鐘，資料加密保護。</span></p>' +
