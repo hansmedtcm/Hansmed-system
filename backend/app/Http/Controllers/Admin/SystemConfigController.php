@@ -24,9 +24,22 @@ class SystemConfigController extends Controller
 
         DB::transaction(function () use ($data, $request) {
             foreach ($data['configs'] as $key => $value) {
+                // Coerce null → '' BEFORE the scalar check. Without
+                // this, JSON `null` from the frontend was hitting the
+                // is_scalar() branch as false, then json_encode(null)
+                // returned the literal string 'null', which got saved
+                // and corrupted things like jitsi_domain (frontend
+                // ended up building https://null/ as the iframe src).
+                if ($value === null) {
+                    $stored = '';
+                } elseif (is_scalar($value)) {
+                    $stored = (string) $value;
+                } else {
+                    $stored = json_encode($value);
+                }
                 DB::table('system_configs')->updateOrInsert(
                     ['config_key' => $key],
-                    ['config_value' => is_scalar($value) ? (string) $value : json_encode($value), 'updated_at' => now()],
+                    ['config_value' => $stored, 'updated_at' => now()],
                 );
             }
         });

@@ -106,8 +106,11 @@ Route::get('/public/features', function () {
     $video = in_array($videoRaw, ['jitsi','google_meet','daily'], true) ? $videoRaw : 'jitsi';
     // Self-hosted Jitsi domain — admin can swap meet.jit.si (5-min
     // limits) for their own server (no limits) without touching code.
+    // Defensive against literal 'null' / 'undefined' strings that have
+    // historically leaked in via JSON null serialisation.
     $jitsiDomainRaw = isset($rows['jitsi_domain']) ? trim((string) $rows['jitsi_domain']->config_value) : '';
-    $jitsiDomain = $jitsiDomainRaw !== '' ? $jitsiDomainRaw : 'meet.jit.si';
+    $bad = ['', 'null', 'undefined', 'NULL'];
+    $jitsiDomain = in_array($jitsiDomainRaw, $bad, true) ? 'meet.jit.si' : $jitsiDomainRaw;
     return response()->json([
         'shop_enabled'    => $shop === null ? true : $shop, // default ON
         'video_provider'  => $video,                         // 'jitsi' | 'google_meet' | 'daily'

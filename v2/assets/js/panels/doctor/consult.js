@@ -132,8 +132,13 @@
       videoBlock = '<div class="consult-video" id="daily-container"></div>';
     } else {
       // Admin can override the Jitsi domain (self-hosted = no 5-min
-      // limit). Falls back to meet.jit.si if not configured.
-      var domain = (features && features.jitsi_domain) || HM.config.JITSI_DOMAIN || 'meet.jit.si';
+      // limit). Falls back to meet.jit.si if not configured. Reject
+      // the literal 'null'/'undefined' strings that historically
+      // leaked from a corrupt jitsi_domain config row.
+      var rawDomain = (features && features.jitsi_domain) || '';
+      var bad = ['', 'null', 'undefined', 'NULL'];
+      var domain = bad.indexOf(rawDomain) === -1 ? rawDomain
+                   : (HM.config.JITSI_DOMAIN || 'meet.jit.si');
       var jitsiUrl = 'https://' + domain + '/' + encodeURIComponent(roomName) +
         '#userInfo.displayName="' + encodeURIComponent(displayName) + '"&config.prejoinPageEnabled=false';
       videoBlock = '<div class="consult-video">' +

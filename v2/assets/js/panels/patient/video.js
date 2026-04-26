@@ -67,6 +67,67 @@
         return;
       }
 
+      // ── Daily.co path: backend mints a private room URL + token ──
+      // Mirrors the doctor consult.js Daily wiring so both sides land
+      // in the same Daily room. Loaded via the Daily SDK.
+      if (provider === 'daily') {
+        el.innerHTML = '<div class="page-header">' +
+          '<button class="btn btn--ghost" onclick="location.hash=\'#/appointments\'">← Back</button>' +
+          '</div>' +
+          '<div class="alert alert--info mb-4">' +
+          '<div class="alert-icon">📹</div>' +
+          '<div class="alert-body">' +
+          '<div class="alert-title">Video Consultation Ready · 視訊問診就緒</div>' +
+          'Please allow camera and microphone access when prompted.' +
+          '</div></div>' +
+          '<div id="daily-container" style="aspect-ratio: 16/9; background: var(--ink); border-radius: var(--r-md); overflow: hidden; max-width: 1000px;"></div>' +
+          '<div class="mt-4" style="max-width: 1000px;">' +
+          '<div class="flex flex-gap-3">' +
+          '<button class="btn btn--danger" id="end-call">End Consultation · 結束</button>' +
+          '</div>' +
+          '</div>';
+
+        function ensureDailySdk(cb) {
+          if (window.DailyIframe) return cb();
+          var s = document.createElement('script');
+          s.src = 'https://unpkg.com/@daily-co/daily-js';
+          s.onload = cb;
+          s.onerror = function () {
+            var box = document.getElementById('daily-container');
+            if (box) box.innerHTML = '<div style="color:#fff;padding:1rem;text-align:center;">Failed to load video SDK. Check your internet connection.</div>';
+          };
+          document.head.appendChild(s);
+        }
+        ensureDailySdk(function () {
+          HM.api.consultation.dailyRoom(appointmentId).then(function (r) {
+            var box = document.getElementById('daily-container');
+            if (! box) return;
+            if (! r || ! r.room_url) {
+              box.innerHTML = '<div style="color:#fff;padding:1rem;text-align:center;">Could not start the video session. ' + HM.format.esc((r && r.message) || '') + '</div>';
+              return;
+            }
+            if (window._dailyFrame) { try { window._dailyFrame.destroy(); } catch (_) {} }
+            window._dailyFrame = window.DailyIframe.createFrame(box, {
+              showLeaveButton: true,
+              iframeStyle: { width: '100%', height: '100%', border: '0' },
+            });
+            window._dailyFrame.join({ url: r.room_url, token: r.token });
+          }).catch(function (e) {
+            var box = document.getElementById('daily-container');
+            if (box) box.innerHTML = '<div style="color:#fff;padding:1rem;text-align:center;">Could not start the video session. ' + HM.format.esc((e && e.message) || '') + '</div>';
+          });
+        });
+
+        document.getElementById('end-call').addEventListener('click', async function () {
+          var ok = await HM.ui.confirm('End this consultation? · 確定結束？', { danger: true });
+          if (!ok) return;
+          try { window._dailyFrame && window._dailyFrame.leave(); } catch (_) {}
+          try { await HM.api.consultation.finish(appointmentId, { duration_seconds: 0 }); } catch {}
+          location.hash = '#/appointments';
+        });
+        return;
+      }
+
       // ── Default: embedded Jitsi ──
       var rtc = {};
       try {
@@ -77,7 +138,12 @@
       }
 
       var roomName = rtc.channel || ('HansMed-Consult-' + appointmentId);
-      var domain = (features && features.jitsi_domain) || HM.config.JITSI_DOMAIN || 'meet.jit.si';
+      // Defensive: reject the literal 'null'/'undefined' strings that
+      // historically leaked from a corrupt jitsi_domain config row.
+      var rawDomain = (features && features.jitsi_domain) || '';
+      var bad = ['', 'null', 'undefined', 'NULL'];
+      var domain = bad.indexOf(rawDomain) === -1 ? rawDomain
+                   : (HM.config.JITSI_DOMAIN || 'meet.jit.si');
       var jitsiUrl = 'https://' + domain + '/' + encodeURIComponent(roomName) +
         '#userInfo.displayName="' + encodeURIComponent(displayName) + '"' +
         '&config.prejoinPageEnabled=false' +
