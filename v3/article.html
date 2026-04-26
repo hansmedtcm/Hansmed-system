@@ -13,6 +13,20 @@ html[lang="zh"] [lang="en"] { display: none !important; }
 <meta name="theme-color" content="#F5F0E8">
 <title>HansMed Blog · 漢方部落格</title>
 
+<!-- Open Graph + Twitter card meta — placeholders set here so social
+     previews look right even before the JS swaps them with real
+     post-specific values once the article loads. -->
+<meta property="og:type"        content="article">
+<meta property="og:site_name"   content="HansMed Modern TCM">
+<meta property="og:title"       id="og-title"       content="HansMed Blog">
+<meta property="og:description" id="og-description" content="Clinical insights from licensed TCM practitioners in Malaysia.">
+<meta property="og:image"       id="og-image"       content="">
+<meta property="og:url"         id="og-url"         content="">
+<meta name="twitter:card"       content="summary_large_image">
+<meta name="twitter:title"      id="tw-title"       content="HansMed Blog">
+<meta name="twitter:description" id="tw-description" content="Clinical insights from licensed TCM practitioners in Malaysia.">
+<meta name="twitter:image"      id="tw-image"       content="">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -92,6 +106,57 @@ html[lang="zh"] [lang="en"] { display: none !important; }
 .art-loading,.art-error{max-width:600px;margin:80px auto;padding:0 28px;text-align:center;color:var(--art-mu);font-family:'DM Sans',sans-serif;}
 .art-error h2{font-family:'Cormorant Garamond',serif;color:var(--art-ink);margin-bottom:12px;font-weight:500;}
 @media(max-width:600px){.art-body{padding:36px 20px;}.art-hero{padding:44px 20px 36px;}.art-tags{margin-left:0;margin-top:10px;}}
+
+/* ───── Reading progress bar (top of viewport) ───── */
+#art-progress{position:fixed;top:0;left:0;right:0;height:3px;background:transparent;z-index:9999;pointer-events:none;}
+#art-progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--art-go),var(--art-wd));transition:width 80ms linear;}
+
+/* ───── Article main grid (body + TOC sidebar) ───── */
+.art-main{max-width:1080px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:48px;align-items:start;}
+.art-main > .art-body{padding:56px 0 32px;max-width:none;}
+.art-toc{position:sticky;top:80px;align-self:start;padding:36px 0 0 0;border-left:1px solid var(--art-bdrl);}
+.art-toc-label{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--art-mu);font-weight:600;padding-left:18px;margin-bottom:14px;}
+.art-toc ul{list-style:none;margin:0;padding:0;}
+.art-toc li a{display:block;padding:7px 18px;font-size:13px;color:var(--art-mu);text-decoration:none;border-left:2px solid transparent;margin-left:-1px;line-height:1.45;transition:all 0.15s;}
+.art-toc li a:hover{color:var(--art-ink);}
+.art-toc li.is-h3 a{padding-left:34px;font-size:12px;}
+.art-toc li.is-active a{color:var(--art-ink);border-left-color:var(--art-go);font-weight:500;}
+@media(max-width:899px){
+  .art-main{display:block;padding:0;}
+  .art-main > .art-body{padding:36px 20px;}
+  .art-toc{position:static;border-left:none;border-top:1px solid var(--art-bdrl);padding:0;margin:0 20px;}
+  .art-toc-label{padding:18px 0 0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+  .art-toc-label::after{content:'+';font-size:16px;font-weight:300;}
+  .art-toc.is-open .art-toc-label::after{content:'−';}
+  .art-toc ul{display:none;padding-bottom:14px;}
+  .art-toc.is-open ul{display:block;}
+  .art-toc li a{padding-left:0;}
+  .art-toc li.is-h3 a{padding-left:18px;}
+}
+
+/* ───── Share row + reading-time pill ───── */
+.art-share{max-width:760px;margin:0 auto;padding:14px 28px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--art-bdrl);padding-top:24px;}
+.art-share-label{font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--art-mu);font-weight:600;}
+.art-share-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:var(--art-bg2);border:1px solid var(--art-bdrl);color:var(--art-ink);font-size:12.5px;font-weight:500;text-decoration:none;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.art-share-btn:hover{background:var(--art-bg);border-color:var(--art-bdr);}
+.art-share-btn[data-copied="1"]{background:#dff5e3;border-color:#86c993;color:#1e6a36;}
+
+/* ───── Related articles strip ───── */
+.art-related{max-width:1080px;margin:64px auto 0;padding:48px 28px 64px;background:var(--art-bg2);border-top:1px solid var(--art-bdrl);border-bottom:1px solid var(--art-bdrl);}
+.art-related-label{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--art-mu);font-weight:600;text-align:center;margin-bottom:8px;}
+.art-related-h{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--art-ink);font-weight:400;text-align:center;margin-bottom:28px;}
+.art-related-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;max-width:920px;margin:0 auto;}
+.art-related-card{background:var(--art-bg3);border:1px solid var(--art-bdrl);border-radius:12px;padding:20px;text-decoration:none;display:block;transition:all 0.2s;}
+.art-related-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(36,22,8,0.09);}
+.art-related-mini{font-family:'Noto Serif SC',serif;font-size:24px;color:var(--art-wd);font-weight:300;margin-bottom:6px;line-height:1;}
+.art-related-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--art-ink);line-height:1.3;margin-bottom:6px;}
+.art-related-meta{font-size:11px;color:var(--art-mu);font-weight:300;}
+
+/* ───── Back-to-top floating button ───── */
+#art-totop{position:fixed;right:20px;bottom:84px;width:42px;height:42px;border-radius:50%;background:var(--art-ink);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 20px rgba(36,22,8,0.18);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity 0.2s,transform 0.2s,visibility 0.2s;z-index:200;}
+#art-totop.is-visible{opacity:1;visibility:visible;transform:translateY(0);}
+#art-totop:hover{background:var(--art-wd);}
+@media(max-width:600px){#art-totop{right:14px;bottom:74px;width:38px;height:38px;}}
 </style>
 </head>
 <body class="landing-v4">
@@ -136,9 +201,15 @@ html[lang="zh"] [lang="en"] { display: none !important; }
   </div>
 </nav>
 
+<!-- Top-of-viewport reading progress bar — width updates on scroll. -->
+<div id="art-progress" aria-hidden="true"><div id="art-progress-bar"></div></div>
+
 <main id="main">
   <div id="article-root" class="art-loading">Loading article…</div>
 </main>
+
+<!-- Floating back-to-top — appears once user scrolls 30%+ down. -->
+<button id="art-totop" type="button" aria-label="Back to top" title="Back to top">↑</button>
 
 <footer class="footer-v4">
   <div class="fg">
@@ -190,7 +261,14 @@ html[lang="zh"] [lang="en"] { display: none !important; }
 <script src="assets/js/public-feature-flags.js"></script>
 
 <script>
-/* Article viewer — reads ?slug=… and renders the post body. */
+/* Article viewer — reads ?slug=… and renders the post body, plus:
+   - reading-progress bar (top-of-viewport, fills as you scroll)
+   - sticky desktop / collapsible mobile table of contents
+   - share row (WhatsApp + native share + copy link)
+   - related-articles strip (3 most recent excluding current)
+   - back-to-top floating button
+   - Open Graph + Twitter card meta tags swapped post-specific
+*/
 (function () {
   'use strict';
   var root = document.getElementById('article-root');
@@ -215,12 +293,38 @@ html[lang="zh"] [lang="en"] { display: none !important; }
   }
 
   function avatarFor(name) {
-    // First-name surname-first initial in Chinese serif if name looks
-    // like a real practitioner (Mr./Dr. prefix). Falls back to first
-    // letter for editorial.
     var match = String(name||'').match(/^(?:Mr\.|Dr\.)\s+(\w)/i);
     if (match) return match[1].toUpperCase();
     return String(name||'?').trim().charAt(0).toUpperCase() || '?';
+  }
+
+  /** Slug a heading text for use as an anchor id. */
+  function slugify(s) {
+    return String(s||'')
+      .toLowerCase()
+      .replace(/[^\w\s一-鿿-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .slice(0, 60) || 'h-' + Math.random().toString(36).slice(2, 8);
+  }
+
+  /** Update OG + Twitter meta with the loaded post's specifics so
+   *  WhatsApp/social previews show real title + summary + image. */
+  function setSocialMeta(post) {
+    var title = post.title + ' · HansMed Blog';
+    var desc  = post.excerpt || post.subtitle || 'Clinical insights from licensed TCM practitioners in Malaysia.';
+    var image = post.cover_image_url || '';
+    var url   = location.href;
+    var pairs = [
+      ['og-title',       title], ['tw-title',       title],
+      ['og-description', desc],  ['tw-description', desc],
+      ['og-image',       image], ['tw-image',       image],
+      ['og-url',         url],
+    ];
+    pairs.forEach(function (p) {
+      var el = document.getElementById(p[0]);
+      if (el) el.setAttribute('content', p[1]);
+    });
   }
 
   fetch(API_BASE + '/blog/posts/' + encodeURIComponent(slug), { credentials: 'omit' })
@@ -232,12 +336,12 @@ html[lang="zh"] [lang="en"] { display: none !important; }
     .then(function (res) {
       var post = res.post;
       var category = res.category;
-
       document.title = post.title + ' · HansMed Blog';
+      setSocialMeta(post);
 
       root.classList.remove('art-loading');
       var meta = [];
-      if (post.reading_time_min) meta.push(post.reading_time_min + ' min read');
+      if (post.reading_time_min) meta.push(post.reading_time_min + ' min read · ' + post.reading_time_min + ' 分鐘');
       var when = fmtDate(post.published_at);
       if (when) meta.push(when);
 
@@ -259,13 +363,54 @@ html[lang="zh"] [lang="en"] { display: none !important; }
             '</div>' +
           '</div>' +
         '</div></div>' +
-        '<div class="art-body">' +
-          (post.body_html    ? '<div lang="en">' + post.body_html    + '</div>' : '') +
-          (post.body_zh_html ? '<div lang="zh">' + post.body_zh_html + '</div>' : '') +
+
+        // ── Body grid: article content + sticky TOC ──
+        '<div class="art-main">' +
+          '<div class="art-body">' +
+            (post.body_html    ? '<div lang="en">' + post.body_html    + '</div>' : '') +
+            (post.body_zh_html ? '<div lang="zh">' + post.body_zh_html + '</div>' : '') +
+          '</div>' +
+          '<aside class="art-toc" id="art-toc" aria-label="Table of contents">' +
+            '<div class="art-toc-label">' +
+              '<span lang="en">In this article</span><span lang="zh">本文目錄</span>' +
+            '</div>' +
+            '<ul></ul>' +
+          '</aside>' +
         '</div>' +
-        '<a href="blog.html" class="back-link">← Back to all articles · 返回部落格</a>';
+
+        // ── Share row ──
+        '<div class="art-share">' +
+          '<span class="art-share-label">' +
+            '<span lang="en">Share</span><span lang="zh">分享</span>' +
+          '</span>' +
+          '<a class="art-share-btn" id="art-share-wa" target="_blank" rel="noopener">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24z"/></svg>' +
+            'WhatsApp' +
+          '</a>' +
+          '<button class="art-share-btn" type="button" id="art-share-native">📤 <span lang="en">Share</span><span lang="zh">分享</span></button>' +
+          '<button class="art-share-btn" type="button" id="art-share-copy">🔗 <span lang="en">Copy link</span><span lang="zh">複製連結</span></button>' +
+        '</div>' +
+
+        '<a href="blog.html" class="back-link">← <span lang="en">Back to all articles</span><span lang="zh">返回部落格</span></a>' +
+
+        // ── Related articles strip ──
+        '<section class="art-related" id="art-related" style="display:none;">' +
+          '<div class="art-related-label">' +
+            '<span lang="en">Continue reading</span><span lang="zh">繼續閱讀</span>' +
+          '</div>' +
+          '<h2 class="art-related-h">' +
+            '<span lang="en">More from our practitioners</span><span lang="zh">更多醫師專欄</span>' +
+          '</h2>' +
+          '<div class="art-related-grid" id="art-related-grid"></div>' +
+        '</section>';
 
       root.innerHTML = html;
+
+      // Wire interactive bits after the DOM lands.
+      buildToc();
+      wireShare(post);
+      loadRelated(post);
+      wireScrollEffects();
     })
     .catch(function (e) {
       if (e.message === 'NOT_FOUND') {
@@ -284,6 +429,148 @@ html[lang="zh"] [lang="en"] { display: none !important; }
           '</div>';
       }
     });
+
+  // ── Build TOC from rendered headings ──
+  function buildToc() {
+    var body = root.querySelector('.art-body');
+    var toc  = root.querySelector('#art-toc ul');
+    if (!body || !toc) return;
+    // Pick headings from whichever language is currently visible — for
+    // simplicity we use both lang sub-trees and rely on the DOM walker
+    // to id them; CSS hides the wrong-language heading anyway.
+    var headings = body.querySelectorAll('h2, h3');
+    if (!headings.length) {
+      var aside = root.querySelector('#art-toc');
+      if (aside) aside.style.display = 'none';
+      return;
+    }
+    var seen = {};
+    var items = [];
+    headings.forEach(function (h) {
+      var text = (h.textContent || '').trim();
+      if (!text) return;
+      var id = slugify(text);
+      // Avoid id collisions — append -2/-3 if needed
+      var base = id, n = 2;
+      while (seen[id]) { id = base + '-' + n++; }
+      seen[id] = true;
+      h.id = id;
+      items.push({ id: id, text: text, level: h.tagName.toLowerCase() });
+    });
+    toc.innerHTML = items.map(function (it) {
+      return '<li class="is-' + it.level + '"><a href="#' + it.id + '">' + esc(it.text) + '</a></li>';
+    }).join('');
+
+    // Mobile collapsible behaviour
+    var aside = root.querySelector('#art-toc');
+    var label = aside.querySelector('.art-toc-label');
+    label.addEventListener('click', function () {
+      if (window.innerWidth >= 900) return; // only collapsible on mobile
+      aside.classList.toggle('is-open');
+    });
+
+    // Active-section highlighting via IntersectionObserver
+    if ('IntersectionObserver' in window) {
+      var links = {};
+      toc.querySelectorAll('a').forEach(function (a) {
+        links[a.getAttribute('href').slice(1)] = a.parentNode;
+      });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            Object.keys(links).forEach(function (k) { links[k].classList.remove('is-active'); });
+            var li = links[en.target.id];
+            if (li) li.classList.add('is-active');
+          }
+        });
+      }, { rootMargin: '-80px 0px -70% 0px' });
+      headings.forEach(function (h) { io.observe(h); });
+    }
+  }
+
+  // ── Share row wiring ──
+  function wireShare(post) {
+    var url = location.href;
+    var title = post.title;
+    var wa = root.querySelector('#art-share-wa');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + ' — ' + url);
+
+    var nat = root.querySelector('#art-share-native');
+    if (nat) {
+      if (navigator.share) {
+        nat.addEventListener('click', function () {
+          navigator.share({ title: title, url: url }).catch(function(){});
+        });
+      } else {
+        nat.style.display = 'none'; // hide on browsers without Web Share
+      }
+    }
+
+    var cp = root.querySelector('#art-share-copy');
+    if (cp) cp.addEventListener('click', function () {
+      var done = function () {
+        cp.dataset.copied = '1';
+        var en = cp.querySelector('[lang="en"]'); var zh = cp.querySelector('[lang="zh"]');
+        var oldEn = en && en.textContent, oldZh = zh && zh.textContent;
+        if (en) en.textContent = 'Copied!'; if (zh) zh.textContent = '已複製！';
+        setTimeout(function () {
+          delete cp.dataset.copied;
+          if (en) en.textContent = oldEn; if (zh) zh.textContent = oldZh;
+        }, 1800);
+      };
+      if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, function(){});
+      else {
+        var t = document.createElement('textarea'); t.value = url; document.body.appendChild(t);
+        t.select(); try { document.execCommand('copy'); done(); } catch(_){}; t.remove();
+      }
+    });
+  }
+
+  // ── Related articles ──
+  function loadRelated(currentPost) {
+    fetch(API_BASE + '/blog/posts?per_page=4', { credentials: 'omit' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (res) {
+        if (!res) return;
+        var posts = (res.data || []).filter(function (p) { return p.slug !== currentPost.slug; }).slice(0, 3);
+        if (!posts.length) return;
+        var grid = root.querySelector('#art-related-grid');
+        var sec  = root.querySelector('#art-related');
+        if (!grid || !sec) return;
+        grid.innerHTML = posts.map(function (p) {
+          var when = fmtDate(p.published_at);
+          var rt   = p.reading_time_min ? p.reading_time_min + ' min · ' + p.reading_time_min + ' 分鐘' : '';
+          return '<a class="art-related-card" href="article.html?slug=' + encodeURIComponent(p.slug) + '">' +
+            '<div class="art-related-mini">' + esc(p.thumb_initial || '文') + '</div>' +
+            '<div class="art-related-title">' + esc(p.title) + '</div>' +
+            '<div class="art-related-meta">' + esc([rt, when].filter(Boolean).join(' · ')) + '</div>' +
+          '</a>';
+        }).join('');
+        sec.style.display = '';
+      })
+      .catch(function(){});
+  }
+
+  // ── Scroll effects: progress bar + back-to-top ──
+  function wireScrollEffects() {
+    var bar = document.getElementById('art-progress-bar');
+    var totop = document.getElementById('art-totop');
+    if (!bar || !totop) return;
+    function tick() {
+      var doc = document.documentElement;
+      var scrollTop = (doc.scrollTop || document.body.scrollTop);
+      var max = (doc.scrollHeight - doc.clientHeight);
+      var pct = max > 0 ? Math.min(100, (scrollTop / max) * 100) : 0;
+      bar.style.width = pct + '%';
+      totop.classList.toggle('is-visible', pct > 30);
+    }
+    window.addEventListener('scroll', tick, { passive: true });
+    window.addEventListener('resize', tick);
+    tick();
+    totop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 })();
 </script>
 </body>
