@@ -375,6 +375,33 @@
     financePharmacyBreakdown: function (qs) { return api.get('/admin/finance/pharmacy-breakdown' + (qs ? '?' + qs : '')); },
   };
 
+  // ── Blog (admin + doctor share these endpoints; backend enforces role) ──
+  var blog = {
+    listPosts:    function (qs) { return api.get('/admin/blog/posts' + (qs ? '?' + qs : '')); },
+    getPost:      function (id) { return api.get('/admin/blog/posts/' + id); },
+    createPost:   function (d)  { return api.post('/admin/blog/posts', d); },
+    updatePost:   function (id, d) { return api.put('/admin/blog/posts/' + id, d); },
+    deletePost:   function (id) { return api.delete('/admin/blog/posts/' + id); },
+    approvePost:  function (id) { return api.post('/admin/blog/posts/' + id + '/approve', {}); },
+    rejectPost:   function (id, reason) { return api.post('/admin/blog/posts/' + id + '/reject', { reason: reason || '' }); },
+
+    listCategories:   function () { return api.get('/admin/blog/categories'); },
+    createCategory:   function (d) { return api.post('/admin/blog/categories', d); },
+    updateCategory:   function (id, d) { return api.patch('/admin/blog/categories/' + id, d); },
+    deleteCategory:   function (id) { return api.delete('/admin/blog/categories/' + id); },
+
+    /**
+     * Upload an image for use inside the blog editor.
+     * Pass a File object — wrapped in FormData so request() routes
+     * around the JSON serializer.
+     */
+    uploadImage: function (file) {
+      var fd = new FormData();
+      fd.append('image', file);
+      return api.post('/admin/blog/upload-image', fd);
+    },
+  };
+
   // ── Notifications (all roles) ──
   var notification = {
     list:        function (unreadOnly) { return api.get('/notifications' + (unreadOnly ? '?unread_only=1' : '')); },
@@ -447,6 +474,7 @@
     doctor: doctor,
     pharmacy: pharmacy,
     admin: admin,
+    blog: blog,
     shop: shop,
     notification: notification,
     chat: chat,

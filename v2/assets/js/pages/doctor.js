@@ -47,6 +47,7 @@
   HM.router.on('#/constitution-reviews', function () { location.hash = '#/reviews'; });
   HM.router.on('#/schedule', function () { HM.doctorPanels.schedule.render(panel()); });
   HM.router.on('#/documents', function () { HM.doctorPanels.documents.render(panel()); });
+  HM.router.on('#/blog', function () { HM.doctorPanels.blog.render(panel()); });
   HM.router.on('#/earnings', function () { HM.doctorPanels.earnings.render(panel()); });
   HM.router.on('#/messages', function () { HM.doctorPanels.messages.render(panel()); });
   HM.router.on('#/messages/:id', function (p) { HM.doctorPanels.messages.render(panel(), p.id); });

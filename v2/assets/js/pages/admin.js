@@ -31,6 +31,7 @@
   HM.router.on('#/finance', function () { HM.adminPanels.finance.render(panel()); });
   HM.router.on('#/withdrawals', function () { HM.adminPanels.withdrawals.render(panel()); });
   HM.router.on('#/content', function () { HM.adminPanels.content.render(panel()); });
+  HM.router.on('#/blog', function () { HM.adminPanels.blog.render(panel()); });
   HM.router.on('#/tongue-config', function () { HM.adminPanels.tongueConfig.render(panel()); });
   HM.router.on('#/permissions', function () { HM.adminPanels.permissions.render(panel()); });
   HM.router.on('#/audit', function () { HM.adminPanels.audit.render(panel()); });
