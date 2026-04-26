@@ -94,12 +94,66 @@
     });
   }
 
+  /** Mobile drawer variant — a collapsible row that expands to show
+   *  the same 6 links as flat sidebar entries. The desktop dropdown
+   *  is awkward inside a vertical drawer (tiny tap target, floats
+   *  outside the drawer container), so on mobile we expose the items
+   *  inline instead. Mounts on <... data-portal-about-mobile></... >. */
+  function buildMobile(host) {
+    host.innerHTML = '';
+    host.style.display = 'block';
+
+    // Toggle row — looks like every other sidebar-link so it slots in.
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'sidebar-link';
+    row.setAttribute('aria-expanded', 'false');
+    // Keep the drawer open when this is tapped (matches the lang toggle).
+    row.setAttribute('data-keeps-drawer-open', '');
+    row.style.cssText = 'background:none;border:none;width:100%;cursor:pointer;text-align:left;font:inherit;color:inherit;display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;';
+    row.innerHTML =
+      '<span class="sidebar-link-icon">🏛️</span>' +
+      '<span class="sidebar-link-label" style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:6px;">' +
+        '<span><span lang="en">About</span><span lang="zh">關於</span></span>' +
+        '<svg width="10" height="7" viewBox="0 0 9 6" fill="none" aria-hidden="true" style="transition:transform 0.2s;flex-shrink:0;opacity:0.7;">' +
+          '<path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>' +
+      '</span>';
+
+    var sub = document.createElement('div');
+    sub.style.cssText = 'display:none;padding:2px 0 6px 0;';
+    LINKS.forEach(function (l) {
+      var a = document.createElement('a');
+      a.href = l.href;
+      a.className = 'sidebar-link';
+      a.style.cssText = 'padding-left:3rem;font-size:0.78rem;opacity:0.92;';
+      a.innerHTML = '<span class="sidebar-link-label"><span lang="en">' + l.en + '</span><span lang="zh">' + l.zh + '</span></span>';
+      sub.appendChild(a);
+    });
+
+    host.appendChild(row);
+    host.appendChild(sub);
+
+    row.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = sub.style.display !== 'none';
+      sub.style.display = open ? 'none' : 'block';
+      row.setAttribute('aria-expanded', open ? 'false' : 'true');
+      var chev = row.querySelector('svg');
+      if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+    });
+  }
+
   function mount() {
-    var hosts = document.querySelectorAll('[data-portal-about-menu]');
-    hosts.forEach(function (h) {
+    document.querySelectorAll('[data-portal-about-menu]').forEach(function (h) {
       if (h.dataset.aboutMounted) return;
       h.dataset.aboutMounted = '1';
       build(h);
+    });
+    document.querySelectorAll('[data-portal-about-mobile]').forEach(function (h) {
+      if (h.dataset.aboutMounted) return;
+      h.dataset.aboutMounted = '1';
+      buildMobile(h);
     });
   }
 
