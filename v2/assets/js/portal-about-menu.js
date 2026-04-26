@@ -22,16 +22,18 @@
   function build(host) {
     host.style.position = 'relative';
 
-    // Trigger button — same visual weight as the Home link nearby.
+    // Trigger button — let .nav-link drive font/color/size/letter-spacing
+    // so it matches the sibling Home link exactly. Only the bits .nav-link
+    // doesn't already cover (flex layout for the chevron) go inline.
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'nav-link';
     btn.setAttribute('aria-haspopup', 'true');
     btn.setAttribute('aria-expanded', 'false');
-    btn.style.cssText = 'background:none;border:none;padding:0;font:inherit;color:inherit;cursor:pointer;font-size:var(--text-sm);display:inline-flex;align-items:center;gap:5px;';
+    btn.style.cssText = 'display:inline-flex;align-items:center;gap:6px;';
     btn.innerHTML =
       '<span lang="en">About</span><span lang="zh">關於</span>' +
-      '<svg width="9" height="6" viewBox="0 0 9 6" fill="none" aria-hidden="true" style="transition:transform 0.2s;flex-shrink:0;">' +
+      '<svg width="9" height="6" viewBox="0 0 9 6" fill="none" aria-hidden="true" style="transition:transform 0.2s;flex-shrink:0;opacity:0.75;">' +
         '<path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
       '</svg>';
 
