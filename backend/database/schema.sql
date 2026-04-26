@@ -539,4 +539,59 @@ CREATE TABLE user_permission_overrides (
   CONSTRAINT fk_upo_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- =========================================================
+-- BLOG — admin/doctor-managed articles, replaces the three
+-- hardcoded /v2/blog/*.html files. Posts live in the DB and
+-- are rendered dynamically by /v2/article.html?slug=…
+-- =========================================================
+CREATE TABLE blog_categories (
+  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug          VARCHAR(80)  NOT NULL UNIQUE,
+  name          VARCHAR(120) NOT NULL,
+  name_zh       VARCHAR(120) NULL,
+  display_order INT          NOT NULL DEFAULT 0,
+  created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE blog_posts (
+  id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug             VARCHAR(120) NOT NULL UNIQUE,
+  title            VARCHAR(220) NOT NULL,
+  title_zh         VARCHAR(220) NULL,
+  subtitle         VARCHAR(300) NULL,
+  subtitle_zh     VARCHAR(300) NULL,
+  excerpt          TEXT         NULL,
+  excerpt_zh       TEXT         NULL,
+  body_html        LONGTEXT     NULL,
+  body_zh_html     LONGTEXT     NULL,
+  cover_image_url  VARCHAR(500) NULL,
+  -- Used on the blog card thumbnail when no cover image is set
+  -- (mirrors the original hardcoded design with a Chinese
+  -- character + uppercase EN label).
+  thumb_initial    VARCHAR(8)   NULL,
+  thumb_label      VARCHAR(60)  NULL,
+  -- Author = a user with role doctor or admin. Denormalised
+  -- author_name so display doesn't break if the user is later
+  -- renamed or soft-deleted.
+  author_id        BIGINT UNSIGNED NOT NULL,
+  author_name      VARCHAR(160) NOT NULL,
+  category_id      BIGINT UNSIGNED NULL,
+  reading_time_min SMALLINT NULL,
+  -- Workflow:
+  --   draft           — author still working
+  --   pending_review  — doctor submitted; awaiting admin approval
+  --   published       — live (only shown when published_at <= NOW)
+  --   archived        — hidden but not deleted
+  status           ENUM('draft','pending_review','published','archived') NOT NULL DEFAULT 'draft',
+  published_at     DATETIME NULL,
+  view_count       INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_bp_author   FOREIGN KEY (author_id)   REFERENCES users(id),
+  CONSTRAINT fk_bp_category FOREIGN KEY (category_id) REFERENCES blog_categories(id) ON DELETE SET NULL,
+  KEY idx_bp_status_pub (status, published_at),
+  KEY idx_bp_author (author_id),
+  KEY idx_bp_category (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

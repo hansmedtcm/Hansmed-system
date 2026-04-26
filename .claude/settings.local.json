@@ -176,7 +176,8 @@
       "Bash(git commit -m 'Replace blog stub articles with full content from Downloads files *)",
       "Bash(git commit -m 'Hide shop link on blog article subpages too — selectors missed ../shop.html *)",
       "Bash(node E:/Hansmed-system/.tmp-blog-footer.mjs)",
-      "Bash(git commit -m 'Blog article footer: match index.html footer style \\(4 cols + cert pills\\) *)"
+      "Bash(git commit -m 'Blog article footer: match index.html footer style \\(4 cols + cert pills\\) *)",
+      "Bash(git commit -m 'Blog feature — Phase 1: schema + models + migration SQL *)"
     ]
   }
 }
