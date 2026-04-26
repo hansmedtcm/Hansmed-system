@@ -148,32 +148,25 @@ html.is-auth .mob-nl-logout { display: block !important; }
 }
 .consent-row a { color: var(--jade, #0F6E56); }
 
-/* Auth modal — keep the submit button reachable regardless of
-   viewport height. The bilingual register form (4 inputs + 2 long
-   bilingual consent rows + button + footnote) is taller than most
-   viewports' scrollable modal area, so the Create Account button
-   was below the fold on both mobile and desktop laptops. Tighten
-   the vertical rhythm AND make the submit button position:sticky
-   so it stays pinned to the bottom of the scrolling modal at every
-   screen size. Backdrop blur shadow above hints there's content
-   scrolled underneath. */
+/* Auth modal compaction — the bilingual register form was
+   overflowing the modal's max-height:90vh on most laptop screens,
+   pushing the Create Account button below the fold. Earlier
+   sticky-button attempt overlapped the last consent line (bad
+   UX). Now we just trim the vertical rhythm hard enough that the
+   whole form fits without scrolling on a 700px+ tall window. */
 body.landing-v4 .auth-modal { padding: 4px 0 0; }
-body.landing-v4 .auth-modal h2 { font-size: 24px; margin-bottom: 4px; }
-body.landing-v4 .auth-modal p { font-size: 13px; margin-bottom: 14px; }
-body.landing-v4 .auth-modal .field { margin-bottom: 12px; }
-body.landing-v4 .auth-modal .field-label { font-size: 11.5px; margin-bottom: 5px; }
-body.landing-v4 .auth-modal .field-input { padding: 10px 13px; font-size: 14px; }
-body.landing-v4 .auth-modal .field-hint { font-size: 11px; margin-top: 3px; }
-body.landing-v4 .auth-modal .consent-row { font-size: 11.5px; line-height: 1.5; }
-body.landing-v4 .auth-modal form .btn--primary.btn--block {
-  position: sticky;
-  bottom: 0;
-  margin-top: 12px;
-  /* Subtle gradient under the button so users know there's
-     scrollable content above when the form overflows. */
-  box-shadow: 0 -10px 18px -8px rgba(36,22,8,0.25);
-  z-index: 2;
-}
+body.landing-v4 .auth-modal h2 { font-size: 22px; margin-bottom: 2px; }
+body.landing-v4 .auth-modal p { font-size: 12.5px; margin-bottom: 10px; }
+body.landing-v4 .auth-modal .field { margin-bottom: 10px; }
+body.landing-v4 .auth-modal .field-label { font-size: 11px; margin-bottom: 4px; letter-spacing: 0.04em; }
+body.landing-v4 .auth-modal .field-input { padding: 8px 12px; font-size: 13.5px; }
+body.landing-v4 .auth-modal .field-hint { font-size: 10.5px; margin-top: 2px; }
+body.landing-v4 .auth-modal .consent-row { font-size: 11px; line-height: 1.45; }
+body.landing-v4 .auth-modal .btn--block { padding: 11px 16px; font-size: 14.5px; }
+/* Footnote below the submit button is redundant — the consent
+   checkboxes already say what's required. Hiding it saves vertical
+   space and keeps the button visible without scrolling. */
+body.landing-v4 .auth-modal form > p:last-child { display: none; }
 
 /* Shop visibility — paired with a sync head script that reads
    localStorage('hm-shop-enabled')==='0' and adds html.shop-disabled
