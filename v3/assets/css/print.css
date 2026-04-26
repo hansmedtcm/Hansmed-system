@@ -1,0 +1,133 @@
+/**
+ * HansMed Print Stylesheet (v3).
+ *
+ * Loaded only on @media print so it never affects screen rendering.
+ * Designed for prescriptions, medical certificates, and referral
+ * letters that the doctor / patient might print or save as PDF
+ * via the browser's "Print to PDF" function.
+ *
+ * Goals:
+ *   - hide all chrome (nav, sidebar, footer, modals, FABs, bottom-bar)
+ *   - print only the main content area
+ *   - black-on-white, serif body for legibility
+ *   - URLs after links so paper readers can find sources
+ *   - page-break hints so prescription tables don't split mid-row
+ */
+
+@media print {
+  /* ── Reset to a printable canvas ── */
+  *, *::before, *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    font-family: 'Georgia', 'Times New Roman', serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* ── Hide all chrome ── */
+  nav, header, .nav, #nav, #nav-v4,
+  aside, .sidebar, .sidebar-backdrop, .portal-menu-btn,
+  footer, .footer, .footer-v4,
+  .modal-backdrop, .toast-container, .drawer-backdrop,
+  .wa-f, .wa-fab, #hm-wa-fab,
+  .bottom-bar, .skip-link,
+  .nav-toggle, .hamburger,
+  #art-progress, #art-totop, .art-share, .art-toc, .art-related,
+  [data-print="hide"], .no-print {
+    display: none !important;
+  }
+
+  /* ── Layout: full-bleed content ── */
+  main, #main, #panel-container, .main, .container,
+  .portal-layout {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    grid-template-columns: none !important;
+  }
+  .card, .card-v4 {
+    border: 1px solid #999 !important;
+    border-radius: 0 !important;
+    padding: 12pt !important;
+    margin: 0 0 10pt !important;
+    page-break-inside: avoid;
+  }
+
+  /* ── Typography ── */
+  h1, h2, h3, h4 {
+    font-family: 'Georgia', 'Times New Roman', serif !important;
+    color: #000 !important;
+    page-break-after: avoid;
+    margin-top: 12pt;
+  }
+  h1 { font-size: 20pt !important; }
+  h2 { font-size: 16pt !important; }
+  h3 { font-size: 13pt !important; }
+  p, li, td, th {
+    font-size: 11pt !important;
+    color: #000 !important;
+  }
+
+  /* ── Tables (prescription items, reconciliation, etc.) ── */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 0.5pt solid #999 !important;
+    padding: 4pt 6pt !important;
+    text-align: left !important;
+  }
+  thead { display: table-header-group; }   /* repeat header on every page */
+  tr { page-break-inside: avoid; }
+
+  /* ── Links: print URLs after the link text so paper readers can find them ── */
+  a[href]:not([href^="#"]):not([href^="javascript:"])::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #555 !important;
+    word-break: break-all;
+  }
+  /* Don't print URLs for nav/utility links inside hidden chrome */
+  nav a::after, .footer a::after, .nav a::after { content: "" !important; }
+
+  /* ── Hide images that are decorative-only ── */
+  svg.decorative, .decorative svg { display: none !important; }
+
+  /* ── Print-only utilities ── */
+  .print-only { display: block !important; }
+  .print-letterhead {
+    border-bottom: 1pt solid #000 !important;
+    padding-bottom: 8pt !important;
+    margin-bottom: 16pt !important;
+  }
+  .print-signature-line {
+    margin-top: 36pt;
+    border-top: 0.5pt solid #000;
+    width: 220pt;
+    padding-top: 4pt;
+    font-size: 10pt;
+  }
+
+  /* ── Page setup ── */
+  @page {
+    size: A4;
+    margin: 18mm 16mm;
+  }
+  /* Avoid breaking inside form fieldsets / consolidated rx blocks */
+  fieldset, .rx-block, .case-record { page-break-inside: avoid; }
+}
+
+/* Always-hidden utility (visible only at print) */
+.print-only { display: none; }
