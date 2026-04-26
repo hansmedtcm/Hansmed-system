@@ -144,7 +144,8 @@
       "Bash(awk '/AUTH MODAL/,/<\\\\/template>/' E:/Hansmed-system/v2/index.html)",
       "Bash(git commit -m 'Remove dead '\\\\''Wood Element booking'\\\\'' widget from practitioners.html *)",
       "Bash(git commit -m 'Apply '\\\\''Shop disabled'\\\\'' admin toggle to public landing pages too *)",
-      "Bash(git commit -m 'Fix Shop toggle not persisting on uncheck — missing from checkbox normaliser *)"
+      "Bash(git commit -m 'Fix Shop toggle not persisting on uncheck — missing from checkbox normaliser *)",
+      "Bash(git commit -m 'Admin Settings: read configs from the actual response shape *)"
     ]
   }
 }

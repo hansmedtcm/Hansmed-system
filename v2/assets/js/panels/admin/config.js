@@ -22,10 +22,27 @@
     HM.state.loading(body);
     try {
       var res = await HM.api.admin.getConfigs();
+      // Normalise to a flat { key: value } map. The backend
+      // SystemConfigController::index returns { configs: { k: v, ... } }
+      // so the previous code (which expected res.data as an array of
+      // {config_key, config_value} rows) silently produced an empty
+      // map — every form field rendered its DEFAULT instead of the
+      // saved value, making it look like Save had no effect after
+      // refresh. Accept both shapes for forward-compat.
       var c = {};
-      (res.data || []).forEach(function (row) {
-        c[row.config_key] = row.config_value;
-      });
+      if (res && res.configs && typeof res.configs === 'object') {
+        // Coerce non-string scalars back to strings since the form
+        // checks (=== '0' / === 'false') compare against strings.
+        Object.keys(res.configs).forEach(function (k) {
+          var v = res.configs[k];
+          c[k] = (v === null || typeof v === 'object') ? '' : String(v);
+        });
+      } else if (res && Array.isArray(res.data)) {
+        // Legacy shape — preserved in case any backend cache returns it.
+        res.data.forEach(function (row) {
+          c[row.config_key] = row.config_value;
+        });
+      }
 
       body.innerHTML = '<form id="cfg-form">' +
 
