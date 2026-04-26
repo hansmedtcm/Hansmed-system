@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
+<script>try{if(localStorage.getItem("hm-shop-enabled")==="0")document.documentElement.classList.add("shop-disabled");}catch(_){}</script>
+<script>try{var p=localStorage.getItem('hm-lang-pref');document.documentElement.setAttribute('lang',p==='zh'?'zh':'en');}catch(_){}</script>
+<style>
+html[lang="en"] [lang="zh"] { display: none !important; }
+html[lang="zh"] [lang="en"] { display: none !important; }
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F5F0E8">
+<title>HansMed Blog · 漢方部落格</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+<link rel="stylesheet" href="assets/css/public.css">
+<link rel="stylesheet" href="assets/css/landing-v4.css">
+<link rel="stylesheet" href="assets/css/dropdown.css">
+
+<style>
+/* ───── Article-specific styles (shared with the legacy hardcoded
+   /v2/blog/*.html files so the look stays consistent) ───── */
+:root{--art-ink:#241608;--art-mu:#7A6248;--art-go:#B5881A;--art-wd:#8C6340;--art-bg:#FAF7F2;--art-bg2:#F3EDE1;--art-bg3:#FEFCF8;--art-bdr:#D8C9AE;--art-bdrl:#EAE0CF;}
+.art-hero{background:var(--art-bg3);border-bottom:1px solid var(--art-bdrl);padding:64px 0 52px;}
+.art-hero::before{content:'';display:block;height:2.5px;background:linear-gradient(90deg,transparent,var(--art-go) 25%,var(--art-go) 75%,transparent);margin-bottom:52px;}
+.art-hero-inner{max-width:760px;margin:0 auto;padding:0 28px;}
+.art-eyebrow{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#B8895A;display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.art-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--art-go);}
+.art-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,5vw,52px);font-weight:400;color:var(--art-ink);letter-spacing:-0.025em;line-height:1.1;margin-bottom:10px;}
+.art-title em{font-style:italic;color:var(--art-wd);}
+.art-zh-title{font-family:'Noto Serif SC',serif;font-size:15px;color:var(--art-mu);font-weight:300;margin-bottom:18px;letter-spacing:0.04em;}
+.art-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.art-author{display:flex;align-items:center;gap:10px;}
+.art-avatar{width:38px;height:38px;border-radius:50%;background:var(--art-bg2);border:1.5px solid var(--art-bdr);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:14px;color:var(--art-wd);}
+.art-name{font-size:13px;font-weight:500;color:var(--art-ink);}
+.art-date{font-size:12px;color:var(--art-mu);font-weight:300;}
+.art-tags{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto;}
+.art-tag{font-size:11px;padding:4px 11px;border-radius:12px;background:var(--art-bg2);color:var(--art-mu);border:0.5px solid var(--art-bdr);}
+.art-body{max-width:720px;margin:0 auto;padding:56px 28px;}
+.art-body h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.5vw,30px);font-weight:400;color:var(--art-ink);letter-spacing:-0.02em;margin:48px 0 14px;line-height:1.2;}
+.art-body h2 em{font-style:italic;color:var(--art-wd);}
+.art-body h3{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,22px);font-weight:500;color:var(--art-ink);margin:28px 0 10px;}
+.art-body p{font-size:16px;color:#3D2610;line-height:1.82;margin-bottom:18px;font-weight:300;}
+.art-body p strong{font-weight:500;color:var(--art-ink);}
+.art-body img{max-width:100%;height:auto;border-radius:12px;margin:24px 0;}
+.art-body ul,.art-body ol{margin:14px 0 22px;padding-left:24px;color:#3D2610;font-weight:300;line-height:1.78;}
+.art-body li{margin-bottom:8px;}
+.art-body blockquote{margin:30px 0;padding:18px 24px;background:var(--art-bg2);border-left:3px solid var(--art-go);border-radius:0 12px 12px 0;font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:var(--art-ink);line-height:1.55;}
+.back-link{display:inline-flex;align-items:center;gap:8px;padding:36px 28px 56px;font-size:14px;color:var(--art-wd);font-weight:500;text-decoration:none;max-width:760px;margin:0 auto;}
+.back-link:hover{text-decoration:underline;}
+.art-loading,.art-error{max-width:600px;margin:80px auto;padding:0 28px;text-align:center;color:var(--art-mu);font-family:'DM Sans',sans-serif;}
+.art-error h2{font-family:'Cormorant Garamond',serif;color:var(--art-ink);margin-bottom:12px;font-weight:500;}
+@media(max-width:600px){.art-body{padding:36px 20px;}.art-hero{padding:44px 20px 36px;}.art-tags{margin-left:0;margin-top:10px;}}
+</style>
+</head>
+<body class="landing-v4">
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<nav id="nav-v4">
+  <div class="nav-in">
+    <a class="nav-brand-v4" href="index.html">
+      <img src="assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
+      <span lang="en" style="display:flex;align-items:baseline;"><span class="nav-bn">HansMed</span></span>
+      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;"><span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span></span>
+    </a>
+    <div class="nav-links-v4">
+      <a class="nl" href="index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <div style="position:relative;" id="about-wrap">
+        <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
+          <span lang="en">About</span><span lang="zh">關於</span>
+          <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="about-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:210px;background:var(--cream-white,#FEFCF8);border:1px solid var(--border,#D8C9AE);border-radius:12px;box-shadow:0 8px 32px rgba(36,22,8,0.14);z-index:9999;overflow:hidden;padding:4px 0;">
+          <div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold,#9A7A3E),transparent);"></div>
+          <a href="about.html"         class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
+          <a href="practitioners.html" class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
+          <a href="services.html"      class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a href="blog.html"          class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
+          <a href="faq.html"           class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
+          <a href="contact.html"       class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+        </div>
+      </div>
+      <a class="nl" href="shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
+      <a class="nl" href="portal.html#/wellness-assessment"><span lang="en">Wellness</span><span lang="zh">健康評估</span></a>
+      <div class="lang-wrap">
+        <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
+      </div>
+      <a class="nl nav-signin" href="index.html#/login" target="_blank" rel="noopener" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></a>
+      <a class="nav-cta" href="portal.html#/book"><span lang="en">Book</span><span lang="zh">預約</span></a>
+    </div>
+    <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<main id="main">
+  <div id="article-root" class="art-loading">Loading article…</div>
+</main>
+
+<footer class="footer-v4">
+  <div class="fg">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <img src="assets/img/brand/logo-mark.svg" alt="" style="width:44px;height:44px;opacity:0.95;">
+        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+      </div>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.</p>
+    </div>
+    <div>
+      <div class="flbl">Platform · 平台</div>
+      <a class="fl" href="services.html">Services · 服務</a>
+      <a class="fl" href="shop.html">Shop · 商店</a>
+      <a class="fl" href="portal.html#/book">Book · 預約</a>
+      <a class="fl" href="portal.html#/wellness-assessment">Wellness · 健康評估</a>
+      <a class="fl" href="contact.html">Contact · 聯絡</a>
+    </div>
+    <div>
+      <div class="flbl">Account · 帳號</div>
+      <a class="fl" href="index.html#/login">Sign In · 登入</a>
+      <a class="fl" href="index.html#/register">Create Account · 註冊</a>
+    </div>
+    <div>
+      <div class="flbl">Compliance · 合規</div>
+      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <a class="fl" href="security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
+    </div>
+  </div>
+  <div class="f-cert-row">
+    <div class="f-cert"><div class="f-cert-top">KKM</div><div class="f-cert-bot">Malaysia</div></div>
+    <div class="f-cert"><div class="f-cert-top">HALAL</div><div class="f-cert-bot">JAKIM</div></div>
+    <div class="f-cert"><div class="f-cert-top">NPRA</div><div class="f-cert-bot">Approved</div></div>
+    <div class="f-cert"><div class="f-cert-top">MOH</div><div class="f-cert-bot">Registered TCM</div></div>
+    <div class="f-cert"><div class="f-cert-top">T&amp;CM Act</div><div class="f-cert-bot">2016</div></div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫</span>
+    <span>PDPA · T&amp;CM Act 2016</span>
+  </div>
+</footer>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/lang-switcher.js"></script>
+<script src="assets/js/about-dropdown.js"></script>
+<script src="assets/js/nav-auth.js"></script>
+<script src="assets/js/public-feature-flags.js"></script>
+
+<script>
+/* Article viewer — reads ?slug=… and renders the post body. */
+(function () {
+  'use strict';
+  var root = document.getElementById('article-root');
+  var slug = new URLSearchParams(location.search).get('slug');
+  if (!slug) {
+    root.innerHTML = '<div class="art-error"><h2>No article specified</h2><p>Try browsing from the <a href="blog.html">blog</a>.</p></div>';
+    return;
+  }
+
+  var API_BASE = (window.HM && HM.config && HM.config.API_BASE) ||
+                 'https://hansmed-system-production.up.railway.app/api';
+
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    try {
+      var d = new Date(iso);
+      var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      return months[d.getMonth()] + ' ' + d.getFullYear();
+    } catch (_) { return ''; }
+  }
+
+  function avatarFor(name) {
+    // First-name surname-first initial in Chinese serif if name looks
+    // like a real practitioner (Mr./Dr. prefix). Falls back to first
+    // letter for editorial.
+    var match = String(name||'').match(/^(?:Mr\.|Dr\.)\s+(\w)/i);
+    if (match) return match[1].toUpperCase();
+    return String(name||'?').trim().charAt(0).toUpperCase() || '?';
+  }
+
+  fetch(API_BASE + '/blog/posts/' + encodeURIComponent(slug), { credentials: 'omit' })
+    .then(function (r) {
+      if (r.status === 404) throw new Error('NOT_FOUND');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (res) {
+      var post = res.post;
+      var category = res.category;
+
+      document.title = post.title + ' · HansMed Blog';
+
+      root.classList.remove('art-loading');
+      var meta = [];
+      if (post.reading_time_min) meta.push(post.reading_time_min + ' min read');
+      var when = fmtDate(post.published_at);
+      if (when) meta.push(when);
+
+      var html =
+        '<div class="art-hero"><div class="art-hero-inner">' +
+          '<div class="art-eyebrow">HansMed Blog · 部落格' +
+            (category ? ' · ' + esc(category.name) : '') + '</div>' +
+          '<h1 class="art-title" lang="en">' + esc(post.title) + '</h1>' +
+          (post.title_zh ? '<h1 class="art-title" lang="zh">' + esc(post.title_zh) + '</h1>' : '') +
+          (post.subtitle ? '<div class="art-zh-title" lang="en">' + esc(post.subtitle) + '</div>' : '') +
+          (post.subtitle_zh ? '<div class="art-zh-title" lang="zh">' + esc(post.subtitle_zh) + '</div>' : '') +
+          '<div class="art-meta">' +
+            '<div class="art-author">' +
+              '<div class="art-avatar">' + esc(avatarFor(post.author_name)) + '</div>' +
+              '<div>' +
+                '<div class="art-name">' + esc(post.author_name) + '</div>' +
+                (meta.length ? '<div class="art-date">' + esc(meta.join(' · ')) + '</div>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div></div>' +
+        '<div class="art-body">' +
+          (post.body_html    ? '<div lang="en">' + post.body_html    + '</div>' : '') +
+          (post.body_zh_html ? '<div lang="zh">' + post.body_zh_html + '</div>' : '') +
+        '</div>' +
+        '<a href="blog.html" class="back-link">← Back to all articles · 返回部落格</a>';
+
+      root.innerHTML = html;
+    })
+    .catch(function (e) {
+      if (e.message === 'NOT_FOUND') {
+        root.innerHTML =
+          '<div class="art-error">' +
+            '<h2>Article not found</h2>' +
+            '<p>The article you are looking for has been moved or removed.<br>' +
+            '<a href="blog.html">Browse all articles →</a></p>' +
+          '</div>';
+      } else {
+        root.innerHTML =
+          '<div class="art-error">' +
+            '<h2>Could not load article</h2>' +
+            '<p>Please try again in a moment.<br>' +
+            '<a href="blog.html">← Back to blog</a></p>' +
+          '</div>';
+      }
+    });
+})();
+</script>
+</body>
+</html>

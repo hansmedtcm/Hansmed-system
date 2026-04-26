@@ -1285,90 +1285,12 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
       <div class="eyebrow">Latest Articles · 最新文章</div>
       <h2>From our <em>practitioners</em></h2>
     </div>
-    <div class="g3">
-
-      <!-- Blog 1 -->
-      <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
-        <div class="ctr"></div><div class="cbl"></div>
-        <!-- Cover area -->
-        <div style="background:linear-gradient(135deg,var(--bg-2) 0%,var(--go-xl) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
-          <div style="text-align:center;">
-            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--wd-lt);line-height:1;">針藥</div>
-            <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Treatment</div>
-          </div>
-        </div>
-        <div style="padding:24px 24px 28px;">
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-            <span class="cert-pill">Acupuncture</span>
-            <span class="cert-pill">Herbal Medicine</span>
-            <span class="cert-pill">Beginner Guide</span>
-          </div>
-          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">Understanding TCM Treatment Types: Acupuncture, Herbal Medicine &amp; Manipulation</h3>
-          <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">TCM is not one treatment — it is a system. Discover the three core modalities our practitioners use and how they work together to restore balance in the body.</p>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Siew Kuen Xian</div>
-              <div style="font-size:11px;color:var(--mu);font-weight:300;">5 min read · March 2026</div>
-            </div>
-            <a class="btn btn-outline btn-sm" style="border-radius:8px;" href="blog/tcm-treatment-types.html">Read →</a>
-          </div>
-        </div>
+    <!-- Card grid is rendered dynamically from /api/blog/posts —
+         see blog-list-loader.js. Initial loading state shown below. -->
+    <div class="g3" id="blog-list">
+      <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--mu);font-size:14px;">
+        Loading articles… · 載入中…
       </div>
-
-      <!-- Blog 2 -->
-      <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
-        <div class="ctr"></div><div class="cbl"></div>
-        <div style="background:linear-gradient(135deg,var(--sage-lt,#EEF3E8) 0%,var(--bg-2) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
-          <div style="text-align:center;">
-            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--sage);line-height:1;">線診</div>
-            <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Online Care</div>
-          </div>
-        </div>
-        <div style="padding:24px 24px 28px;">
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-            <span class="cert-pill">Teleconsult</span>
-            <span class="cert-pill">Accessibility</span>
-            <span class="cert-pill">Modern TCM</span>
-          </div>
-          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">The Pros of Online TCM Consultation — And When to Come In Person</h3>
-          <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">Video consultations are not a compromise — for many conditions, they are just as effective as in-person visits. Here is what online TCM can and cannot do.</p>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Lim Gao Hong</div>
-              <div style="font-size:11px;color:var(--mu);font-weight:300;">4 min read · February 2026</div>
-            </div>
-            <a class="btn btn-outline btn-sm" style="border-radius:8px;" href="blog/online-tcm-consultation.html">Read →</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Blog 3 -->
-      <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
-        <div class="ctr"></div><div class="cbl"></div>
-        <div style="background:linear-gradient(135deg,var(--tc-xl,#FCF6EF) 0%,var(--bg-2) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
-          <div style="text-align:center;">
-            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--tc);line-height:1;">舌診</div>
-            <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Tongue Diagnosis</div>
-          </div>
-        </div>
-        <div style="padding:24px 24px 28px;">
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-            <span class="cert-pill">Tongue Analysis</span>
-            <span class="cert-pill">AI Wellness</span>
-            <span class="cert-pill">Diagnosis</span>
-          </div>
-          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">How Practitioners Read With Your Tongue: The Ancient Art of 舌診</h3>
-          <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">Your tongue is a map of your internal health. Colour, coating, shape, and moisture all tell a practitioner things your symptoms alone cannot. Here is how it works.</p>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-size:12px;color:var(--ink-m);font-weight:500;">Mr. Siew Kuen Xian</div>
-              <div style="font-size:11px;color:var(--mu);font-weight:300;">6 min read · January 2026</div>
-            </div>
-            <a class="btn btn-outline btn-sm" style="border-radius:8px;" href="blog/tongue-diagnosis-guide.html">Read →</a>
-          </div>
-        </div>
-      </div>
-
     </div>
     <div style="text-align:center;margin-top:36px;">
       <p style="font-size:13px;color:var(--mu);font-weight:300;margin-bottom:16px;">More articles coming soon · 更多文章即將推出</p>
@@ -1535,6 +1457,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/api.js"></script>
+<script src="assets/js/blog-list-loader.js"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/bus.js"></script>
 <script src="assets/js/ui.js"></script>
