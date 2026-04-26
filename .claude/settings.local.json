@@ -158,7 +158,12 @@
       "Bash(grep -nA 6 \"^\\\\.field\\\\s*[{,]\\\\|^\\\\.field-label\\\\|^label\\\\s*[{,]\" E:/Hansmed-system/v2/assets/css/components.css)",
       "Bash(grep -nA 5 \"auth-modal\\\\s*{\" E:/Hansmed-system/v2/assets/css/landing-v4.css)",
       "Bash(grep -rnE \"modal-backdrop|\\\\\\\\.modal[\\\\s,{]\" E:/Hansmed-system/v2/assets/css/components.css)",
-      "Bash(git commit -m 'Consent labels: ditch flex layout, use absolute-positioned checkbox *)"
+      "Bash(git commit -m 'Consent labels: ditch flex layout, use absolute-positioned checkbox *)",
+      "Bash(grep -nA 20 \"function walkAndWrap\" E:/Hansmed-system/v2/assets/js/lang-switcher.js)",
+      "Bash(grep -nA 30 \"function walkAndWrap\" E:/Hansmed-system/v2/assets/js/lang-switcher.js)",
+      "Bash(grep -nA 3 \"input\\\\[type=.checkbox\" E:/Hansmed-system/v2/assets/css/landing-v4.css E:/Hansmed-system/v2/assets/css/components.css)",
+      "Bash(grep -nA 5 \"auth-modal.*input\\\\|auth-modal\\\\s*\\\\.field-input\" E:/Hansmed-system/v2/assets/css/landing-v4.css)",
+      "Bash(git commit -m 'Consent rows: dedicated .consent-row class with CSS grid layout *)"
     ]
   }
 }
