@@ -24,6 +24,14 @@
     var container = ensureToastContainer();
     var el = document.createElement('div');
     el.className = 'toast' + (type ? ' toast--' + type : '');
+    // For destructive/error toasts use role=alert (interrupts the
+    // screen reader); informational ones inherit the container's
+    // aria-live=polite. Either way, all toasts are announced.
+    if (type === 'danger' || type === 'error' || type === 'warning') {
+      el.setAttribute('role', 'alert');
+    } else {
+      el.setAttribute('role', 'status');
+    }
     el.textContent = message;
     container.appendChild(el);
 

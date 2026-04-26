@@ -360,3 +360,92 @@
   background: var(--ink);
   color: var(--washi);
 }
+
+/* ──────────────────────────────────────────────────────────────
+   v3: Skeleton loading states.
+   Drop into HM.state.loading(el, { skeleton: 'card' | 'list' | 'table' })
+   — animates a subtle horizontal shimmer to signal "loading" without
+   the abrupt content flash a spinner gives.
+   ────────────────────────────────────────────────────────────── */
+.sk-grid  { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-3); }
+.sk-list  { display: flex; flex-direction: column; gap: var(--s-2); }
+.sk-table { display: flex; flex-direction: column; gap: 6px; }
+
+.sk-card {
+  background: var(--washi, #FAF7F2);
+  border: 1px solid var(--border-l, #EAE0CF);
+  border-radius: var(--r-md, 12px);
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.sk-row {
+  background: var(--washi, #FAF7F2);
+  border: 1px solid var(--border-l, #EAE0CF);
+  border-radius: var(--r-md, 12px);
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.sk-trow {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--border-l, #EAE0CF);
+}
+.sk-trow--head .sk-line { height: 8px; }
+
+.sk-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg,
+    rgba(184,150,90,0.07) 0%,
+    rgba(184,150,90,0.18) 50%,
+    rgba(184,150,90,0.07) 100%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+.sk-line--title { width: 60%; height: 14px; }
+.sk-line--short { width: 40%; }
+.sk-circle {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(90deg,
+    rgba(184,150,90,0.07) 0%,
+    rgba(184,150,90,0.18) 50%,
+    rgba(184,150,90,0.07) 100%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes sk-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk-line, .sk-circle { animation: none; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   v3: Lift toast container above the mobile bottom-bar so toasts
+   don't get covered by the WhatsApp/Book sticky buttons on phones.
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    transform: none !important;
+    align-items: stretch;
+  }
+  .toast { max-width: none !important; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   v3: Global keyboard focus polish — only shows the ring for
+   keyboard users (focus-visible), keeps mouse interactions clean.
+   ────────────────────────────────────────────────────────────── */
+:focus { outline: none; }
+*:focus-visible {
+  outline: 2px solid var(--gold, #B8965A);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.btn:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--gold, #B8965A);
+  outline-offset: 3px;
+}
