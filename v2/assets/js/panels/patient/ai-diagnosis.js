@@ -222,11 +222,10 @@
       aidStepCard('4', '🩺', 'Doctor Review', '醫師審核', 'Personalised plan') +
       '</div>' +
       '<div class="flex gap-2 mt-4 flex-wrap">' +
-      '<button class="btn btn--primary btn--lg" id="aid-start-combined">🚀 Start Full Assessment · 開始完整評估 →</button>' +
-      '<button class="btn btn--outline" id="aid-skip-tongue">Skip tongue, quiz only · 跳過舌診，只做問卷</button>' +
+      '<button class="btn btn--primary btn--lg" id="aid-start-combined">🚀 Start Wellness Assessment · 開始健康評估 →</button>' +
       '</div>' +
-      '<p class="text-xs text-muted mt-3">Takes about 3–5 minutes. All data stays encrypted and only shared with the reviewing doctor. ' +
-      '<span style="font-family: var(--font-zh);">約需 3–5 分鐘，資料加密保護。</span></p>' +
+      '<p class="text-xs text-muted mt-3">Both the tongue photo AND the 10-question quiz are required for a complete constitution assessment — your reviewing doctor needs both to interpret accurately. Takes about 3–5 minutes. All data stays encrypted. ' +
+      '<span style="font-family: var(--font-zh);">舌診與問卷皆為必須，醫師需兩項資料方能完整審核。約 3–5 分鐘，資料加密保護。</span></p>' +
       '</div>' +
 
       // Combined history
@@ -240,11 +239,10 @@
       state.skippedTongue = false;
       renderTongueStep(el);
     });
-    document.getElementById('aid-skip-tongue').addEventListener('click', function () {
-      state.skippedTongue = true;
-      state.qIndex = 0;
-      renderQuestion(el);
-    });
+    // Skip-tongue button removed — tongue + quiz are both required.
+    // state.skippedTongue is kept on the state object but always false
+    // so the rest of the flow (progress counter, submit payload) keeps
+    // working without conditional branches.
 
     // Load combined history
     loadPastReports();
@@ -288,18 +286,15 @@
 
       '<div class="flex gap-2 mt-4">' +
       '<button class="btn btn--ghost" id="aid-tongue-back">← Back · 返回</button>' +
-      '<button class="btn btn--outline" id="aid-tongue-skip">Skip this step · 跳過此步驟</button>' +
       '<button class="btn btn--primary" id="aid-tongue-next" style="margin-left:auto; display:none;">Continue to Questions · 繼續問卷 →</button>' +
       '</div>' +
       '</div>';
 
     injectStyle();
     document.getElementById('aid-tongue-back').addEventListener('click', function () { renderIntro(el); });
-    document.getElementById('aid-tongue-skip').addEventListener('click', function () {
-      state.skippedTongue = true;
-      state.qIndex = 0;
-      renderQuestion(el);
-    });
+    // Skip-this-step button removed — tongue photo is required to
+    // proceed. Continue button only enables after a successful capture
+    // (or AI failure where the doctor will review manually).
     document.getElementById('aid-tongue-next').addEventListener('click', function () {
       state.qIndex = 0;
       renderQuestion(el);
@@ -349,9 +344,11 @@
     } catch (err) {
       box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">' +
         HM.format.esc(err.message || 'Upload failed') +
-        ' — you can skip this step and continue with the quiz only.' +
+        ' — please retake the photo and try again. ' +
+        '<span style="font-family: var(--font-zh);">請重新拍攝後再試。</span>' +
         '</div></div>';
-      document.getElementById('aid-tongue-next').style.display = 'inline-flex';
+      // Don't enable Continue here — patient must succeed at the
+      // tongue capture before moving on.
     }
   }
 
