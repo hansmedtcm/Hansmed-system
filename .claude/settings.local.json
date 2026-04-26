@@ -153,7 +153,8 @@
       "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/assets/js/lang-switcher.js')",
       "Bash(grep -nA 5 \"setPortalLang = function\" E:/Hansmed-system/v2/doctor.html)",
       "Bash(git commit -m 'Restore setPortalLang on doctor/pharmacy/admin + delegate to lang-switcher *)",
-      "Bash(git commit -m 'Kill the '\\\\''Shop link briefly visible'\\\\'' flash on page load *)"
+      "Bash(git commit -m 'Kill the '\\\\''Shop link briefly visible'\\\\'' flash on page load *)",
+      "Bash(git commit -m 'Fix register/contact consent text overflowing modal width on mobile *)"
     ]
   }
 }

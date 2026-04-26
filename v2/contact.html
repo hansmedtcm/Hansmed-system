@@ -205,9 +205,9 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <textarea name="message" class="field-input field-input--boxed" rows="5" required></textarea>
         </div>
         <div class="field form-consent">
-          <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#666;cursor:pointer">
-            <input type="checkbox" id="contact-consent" name="consent" required style="margin-top:3px;flex-shrink:0">
-            <span>I consent to HansMed collecting my name and email address to respond to this enquiry, in accordance with our <a href="privacy-policy.html" style="color:#0F6E56">Privacy Policy</a>. · 本人同意漢方收集姓名及電郵以回覆此查詢。</span>
+          <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#666;cursor:pointer;width:100%;max-width:100%;">
+            <input type="checkbox" id="contact-consent" name="consent" required style="margin-top:3px;flex:0 0 auto;">
+            <span style="flex:1 1 auto;min-width:0;overflow-wrap:break-word;word-break:break-word;">I consent to HansMed collecting my name and email address to respond to this enquiry, in accordance with our <a href="privacy-policy.html" style="color:#0F6E56">Privacy Policy</a>. · 本人同意漢方收集姓名及電郵以回覆此查詢。</span>
           </label>
         </div>
         <button type="submit" class="btn btn--primary btn--block">Send Message · 傳送訊息</button>
