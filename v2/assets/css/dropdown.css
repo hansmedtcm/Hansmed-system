@@ -178,6 +178,8 @@ html.shop-disabled a[href="shop.html"],
 html.shop-disabled a[href^="shop.html?"],
 html.shop-disabled a[href^="shop.html#"],
 html.shop-disabled a[href="./shop.html"],
+html.shop-disabled a[href="../shop.html"],
+html.shop-disabled a[href$="/shop.html"],
 html.shop-disabled [onclick*="go('shop')"],
 html.shop-disabled [onclick*="go(\"shop\")"] {
   display: none !important;

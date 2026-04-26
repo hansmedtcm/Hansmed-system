@@ -173,7 +173,8 @@
       "Bash(curl -sS -o /dev/null -w \"security.html: %{http_code}\\\\n\" https://hansmedtcm.github.io/Hansmed-system/v2/security.html)",
       "Bash(curl -sS -X POST -H 'Content-Type: application/json' -d '{\"identifier\":\"test@test.com\",\"password\":\"x\"}' -w \"\\\\nlogin attempt 1: %{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/auth/login)",
       "Bash(curl -sS -X POST -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"identifier\":\"test@test.com\",\"password\":\"x\"}' -w \"\\\\nstatus: %{http_code}\\\\n\" https://hansmed-system-production.up.railway.app/api/auth/login)",
-      "Bash(git commit -m 'Replace blog stub articles with full content from Downloads files *)"
+      "Bash(git commit -m 'Replace blog stub articles with full content from Downloads files *)",
+      "Bash(git commit -m 'Hide shop link on blog article subpages too — selectors missed ../shop.html *)"
     ]
   }
 }
