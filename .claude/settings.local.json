@@ -165,7 +165,8 @@
       "Bash(grep -nA 5 \"auth-modal.*input\\\\|auth-modal\\\\s*\\\\.field-input\" E:/Hansmed-system/v2/assets/css/landing-v4.css)",
       "Bash(git commit -m 'Consent rows: dedicated .consent-row class with CSS grid layout *)",
       "Bash(grep -nA 30 \"modal:\\\\s*function\\\\|function modal\\\\|HM\\\\.ui\\\\.modal\" E:/Hansmed-system/v2/assets/js/ui.js)",
-      "Bash(git commit -m 'Auth modal mobile: compact spacing + sticky submit button *)"
+      "Bash(git commit -m 'Auth modal mobile: compact spacing + sticky submit button *)",
+      "Bash(git commit -m 'Auth modal: apply compaction + sticky submit on every screen size *)"
     ]
   }
 }
