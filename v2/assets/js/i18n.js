@@ -53,12 +53,13 @@
       signout: '登出',
       required: '必填',
 
-      // 中醫健康評估 feature
-      'feature.assessment.title':     '中醫健康評估',
+      // AI 健康評估 feature (renamed from 中醫健康評估; user-facing
+      // strings now match the EN 'AI Wellness' nav rename).
+      'feature.assessment.title':     'AI 健康評估',
       'feature.assessment.subtitle':  '從中醫的角度了解您的身體。',
       'feature.assessment.cta.start': '開始評估',
       'feature.assessment.cta.view':  '查看您的評估',
-      'nav.assessment':               '健康評估',
+      'nav.assessment':               'AI 健康評估',
       'tongue.upload.title':          '舌象健康掃描',
 
       // 免責聲明

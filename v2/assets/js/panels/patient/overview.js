@@ -106,7 +106,7 @@
       '<div class="text-label mb-3">Quick Actions · 快捷操作</div>' +
       '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">' +
       actionCard('📅', 'Book Appointment', '預約', '#/book') +
-      actionCard('🧭', 'AI Wellness Assessment', '健康評估', '#/wellness-assessment') +
+      actionCard('🧭', 'AI Wellness Assessment', 'AI 健康評估', '#/wellness-assessment') +
       actionCard('🛍️', 'Shop', '商店', '#/shop') +
       actionCard('💊', 'Prescriptions', '處方', '#/prescriptions') +
       '</div>' +
