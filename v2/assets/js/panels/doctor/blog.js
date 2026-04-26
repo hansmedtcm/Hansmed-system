@@ -100,7 +100,25 @@
         });
         tbody.appendChild(tr);
       });
-    } catch (e) { HM.state.error(container, e); }
+    } catch (e) {
+      // If the backend reports the blog tables are missing, show a
+      // friendly notice asking the doctor to ping admin (only admins
+      // can run the setup migration, so we don't show that button here).
+      var msg = (e && e.message) || '';
+      if (/blog_posts|blog_categories/i.test(msg) && /(doesn't exist|not found|1146)/i.test(msg)) {
+        container.innerHTML =
+          '<div class="card card--pad-lg" style="max-width:560px;margin:32px auto;text-align:center;">' +
+            '<div style="font-size:42px;margin-bottom:12px;">⚙️</div>' +
+            '<h3 style="margin-bottom:8px;">Blog setup pending</h3>' +
+            '<p style="color:var(--mu);font-size:14px;line-height:1.6;">' +
+              'The blog feature isn\'t fully set up yet. Please ask the admin to run the one-click setup from their console.' +
+              '<br><span style="font-size:12px;">部落格功能尚未啟用，請通知管理員於控制台一鍵設定。</span>' +
+            '</p>' +
+          '</div>';
+        return;
+      }
+      HM.state.error(container, e);
+    }
   }
 
   async function openEditor(post) {

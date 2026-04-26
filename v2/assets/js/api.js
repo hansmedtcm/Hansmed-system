@@ -401,8 +401,11 @@
       return api.post('/admin/blog/upload-image', fd);
     },
 
+    /** Create the blog_categories + blog_posts tables (idempotent). */
+    runMigration:        function () { return api.post('/admin/migrate/blog-tables', {}); },
+
     /** One-shot importer for the 3 legacy hand-built articles. */
-    seedLegacyArticles: function () { return api.post('/admin/migrate/blog-seed-articles', {}); },
+    seedLegacyArticles:  function () { return api.post('/admin/migrate/blog-seed-articles', {}); },
   };
 
   // ── Notifications (all roles) ──

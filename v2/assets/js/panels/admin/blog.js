@@ -27,6 +27,7 @@
       '<div><div class="page-header-label">Blog · 部落格</div>' +
       '<h1 class="page-title">Articles</h1></div>' +
       '<div class="flex gap-2" style="flex-wrap:wrap;">' +
+        '<button class="btn btn--outline" id="bl-setup" title="One-shot: creates blog_categories + blog_posts tables. Safe to re-run.">⚙️ Setup Tables</button>' +
         '<button class="btn btn--outline" id="bl-seed" title="Imports the 3 legacy hand-built articles into the database">📥 Seed Legacy</button>' +
         '<button class="btn btn--outline" id="bl-cats">Categories · 分類</button>' +
         '<button class="btn btn--primary" id="bl-new">+ New Post</button>' +
@@ -45,6 +46,7 @@
 
     document.getElementById('bl-new').addEventListener('click', function () { openEditor(null); });
     document.getElementById('bl-cats').addEventListener('click', openCategoryManager);
+    document.getElementById('bl-setup').addEventListener('click', runSetup);
     document.getElementById('bl-seed').addEventListener('click', async function () {
       var ok = await HM.ui.confirm(
         'Import the 3 legacy articles (TCM treatments, online consultation, tongue diagnosis) into the database?\n\nSafe to re-run — refreshes content if posts already exist.',
@@ -85,6 +87,48 @@
     } catch (_) { state.categories = []; }
 
     await load();
+  }
+
+  async function runSetup() {
+    var ok = await HM.ui.confirm(
+      'Create the blog_categories + blog_posts tables in the database? Safe to re-run — it skips anything that already exists.',
+      { title: 'Setup blog tables · 建立部落格資料表' }
+    );
+    if (!ok) return;
+    try {
+      var res = await HM.api.blog.runMigration();
+      var summary = (res.log || []).join(' · ');
+      if (res.success) {
+        HM.ui.toast('Setup complete — ' + summary, 'success', 6000);
+      } else {
+        HM.ui.toast('Setup ran with errors: ' + (res.errors || []).join(' / '), 'warn', 8000);
+      }
+      load();
+    } catch (e) {
+      HM.ui.toast('Setup failed: ' + (e.message || 'unknown'), 'danger', 8000);
+    }
+  }
+
+  /** Detect "table doesn't exist" / 1146 errors from the API and show
+   *  a helpful one-click setup card instead of the generic stack trace. */
+  function isMissingTable(err) {
+    var msg = (err && err.message) || '';
+    return /blog_posts|blog_categories/i.test(msg) &&
+           /(doesn't exist|not found|1146)/i.test(msg);
+  }
+
+  function renderSetupNeeded(container) {
+    container.innerHTML =
+      '<div class="card card--pad-lg" style="max-width:560px;margin:32px auto;text-align:center;">' +
+        '<div style="font-size:42px;margin-bottom:12px;">⚙️</div>' +
+        '<h3 style="margin-bottom:8px;">First-time setup needed</h3>' +
+        '<p style="color:var(--mu);font-size:14px;line-height:1.6;margin-bottom:18px;">' +
+          'The blog database tables haven\'t been created yet. Click below to set them up — it\'s safe to re-run.' +
+          '<br><span style="font-size:12px;">部落格資料表尚未建立，點擊下方按鈕一鍵設定（可重複執行）。</span>' +
+        '</p>' +
+        '<button class="btn btn--primary" id="bl-setup-now">⚙️ Run Setup Now · 立即設定</button>' +
+      '</div>';
+    document.getElementById('bl-setup-now').addEventListener('click', runSetup);
   }
 
   async function load() {
@@ -144,7 +188,13 @@
         });
         tbody.appendChild(tr);
       });
-    } catch (e) { HM.state.error(container, e); }
+    } catch (e) {
+      // First-run convenience: if the backend reports the blog tables
+      // are missing, show a one-click setup card instead of the raw
+      // SQL stack trace.
+      if (isMissingTable(e)) { renderSetupNeeded(container); return; }
+      HM.state.error(container, e);
+    }
   }
 
   async function openEditor(post) {

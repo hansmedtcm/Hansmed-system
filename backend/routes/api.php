@@ -367,6 +367,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post  ('/upload-image',           [\App\Http\Controllers\Blog\BlogImageController::class, 'upload']);
     });
 
+    // Blog tables migration — creates blog_categories + blog_posts
+    // (idempotent, callable from admin UI). Run this BEFORE using the
+    // blog admin panel or the public /api/blog/* endpoints.
+    Route::post('/admin/migrate/blog-tables', [\App\Http\Controllers\Admin\MigrationController::class, 'blogTables']);
+
     // Legacy article importer — admin only, idempotent. Reads HTML
     // from backend/database/seed-articles/*.html and INSERTs/UPDATEs
     // the matching blog_posts row.

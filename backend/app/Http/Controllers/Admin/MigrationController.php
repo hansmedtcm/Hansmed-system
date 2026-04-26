@@ -311,4 +311,125 @@ class MigrationController extends Controller
             'errors'  => [],
         ]);
     }
+
+    /**
+     * Create blog_categories + blog_posts tables idempotently and
+     * seed the six default categories. Mirrors
+     * backend/database/migrations_manual/2026_04_26_blog_posts.sql
+     * but callable from the admin UI so the operator never has to
+     * paste SQL.
+     *
+     * Difference vs the .sql file: author_id is NULLABLE here so the
+     * legacy article seeder (which has no owning user) can insert
+     * its three rows without violating an FK NOT NULL constraint.
+     * If the table already exists with NOT NULL, this also widens
+     * it to NULL.
+     */
+    public function blogTables(Request $request)
+    {
+        $log = [];
+        $errors = [];
+
+        // ── 1. blog_categories ──
+        if (! Schema::hasTable('blog_categories')) {
+            try {
+                DB::statement("
+                    CREATE TABLE blog_categories (
+                      id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                      slug          VARCHAR(80)  NOT NULL UNIQUE,
+                      name          VARCHAR(120) NOT NULL,
+                      name_zh       VARCHAR(120) NULL,
+                      display_order INT NOT NULL DEFAULT 0,
+                      created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                ");
+                $log[] = 'created blog_categories';
+            } catch (\Throwable $e) { $errors[] = 'blog_categories: ' . $e->getMessage(); }
+        } else {
+            $log[] = 'blog_categories already exists, skipped';
+        }
+
+        // ── 2. blog_posts ──
+        // author_id is NULLABLE so the legacy-article seeder works
+        // (those posts have no owning user).
+        if (! Schema::hasTable('blog_posts')) {
+            try {
+                DB::statement("
+                    CREATE TABLE blog_posts (
+                      id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                      slug             VARCHAR(120) NOT NULL UNIQUE,
+                      title            VARCHAR(220) NOT NULL,
+                      title_zh         VARCHAR(220) NULL,
+                      subtitle         VARCHAR(300) NULL,
+                      subtitle_zh      VARCHAR(300) NULL,
+                      excerpt          TEXT         NULL,
+                      excerpt_zh       TEXT         NULL,
+                      body_html        LONGTEXT     NULL,
+                      body_zh_html     LONGTEXT     NULL,
+                      cover_image_url  VARCHAR(500) NULL,
+                      thumb_initial    VARCHAR(8)   NULL,
+                      thumb_label      VARCHAR(60)  NULL,
+                      author_id        BIGINT UNSIGNED NULL,
+                      author_name      VARCHAR(160) NOT NULL,
+                      category_id      BIGINT UNSIGNED NULL,
+                      reading_time_min SMALLINT NULL,
+                      status           ENUM('draft','pending_review','published','archived') NOT NULL DEFAULT 'draft',
+                      published_at     DATETIME NULL,
+                      view_count       INT UNSIGNED NOT NULL DEFAULT 0,
+                      created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                      updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                      CONSTRAINT fk_bp_author_2026   FOREIGN KEY (author_id)   REFERENCES users(id) ON DELETE SET NULL,
+                      CONSTRAINT fk_bp_category_2026 FOREIGN KEY (category_id) REFERENCES blog_categories(id) ON DELETE SET NULL,
+                      KEY idx_bp_status_pub (status, published_at),
+                      KEY idx_bp_author     (author_id),
+                      KEY idx_bp_category   (category_id)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                ");
+                $log[] = 'created blog_posts';
+            } catch (\Throwable $e) { $errors[] = 'blog_posts: ' . $e->getMessage(); }
+        } else {
+            $log[] = 'blog_posts already exists, skipped create';
+
+            // If the table was already created via the .sql file with
+            // author_id NOT NULL, widen it now so the legacy seeder works.
+            try {
+                $col = DB::selectOne("SHOW COLUMNS FROM blog_posts LIKE 'author_id'");
+                if ($col && stripos($col->Null, 'NO') === 0) {
+                    DB::statement("ALTER TABLE blog_posts MODIFY author_id BIGINT UNSIGNED NULL");
+                    $log[] = 'widened blog_posts.author_id to NULL';
+                } else {
+                    $log[] = 'blog_posts.author_id already nullable';
+                }
+            } catch (\Throwable $e) { $errors[] = 'author_id widen: ' . $e->getMessage(); }
+        }
+
+        // ── 3. Seed default categories (INSERT IGNORE) ──
+        try {
+            $rows = [
+                ['treatments',    'Treatments',           '療法',     10],
+                ['wellness',      'Wellness & Lifestyle', '養生',     20],
+                ['teleconsult',   'Online Consultation',  '線上問診', 30],
+                ['tongue',        'Tongue Diagnosis',     '舌診',     40],
+                ['herbs',         'Herbs & Formulas',     '中藥方劑', 50],
+                ['news',          'Clinic News',          '診所動態', 60],
+            ];
+            $inserted = 0;
+            foreach ($rows as $r) {
+                $existed = DB::table('blog_categories')->where('slug', $r[0])->exists();
+                if ($existed) continue;
+                DB::table('blog_categories')->insert([
+                    'slug' => $r[0], 'name' => $r[1], 'name_zh' => $r[2],
+                    'display_order' => $r[3], 'created_at' => now(),
+                ]);
+                $inserted++;
+            }
+            $log[] = "seeded {$inserted} new category(ies)";
+        } catch (\Throwable $e) { $errors[] = 'seed categories: ' . $e->getMessage(); }
+
+        return response()->json([
+            'success' => empty($errors),
+            'log'     => $log,
+            'errors'  => $errors,
+        ]);
+    }
 }
