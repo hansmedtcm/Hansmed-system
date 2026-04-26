@@ -66,9 +66,27 @@
       fetch(API_BASE + '/public/features', { credentials: 'omit' })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (res) {
-          if (res && res.shop_enabled === false) applyShopDisabled();
+          if (! res) return;
+          // Persist the value so the sync head <script> on the NEXT
+          // page load can hide the Shop link before paint — kills the
+          // 'flash of Shop link' that runtime hiding alone caused.
+          try {
+            if (res.shop_enabled === false) {
+              localStorage.setItem('hm-shop-enabled', '0');
+            } else {
+              localStorage.removeItem('hm-shop-enabled');
+            }
+          } catch (_) {}
+          if (res.shop_enabled === false) {
+            // Also re-enforce on this page load in case the cache was
+            // out of date and the Shop link painted briefly.
+            document.documentElement.classList.add('shop-disabled');
+            applyShopDisabled();
+          } else {
+            document.documentElement.classList.remove('shop-disabled');
+          }
         })
-        .catch(function () { /* network error → assume shop ON */ });
+        .catch(function () { /* network error → assume cached value */ });
     } catch (_) { /* legacy browser */ }
 
     // Render shop-disabled toast on next-page arrival, if any.

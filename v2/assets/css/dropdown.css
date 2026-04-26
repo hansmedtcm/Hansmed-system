@@ -115,3 +115,18 @@ html.is-auth .mob-nl-signin .lbl-portal { display: inline; }
 
 /* Mobile logout button — only visible when signed in. */
 html.is-auth .mob-nl-logout { display: block !important; }
+
+/* Shop visibility — paired with a sync head script that reads
+   localStorage('hm-shop-enabled')==='0' and adds html.shop-disabled
+   BEFORE first paint. Eliminates the 'Shop link briefly visible
+   then disappears' flash that the runtime JS-only approach caused.
+   The async fetch in public-feature-flags.js refreshes the cache
+   so the next page load is correct. */
+html.shop-disabled a[href="shop.html"],
+html.shop-disabled a[href^="shop.html?"],
+html.shop-disabled a[href^="shop.html#"],
+html.shop-disabled a[href="./shop.html"],
+html.shop-disabled [onclick*="go('shop')"],
+html.shop-disabled [onclick*="go(\"shop\")"] {
+  display: none !important;
+}
