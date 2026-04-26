@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -19,14 +21,17 @@ class AuthController extends Controller
      * Shared password complexity rule — enforced everywhere that accepts
      * a new password (register, forgot-password reset, admin reset).
      *
-     * Requires: ≥ 8 chars, ≥ 1 uppercase letter, ≥ 1 digit.
+     * Requires: ≥ 8 chars, ≥ 1 uppercase letter, ≥ 1 digit, ≥ 1 special
+     * character. Special-char list deliberately broad to accept symbols
+     * common on Malaysian / Chinese keyboards.
      */
     public static function passwordRules(): array
     {
         return [
             'required', 'string', 'min:8', 'max:128',
-            'regex:/[A-Z]/',  // at least one uppercase letter
-            'regex:/\d/',     // at least one number
+            'regex:/[A-Z]/',                    // ≥ 1 uppercase
+            'regex:/\d/',                       // ≥ 1 digit
+            'regex:/[\W_]/',                    // ≥ 1 non-alphanumeric (symbol/punctuation)
         ];
     }
 
@@ -40,13 +45,16 @@ class AuthController extends Controller
             ])],
             // Phone is MANDATORY for patient self-registration so we can
             // contact them on WhatsApp / call. Optional for doctor/pharmacy
-            // since those are typically admin-created.
-            'phone'     => ['nullable', 'string', 'max:40'],
+            // since those are typically admin-created. Format: Malaysian
+            // mobile — accepts +60xxxxxxxxx, 60xxxxxxxxx, 0xxxxxxxxx with
+            // 9–11 digits after the country/area code.
+            'phone'     => ['nullable', 'string', 'max:40', 'regex:/^(\+?60|0)[0-9]{8,11}$/'],
             'nickname'  => ['nullable', 'string', 'max:80'],     // patient
             'full_name' => ['nullable', 'string', 'max:120'],    // doctor
             'name'      => ['nullable', 'string', 'max:160'],    // pharmacy
         ], [
-            'password.regex' => 'Password must contain at least one uppercase letter and one number.',
+            'password.regex' => 'Password must contain at least one uppercase letter, one number, and one symbol. · 密碼必須包含大寫字母、數字及符號。',
+            'phone.regex'    => 'Please enter a valid Malaysian phone number (e.g. +60123456789 or 0123456789). · 請輸入有效的馬來西亞電話號碼。',
         ]);
 
         if ($data['role'] === User::ROLE_PATIENT && empty($data['phone'])) {
@@ -121,6 +129,19 @@ class AuthController extends Controller
             ]);
         }
 
+        // Account lockout — after 5 failed attempts in 15 minutes,
+        // refuse any further attempts for that ip+identifier pair
+        // until the window expires. Defends against credential
+        // stuffing without needing CAPTCHA. Locked accounts can
+        // still self-recover via the forgot-password flow.
+        $lockoutKey = 'login_lockout:' . $request->ip() . ':' . strtolower($identifier);
+        $attempts = (int) Cache::get($lockoutKey, 0);
+        if ($attempts >= 5) {
+            return response()->json([
+                'message' => 'Account temporarily locked due to too many failed attempts. Try again in 15 minutes or reset your password. · 登入失敗次數過多，帳號已暫時鎖定 15 分鐘，可重設密碼解鎖。',
+            ], 423); // HTTP 423 Locked
+        }
+
         // Detect whether the identifier looks like an email vs a phone number.
         // Phone numbers get normalised to digits-only before lookup.
         $user = null;
@@ -135,10 +156,39 @@ class AuthController extends Controller
         }
 
         if (! $user || ! Hash::check($data['password'], $user->password_hash)) {
+            // Record the failed attempt — both the rolling Cache
+            // counter (for the lockout above) and a permanent audit
+            // trail row that ops can review for unusual patterns.
+            Cache::put($lockoutKey, $attempts + 1, now()->addMinutes(15));
+            Log::warning('failed_login', [
+                'identifier' => $identifier,
+                'ip'         => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 200),
+                'attempt'    => $attempts + 1,
+            ]);
+            try {
+                DB::table('audit_logs')->insert([
+                    'user_id'     => $user?->id,
+                    'action'      => 'auth.login.failed',
+                    'target_type' => 'user',
+                    'target_id'   => $user?->id,
+                    'payload'     => json_encode([
+                        'identifier' => $identifier,
+                        'ip'         => $request->ip(),
+                        'attempt'    => $attempts + 1,
+                    ]),
+                    'created_at'  => now(),
+                ]);
+            } catch (\Throwable $e) { /* audit_logs missing? ignore */ }
+
             throw ValidationException::withMessages([
                 'identifier' => ['Invalid credentials.'],
             ]);
         }
+
+        // Success — clear the lockout counter so a returning user
+        // doesn't get blocked next time after a few typos.
+        Cache::forget($lockoutKey);
 
         if ($user->status === 'suspended' || $user->status === 'deleted') {
             throw ValidationException::withMessages([

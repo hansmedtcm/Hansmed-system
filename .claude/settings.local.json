@@ -168,7 +168,8 @@
       "Bash(git commit -m 'Auth modal mobile: compact spacing + sticky submit button *)",
       "Bash(git commit -m 'Auth modal: apply compaction + sticky submit on every screen size *)",
       "Bash(git commit -m 'Auth modal: ditch sticky-button trick, just make the form actually fit *)",
-      "Bash(git commit -m 'Make wellness assessment compulsory — remove tongue + quiz skip options *)"
+      "Bash(git commit -m 'Make wellness assessment compulsory — remove tongue + quiz skip options *)",
+      "Bash(grep -nA 1 \"ic_number\" E:/Hansmed-system/backend/database/schema.sql)"
     ]
   }
 }

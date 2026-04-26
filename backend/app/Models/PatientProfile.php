@@ -27,5 +27,16 @@ class PatientProfile extends Model
         'registration_completed' => 'boolean',
     ];
 
+    /**
+     * Sensitive PII never returned in API responses by default.
+     * NRIC / IC is the primary identifier of a Malaysian citizen and
+     * a key vector for identity-theft fraud. Patients can still see
+     * their own number on the profile screen by querying it
+     * explicitly via getAttributes(); admins via the audit-trail
+     * endpoint. Default JSON serialization (and the data-export
+     * endpoint, which uses toArray) omit it.
+     */
+    protected $hidden = ['ic_number'];
+
     public function user() { return $this->belongsTo(User::class, 'user_id'); }
 }

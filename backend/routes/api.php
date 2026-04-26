@@ -43,11 +43,16 @@ Route::get('/uploads/{path}', function (string $path) {
     ]);
 })->where('path', '.*');
 
-// Public
-Route::post('/auth/register',         [AuthController::class, 'register']);
-Route::post('/auth/login',            [AuthController::class, 'login']);
-Route::post('/auth/forgot-password',  [AuthController::class, 'forgotPassword']);
-Route::post('/auth/reset-password',   [AuthController::class, 'resetPassword']);
+// Public — rate-limited to 5 hits per minute per IP. Defends
+// against credential stuffing + bot signups + email-flood via
+// forgot-password. Lockout in AuthController::login is the second
+// layer: 5 failed attempts in 15 minutes locks that ip+email pair.
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/auth/register',         [AuthController::class, 'register']);
+    Route::post('/auth/login',            [AuthController::class, 'login']);
+    Route::post('/auth/forgot-password',  [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password',   [AuthController::class, 'resetPassword']);
+});
 Route::post('/webhooks/stripe',       [StripeWebhookController::class, 'handle']);
 
 // Emergency admin bootstrap — gated by ADMIN_BOOTSTRAP_SECRET env var.
