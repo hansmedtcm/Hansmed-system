@@ -26,7 +26,8 @@
     el.innerHTML = '<div class="page-header flex-between">' +
       '<div><div class="page-header-label">Blog · 部落格</div>' +
       '<h1 class="page-title">Articles</h1></div>' +
-      '<div class="flex gap-2">' +
+      '<div class="flex gap-2" style="flex-wrap:wrap;">' +
+        '<button class="btn btn--outline" id="bl-seed" title="Imports the 3 legacy hand-built articles into the database">📥 Seed Legacy</button>' +
         '<button class="btn btn--outline" id="bl-cats">Categories · 分類</button>' +
         '<button class="btn btn--primary" id="bl-new">+ New Post</button>' +
       '</div>' +
@@ -44,6 +45,28 @@
 
     document.getElementById('bl-new').addEventListener('click', function () { openEditor(null); });
     document.getElementById('bl-cats').addEventListener('click', openCategoryManager);
+    document.getElementById('bl-seed').addEventListener('click', async function () {
+      var ok = await HM.ui.confirm(
+        'Import the 3 legacy articles (TCM treatments, online consultation, tongue diagnosis) into the database?\n\nSafe to re-run — refreshes content if posts already exist.',
+        { title: 'Seed Legacy Articles · 匯入舊文章' }
+      );
+      if (!ok) return;
+      var btn = this;
+      btn.disabled = true;
+      var orig = btn.textContent;
+      btn.textContent = 'Importing…';
+      try {
+        var res = await HM.api.blog.seedLegacyArticles();
+        var summary = (res.results || []).map(function (r) { return r.slug + ': ' + r.status; }).join(', ');
+        HM.ui.toast('Seeded — ' + summary, 'success', 6000);
+        load();
+      } catch (e) {
+        HM.ui.toast('Seed failed: ' + (e.message || 'unknown'), 'danger', 6000);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+      }
+    });
     document.querySelectorAll('.bl-filter').forEach(function (b) {
       b.addEventListener('click', function () {
         document.querySelectorAll('.bl-filter').forEach(function (x) { x.classList.remove('is-active'); x.classList.remove('btn--primary'); });

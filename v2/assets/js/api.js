@@ -400,6 +400,9 @@
       fd.append('image', file);
       return api.post('/admin/blog/upload-image', fd);
     },
+
+    /** One-shot importer for the 3 legacy hand-built articles. */
+    seedLegacyArticles: function () { return api.post('/admin/migrate/blog-seed-articles', {}); },
   };
 
   // ── Notifications (all roles) ──

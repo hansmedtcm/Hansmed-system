@@ -367,6 +367,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post  ('/upload-image',           [\App\Http\Controllers\Blog\BlogImageController::class, 'upload']);
     });
 
+    // Legacy article importer — admin only, idempotent. Reads HTML
+    // from backend/database/seed-articles/*.html and INSERTs/UPDATEs
+    // the matching blog_posts row.
+    Route::post('/admin/migrate/blog-seed-articles', [\App\Http\Controllers\Blog\BlogSeedController::class, 'seed']);
+
     // ================== ADMIN ==================
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         // One-shot DB migrations (idempotent)
