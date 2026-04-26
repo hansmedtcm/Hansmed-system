@@ -298,6 +298,27 @@ html[lang="zh"] [lang="en"] { display: none !important; }
     return String(name||'?').trim().charAt(0).toUpperCase() || '?';
   }
 
+  /**
+   * Strip leftover legacy markup from body_html that this template
+   * now provides itself — namely the .related "More from our
+   * practitioners" block and the .back-link "← Back" anchor that
+   * the old hardcoded /v2/blog/*.html pages baked into their HTML.
+   * Without this, posts seeded from those legacy pages would show
+   * those sections twice (once from body_html, once from this
+   * template's own related strip + back-link).
+   *
+   * Uses DOMParser so we don't have to regex over real HTML — safer
+   * against attribute-order quirks and embedded tags inside cards.
+   */
+  function cleanBodyHtml(html) {
+    if (!html || html.indexOf('class="related"') === -1 && html.indexOf('class="back-link') === -1) return html;
+    try {
+      var doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
+      doc.querySelectorAll('.related, a.back-link, .back-link').forEach(function (n) { n.remove(); });
+      return doc.body.firstChild.innerHTML;
+    } catch (_) { return html; }
+  }
+
   /** Slug a heading text for use as an anchor id. */
   function slugify(s) {
     return String(s||'')
@@ -367,8 +388,8 @@ html[lang="zh"] [lang="en"] { display: none !important; }
         // ── Body grid: article content + sticky TOC ──
         '<div class="art-main">' +
           '<div class="art-body">' +
-            (post.body_html    ? '<div lang="en">' + post.body_html    + '</div>' : '') +
-            (post.body_zh_html ? '<div lang="zh">' + post.body_zh_html + '</div>' : '') +
+            (post.body_html    ? '<div lang="en">' + cleanBodyHtml(post.body_html)    + '</div>' : '') +
+            (post.body_zh_html ? '<div lang="zh">' + cleanBodyHtml(post.body_zh_html) + '</div>' : '') +
           '</div>' +
           '<aside class="art-toc" id="art-toc" aria-label="Table of contents">' +
             '<div class="art-toc-label">' +
