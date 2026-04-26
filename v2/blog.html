@@ -1294,11 +1294,13 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <span lang="zh">中醫師 <em>專欄</em></span>
       </h2>
     </div>
-    <!-- Card grid is rendered dynamically from /api/blog/posts —
-         see blog-list-loader.js. Initial loading state shown below. -->
-    <div class="g3" id="blog-list">
-      <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--mu);font-size:14px;">
-        Loading articles… · 載入中…
+    <!-- Filter pills + card grid rendered dynamically from
+         /api/blog/posts and /api/blog/categories — see
+         blog-list-loader.js. The loader builds its own grid + a
+         featured-first card, so the container is just a plain div. -->
+    <div id="blog-list">
+      <div style="text-align:center;padding:40px 20px;color:var(--mu);font-size:14px;">
+        <span lang="en">Loading articles…</span><span lang="zh">載入中…</span>
       </div>
     </div>
     <div style="text-align:center;margin-top:36px;">
