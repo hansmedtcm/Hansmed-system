@@ -145,7 +145,11 @@
       "Bash(git commit -m 'Remove dead '\\\\''Wood Element booking'\\\\'' widget from practitioners.html *)",
       "Bash(git commit -m 'Apply '\\\\''Shop disabled'\\\\'' admin toggle to public landing pages too *)",
       "Bash(git commit -m 'Fix Shop toggle not persisting on uncheck — missing from checkbox normaliser *)",
-      "Bash(git commit -m 'Admin Settings: read configs from the actual response shape *)"
+      "Bash(git commit -m 'Admin Settings: read configs from the actual response shape *)",
+      "Bash(grep -nA 20 \"function serialize\" E:/Hansmed-system/v2/assets/js/form.js)",
+      "Bash(grep -nA 25 \"function init\" E:/Hansmed-system/v2/assets/js/lang-switcher.js)",
+      "Bash(grep -nA 18 \"function reflectActiveOnExistingSwitchers\" E:/Hansmed-system/v2/assets/js/lang-switcher.js)",
+      "Bash(git commit -m 'Fix all checkbox toggles persisting wrong — boolean vs string mismatch *)"
     ]
   }
 }

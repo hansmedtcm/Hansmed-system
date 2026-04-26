@@ -224,14 +224,21 @@
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
         var d = HM.form.serialize(form);
-        // normalise checkbox-only keys (form.serialize omits unchecked).
-        // Without this, unticking a checkbox sends nothing → backend
-        // upsert leaves the old truthy value in place and the toggle
-        // appears 'stuck on' after refresh. shop_enabled was missing
-        // from this list, so unticking the Shop toggle never persisted.
-        ['payment_card','payment_fpx','payment_tng','payment_grabpay','payment_shopeepay','maintenance_mode','allow_registration','shop_enabled'].forEach(function (k) {
-          if (!(k in d)) d[k] = '0';
-          else d[k] = '1';
+        // Normalise checkbox-only keys to '1'/'0' string values the
+        // backend persists.
+        //
+        // CAREFUL: HM.form.serialize() always emits a boolean for
+        // single-checkbox fields (true when checked, false when not).
+        // The previous logic `if (!(k in d)) d[k]='0'; else d[k]='1';`
+        // was wrong — `k` was ALWAYS in d (as the boolean), so every
+        // toggle saved as '1' regardless of checked state. That's
+        // why unticking the Shop checkbox never persisted.
+        ['payment_card','payment_fpx','payment_tng','payment_grabpay',
+         'payment_shopeepay','maintenance_mode','allow_registration',
+         'shop_enabled'].forEach(function (k) {
+          var v = d[k];
+          // Treat true / 'on' / '1' / 1 as on; everything else as off.
+          d[k] = (v === true || v === 'on' || v === '1' || v === 1) ? '1' : '0';
         });
         HM.form.setLoading(form, true);
         try {
