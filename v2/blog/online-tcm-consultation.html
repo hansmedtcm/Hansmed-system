@@ -2,12 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var x=localStorage.getItem("hm-lang-pref");if(x==="zh")document.documentElement.setAttribute("lang","zh");else document.documentElement.setAttribute("lang","en");}catch(_){}</script>
-<style>html[lang="en"] [lang="zh"]{display:none!important}html[lang="zh"] [lang="en"]{display:none!important}</style>
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
+<script>try{if(localStorage.getItem("hm-shop-enabled")==="0")document.documentElement.classList.add("shop-disabled");}catch(_){}</script>
+<script>try{var p=localStorage.getItem('hm-lang-pref');document.documentElement.setAttribute('lang',p==='zh'?'zh':'en');}catch(_){}</script>
+<style>
+html[lang="en"] [lang="zh"] { display: none !important; }
+html[lang="zh"] [lang="en"] { display: none !important; }
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Pros of Online TCM Consultation · HansMed Blog</title>
+<meta name="theme-color" content="#F5F0E8">
+<title>Online TCM Consultation · HansMed Blog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/tokens.css">
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/layout.css">
@@ -15,31 +22,348 @@
 <link rel="stylesheet" href="../assets/css/responsive.css">
 <link rel="stylesheet" href="../assets/css/public.css">
 <link rel="stylesheet" href="../assets/css/landing-v4.css">
+<link rel="stylesheet" href="../assets/css/dropdown.css">
 <style>
-.article-wrap{max-width:720px;margin:0 auto;padding:48px 24px 96px}
-.article-wrap .eyebrow{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--v4-ink-3);margin-bottom:12px}
-.article-wrap h1{font-family:"Cormorant Garamond",serif;font-size:42px;line-height:1.15;margin:0 0 8px;color:var(--v4-ink);font-weight:500}
-.article-wrap .sub{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:22px;color:var(--v4-ink-2);margin:0 0 24px}
-.article-wrap .meta{font-size:13px;color:var(--v4-ink-3);margin-bottom:40px;border-bottom:1px solid var(--v4-bdr);padding-bottom:20px}
-.article-wrap h2{font-family:"Cormorant Garamond",serif;font-size:26px;margin:36px 0 12px;color:var(--v4-ink)}
-.article-wrap p{line-height:1.75;color:var(--v4-ink-2);margin-bottom:14px;font-size:16px}
-.article-wrap em{color:var(--v4-ink-3)}
-.article-wrap .back{display:inline-block;margin-top:40px;color:var(--v4-go,#0F6E56);text-decoration:none}
-.article-wrap .back:hover{text-decoration:underline}
+/* ───── Article-specific styles (preserved from source) ───── */
+
+:root{--ink:#241608;--mu:#7A6248;--go:#B5881A;--wd:#8C6340;--bg:#FAF7F2;--bg2:#F3EDE1;--bg3:#FEFCF8;--bdr:#D8C9AE;--bdrl:#EAE0CF;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;}
+a{color:var(--wd);}
+.px{padding-left:max(1.5rem,calc((100vw - 760px)/2));padding-right:max(1.5rem,calc((100vw - 760px)/2));}
+/* Article layout */
+.art-hero{background:var(--bg3);border-bottom:1px solid var(--bdrl);padding:64px 0 52px;}
+.art-hero::before{content:'';display:block;height:2.5px;background:linear-gradient(90deg,transparent,var(--go) 25%,var(--go) 75%,transparent);margin-bottom:52px;}
+.art-eyebrow{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#B8895A;display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.art-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--go);}
+.art-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,5vw,52px);font-weight:400;color:var(--ink);letter-spacing:-0.025em;line-height:1.1;margin-bottom:10px;}
+.art-title em{font-style:italic;color:var(--wd);}
+.art-zh{font-family:'Noto Serif SC',serif;font-size:15px;color:var(--mu);font-weight:300;margin-bottom:18px;letter-spacing:0.04em;}
+.art-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.art-author{display:flex;align-items:center;gap:10px;}
+.art-avatar{width:38px;height:38px;border-radius:50%;background:var(--bg2);border:1.5px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:14px;color:var(--wd);}
+.art-name{font-size:13px;font-weight:500;color:var(--ink);}
+.art-date{font-size:12px;color:var(--mu);font-weight:300;}
+.art-tags{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto;}
+.art-tag{font-size:11px;padding:4px 11px;border-radius:12px;background:var(--bg2);color:var(--mu);border:0.5px solid var(--bdr);}
+/* Content */
+.art-body{max-width:720px;margin:0 auto;padding:56px 28px;}
+.art-body h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.5vw,30px);font-weight:400;color:var(--ink);letter-spacing:-0.02em;margin:48px 0 14px;line-height:1.2;}
+.art-body h2 em{font-style:italic;color:var(--wd);}
+.art-body h3{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,22px);font-weight:500;color:var(--ink);margin:28px 0 10px;}
+.art-body p{font-size:16px;color:#3D2610;line-height:1.82;margin-bottom:18px;font-weight:300;}
+.art-body p strong{font-weight:500;color:var(--ink);}
+.art-body .zh{font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);margin-bottom:24px;font-weight:300;letter-spacing:0.03em;border-left:2px solid var(--bdr);padding-left:12px;}
+/* Infographic containers */
+.infographic{margin:36px 0;border-radius:16px;overflow:hidden;border:1px solid var(--bdrl);background:var(--bg3);}
+.infographic svg{display:block;width:100%;height:auto;}
+.infographic-caption{padding:12px 18px;background:var(--bg2);border-top:1px solid var(--bdrl);font-size:12px;color:var(--mu);font-style:italic;text-align:center;}
+/* Pull quote */
+.pullquote{margin:36px 0;padding:24px 28px;background:var(--bg2);border-left:3px solid var(--go);border-radius:0 12px 12px 0;}
+.pullquote p{font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.5vw,22px);font-style:italic;color:var(--ink);line-height:1.52;margin:0;font-weight:400;}
+.pullquote .attr{font-size:12px;color:var(--mu);margin-top:8px;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:300;}
+/* Tip box */
+.tip-box{margin:28px 0;padding:18px 20px;background:var(--bg2);border:1px solid var(--bdrl);border-radius:10px;}
+.tip-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--go);font-weight:600;margin-bottom:8px;}
+.tip-box p{margin:0;font-size:14px;color:#3D2610;font-weight:300;}
+/* Checklist */
+.checklist{list-style:none;margin:16px 0 24px;}
+.checklist li{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--bdrl);font-size:15px;color:#3D2610;font-weight:300;line-height:1.6;}
+.checklist li:last-child{border-bottom:none;}
+.check-dot{width:20px;height:20px;border-radius:50%;background:var(--go);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.check-dot svg{width:10px;height:10px;}
+/* Disclaimer */
+.disclaimer{margin:48px 0 0;padding:16px 18px;background:#FCF6EF;border:1px solid #DEB887;border-radius:10px;}
+.disclaimer p{font-size:12px;color:#6E4020;line-height:1.72;margin:0;font-weight:300;}
+.disclaimer strong{font-weight:600;}
+/* Back link */
+.back-link{display:inline-flex;align-items:center;gap:8px;padding:40px 28px;font-size:14px;color:var(--wd);font-weight:500;text-decoration:none;}
+.back-link:hover{text-decoration:underline;}
+/* Related */
+.related{background:var(--bg2);border-top:1px solid var(--bdrl);padding:48px 28px;}
+.related h3{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink);font-weight:400;margin-bottom:20px;}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.related-card{background:var(--bg3);border:1px solid var(--bdrl);border-radius:12px;padding:18px;text-decoration:none;display:block;transition:all 0.2s;}
+.related-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(36,22,8,0.09);}
+.related-zh{font-family:'Noto Serif SC',serif;font-size:28px;color:var(--wd);font-weight:300;margin-bottom:6px;}
+.related-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.4;margin-bottom:4px;}
+.related-sub{font-size:12px;color:var(--mu);font-weight:300;}
+/* Responsive */
+@media(max-width:600px){
+  .art-body{padding:36px 20px;}
+  .art-hero{padding:44px 20px 36px;}
+  .art-tags{margin-left:0;margin-top:10px;}
+}
+
 </style>
 </head>
 <body class="landing-v4">
-<nav id="nav-v4"><div class="nav-in"><a class="nav-brand-v4" href="../index.html"><img src="../assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt=""><span style="display:flex;align-items:baseline"><span class="nav-bn">HansMed</span><span class="nav-bz">漢方現代中醫</span></span></a><div class="nav-links-v4"><a class="nl" href="../index.html">Home · 首頁</a><a class="nl" href="../blog.html">Blog · 部落格</a><a class="nl" href="../contact.html">Contact · 聯絡</a></div></div></nav>
-<main class="article-wrap">
-<div class="eyebrow">HansMed Blog · 部落格</div>
-<h1 lang="en">The Pros of Online TCM Consultation</h1>
-<h1 lang="zh">線上中醫問診之優勢</h1>
-<p class="sub" lang="en">— And When to Come In Person</p>
-<p class="sub" lang="zh">— 及何時需到診</p>
-<div class="meta">Mr. Lim Gao Hong · February 2026 · 5 min read</div>
-<div lang="en"><p>Video consultations are not a compromise — for many conditions, they are equivalent in outcome to in-person visits.</p><h2>What works well online</h2><p>Constitution assessment, follow-ups, lifestyle coaching, herbal prescription renewals, menstrual consultations, sleep and digestion issues.</p><h2>When in-person is better</h2><p>Pulse diagnosis at first visit, acupuncture, tui na, cupping, and any acute musculoskeletal issue that needs hands-on assessment.</p><h2>Our hybrid model</h2><p>HansMed practitioners offer both — the first consult can be online, and you only come to the clinic if your practitioner decides a physical touch point is needed.</p><p><em>Full article coming soon.</em></p></div>
-<div lang="zh"><p>視訊問診並非退而求其次 — 於多項條件下，其療效與到診相若。</p><h2>線上可行項目</h2><p>體質評估、覆診、生活指導、中藥續方、婦科問診、睡眠及消化問題。</p><h2>建議到診之情況</h2><p>首診把脈、針灸、推拿、拔罐，及需即時處理之急性肌骨問題。</p><h2>本診所之混合模式</h2><p>漢方中醫雙軌並行 — 首診可線上進行，僅於中醫師判斷需實體接觸時再到診所。</p><p><em>完整文章即將推出。</em></p></div>
-<a class="back" href="../blog.html">← Back to all articles · 返回部落格</a>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<nav id="nav-v4">
+  <div class="nav-in">
+    <a class="nav-brand-v4" href="../index.html">
+      <img src="../assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
+      <span lang="en" style="display:flex;align-items:baseline;">
+        <span class="nav-bn">HansMed</span>
+      </span>
+      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;">
+        <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span>
+      </span>
+    </a>
+    <div class="nav-links-v4">
+      <a class="nl" href="../index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <div style="position:relative;" id="about-wrap">
+        <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
+          <span lang="en">About</span><span lang="zh">關於</span>
+          <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="about-dropdown"
+          style="display:none;position:absolute;top:calc(100% + 6px);left:0;
+                 min-width:210px;background:var(--cream-white,#FEFCF8);
+                 border:1px solid var(--border,#D8C9AE);border-radius:12px;
+                 box-shadow:0 8px 32px rgba(36,22,8,0.14);z-index:9999;
+                 overflow:hidden;padding:4px 0;">
+          <div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold,#9A7A3E),transparent);"></div>
+          <a href="../about.html"           class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
+          <a href="../practitioners.html"   class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
+          <a href="../services.html"        class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a href="../blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
+          <a href="../faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
+          <a href="../contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+        </div>
+      </div>
+      <a class="nl" href="../shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
+      <a class="nl" href="../portal.html#/wellness-assessment"><span lang="en">Wellness</span><span lang="zh">健康評估</span></a>
+      <div class="lang-wrap">
+        <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
+      </div>
+      <a class="nl nav-signin" href="../index.html#/login" target="_blank" rel="noopener" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></a>
+      <a class="nav-cta" href="../portal.html#/book"><span lang="en">Book</span><span lang="zh">預約</span></a>
+    </div>
+    <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<main id="main">
+<div class="art-hero"><div style="max-width:760px;margin:0 auto;padding:0 28px;">
+  <div class="art-eyebrow">HansMed Blog · 部落格</div>
+  <h1 class="art-title">The Pros of Online TCM Consultation —<br/><em>And When to Come In Person</em></h1>
+  <div class="art-zh">線上問診的優勢，以及何時需要親身到診</div>
+  <div class="art-meta">
+    <div class="art-author">
+      <div class="art-avatar">林</div>
+      <div>
+        <div class="art-name">Mr. Lim Gao Hong · Co-Founder, Head Practitioner</div>
+        <div class="art-date">February 2026 · 4 min read</div>
+      </div>
+    </div>
+    <div class="art-tags">
+      <span class="art-tag">Teleconsult</span>
+      <span class="art-tag">Accessibility</span>
+      <span class="art-tag">Modern TCM</span>
+    </div>
+  </div>
+</div></div>
+
+<div class="art-body">
+
+  <p>When patients first hear that HansMed offers video consultations, the most common reaction is scepticism. <em>"Can a TCM doctor really assess me through a screen?"</em> It is a fair question — and the honest answer is: for many conditions, yes. For others, no. Understanding the difference is what separates good teleconsult from bad.</p>
+
+  <div class="pullquote">
+    <p>"The majority of what I need to know from a patient — their constitution, their patterns, their tongue — I can assess thoroughly through a well-structured video consultation."</p>
+    <div class="attr">— Mr. Lim Gao Hong, Co-Founder &amp; Head Practitioner, HansMed</div>
+  </div>
+
+  <h2>The myth: you cannot diagnose without touching the patient · <em>誤解：不觸診就無法診斷</em></h2>
+  <p>This assumption comes from conflating TCM diagnosis with Western physical examination. In TCM, the four diagnostic methods are observation (望, wàng), listening/smelling (聞, wén), inquiry (問, wèn), and palpation (切, qiē). The first three — which include tongue examination, voice quality, and detailed questioning — are all fully accessible via video.</p>
+  <p>Pulse taking (脈診) is the one method that genuinely requires physical contact. For video consultations, practitioners guide patients through a self-assessment of their pulse characteristics (rate, strength, and rhythm), which provides meaningful supplementary information alongside tongue and symptom analysis.</p>
+  <p>For the majority of conditions — especially internal, constitutional, and chronic presentations — this is entirely sufficient for an accurate assessment and a well-formulated treatment plan.</p>
+
+  
+<div class="infographic">
+<svg viewBox="0 0 760 140" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="140" fill="#FEFCF8"/>
+  <text x="380" y="25" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="14" font-style="italic" fill="#7A6248">What happens in an online HansMed consultation · 線上問診流程</text>
+  <!-- Steps -->
+  <!-- Step 1 -->
+  <circle cx="75" cy="75" r="22" fill="#F3EDE1" stroke="#D8C9AE" stroke-width="1.5"/>
+  <text x="75" y="70" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="20" font-weight="400" fill="#8C6340">1</text>
+  <text x="75" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Book online</text>
+  <text x="75" y="123" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">預約</text>
+  <!-- Arrow -->
+  <line x1="100" y1="75" x2="135" y2="75" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- Step 2 -->
+  <circle cx="160" cy="75" r="22" fill="#F3EDE1" stroke="#D8C9AE" stroke-width="1.5"/>
+  <text x="160" y="70" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="20" fill="#8C6340">2</text>
+  <text x="160" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Tongue photo</text>
+  <text x="160" y="123" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">上傳舌照</text>
+  <line x1="185" y1="75" x2="220" y2="75" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- Step 3 -->
+  <circle cx="245" cy="75" r="22" fill="#F3EDE1" stroke="#D8C9AE" stroke-width="1.5"/>
+  <text x="245" y="70" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="20" fill="#8C6340">3</text>
+  <text x="245" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Video consult</text>
+  <text x="245" y="123" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">視訊問診</text>
+  <line x1="270" y1="75" x2="305" y2="75" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- Step 4 -->
+  <circle cx="330" cy="75" r="22" fill="#F3EDE1" stroke="#D8C9AE" stroke-width="1.5"/>
+  <text x="330" y="70" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="20" fill="#8C6340">4</text>
+  <text x="330" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Treatment plan</text>
+  <text x="330" y="123" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">治療方案</text>
+  <line x1="355" y1="75" x2="390" y2="75" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- Step 5 -->
+  <circle cx="415" cy="75" r="22" fill="#F3EDE1" stroke="#D8C9AE" stroke-width="1.5"/>
+  <text x="415" y="70" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="20" fill="#8C6340">5</text>
+  <text x="415" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Prescription</text>
+  <text x="415" y="123" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">開方</text>
+  <line x1="440" y1="75" x2="475" y2="75" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- Step 6 -->
+  <circle cx="500" cy="75" r="22" fill="#F3EDE1" stroke="#D8C9AE" stroke-width="1.5"/>
+  <text x="500" y="70" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="20" fill="#8C6340">6</text>
+  <text x="500" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Herb delivery</text>
+  <text x="500" y="123" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">送藥到府</text>
+  <line x1="525" y1="75" x2="560" y2="75" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- Step 7 -->
+  <circle cx="585" cy="75" r="22" fill="#6E8C5A" stroke="#5A7848" stroke-width="1.5"/>
+  <text x="585" y="70" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="20" fill="white">7</text>
+  <text x="585" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Follow-up</text>
+  <text x="585" y="123" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">追蹤覆診</text>
+</svg>
+<div class="infographic-caption">From booking to herbs at your door · 從預約到送藥到府</div>
+</div>
+
+  <h2>What works well online · <em>適合線上問診的情況</em></h2>
+  <p>The conditions most suited to teleconsult are precisely those that are most common among Malaysians seeking TCM: stress and burnout, digestive discomfort, sleep disorders, fatigue, hormonal imbalance, skin conditions, and chronic pain that has already been physically assessed.</p>
+  <p>The tongue provides an extraordinary amount of information. Colour, coating thickness, shape, moisture, and the presence of teeth marks or cracks each correspond to specific constitutional patterns and organ imbalances — all clearly visible in a well-lit photograph. At HansMed, every tongue photo submitted for an AI wellness assessment is also reviewed by a licensed practitioner before any insight reaches you.</p>
+
+  
+<div class="infographic">
+<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="300" fill="#FEFCF8"/>
+  <!-- Left: Online -->
+  <rect x="30" y="30" width="330" height="240" rx="14" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="30" y="30" width="330" height="4" rx="2" fill="#6E8C5A"/>
+  <text x="195" y="60" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="17" font-style="italic" fill="#5A7848">Works Well Online · 線上問診適合</text>
+  <!-- Items -->
+  <circle cx="52" cy="84"  r="4" fill="#6E8C5A"/>
+  <text x="64" y="88"  font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Internal conditions (fatigue, digestion, sleep)</text>
+  <circle cx="52" cy="108" r="4" fill="#6E8C5A"/>
+  <text x="64" y="112" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Stress, anxiety, emotional balance</text>
+  <circle cx="52" cy="132" r="4" fill="#6E8C5A"/>
+  <text x="64" y="136" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Constitution assessment &amp; wellness insights</text>
+  <circle cx="52" cy="156" r="4" fill="#6E8C5A"/>
+  <text x="64" y="160" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Herbal prescription &amp; delivery</text>
+  <circle cx="52" cy="180" r="4" fill="#6E8C5A"/>
+  <text x="64" y="184" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Follow-up consultations</text>
+  <circle cx="52" cy="204" r="4" fill="#6E8C5A"/>
+  <text x="64" y="208" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Women's health, hormonal concerns</text>
+  <circle cx="52" cy="228" r="4" fill="#6E8C5A"/>
+  <text x="64" y="232" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Tongue &amp; symptom-based diagnosis</text>
+  <!-- Right: In-Person -->
+  <rect x="400" y="30" width="330" height="240" rx="14" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="400" y="30" width="330" height="4" rx="2" fill="#B5881A"/>
+  <text x="565" y="60" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="17" font-style="italic" fill="#8C6340">Requires In-Person · 須親身到診</text>
+  <circle cx="422" cy="84"  r="4" fill="#B5881A"/>
+  <text x="434" y="88"  font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Acupuncture treatment</text>
+  <circle cx="422" cy="108" r="4" fill="#B5881A"/>
+  <text x="434" y="112" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Tui na (manipulation) &amp; cupping</text>
+  <circle cx="422" cy="132" r="4" fill="#B5881A"/>
+  <text x="434" y="136" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Complex spinal / musculoskeletal assessment</text>
+  <circle cx="422" cy="156" r="4" fill="#B5881A"/>
+  <text x="434" y="160" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Post-surgical or acute injury care</text>
+  <circle cx="422" cy="180" r="4" fill="#B5881A"/>
+  <text x="434" y="184" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Physical pulse taking (脈診)</text>
+  <circle cx="422" cy="204" r="4" fill="#B5881A"/>
+  <text x="434" y="208" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Paediatric conditions</text>
+  <circle cx="422" cy="228" r="4" fill="#B5881A"/>
+  <text x="434" y="232" font-family="DM Sans,sans-serif" font-size="12.5" fill="#3D2610">Any emergency — call 999 immediately</text>
+</svg>
+<div class="infographic-caption">Your practitioner will advise you at the start of every session which format is appropriate · 醫師將在問診開始時告知您最合適的方式</div>
+</div>
+
+  <h2>What requires in-person attendance · <em>須親身到診的情況</em></h2>
+  <p>Honesty matters here. If your condition requires acupuncture, tui na manipulation, or cupping, those treatments cannot be delivered remotely. Similarly, complex musculoskeletal presentations — a suspected disc herniation, post-surgical recovery, or acute sports injury — benefit significantly from hands-on physical assessment before any treatment plan is finalised.</p>
+  <p>Your HansMed practitioner will tell you clearly at the beginning of every video consultation if they feel an in-person assessment is warranted. We do not recommend continuing with a teleconsult if it would compromise the quality of your care.</p>
+  <p>And to state this plainly: <strong>if you are experiencing chest pain, difficulty breathing, sudden neurological symptoms, or any other emergency, please call 999 immediately</strong>. HansMed is not an emergency service.</p>
+
+  <h2>The HansMed difference · <em>HansMed 的不同之處</em></h2>
+  <p>Many wellness apps offer AI-driven assessments with no practitioner involvement. HansMed is built differently. Every consultation — online or in-person — is conducted by a licensed, T&amp;CM Act 2016 registered practitioner. Our AI wellness tools are educational supplements, not replacements for clinical judgement. Every AI report is reviewed and approved by a practitioner before it reaches you.</p>
+  <p>This matters because it protects you. An AI tool reading your tongue photo has no knowledge of your medication history, your past diagnoses, or the subtleties that a trained practitioner notices in a real consultation. We use technology to make care more accessible — not to replace the clinical relationship that makes TCM effective.</p>
+
+  <ul class="checklist">
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Licensed practitioner in every consultation — not AI alone</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Full symptom history, tongue photo, and pulse description</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Personalised herbal prescription if appropriate</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Herb delivery anywhere in Malaysia</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Clear referral to in-person if needed — no upselling</li>
+  </ul>
+
+  <div class="disclaimer">
+  <p><strong>Educational purposes only.</strong> This article is written for general wellness education and does not constitute medical advice, diagnosis, or treatment. Every individual's constitution is different. Please consult a licensed TCM practitioner for personalised assessment and treatment. HansMed AI wellness tools are educational insights only — not medical diagnoses. All AI reports are reviewed by a licensed practitioner before reaching you.</p>
+  <p style="margin-top:8px;font-family:'Noto Serif SC',serif;font-size:11px;color:#8A6040;">本文僅供教育參考，不構成醫療建議或診斷。如需個人化治療方案，請諮詢持牌中醫師。</p>
+</div>
+</div>
+
+<a href="../blog.html" class="back-link px">← Back to all articles · 返回部落格</a>
+<div class="related">
+  <h3>More from our practitioners · 更多文章</h3>
+  <div class="related-grid">
+    <a href="tcm-treatment-types.html" class="related-card">
+      <div class="related-zh">針藥</div>
+      <div class="related-title">Understanding TCM Treatment Types</div>
+      <div class="related-sub">Mr. Siew Kuen Xian · 5 min</div>
+    </a>
+    <a href="tongue-diagnosis-guide.html" class="related-card">
+      <div class="related-zh">舌診</div>
+      <div class="related-title">How We Diagnose With Your Tongue</div>
+      <div class="related-sub">Mr. Siew Kuen Xian · 6 min</div>
+    </a>
+  </div>
+</div>
 </main>
+
+<footer class="footer">
+  <div class="fg">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <img src="../assets/img/brand/logo-mark.svg" alt="" style="width:44px;height:44px;opacity:0.95;">
+        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+      </div>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+    </div>
+    <div>
+      <div class="flbl">Platform · 平台</div>
+      <a class="fl" href="../index.html">Home · 首頁</a>
+      <a class="fl" href="../about.html">About · 關於</a>
+      <a class="fl" href="../practitioners.html">Our Doctors · 醫師</a>
+      <a class="fl" href="../services.html">Services · 服務</a>
+      <a class="fl" href="../blog.html">Blog · 部落格</a>
+      <a class="fl" href="../faq.html">FAQ · 常見問題</a>
+      <a class="fl" href="../portal.html#/book">Book · 預約</a>
+    </div>
+    <div>
+      <div class="flbl">Compliance · 合規</div>
+      <a class="fl" href="../privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <a class="fl" href="../security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia</span>
+    <span>PDPA · T&amp;CM Act 2016</span>
+  </div>
+</footer>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/lang-switcher.js"></script>
+<script src="../assets/js/about-dropdown.js"></script>
+<script src="../assets/js/nav-auth.js"></script>
+<script src="../assets/js/public-feature-flags.js"></script>
+
 </body>
 </html>

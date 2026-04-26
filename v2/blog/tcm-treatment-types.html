@@ -2,12 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var x=localStorage.getItem("hm-lang-pref");if(x==="zh")document.documentElement.setAttribute("lang","zh");else document.documentElement.setAttribute("lang","en");}catch(_){}</script>
-<style>html[lang="en"] [lang="zh"]{display:none!important}html[lang="zh"] [lang="en"]{display:none!important}</style>
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
+<script>try{if(localStorage.getItem("hm-shop-enabled")==="0")document.documentElement.classList.add("shop-disabled");}catch(_){}</script>
+<script>try{var p=localStorage.getItem('hm-lang-pref');document.documentElement.setAttribute('lang',p==='zh'?'zh':'en');}catch(_){}</script>
+<style>
+html[lang="en"] [lang="zh"] { display: none !important; }
+html[lang="zh"] [lang="en"] { display: none !important; }
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F5F0E8">
 <title>Understanding TCM Treatment Types · HansMed Blog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/tokens.css">
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/layout.css">
@@ -15,31 +22,383 @@
 <link rel="stylesheet" href="../assets/css/responsive.css">
 <link rel="stylesheet" href="../assets/css/public.css">
 <link rel="stylesheet" href="../assets/css/landing-v4.css">
+<link rel="stylesheet" href="../assets/css/dropdown.css">
 <style>
-.article-wrap{max-width:720px;margin:0 auto;padding:48px 24px 96px}
-.article-wrap .eyebrow{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--v4-ink-3);margin-bottom:12px}
-.article-wrap h1{font-family:"Cormorant Garamond",serif;font-size:42px;line-height:1.15;margin:0 0 8px;color:var(--v4-ink);font-weight:500}
-.article-wrap .sub{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:22px;color:var(--v4-ink-2);margin:0 0 24px}
-.article-wrap .meta{font-size:13px;color:var(--v4-ink-3);margin-bottom:40px;border-bottom:1px solid var(--v4-bdr);padding-bottom:20px}
-.article-wrap h2{font-family:"Cormorant Garamond",serif;font-size:26px;margin:36px 0 12px;color:var(--v4-ink)}
-.article-wrap p{line-height:1.75;color:var(--v4-ink-2);margin-bottom:14px;font-size:16px}
-.article-wrap em{color:var(--v4-ink-3)}
-.article-wrap .back{display:inline-block;margin-top:40px;color:var(--v4-go,#0F6E56);text-decoration:none}
-.article-wrap .back:hover{text-decoration:underline}
+/* ───── Article-specific styles (preserved from source) ───── */
+
+:root{--ink:#241608;--mu:#7A6248;--go:#B5881A;--wd:#8C6340;--bg:#FAF7F2;--bg2:#F3EDE1;--bg3:#FEFCF8;--bdr:#D8C9AE;--bdrl:#EAE0CF;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;}
+a{color:var(--wd);}
+.px{padding-left:max(1.5rem,calc((100vw - 760px)/2));padding-right:max(1.5rem,calc((100vw - 760px)/2));}
+/* Article layout */
+.art-hero{background:var(--bg3);border-bottom:1px solid var(--bdrl);padding:64px 0 52px;}
+.art-hero::before{content:'';display:block;height:2.5px;background:linear-gradient(90deg,transparent,var(--go) 25%,var(--go) 75%,transparent);margin-bottom:52px;}
+.art-eyebrow{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#B8895A;display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.art-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--go);}
+.art-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,5vw,52px);font-weight:400;color:var(--ink);letter-spacing:-0.025em;line-height:1.1;margin-bottom:10px;}
+.art-title em{font-style:italic;color:var(--wd);}
+.art-zh{font-family:'Noto Serif SC',serif;font-size:15px;color:var(--mu);font-weight:300;margin-bottom:18px;letter-spacing:0.04em;}
+.art-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.art-author{display:flex;align-items:center;gap:10px;}
+.art-avatar{width:38px;height:38px;border-radius:50%;background:var(--bg2);border:1.5px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:14px;color:var(--wd);}
+.art-name{font-size:13px;font-weight:500;color:var(--ink);}
+.art-date{font-size:12px;color:var(--mu);font-weight:300;}
+.art-tags{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto;}
+.art-tag{font-size:11px;padding:4px 11px;border-radius:12px;background:var(--bg2);color:var(--mu);border:0.5px solid var(--bdr);}
+/* Content */
+.art-body{max-width:720px;margin:0 auto;padding:56px 28px;}
+.art-body h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.5vw,30px);font-weight:400;color:var(--ink);letter-spacing:-0.02em;margin:48px 0 14px;line-height:1.2;}
+.art-body h2 em{font-style:italic;color:var(--wd);}
+.art-body h3{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,22px);font-weight:500;color:var(--ink);margin:28px 0 10px;}
+.art-body p{font-size:16px;color:#3D2610;line-height:1.82;margin-bottom:18px;font-weight:300;}
+.art-body p strong{font-weight:500;color:var(--ink);}
+.art-body .zh{font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);margin-bottom:24px;font-weight:300;letter-spacing:0.03em;border-left:2px solid var(--bdr);padding-left:12px;}
+/* Infographic containers */
+.infographic{margin:36px 0;border-radius:16px;overflow:hidden;border:1px solid var(--bdrl);background:var(--bg3);}
+.infographic svg{display:block;width:100%;height:auto;}
+.infographic-caption{padding:12px 18px;background:var(--bg2);border-top:1px solid var(--bdrl);font-size:12px;color:var(--mu);font-style:italic;text-align:center;}
+/* Pull quote */
+.pullquote{margin:36px 0;padding:24px 28px;background:var(--bg2);border-left:3px solid var(--go);border-radius:0 12px 12px 0;}
+.pullquote p{font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.5vw,22px);font-style:italic;color:var(--ink);line-height:1.52;margin:0;font-weight:400;}
+.pullquote .attr{font-size:12px;color:var(--mu);margin-top:8px;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:300;}
+/* Tip box */
+.tip-box{margin:28px 0;padding:18px 20px;background:var(--bg2);border:1px solid var(--bdrl);border-radius:10px;}
+.tip-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--go);font-weight:600;margin-bottom:8px;}
+.tip-box p{margin:0;font-size:14px;color:#3D2610;font-weight:300;}
+/* Checklist */
+.checklist{list-style:none;margin:16px 0 24px;}
+.checklist li{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--bdrl);font-size:15px;color:#3D2610;font-weight:300;line-height:1.6;}
+.checklist li:last-child{border-bottom:none;}
+.check-dot{width:20px;height:20px;border-radius:50%;background:var(--go);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.check-dot svg{width:10px;height:10px;}
+/* Disclaimer */
+.disclaimer{margin:48px 0 0;padding:16px 18px;background:#FCF6EF;border:1px solid #DEB887;border-radius:10px;}
+.disclaimer p{font-size:12px;color:#6E4020;line-height:1.72;margin:0;font-weight:300;}
+.disclaimer strong{font-weight:600;}
+/* Back link */
+.back-link{display:inline-flex;align-items:center;gap:8px;padding:40px 28px;font-size:14px;color:var(--wd);font-weight:500;text-decoration:none;}
+.back-link:hover{text-decoration:underline;}
+/* Related */
+.related{background:var(--bg2);border-top:1px solid var(--bdrl);padding:48px 28px;}
+.related h3{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink);font-weight:400;margin-bottom:20px;}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.related-card{background:var(--bg3);border:1px solid var(--bdrl);border-radius:12px;padding:18px;text-decoration:none;display:block;transition:all 0.2s;}
+.related-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(36,22,8,0.09);}
+.related-zh{font-family:'Noto Serif SC',serif;font-size:28px;color:var(--wd);font-weight:300;margin-bottom:6px;}
+.related-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.4;margin-bottom:4px;}
+.related-sub{font-size:12px;color:var(--mu);font-weight:300;}
+/* Responsive */
+@media(max-width:600px){
+  .art-body{padding:36px 20px;}
+  .art-hero{padding:44px 20px 36px;}
+  .art-tags{margin-left:0;margin-top:10px;}
+}
+
 </style>
 </head>
 <body class="landing-v4">
-<nav id="nav-v4"><div class="nav-in"><a class="nav-brand-v4" href="../index.html"><img src="../assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt=""><span style="display:flex;align-items:baseline"><span class="nav-bn">HansMed</span><span class="nav-bz">漢方現代中醫</span></span></a><div class="nav-links-v4"><a class="nl" href="../index.html">Home · 首頁</a><a class="nl" href="../blog.html">Blog · 部落格</a><a class="nl" href="../contact.html">Contact · 聯絡</a></div></div></nav>
-<main class="article-wrap">
-<div class="eyebrow">HansMed Blog · 部落格</div>
-<h1 lang="en">Understanding TCM Treatment Types</h1>
-<h1 lang="zh">認識中醫療法</h1>
-<p class="sub" lang="en">Acupuncture, Herbal Medicine & Manipulation</p>
-<p class="sub" lang="zh">針灸、中藥與推拿</p>
-<div class="meta">Mr. Siew Kuen Xian · March 2026 · 5 min read</div>
-<div lang="en"><p>Traditional Chinese Medicine is not a single therapy — it is a system built from three core modalities that work together.</p><h2>Acupuncture · 針灸</h2><p>Fine needles inserted at specific points to regulate qi flow, relieve pain, and balance organ systems. Best for musculoskeletal pain, stress, migraines, and post-operative recovery.</p><h2>Herbal Medicine · 中藥</h2><p>Formulas drawn from over 400 herbs, tailored to each patient's constitution. Used for internal conditions: digestion, sleep, menstrual health, immune support.</p><h2>Manipulation · 推拿</h2><p>Tui na (massage) and cupping work the meridians externally. Often combined with acupuncture for muscular and circulatory issues.</p><p><em>Full guide coming soon — this page will expand with case studies from our clinic.</em></p></div>
-<div lang="zh"><p>中醫並非單一療法，而是由三大核心療法相輔相成的系統。</p><h2>針灸 · Acupuncture</h2><p>於特定穴位施以細針，調節氣之運行，舒緩疼痛，平衡臟腑。適用於肌肉骨骼疼痛、壓力、偏頭痛及術後恢復。</p><h2>中藥 · Herbal Medicine</h2><p>由逾400味中藥組成之方劑，因人制宜。主治內科：消化、睡眠、婦科、免疫。</p><h2>推拿 · Manipulation</h2><p>推拿與拔罐從外部作用於經絡，常與針灸合併用於肌肉及循環問題。</p><p><em>完整指南即將推出 — 本頁將新增診所案例。</em></p></div>
-<a class="back" href="../blog.html">← Back to all articles · 返回部落格</a>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<nav id="nav-v4">
+  <div class="nav-in">
+    <a class="nav-brand-v4" href="../index.html">
+      <img src="../assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
+      <span lang="en" style="display:flex;align-items:baseline;">
+        <span class="nav-bn">HansMed</span>
+      </span>
+      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;">
+        <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span>
+      </span>
+    </a>
+    <div class="nav-links-v4">
+      <a class="nl" href="../index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <div style="position:relative;" id="about-wrap">
+        <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
+          <span lang="en">About</span><span lang="zh">關於</span>
+          <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="about-dropdown"
+          style="display:none;position:absolute;top:calc(100% + 6px);left:0;
+                 min-width:210px;background:var(--cream-white,#FEFCF8);
+                 border:1px solid var(--border,#D8C9AE);border-radius:12px;
+                 box-shadow:0 8px 32px rgba(36,22,8,0.14);z-index:9999;
+                 overflow:hidden;padding:4px 0;">
+          <div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold,#9A7A3E),transparent);"></div>
+          <a href="../about.html"           class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
+          <a href="../practitioners.html"   class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
+          <a href="../services.html"        class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a href="../blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
+          <a href="../faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
+          <a href="../contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+        </div>
+      </div>
+      <a class="nl" href="../shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
+      <a class="nl" href="../portal.html#/wellness-assessment"><span lang="en">Wellness</span><span lang="zh">健康評估</span></a>
+      <div class="lang-wrap">
+        <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
+      </div>
+      <a class="nl nav-signin" href="../index.html#/login" target="_blank" rel="noopener" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></a>
+      <a class="nav-cta" href="../portal.html#/book"><span lang="en">Book</span><span lang="zh">預約</span></a>
+    </div>
+    <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<main id="main">
+<div class="art-hero"><div style="max-width:760px;margin:0 auto;padding:0 28px;">
+  <div class="art-eyebrow">HansMed Blog · 部落格</div>
+  <h1 class="art-title">Understanding TCM Treatment Types:<br/><em>Acupuncture, Herbal Medicine &amp; Manipulation</em></h1>
+  <div class="art-zh">認識中醫療法：針灸、中藥與推拿</div>
+  <div class="art-meta">
+    <div class="art-author">
+      <div class="art-avatar">蕭</div>
+      <div>
+        <div class="art-name">Mr. Siew Kuen Xian · Co-Founder, Head Practitioner</div>
+        <div class="art-date">March 2026 · 5 min read</div>
+      </div>
+    </div>
+    <div class="art-tags">
+      <span class="art-tag">Acupuncture</span>
+      <span class="art-tag">Herbal Medicine</span>
+      <span class="art-tag">Beginner Guide</span>
+    </div>
+  </div>
+</div></div>
+
+<div class="art-body">
+
+  <p>When people say they are "going for TCM," they often mean something different each time. One patient means acupuncture. Another means picking up a herbal formula. A third means a session of tui na massage. Traditional Chinese Medicine is not one therapy — it is a system built from several core modalities that work together to restore balance in the body.</p>
+  <p>Understanding which modality does what — and when each is most appropriate — helps you have a better conversation with your practitioner and set realistic expectations for treatment.</p>
+
+  <div class="pullquote">
+    <p>"TCM treats the root, not just the branch. Each modality is a different way of accessing the same underlying system."</p>
+    <div class="attr">— Mr. Siew Kuen Xian, Co-Founder &amp; Head Practitioner, HansMed</div>
+  </div>
+
+  
+<div class="infographic">
+<svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="340" fill="#FEFCF8"/>
+  <!-- Three columns -->
+  <!-- Column 1: Acupuncture -->
+  <rect x="30" y="30" width="210" height="280" rx="14" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="30" y="30" width="210" height="4" rx="2" fill="#B5881A"/>
+  <!-- Needle icon -->
+  <line x1="135" y1="70" x2="135" y2="160" stroke="#8C6340" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="135" cy="65" rx="5" ry="8" fill="#B5881A" opacity="0.8"/>
+  <!-- Meridian dots -->
+  <circle cx="135" cy="90"  r="4" fill="#B5881A" opacity="0.6"/>
+  <circle cx="135" cy="115" r="4" fill="#B5881A" opacity="0.5"/>
+  <circle cx="135" cy="140" r="4" fill="#B5881A" opacity="0.4"/>
+  <text x="135" y="185" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="22" font-weight="300" fill="#8C6340">針灸</text>
+  <text x="135" y="208" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="16" font-style="italic" fill="#7A6248">Acupuncture</text>
+  <text x="135" y="232" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#7A6248">Pain · Stress · Migraines</text>
+  <text x="135" y="248" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#7A6248">Fertility · Immune support</text>
+  <text x="135" y="272" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="10" fill="#B8895A">針刺穴位 · 調節氣血</text>
+  <!-- Column 2: Herbal -->
+  <rect x="275" y="30" width="210" height="280" rx="14" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="275" y="30" width="210" height="4" rx="2" fill="#6E8C5A"/>
+  <!-- Herb icon -->
+  <path d="M380 155 C379 138 377 122 374 110" stroke="#6E8C5A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M376 135 C368 127 364 115 369 108 C374 115 376 127 376 135Z" fill="#6E8C5A" opacity="0.55"/>
+  <path d="M374 120 C382 112 386 100 381 94 C376 100 374 112 374 120Z" fill="#6E8C5A" opacity="0.5"/>
+  <ellipse cx="380" cy="160" rx="18" ry="8" fill="#D8C9AE" opacity="0.7"/>
+  <rect x="374" y="158" width="12" height="6" rx="2" fill="#B8895A" opacity="0.6"/>
+  <text x="380" y="187" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="22" font-weight="300" fill="#5A7848">中藥</text>
+  <text x="380" y="210" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="16" font-style="italic" fill="#7A6248">Herbal Medicine</text>
+  <text x="380" y="234" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#7A6248">Digestion · Sleep · Hormones</text>
+  <text x="380" y="250" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#7A6248">Chronic conditions · Recovery</text>
+  <text x="380" y="274" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="10" fill="#6E8C5A">400+ 種藥材 · 因人制宜</text>
+  <!-- Column 3: Manipulation -->
+  <rect x="520" y="30" width="210" height="280" rx="14" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="520" y="30" width="210" height="4" rx="2" fill="#9A6035"/>
+  <!-- Hands icon -->
+  <path d="M590 100 Q600 85 615 90 Q620 110 610 120 Q600 128 590 125Z" fill="#DFC9A8" stroke="#B8895A" stroke-width="1"/>
+  <path d="M640 105 Q655 88 668 95 Q670 118 658 125 Q646 130 638 124Z" fill="#DFC9A8" stroke="#B8895A" stroke-width="1"/>
+  <path d="M600 118 Q625 140 655 138" stroke="#B8895A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M605 128 Q628 148 652 146" stroke="#B8895A" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <text x="625" y="183" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="22" font-weight="300" fill="#7A4E28">推拿</text>
+  <text x="625" y="206" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="16" font-style="italic" fill="#7A6248">Manipulation</text>
+  <text x="625" y="230" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#7A6248">Muscle pain · Joint stiffness</text>
+  <text x="625" y="246" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#7A6248">Circulation · Sports recovery</text>
+  <text x="625" y="270" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="10" fill="#9A6035">疏通經絡 · 推拿拔罐</text>
+  <!-- Center connector arrows -->
+  <path d="M242 170 L273 170" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <path d="M487 170 L518 170" stroke="#D8C9AE" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#D8C9AE"/></marker></defs>
+</svg>
+<div class="infographic-caption">The three core TCM modalities — often used together in a single treatment plan · 三大療法相輔相成</div>
+</div>
+
+  <h2>Acupuncture · <em>針灸</em></h2>
+  <div class="zh">qi 氣（氣的流動）· meridians 經絡（經脈）· acupoints 穴位（針刺點）</div>
+  <p>Acupuncture involves the insertion of very fine, sterile needles at specific points (穴位, acupoints) along the body's meridian channels (經絡). According to TCM theory, these channels carry <strong>qi (氣)</strong> — the body's vital energy — and disruptions in this flow manifest as pain, illness, or emotional imbalance.</p>
+  <p>From a modern clinical perspective, acupuncture is understood to stimulate the nervous system, influence pain signalling pathways, and promote the release of endorphins and anti-inflammatory compounds. It is one of the most extensively researched complementary therapies globally, with evidence supporting its use for musculoskeletal pain, headaches, stress, and various internal conditions.</p>
+
+  <div class="tip-box">
+    <div class="tip-label">When Acupuncture Works Well</div>
+    <p>Neck and back pain, migraines, tennis elbow, insomnia, menstrual irregularities, fertility support, anxiety, post-operative recovery. Most patients report mild soreness at needle sites — this typically resolves within hours.</p>
+  </div>
+
+  <h2>Herbal Medicine · <em>中藥</em></h2>
+  <div class="zh">constitution 體質（個人體質）· formula 方劑（複方配方）· decoction 煎劑（水煎藥）</div>
+  <p>Chinese herbal medicine draws from a materia medica of over 400 commonly used substances — roots, bark, leaves, seeds, and minerals — each with documented therapeutic properties developed across two millennia of clinical observation.</p>
+  <p>The critical distinction from over-the-counter supplements is that <strong>herbal formulas are prescribed to your specific constitution (體質)</strong>, not to a diagnosis in isolation. Two patients presenting with the same complaint may receive entirely different formulas, because their underlying constitutional patterns are different. This is not imprecision — it is the core philosophy of TCM.</p>
+  <p>At HansMed, all herbal prescriptions are written by a licensed practitioner following your consultation. Herbs are sourced from verified suppliers with full labelling in Chinese (漢字), pinyin, and English.</p>
+
+  <div class="tip-box">
+    <div class="tip-label">When Herbal Medicine Works Well</div>
+    <p>Digestive conditions, chronic fatigue, hormonal imbalance, sleep disorders, skin conditions (eczema, acne), immune support, menstrual health, recovery from illness. Herbal medicine is particularly well-suited to conditions that are chronic or constitutional in nature.</p>
+  </div>
+
+  <h2>Manipulation · <em>推拿 &amp; 拔罐</em></h2>
+  <div class="zh">tui na 推拿（推拿按摩）· cupping 拔罐（拔火罐）· gua sha 刮痧</div>
+  <p><strong>Tui na (推拿)</strong> is a form of therapeutic bodywork that works along the meridian channels and acupoints through pressing, rolling, kneading, and stretching techniques. It is distinct from Western massage in that it targets specific channels rather than muscle groups alone, and is always guided by TCM diagnostic principles.</p>
+  <p><strong>Cupping (拔罐)</strong> creates suction on the skin surface to improve local circulation, release muscle tension, and draw out pathogens from deeper tissue layers. The characteristic circular marks left by cupping are not bruises — they reflect the release of stagnated blood and lymph from the tissue.</p>
+  <p>Both are particularly effective for musculoskeletal conditions and are commonly combined with acupuncture in the same session for compounding effect.</p>
+
+  
+<div class="infographic">
+<svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="260" fill="#FEFCF8"/>
+  <text x="380" y="30" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="15" font-style="italic" fill="#7A6248">When to use each modality · 如何選擇</text>
+  <!-- Headers -->
+  <text x="130" y="58" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="13" fill="#8C6340">針灸</text>
+  <text x="130" y="74" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="12" fill="#7A6248">Acupuncture</text>
+  <text x="380" y="58" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="13" fill="#5A7848">中藥</text>
+  <text x="380" y="74" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="12" fill="#7A6248">Herbal</text>
+  <text x="630" y="58" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="13" fill="#7A4E28">推拿</text>
+  <text x="630" y="74" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="12" fill="#7A6248">Manipulation</text>
+  <!-- Dividers -->
+  <line x1="255" y1="45" x2="255" y2="240" stroke="#EAE0CF" stroke-width="1"/>
+  <line x1="505" y1="45" x2="505" y2="240" stroke="#EAE0CF" stroke-width="1"/>
+  <line x1="40"  y1="88" x2="720" y2="88" stroke="#EAE0CF" stroke-width="1"/>
+  <!-- Items -->
+  <!-- Acupuncture -->
+  <circle cx="52" cy="108" r="4" fill="#B5881A"/>
+  <text x="64" y="112" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Musculoskeletal pain</text>
+  <circle cx="52" cy="130" r="4" fill="#B5881A"/>
+  <text x="64" y="134" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Stress &amp; anxiety</text>
+  <circle cx="52" cy="152" r="4" fill="#B5881A"/>
+  <text x="64" y="156" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Migraines &amp; headaches</text>
+  <circle cx="52" cy="174" r="4" fill="#B5881A"/>
+  <text x="64" y="178" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Women's health / fertility</text>
+  <circle cx="52" cy="196" r="4" fill="#B5881A"/>
+  <text x="64" y="200" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Insomnia</text>
+  <circle cx="52" cy="218" r="4" fill="#B5881A"/>
+  <text x="64" y="222" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Post-op recovery</text>
+  <!-- Herbal -->
+  <circle cx="270" cy="108" r="4" fill="#6E8C5A"/>
+  <text x="282" y="112" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Digestive issues</text>
+  <circle cx="270" cy="130" r="4" fill="#6E8C5A"/>
+  <text x="282" y="134" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Chronic fatigue</text>
+  <circle cx="270" cy="152" r="4" fill="#6E8C5A"/>
+  <text x="282" y="156" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Sleep disorders</text>
+  <circle cx="270" cy="174" r="4" fill="#6E8C5A"/>
+  <text x="282" y="178" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Hormonal imbalance</text>
+  <circle cx="270" cy="196" r="4" fill="#6E8C5A"/>
+  <text x="282" y="200" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Immune support</text>
+  <circle cx="270" cy="218" r="4" fill="#6E8C5A"/>
+  <text x="282" y="222" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Skin conditions</text>
+  <!-- Manipulation -->
+  <circle cx="520" cy="108" r="4" fill="#9A6035"/>
+  <text x="532" y="112" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Neck &amp; shoulder tension</text>
+  <circle cx="520" cy="130" r="4" fill="#9A6035"/>
+  <text x="532" y="134" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Lower back pain</text>
+  <circle cx="520" cy="152" r="4" fill="#9A6035"/>
+  <text x="532" y="156" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Joint stiffness</text>
+  <circle cx="520" cy="174" r="4" fill="#9A6035"/>
+  <text x="532" y="178" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Sports injuries</text>
+  <circle cx="520" cy="196" r="4" fill="#9A6035"/>
+  <text x="532" y="200" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Poor circulation</text>
+  <circle cx="520" cy="218" r="4" fill="#9A6035"/>
+  <text x="532" y="222" font-family="DM Sans,sans-serif" font-size="12" fill="#3D2610">Post-injury rehab</text>
+</svg>
+<div class="infographic-caption">General wellness guidance only · Not a substitute for practitioner assessment · 僅供參考，請諮詢持牌中醫師</div>
+</div>
+
+  <h2>How the three work together · <em>三法合一</em></h2>
+  <p>In practice, most treatment plans combine modalities. A patient presenting with lower back pain, for example, might receive acupuncture at local and distal points, a tui na session targeting the lumbar region, and a short-term herbal formula to address the underlying constitutional pattern — perhaps kidney yang deficiency (腎陽虛) — driving the condition.</p>
+  <p>Your practitioner will determine the appropriate combination at your first consultation, based on your constitution, the nature of your complaint, and your personal circumstances.</p>
+
+  <h2>What to expect at your first consultation · <em>首次問診</em></h2>
+  <ul class="checklist">
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Detailed symptom and lifestyle history — what, when, and how long</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Tongue examination (舌診) — colour, coating, shape, moisture</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Pulse taking (脈診) — quality, rate, and character at three positions</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Constitution assessment — your dominant pattern and imbalances</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Treatment plan — which modalities, how often, expected timeline</li>
+  </ul>
+
+  <p>Both in-person and video consultations at HansMed include all of the above. For video sessions, tongue examination is conducted via photo upload and your practitioner will guide you through pulse description.</p>
+
+  <div class="disclaimer">
+  <p><strong>Educational purposes only.</strong> This article is written for general wellness education and does not constitute medical advice, diagnosis, or treatment. Every individual's constitution is different. Please consult a licensed TCM practitioner for personalised assessment and treatment. HansMed AI wellness tools are educational insights only — not medical diagnoses. All AI reports are reviewed by a licensed practitioner before reaching you.</p>
+  <p style="margin-top:8px;font-family:'Noto Serif SC',serif;font-size:11px;color:#8A6040;">本文僅供教育參考，不構成醫療建議或診斷。如需個人化治療方案，請諮詢持牌中醫師。</p>
+</div>
+</div>
+
+<a href="../blog.html" class="back-link px">← Back to all articles · 返回部落格</a>
+<div class="related">
+  <h3>More from our practitioners · 更多文章</h3>
+  <div class="related-grid">
+    <a href="online-tcm-consultation.html" class="related-card">
+      <div class="related-zh">線診</div>
+      <div class="related-title">The Pros of Online TCM Consultation</div>
+      <div class="related-sub">Mr. Lim Gao Hong · 4 min</div>
+    </a>
+    <a href="tongue-diagnosis-guide.html" class="related-card">
+      <div class="related-zh">舌診</div>
+      <div class="related-title">How We Diagnose With Your Tongue</div>
+      <div class="related-sub">Mr. Siew Kuen Xian · 6 min</div>
+    </a>
+  </div>
+</div>
 </main>
+
+<footer class="footer">
+  <div class="fg">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <img src="../assets/img/brand/logo-mark.svg" alt="" style="width:44px;height:44px;opacity:0.95;">
+        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+      </div>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+    </div>
+    <div>
+      <div class="flbl">Platform · 平台</div>
+      <a class="fl" href="../index.html">Home · 首頁</a>
+      <a class="fl" href="../about.html">About · 關於</a>
+      <a class="fl" href="../practitioners.html">Our Doctors · 醫師</a>
+      <a class="fl" href="../services.html">Services · 服務</a>
+      <a class="fl" href="../blog.html">Blog · 部落格</a>
+      <a class="fl" href="../faq.html">FAQ · 常見問題</a>
+      <a class="fl" href="../portal.html#/book">Book · 預約</a>
+    </div>
+    <div>
+      <div class="flbl">Compliance · 合規</div>
+      <a class="fl" href="../privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <a class="fl" href="../security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia</span>
+    <span>PDPA · T&amp;CM Act 2016</span>
+  </div>
+</footer>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/lang-switcher.js"></script>
+<script src="../assets/js/about-dropdown.js"></script>
+<script src="../assets/js/nav-auth.js"></script>
+<script src="../assets/js/public-feature-flags.js"></script>
+
 </body>
 </html>

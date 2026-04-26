@@ -2,12 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var x=localStorage.getItem("hm-lang-pref");if(x==="zh")document.documentElement.setAttribute("lang","zh");else document.documentElement.setAttribute("lang","en");}catch(_){}</script>
-<style>html[lang="en"] [lang="zh"]{display:none!important}html[lang="zh"] [lang="en"]{display:none!important}</style>
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
+<script>try{if(localStorage.getItem("hm-shop-enabled")==="0")document.documentElement.classList.add("shop-disabled");}catch(_){}</script>
+<script>try{var p=localStorage.getItem('hm-lang-pref');document.documentElement.setAttribute('lang',p==='zh'?'zh':'en');}catch(_){}</script>
+<style>
+html[lang="en"] [lang="zh"] { display: none !important; }
+html[lang="zh"] [lang="en"] { display: none !important; }
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How Practitioners Read With Your Tongue · HansMed Blog</title>
+<meta name="theme-color" content="#F5F0E8">
+<title>How Practitioners Read Your Tongue · HansMed Blog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/tokens.css">
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/layout.css">
@@ -15,31 +22,379 @@
 <link rel="stylesheet" href="../assets/css/responsive.css">
 <link rel="stylesheet" href="../assets/css/public.css">
 <link rel="stylesheet" href="../assets/css/landing-v4.css">
+<link rel="stylesheet" href="../assets/css/dropdown.css">
 <style>
-.article-wrap{max-width:720px;margin:0 auto;padding:48px 24px 96px}
-.article-wrap .eyebrow{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--v4-ink-3);margin-bottom:12px}
-.article-wrap h1{font-family:"Cormorant Garamond",serif;font-size:42px;line-height:1.15;margin:0 0 8px;color:var(--v4-ink);font-weight:500}
-.article-wrap .sub{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:22px;color:var(--v4-ink-2);margin:0 0 24px}
-.article-wrap .meta{font-size:13px;color:var(--v4-ink-3);margin-bottom:40px;border-bottom:1px solid var(--v4-bdr);padding-bottom:20px}
-.article-wrap h2{font-family:"Cormorant Garamond",serif;font-size:26px;margin:36px 0 12px;color:var(--v4-ink)}
-.article-wrap p{line-height:1.75;color:var(--v4-ink-2);margin-bottom:14px;font-size:16px}
-.article-wrap em{color:var(--v4-ink-3)}
-.article-wrap .back{display:inline-block;margin-top:40px;color:var(--v4-go,#0F6E56);text-decoration:none}
-.article-wrap .back:hover{text-decoration:underline}
+/* ───── Article-specific styles (preserved from source) ───── */
+
+:root{--ink:#241608;--mu:#7A6248;--go:#B5881A;--wd:#8C6340;--bg:#FAF7F2;--bg2:#F3EDE1;--bg3:#FEFCF8;--bdr:#D8C9AE;--bdrl:#EAE0CF;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;}
+a{color:var(--wd);}
+.px{padding-left:max(1.5rem,calc((100vw - 760px)/2));padding-right:max(1.5rem,calc((100vw - 760px)/2));}
+/* Article layout */
+.art-hero{background:var(--bg3);border-bottom:1px solid var(--bdrl);padding:64px 0 52px;}
+.art-hero::before{content:'';display:block;height:2.5px;background:linear-gradient(90deg,transparent,var(--go) 25%,var(--go) 75%,transparent);margin-bottom:52px;}
+.art-eyebrow{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#B8895A;display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.art-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--go);}
+.art-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,5vw,52px);font-weight:400;color:var(--ink);letter-spacing:-0.025em;line-height:1.1;margin-bottom:10px;}
+.art-title em{font-style:italic;color:var(--wd);}
+.art-zh{font-family:'Noto Serif SC',serif;font-size:15px;color:var(--mu);font-weight:300;margin-bottom:18px;letter-spacing:0.04em;}
+.art-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.art-author{display:flex;align-items:center;gap:10px;}
+.art-avatar{width:38px;height:38px;border-radius:50%;background:var(--bg2);border:1.5px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:14px;color:var(--wd);}
+.art-name{font-size:13px;font-weight:500;color:var(--ink);}
+.art-date{font-size:12px;color:var(--mu);font-weight:300;}
+.art-tags{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto;}
+.art-tag{font-size:11px;padding:4px 11px;border-radius:12px;background:var(--bg2);color:var(--mu);border:0.5px solid var(--bdr);}
+/* Content */
+.art-body{max-width:720px;margin:0 auto;padding:56px 28px;}
+.art-body h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.5vw,30px);font-weight:400;color:var(--ink);letter-spacing:-0.02em;margin:48px 0 14px;line-height:1.2;}
+.art-body h2 em{font-style:italic;color:var(--wd);}
+.art-body h3{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,22px);font-weight:500;color:var(--ink);margin:28px 0 10px;}
+.art-body p{font-size:16px;color:#3D2610;line-height:1.82;margin-bottom:18px;font-weight:300;}
+.art-body p strong{font-weight:500;color:var(--ink);}
+.art-body .zh{font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);margin-bottom:24px;font-weight:300;letter-spacing:0.03em;border-left:2px solid var(--bdr);padding-left:12px;}
+/* Infographic containers */
+.infographic{margin:36px 0;border-radius:16px;overflow:hidden;border:1px solid var(--bdrl);background:var(--bg3);}
+.infographic svg{display:block;width:100%;height:auto;}
+.infographic-caption{padding:12px 18px;background:var(--bg2);border-top:1px solid var(--bdrl);font-size:12px;color:var(--mu);font-style:italic;text-align:center;}
+/* Pull quote */
+.pullquote{margin:36px 0;padding:24px 28px;background:var(--bg2);border-left:3px solid var(--go);border-radius:0 12px 12px 0;}
+.pullquote p{font-family:'Cormorant Garamond',serif;font-size:clamp(17px,2.5vw,22px);font-style:italic;color:var(--ink);line-height:1.52;margin:0;font-weight:400;}
+.pullquote .attr{font-size:12px;color:var(--mu);margin-top:8px;font-style:normal;font-family:'DM Sans',sans-serif;font-weight:300;}
+/* Tip box */
+.tip-box{margin:28px 0;padding:18px 20px;background:var(--bg2);border:1px solid var(--bdrl);border-radius:10px;}
+.tip-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--go);font-weight:600;margin-bottom:8px;}
+.tip-box p{margin:0;font-size:14px;color:#3D2610;font-weight:300;}
+/* Checklist */
+.checklist{list-style:none;margin:16px 0 24px;}
+.checklist li{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--bdrl);font-size:15px;color:#3D2610;font-weight:300;line-height:1.6;}
+.checklist li:last-child{border-bottom:none;}
+.check-dot{width:20px;height:20px;border-radius:50%;background:var(--go);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.check-dot svg{width:10px;height:10px;}
+/* Disclaimer */
+.disclaimer{margin:48px 0 0;padding:16px 18px;background:#FCF6EF;border:1px solid #DEB887;border-radius:10px;}
+.disclaimer p{font-size:12px;color:#6E4020;line-height:1.72;margin:0;font-weight:300;}
+.disclaimer strong{font-weight:600;}
+/* Back link */
+.back-link{display:inline-flex;align-items:center;gap:8px;padding:40px 28px;font-size:14px;color:var(--wd);font-weight:500;text-decoration:none;}
+.back-link:hover{text-decoration:underline;}
+/* Related */
+.related{background:var(--bg2);border-top:1px solid var(--bdrl);padding:48px 28px;}
+.related h3{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink);font-weight:400;margin-bottom:20px;}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.related-card{background:var(--bg3);border:1px solid var(--bdrl);border-radius:12px;padding:18px;text-decoration:none;display:block;transition:all 0.2s;}
+.related-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(36,22,8,0.09);}
+.related-zh{font-family:'Noto Serif SC',serif;font-size:28px;color:var(--wd);font-weight:300;margin-bottom:6px;}
+.related-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.4;margin-bottom:4px;}
+.related-sub{font-size:12px;color:var(--mu);font-weight:300;}
+/* Responsive */
+@media(max-width:600px){
+  .art-body{padding:36px 20px;}
+  .art-hero{padding:44px 20px 36px;}
+  .art-tags{margin-left:0;margin-top:10px;}
+}
+
 </style>
 </head>
 <body class="landing-v4">
-<nav id="nav-v4"><div class="nav-in"><a class="nav-brand-v4" href="../index.html"><img src="../assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt=""><span style="display:flex;align-items:baseline"><span class="nav-bn">HansMed</span><span class="nav-bz">漢方現代中醫</span></span></a><div class="nav-links-v4"><a class="nl" href="../index.html">Home · 首頁</a><a class="nl" href="../blog.html">Blog · 部落格</a><a class="nl" href="../contact.html">Contact · 聯絡</a></div></div></nav>
-<main class="article-wrap">
-<div class="eyebrow">HansMed Blog · 部落格</div>
-<h1 lang="en">How Practitioners Read With Your Tongue</h1>
-<h1 lang="zh">舌診之奧秘</h1>
-<p class="sub" lang="en">The Ancient Art of 舌診</p>
-<p class="sub" lang="zh">The Ancient Art of Tongue Reading</p>
-<div class="meta">Mr. Siew Kuen Xian · January 2026 · 5 min read</div>
-<div lang="en"><p>Your tongue is a map of your internal health. Colour, coating, shape, and moisture reveal information your symptoms alone cannot.</p><h2>Colour</h2><p>Pale points to blood or yang deficiency; bright red to heat; purple to stasis.</p><h2>Coating</h2><p>Thick white indicates cold or damp; yellow suggests heat; no coating at all can signal yin deficiency.</p><h2>Shape</h2><p>Swollen with teeth-marks suggests spleen qi weakness; thin and small points to yin or blood deficiency.</p><h2>Our AI wellness tool</h2><p>HansMed tongue analysis uses AI to spot features a practitioner confirms — never a replacement for the practitioner, but a way to make the visit faster and more accurate.</p><p><em>Full article coming soon with example tongue photos.</em></p></div>
-<div lang="zh"><p>舌象為內臟之鏡。顏色、苔、形狀及潤度，皆透露症狀以外之訊息。</p><h2>顏色</h2><p>淡白 — 血虛或陽虛；紅絳 — 熱證；紫暗 — 瘀血。</p><h2>苔</h2><p>白厚 — 寒或濕；黃 — 熱；無苔 — 陰虛。</p><h2>形狀</h2><p>胖大齒痕 — 脾氣虛；瘦小 — 陰虛或血虛。</p><h2>本平台 AI 健康工具</h2><p>漢方舌診 AI 協助中醫師識別舌象特徵，絕非取代中醫師，而是使診療更快速準確。</p><p><em>完整文章連同舌象範例即將推出。</em></p></div>
-<a class="back" href="../blog.html">← Back to all articles · 返回部落格</a>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<nav id="nav-v4">
+  <div class="nav-in">
+    <a class="nav-brand-v4" href="../index.html">
+      <img src="../assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
+      <span lang="en" style="display:flex;align-items:baseline;">
+        <span class="nav-bn">HansMed</span>
+      </span>
+      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;">
+        <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span>
+      </span>
+    </a>
+    <div class="nav-links-v4">
+      <a class="nl" href="../index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <div style="position:relative;" id="about-wrap">
+        <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
+          <span lang="en">About</span><span lang="zh">關於</span>
+          <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="about-dropdown"
+          style="display:none;position:absolute;top:calc(100% + 6px);left:0;
+                 min-width:210px;background:var(--cream-white,#FEFCF8);
+                 border:1px solid var(--border,#D8C9AE);border-radius:12px;
+                 box-shadow:0 8px 32px rgba(36,22,8,0.14);z-index:9999;
+                 overflow:hidden;padding:4px 0;">
+          <div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold,#9A7A3E),transparent);"></div>
+          <a href="../about.html"           class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
+          <a href="../practitioners.html"   class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
+          <a href="../services.html"        class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a href="../blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
+          <a href="../faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
+          <a href="../contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+        </div>
+      </div>
+      <a class="nl" href="../shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
+      <a class="nl" href="../portal.html#/wellness-assessment"><span lang="en">Wellness</span><span lang="zh">健康評估</span></a>
+      <div class="lang-wrap">
+        <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
+      </div>
+      <a class="nl nav-signin" href="../index.html#/login" target="_blank" rel="noopener" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></a>
+      <a class="nav-cta" href="../portal.html#/book"><span lang="en">Book</span><span lang="zh">預約</span></a>
+    </div>
+    <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<main id="main">
+<div class="art-hero"><div style="max-width:760px;margin:0 auto;padding:0 28px;">
+  <div class="art-eyebrow">HansMed Blog · 部落格</div>
+  <h1 class="art-title">How Practitioners Read Your Tongue:<br/><em>The Ancient Art of 舌診</em></h1>
+  <div class="art-zh">中醫如何通過舌診了解您的健康狀況</div>
+  <div class="art-meta">
+    <div class="art-author">
+      <div class="art-avatar">蕭</div>
+      <div>
+        <div class="art-name">Mr. Siew Kuen Xian · Co-Founder, Head Practitioner</div>
+        <div class="art-date">January 2026 · 6 min read</div>
+      </div>
+    </div>
+    <div class="art-tags">
+      <span class="art-tag">Tongue Analysis</span>
+      <span class="art-tag">AI Wellness</span>
+      <span class="art-tag">Diagnosis</span>
+    </div>
+  </div>
+</div></div>
+
+<div class="art-body">
+
+  <p>Stick out your tongue. What do you see? Most people see a pink, slightly coated surface and nothing more. A trained TCM practitioner sees something quite different — a detailed, dynamic map of your body's internal state, revealing patterns that can take years of symptoms to manifest in other ways.</p>
+  <p>Tongue examination (舌診, shé zhěn) has been a cornerstone of TCM diagnosis for over 2,000 years. Its principles were systematically documented in texts as early as the Shang Han Lun (傷寒論) during the Eastern Han Dynasty. Today, it remains one of the most objective and reproducible diagnostic tools in clinical TCM practice.</p>
+
+  <div class="pullquote">
+    <p>"The tongue does not lie. It reflects what is happening inside — often long before other symptoms appear."</p>
+    <div class="attr">— Mr. Siew Kuen Xian, Co-Founder &amp; Head Practitioner, HansMed</div>
+  </div>
+
+  <h2>The tongue as a body map · <em>舌面臟腑分區</em></h2>
+  <p>In TCM theory, different zones of the tongue correspond to different organ systems. This is not metaphorical — it is a clinically observed correspondence refined over centuries of practice.</p>
+
+  
+<div class="infographic">
+<svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="380" fill="#FEFCF8"/>
+  <text x="380" y="28" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="16" font-style="italic" fill="#7A6248">The tongue as a map of internal health · 舌面臟腑分區</text>
+  <!-- Tongue shape -->
+  <ellipse cx="380" cy="200" rx="145" ry="185" fill="#E8B4B8" stroke="#C08890" stroke-width="2" opacity="0.7"/>
+  <!-- Organ zones -->
+  <!-- Heart/Lung - tip -->
+  <ellipse cx="380" cy="350" rx="60" ry="35" fill="#E07070" opacity="0.45"/>
+  <text x="380" y="347" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="11" fill="#8C2020">心肺</text>
+  <text x="380" y="362" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A3030">Heart / Lung</text>
+  <!-- Spleen/Stomach - center -->
+  <ellipse cx="380" cy="220" rx="75" ry="48" fill="#D4A840" opacity="0.38"/>
+  <text x="380" y="218" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="11" fill="#7A5C10">脾胃</text>
+  <text x="380" y="233" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A5C10">Spleen / Stomach</text>
+  <!-- Liver/Gallbladder - sides -->
+  <ellipse cx="300" cy="200" rx="38" ry="65" fill="#70A870" opacity="0.38"/>
+  <text x="300" y="197" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="10" fill="#2A6A2A">肝膽</text>
+  <text x="300" y="212" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#2A6A2A">Liver/GB</text>
+  <ellipse cx="460" cy="200" rx="38" ry="65" fill="#70A870" opacity="0.38"/>
+  <text x="460" y="197" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="10" fill="#2A6A2A">肝膽</text>
+  <text x="460" y="212" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#2A6A2A">Liver/GB</text>
+  <!-- Kidney - root/back -->
+  <ellipse cx="380" cy="90" rx="90" ry="45" fill="#7090C0" opacity="0.38"/>
+  <text x="380" y="88" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="11" fill="#2A4A8A">腎</text>
+  <text x="380" y="103" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#2A4A8A">Kidney</text>
+  <!-- Labels -->
+  <text x="380" y="375" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">↑ Tip of tongue (舌尖) — relates to Heart &amp; Lung</text>
+  <!-- Side callouts -->
+  <line x1="238" y1="200" x2="140" y2="170" stroke="#D8C9AE" stroke-width="1"/>
+  <text x="132" y="164" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Left side</text>
+  <text x="132" y="178" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">= Liver / GB</text>
+  <line x1="522" y1="200" x2="620" y2="170" stroke="#D8C9AE" stroke-width="1"/>
+  <text x="628" y="164" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Right side</text>
+  <text x="628" y="178" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">= Liver / GB</text>
+  <line x1="380" y1="55" x2="380" y2="30" stroke="#D8C9AE" stroke-width="1"/>
+  <!-- Root label -->
+  <text x="570" y="98" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">Root (舌根)</text>
+  <text x="570" y="112" font-family="DM Sans,sans-serif" font-size="10" fill="#7A6248">= Kidney</text>
+  <line x1="510" y1="95" x2="565" y2="100" stroke="#D8C9AE" stroke-width="1"/>
+</svg>
+<div class="infographic-caption">TCM tongue map — organ system zones reflected on the tongue surface · 中醫舌面臟腑對應圖（僅供教育參考）</div>
+</div>
+
+  <p>The <strong>tip of the tongue</strong> reflects the state of the Heart and Lung. Redness at the tip, for example, often accompanies stress, anxiety, or heat in the upper jiao. The <strong>centre</strong> of the tongue corresponds to the Spleen and Stomach — the digestive system's operational hub. The <strong>sides</strong> reflect Liver and Gallbladder function, and the <strong>root</strong> of the tongue — the area furthest back — maps to the Kidney system, which in TCM governs vitality, reproduction, and the body's fundamental reserves.</p>
+
+  <h2>What a practitioner observes · <em>舌診的四個維度</em></h2>
+  <p>TCM tongue examination systematically assesses four dimensions: colour, coating, shape, and moisture. Each dimension carries distinct diagnostic significance, and they are always read together — never in isolation.</p>
+
+  
+<div class="infographic">
+<svg viewBox="0 0 760 310" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="310" fill="#FEFCF8"/>
+  <text x="380" y="26" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="15" font-style="italic" fill="#7A6248">What practitioners observe · 醫師觀察舌診的四個維度</text>
+  <!-- 4 boxes -->
+  <!-- Colour -->
+  <rect x="20" y="40" width="170" height="250" rx="12" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="20" y="40" width="170" height="4" rx="2" fill="#B5881A"/>
+  <text x="105" y="66" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="13" fill="#8C6340">顏色 Colour</text>
+  <circle cx="105" cy="95"  r="14" fill="#FFB0B0" stroke="#C08080" stroke-width="1"/>
+  <text x="105" y="99" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#8C2020">Pale</text>
+  <text x="105" y="120" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Blood deficiency</text>
+  <circle cx="105" cy="148" r="14" fill="#E03030" stroke="#A02020" stroke-width="1" opacity="0.75"/>
+  <text x="105" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="white">Red</text>
+  <text x="105" y="173" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Heat / inflammation</text>
+  <circle cx="105" cy="200" r="14" fill="#9060A0" stroke="#703080" stroke-width="1" opacity="0.65"/>
+  <text x="105" y="204" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="white">Purple</text>
+  <text x="105" y="225" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Blood stagnation</text>
+  <circle cx="105" cy="250" r="14" fill="#C87070" stroke="#A04050" stroke-width="1" opacity="0.8"/>
+  <text x="105" y="254" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="white">Normal</text>
+  <!-- Coating -->
+  <rect x="205" y="40" width="170" height="250" rx="12" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="205" y="40" width="170" height="4" rx="2" fill="#6E8C5A"/>
+  <text x="290" y="66" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="13" fill="#5A7848">舌苔 Coating</text>
+  <rect x="256" y="80" width="68" height="22" rx="5" fill="white" stroke="#D8C9AE" stroke-width="1"/>
+  <text x="290" y="95" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">Thin white</text>
+  <text x="290" y="116" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Normal / mild cold</text>
+  <rect x="256" y="132" width="68" height="22" rx="5" fill="#D4C870" stroke="#A09040" stroke-width="1" opacity="0.7"/>
+  <text x="290" y="147" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4020">Thick yellow</text>
+  <text x="290" y="168" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Heat / damp-heat</text>
+  <rect x="256" y="184" width="68" height="22" rx="5" fill="#E0D8D0" stroke="#B0A898" stroke-width="1"/>
+  <text x="290" y="199" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">Thick white</text>
+  <text x="290" y="220" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Cold / damp</text>
+  <rect x="256" y="236" width="68" height="22" rx="5" fill="#FAF7F2" stroke="#E8B4B8" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <text x="290" y="251" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">No coating</text>
+  <text x="290" y="272" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Yin deficiency</text>
+  <!-- Shape -->
+  <rect x="390" y="40" width="170" height="250" rx="12" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="390" y="40" width="170" height="4" rx="2" fill="#9A6035"/>
+  <text x="475" y="66" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="13" fill="#7A4E28">形狀 Shape</text>
+  <ellipse cx="475" cy="100" rx="35" ry="18" fill="#E8B4B8" stroke="#C08890" stroke-width="1.2" opacity="0.7"/>
+  <text x="475" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#8C2020">Swollen</text>
+  <text x="475" y="126" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Dampness / phlegm</text>
+  <ellipse cx="475" cy="152" rx="22" ry="16" fill="#E8B4B8" stroke="#C08890" stroke-width="1.2" opacity="0.7"/>
+  <text x="475" y="156" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#8C2020">Thin</text>
+  <text x="475" y="177" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Yin or blood deficiency</text>
+  <ellipse cx="475" cy="202" rx="30" ry="17" fill="#E8B4B8" stroke="#C08890" stroke-width="1.2" opacity="0.7"/>
+  <path d="M460 200 L490 200" stroke="#A06060" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <text x="475" y="205" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#8C2020">Cracked</text>
+  <text x="475" y="228" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Yin deficiency / heat</text>
+  <ellipse cx="475" cy="258" rx="30" ry="17" fill="#E8B4B8" stroke="#C08890" stroke-width="1.2" opacity="0.7"/>
+  <text x="475" y="262" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#8C2020">Teeth marks</text>
+  <text x="475" y="283" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Spleen qi deficiency</text>
+  <!-- Moisture -->
+  <rect x="575" y="40" width="165" height="250" rx="12" fill="#FAF7F2" stroke="#EAE0CF" stroke-width="1"/>
+  <rect x="575" y="40" width="165" height="4" rx="2" fill="#4878A0"/>
+  <text x="658" y="66" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="13" fill="#2A5A80">津液 Moisture</text>
+  <circle cx="658" cy="110" r="20" fill="#A0C0E0" opacity="0.6" stroke="#6090C0" stroke-width="1"/>
+  <text x="658" y="114" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#2A4A8A">Wet</text>
+  <text x="658" y="142" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Dampness / cold</text>
+  <circle cx="658" cy="180" r="16" fill="#E8B4B8" opacity="0.5" stroke="#C08890" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="658" y="184" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#8C2020">Dry</text>
+  <text x="658" y="208" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Yin deficiency / heat</text>
+  <circle cx="658" cy="248" r="17" fill="#C8D4A0" opacity="0.6" stroke="#8A9860" stroke-width="1"/>
+  <text x="658" y="252" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4A6020">Normal</text>
+  <text x="658" y="276" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A4030">→ Balanced fluids</text>
+</svg>
+<div class="infographic-caption">General TCM tongue observation guide · For educational reference only · Not a diagnostic tool · 僅供教育參考，非診斷依據</div>
+</div>
+
+  <h3>Colour (舌色)</h3>
+  <p>The body of the tongue — not the coating, but the tongue tissue itself — should ideally be a fresh, pale-red colour, sometimes described as the colour of fresh pork. Deviations from this norm carry meaning: a pale tongue often suggests blood or yang deficiency; a red or crimson tongue indicates heat; a purple or dark tongue points toward blood stagnation or cold.</p>
+
+  <h3>Coating (舌苔)</h3>
+  <p>The coating is produced by the digestive system and reflects the state of the stomach qi and the presence of pathogenic factors. A normal coating is thin and white. A thick yellow coating typically indicates heat or damp-heat in the digestive system. A thick white coating suggests cold or dampness. No coating at all — what practitioners call a "peeled" or "mirror" tongue — indicates yin deficiency or severe depletion of stomach fluids.</p>
+
+  <h3>Shape (舌形)</h3>
+  <p>A swollen or puffy tongue, particularly if it shows the imprint of the teeth along its edges (teeth marks, or 齒痕), indicates spleen qi deficiency — the spleen's failure to metabolise fluid efficiently. A thin or shrunken tongue points to blood or yin deficiency. Cracks in the tongue surface, especially running from front to back, typically indicate yin deficiency or chronic heat consuming body fluids.</p>
+
+  <h3>Moisture (津液)</h3>
+  <p>The tongue should be adequately moist — neither dry nor wet. A dry tongue suggests heat or yin deficiency depleting body fluids. An excessively wet or slippery tongue indicates coldness or an inability of the yang qi to transform fluids. This dimension is particularly important for assessing kidney yang function.</p>
+
+  <h2>How HansMed uses tongue diagnosis · <em>HansMed 的舌診應用</em></h2>
+  <p>At HansMed, tongue examination is a core part of every consultation — whether in-person or via video. For video sessions, patients upload a tongue photograph taken in good, natural light with the mouth relaxed and the tongue extended naturally.</p>
+  <p>HansMed's AI wellness tool analyses uploaded tongue photos and generates an educational wellness insight based on observed characteristics. <strong>This is not a medical diagnosis.</strong> It is a starting point — an educational insight into potential constitutional patterns.</p>
+  <p>Critically, every AI-generated tongue report is reviewed and contextualised by a licensed TCM practitioner before it reaches you. The practitioner integrates the tongue findings with your symptom history, pulse description, and lifestyle factors to form a complete clinical picture.</p>
+
+  <ul class="checklist">
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Upload your tongue photo in natural daylight — no filters, mouth relaxed</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>AI generates an educational wellness insight from what it observes</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Licensed practitioner reviews and contextualises the report</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>You receive the reviewed report — never raw AI output</li>
+    <li><span class="check-dot"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Book a consultation to discuss findings with your practitioner</li>
+  </ul>
+
+  <h2>What tongue diagnosis cannot tell you · <em>舌診的局限性</em></h2>
+  <p>Honesty is important here. Tongue examination is a valuable diagnostic tool, but it is not infallible and it does not operate in isolation. A single tongue observation provides a snapshot — not a full picture. Tongue characteristics can change from morning to evening, after eating or drinking, or in response to stress. Coffee and certain foods temporarily stain the coating. Medications can affect tongue colour and moisture.</p>
+  <p>An experienced practitioner reads the tongue alongside pulse, symptoms, and patient history. The tongue is one piece of a diagnostic picture — a significant one, but never the only one.</p>
+
+  <div class="disclaimer">
+  <p><strong>Educational purposes only.</strong> This article is written for general wellness education and does not constitute medical advice, diagnosis, or treatment. Every individual's constitution is different. Please consult a licensed TCM practitioner for personalised assessment and treatment. HansMed AI wellness tools are educational insights only — not medical diagnoses. All AI reports are reviewed by a licensed practitioner before reaching you.</p>
+  <p style="margin-top:8px;font-family:'Noto Serif SC',serif;font-size:11px;color:#8A6040;">本文僅供教育參考，不構成醫療建議或診斷。如需個人化治療方案，請諮詢持牌中醫師。</p>
+</div>
+</div>
+
+<a href="../blog.html" class="back-link px">← Back to all articles · 返回部落格</a>
+<div class="related">
+  <h3>More from our practitioners · 更多文章</h3>
+  <div class="related-grid">
+    <a href="tcm-treatment-types.html" class="related-card">
+      <div class="related-zh">針藥</div>
+      <div class="related-title">Understanding TCM Treatment Types</div>
+      <div class="related-sub">Mr. Siew Kuen Xian · 5 min</div>
+    </a>
+    <a href="online-tcm-consultation.html" class="related-card">
+      <div class="related-zh">線診</div>
+      <div class="related-title">The Pros of Online TCM Consultation</div>
+      <div class="related-sub">Mr. Lim Gao Hong · 4 min</div>
+    </a>
+  </div>
+</div>
 </main>
+
+<footer class="footer">
+  <div class="fg">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <img src="../assets/img/brand/logo-mark.svg" alt="" style="width:44px;height:44px;opacity:0.95;">
+        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+      </div>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+    </div>
+    <div>
+      <div class="flbl">Platform · 平台</div>
+      <a class="fl" href="../index.html">Home · 首頁</a>
+      <a class="fl" href="../about.html">About · 關於</a>
+      <a class="fl" href="../practitioners.html">Our Doctors · 醫師</a>
+      <a class="fl" href="../services.html">Services · 服務</a>
+      <a class="fl" href="../blog.html">Blog · 部落格</a>
+      <a class="fl" href="../faq.html">FAQ · 常見問題</a>
+      <a class="fl" href="../portal.html#/book">Book · 預約</a>
+    </div>
+    <div>
+      <div class="flbl">Compliance · 合規</div>
+      <a class="fl" href="../privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <a class="fl" href="../security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia</span>
+    <span>PDPA · T&amp;CM Act 2016</span>
+  </div>
+</footer>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/lang-switcher.js"></script>
+<script src="../assets/js/about-dropdown.js"></script>
+<script src="../assets/js/nav-auth.js"></script>
+<script src="../assets/js/public-feature-flags.js"></script>
+
 </body>
 </html>
