@@ -62,10 +62,18 @@
 
     backdrop.addEventListener('click', close);
 
-    // 4. Auto-close when any sidebar link is tapped
+    // 4. Auto-close when an actual nav link is tapped — but NOT when the
+    //    user interacts with non-navigating controls inside the drawer
+    //    (the language toggle, in-place toggles, etc.). We detect a real
+    //    nav by requiring an <a> with href/data-route OR a <button> that
+    //    explicitly opts in via [data-closes-drawer]. This way the
+    //    language EN/中 buttons don't accidentally close the drawer.
     sidebar.addEventListener('click', function (e) {
-      var link = e.target.closest('.sidebar-link');
-      if (link) close();
+      // Bail if click originated inside an element marked as drawer-stable
+      if (e.target.closest('[data-keeps-drawer-open]')) return;
+      var a = e.target.closest('a.sidebar-link[href], a.sidebar-link[data-route]');
+      var b = e.target.closest('button[data-closes-drawer]');
+      if (a || b) close();
     });
 
     // 5. Close on Esc for keyboard users
