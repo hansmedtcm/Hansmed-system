@@ -1,0 +1,186 @@
+/* About-dropdown menu — shared across all 8 landing pages.
+   Before this file existed, the .dd-item styling lived only in
+   landing-v4.css which about/services/practitioners/blog/faq don't
+   load. That made the menu render as default browser links (purple,
+   underlined, inline-flow). This file is included on every page so
+   the dropdown looks the same everywhere. */
+
+.dd-item {
+  display: block;
+  padding: 10px 18px;
+  color: #4A3B2A;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.dd-item:hover,
+.dd-item:focus {
+  background: #F5EFE2;
+  color: #1F1810;
+  text-decoration: none;
+  outline: none;
+}
+.dd-item:visited { color: #4A3B2A; }
+
+/* Ensure the wrapper positions correctly on all pages even when a
+   page-local style sheet clobbers display rules. */
+#about-wrap { position: relative; display: inline-block; vertical-align: middle; }
+
+/* The About trigger is a native <button> while its nav siblings are
+   <a class="nl">. Browsers apply subtle defaults to buttons
+   (font-family, line-height, focus outline, -webkit-appearance) that
+   make it look bigger/boxier. Force every one of those to match the
+   anchor siblings exactly. */
+#about-trigger,
+button#about-trigger {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  /* Match .nl sizing exactly — do NOT inherit from the flex container
+     (which can be larger than the intended 15.5px). */
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 15.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  padding: 7px 16px !important;
+  margin: 0 !important;
+  /* Kill all native-button chrome. */
+  background: none !important;
+  border: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  box-shadow: none !important;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+/* Remove the focus ring that sticks around after click. Keyboard users
+   still get a visible ring via :focus-visible. */
+#about-trigger:focus { outline: none !important; }
+#about-trigger:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* On pages using local nav CSS (about/services/practitioners/blog/faq)
+   the .nl class resolves to font-size:13.5px — match that when the
+   body is NOT landing-v4. */
+body:not(.landing-v4) #about-trigger {
+  font-size: 13.5px !important;
+  padding: 6px 14px !important;
+}
+
+/* ZH character fallback — DM Sans (our nav font) has no Han glyphs,
+   and on Windows the sans-serif fallback often resolves to Arial
+   which also lacks them, so button text in ZH mode rendered as
+   invisible empty buttons. Force a Chinese font in the chain for
+   any [lang="zh"] span inside a button/nav/CTA element. */
+.nav-cta [lang="zh"],
+.nl [lang="zh"],
+.btn-v4 [lang="zh"],
+.nav-signin [lang="zh"],
+button [lang="zh"],
+.mob-nl [lang="zh"] {
+  font-family: 'Noto Serif SC', 'Noto Sans SC', 'PingFang SC',
+               'Microsoft JhengHei', 'Microsoft YaHei',
+               'DM Sans', sans-serif;
+  /* tokens.css has a global [lang="zh"] { color: var(--ink-soft) }
+     rule that paints ALL Chinese text in a dark brown. That's fine
+     for body copy on cream backgrounds, but it clobbers the white
+     text on dark buttons (.btn-dark, .nav-cta) → dark-on-dark,
+     invisible. Force color to inherit from the button here. */
+  color: inherit !important;
+  /* Reset the letter-spacing + font-weight the tokens.css rule also
+     applied, so buttons keep their intended look. */
+  letter-spacing: inherit;
+  font-weight: inherit;
+}
+
+/* Auth-aware Sign In / My Portal label — CSS-only toggle so the
+   correct label appears on first paint (no flash). An inline head
+   script reads localStorage synchronously and adds html.is-auth
+   before the body renders. */
+.nav-signin .lbl-portal { display: none; }
+html.is-auth .nav-signin .lbl-signin { display: none; }
+html.is-auth .nav-signin .lbl-portal { display: inline; }
+/* Same toggle for the mobile drawer link. */
+.mob-nl-signin .lbl-portal { display: none; }
+html.is-auth .mob-nl-signin .lbl-signin { display: none; }
+html.is-auth .mob-nl-signin .lbl-portal { display: inline; }
+
+/* Mobile logout button — only visible when signed in. */
+html.is-auth .mob-nl-logout { display: block !important; }
+
+/* Consent checkbox row — register modal + contact form.
+   Earlier inline-style attempts (flex, absolute positioning) kept
+   losing layout battles with the auth modal's CSS — the checkbox
+   ended up in the middle of the wrapped text. Real class with grid
+   layout is more reliable: 20px column for the checkbox + 1fr
+   column for the label text, gap between, both columns aligned to
+   the start. min-width:0 on grid items is the default so the text
+   wraps cleanly without break-word hacks. */
+.consent-row {
+  display: grid !important;
+  grid-template-columns: 20px 1fr;
+  column-gap: 10px;
+  align-items: start;
+  font-size: 12px;
+  color: var(--stone, #6b6b6b);
+  line-height: 1.55;
+  cursor: pointer;
+  width: 100%;
+}
+.consent-row > input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 3px 0 0 0;
+  flex: none;
+  position: static;
+}
+.consent-row > .consent-text {
+  min-width: 0;
+  word-wrap: break-word;
+}
+.consent-row a { color: var(--jade, #0F6E56); }
+
+/* Auth modal compaction — the bilingual register form was
+   overflowing the modal's max-height:90vh on most laptop screens,
+   pushing the Create Account button below the fold. Earlier
+   sticky-button attempt overlapped the last consent line (bad
+   UX). Now we just trim the vertical rhythm hard enough that the
+   whole form fits without scrolling on a 700px+ tall window. */
+body.landing-v4 .auth-modal { padding: 4px 0 0; }
+body.landing-v4 .auth-modal h2 { font-size: 22px; margin-bottom: 2px; }
+body.landing-v4 .auth-modal p { font-size: 12.5px; margin-bottom: 10px; }
+body.landing-v4 .auth-modal .field { margin-bottom: 10px; }
+body.landing-v4 .auth-modal .field-label { font-size: 11px; margin-bottom: 4px; letter-spacing: 0.04em; }
+body.landing-v4 .auth-modal .field-input { padding: 8px 12px; font-size: 13.5px; }
+body.landing-v4 .auth-modal .field-hint { font-size: 10.5px; margin-top: 2px; }
+body.landing-v4 .auth-modal .consent-row { font-size: 11px; line-height: 1.45; }
+body.landing-v4 .auth-modal .btn--block { padding: 11px 16px; font-size: 14.5px; }
+/* Footnote below the submit button is redundant — the consent
+   checkboxes already say what's required. Hiding it saves vertical
+   space and keeps the button visible without scrolling. */
+body.landing-v4 .auth-modal form > p:last-child { display: none; }
+
+/* Shop visibility — paired with a sync head script that reads
+   localStorage('hm-shop-enabled')==='0' and adds html.shop-disabled
+   BEFORE first paint. Eliminates the 'Shop link briefly visible
+   then disappears' flash that the runtime JS-only approach caused.
+   The async fetch in public-feature-flags.js refreshes the cache
+   so the next page load is correct. */
+html.shop-disabled a[href="shop.html"],
+html.shop-disabled a[href^="shop.html?"],
+html.shop-disabled a[href^="shop.html#"],
+html.shop-disabled a[href="./shop.html"],
+html.shop-disabled a[href="../shop.html"],
+html.shop-disabled a[href$="/shop.html"],
+html.shop-disabled [onclick*="go('shop')"],
+html.shop-disabled [onclick*="go(\"shop\")"] {
+  display: none !important;
+}

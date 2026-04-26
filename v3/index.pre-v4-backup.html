@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI tongue diagnosis, herbal prescriptions, pharmacy delivery.">
+<meta name="theme-color" content="#1a1612">
+<title>HansMed Modern TCM · 漢方現代中醫</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  /* 正顏楷體 — load from system if installed, else fall back to Ma Shan Zheng (Google) → Noto Serif SC */
+  @font-face {
+    font-family: 'ZhengYanKaiTi';
+    src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+         local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
+    font-display: swap;
+  }
+</style>
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/patterns.css">
+<link rel="stylesheet" href="assets/css/tcm.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+<link rel="stylesheet" href="assets/css/public.css">
+<link rel="stylesheet" href="assets/css/landing-v3.css">
+<style>
+  .nav-cart-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--gold);
+    border-radius: 9px;
+    margin-left: -6px;
+    vertical-align: top;
+  }
+  #nav-cart { position: relative; }
+  #nav-cart[data-count="0"] .nav-cart-badge { display: none; }
+  .product-card { transition: transform .15s ease; }
+  .product-card:hover { transform: translateY(-2px); }
+
+  /* HOW IT WORKS — illustrated cards */
+  .hiw-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s-5);
+    max-width: 1000px;
+    margin: var(--s-6) auto 0;
+  }
+  @media (max-width: 820px) {
+    .hiw-grid { grid-template-columns: 1fr; max-width: 480px; }
+  }
+  .hiw-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s-5);
+    text-align: center;
+    position: relative;
+    transition: transform .25s ease, box-shadow .25s ease;
+    box-shadow: 0 4px 16px rgba(26, 22, 18, 0.04);
+  }
+  .hiw-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(26, 22, 18, 0.1);
+  }
+  .hiw-step-num {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(26, 22, 18, 0.2);
+    z-index: 2;
+  }
+  .hiw-illust {
+    margin: var(--s-3) 0 var(--s-4);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    aspect-ratio: 5 / 4;
+  }
+  .hiw-illust svg { width: 100%; height: 100%; display: block; }
+  .hiw-title-zh {
+    font-family: var(--font-kaiti);
+    font-size: 1.5rem;
+    color: var(--ink);
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+  }
+  .hiw-title-en {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-base);
+    color: var(--gold);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  .hiw-desc {
+    color: var(--stone);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    margin-top: var(--s-3);
+  }
+  .hiw-cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-4);
+    max-width: 900px;
+    margin: var(--s-8) auto 0;
+    padding: var(--s-5) var(--s-6);
+    background: var(--washi);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    flex-wrap: wrap;
+  }
+  @media (max-width: 640px) {
+    .hiw-cta { flex-direction: column; text-align: center; }
+  }
+
+  /* ── About: "read more" details accordion ── */
+  .about-more {
+    max-width: 820px;
+    margin: var(--s-6) auto 0;
+    border-top: 1px solid var(--border);
+    padding-top: var(--s-5);
+  }
+  .about-more summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    padding: var(--s-3) var(--s-4);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    letter-spacing: .08em;
+    color: var(--stone);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    transition: color .2s ease, border-color .2s ease;
+    user-select: none;
+  }
+  .about-more summary:hover { color: var(--gold); border-color: var(--gold); }
+  .about-more summary::-webkit-details-marker { display: none; }
+  .about-more-chev {
+    color: var(--gold);
+    transition: transform .2s ease;
+    display: inline-block;
+  }
+  .about-more[open] .about-more-chev { transform: rotate(180deg); }
+
+  /* ── About: four science pillars ── */
+  .about-pillars {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+  }
+  @media (max-width: 640px) {
+    .about-pillars { grid-template-columns: 1fr; }
+  }
+  .about-pillar {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--stone);
+    padding: var(--s-3) var(--s-4);
+    border-radius: var(--r-sm);
+  }
+  .about-pillar--sage { border-left-color: var(--sage); }
+  .about-pillar--gold { border-left-color: var(--gold); }
+  .about-pillar--red  { border-left-color: var(--red-seal); }
+  .about-pillar-title {
+    font-family: var(--font-zh);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .about-pillar-desc {
+    font-size: var(--text-xs);
+    line-height: var(--leading-relaxed);
+    color: var(--stone);
+  }
+
+  /* ── Trust: pharmacy partners + certifications ── */
+  .trust-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--stone);
+    text-align: center;
+    margin-bottom: var(--s-4);
+  }
+  .trust-label--gold { color: var(--gold); }
+  .trust-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: var(--s-8) 0;
+  }
+  .cert-row {
+    display: flex;
+    gap: var(--s-4);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--s-2);
+  }
+  .cert-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--s-4);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  @media (max-width: 768px) {
+    .cert-grid { grid-template-columns: repeat(2, 1fr); max-width: 420px; }
+  }
+  .cert-logo {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-3);
+    transition: transform .2s, box-shadow .2s;
+    min-width: 140px;
+  }
+  .cert-logo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26, 22, 18, 0.08);
+  }
+  .cert-logo svg { width: 78px; height: auto; }
+  .cert-row .cert-logo svg { width: 120px; }
+  .cert-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-align: center;
+    color: var(--stone);
+    line-height: 1.4;
+  }
+  .cert-quote {
+    text-align: center;
+    margin-top: var(--s-8);
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    color: var(--stone);
+    font-style: italic;
+    line-height: 1.8;
+  }
+  .cert-quote-zh {
+    font-family: var(--font-kaiti);
+    font-style: normal;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    font-size: 0.92rem;
+  }
+
+  /* Hero sub-actions (text links under the main CTA buttons) */
+  .hero-sub-actions {
+    margin-top: var(--s-4);
+    display: flex;
+    gap: var(--s-3);
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: var(--text-sm);
+  }
+  .hero-sub-actions a {
+    color: var(--stone);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--border);
+    padding-bottom: 2px;
+    transition: color .2s, border-color .2s;
+  }
+  .hero-sub-actions a:hover { color: var(--gold); border-color: var(--gold); }
+  .hero-sub-dot { color: var(--stone); opacity: .5; }
+
+  /* Floating WhatsApp button */
+  #hm-whatsapp-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #25d366;
+    color: #fff;
+    padding: 14px 22px 14px 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4), 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform .2s ease, box-shadow .2s ease;
+    z-index: 99;
+  }
+  #hm-whatsapp-fab:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(37, 211, 102, 0.5), 0 4px 10px rgba(0, 0, 0, 0.15);
+    color: #fff;
+  }
+  #hm-whatsapp-fab svg { flex-shrink: 0; }
+  @media (max-width: 640px) {
+    #hm-whatsapp-fab {
+      bottom: 16px;
+      right: 16px;
+      padding: 12px 14px;
+    }
+    #hm-whatsapp-fab .hm-whatsapp-label { display: none; }
+  }
+
+  /* Nav dropdown */
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .nav-caret { font-size: 0.7rem; transition: transform .2s ease; display: inline-block; }
+  .nav-dropdown:hover .nav-caret,
+  .nav-dropdown:focus-within .nav-caret { transform: rotate(180deg); }
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: -10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    box-shadow: 0 10px 24px rgba(26,22,18,.12);
+    padding: 6px 0;
+    min-width: 220px;
+    margin: 8px 0 0;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+    z-index: 100;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu,
+  .nav-dropdown:focus-within .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .nav-dropdown-menu li { list-style: none; }
+  .nav-dropdown-link {
+    display: block;
+    padding: 10px 18px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    letter-spacing: 0.02em;
+    transition: background .12s ease;
+    white-space: nowrap;
+  }
+  .nav-dropdown-link:hover { background: var(--washi); color: var(--gold); }
+  @media (max-width: 768px) {
+    .nav-dropdown-menu {
+      position: static;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      box-shadow: none;
+      border: none;
+      padding: 0;
+      margin-left: var(--s-4);
+      background: transparent;
+      min-width: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<!-- Floating WhatsApp button — always visible on public landing -->
+<a id="hm-whatsapp-fab" href="#" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
+    <path d="M20.52 3.48A11.84 11.84 0 0012.06 0C5.48 0 .13 5.35.13 11.93a11.84 11.84 0 001.64 6.02L0 24l6.22-1.63a11.93 11.93 0 005.84 1.49h.01c6.58 0 11.93-5.35 11.93-11.93 0-3.19-1.24-6.19-3.48-8.45zM12.07 21.8h-.01a9.86 9.86 0 01-5.02-1.37l-.36-.21-3.69.97.99-3.6-.24-.37a9.84 9.84 0 01-1.51-5.3c0-5.44 4.43-9.87 9.87-9.87 2.64 0 5.11 1.03 6.98 2.9a9.82 9.82 0 012.89 6.97c0 5.44-4.43 9.87-9.9 9.87zm5.42-7.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48a9.05 9.05 0 01-1.67-2.07c-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.22 3.08.15.2 2.1 3.22 5.1 4.52.71.31 1.27.5 1.7.64.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.4.25-.7.25-1.28.17-1.4-.07-.12-.27-.2-.57-.35z"/>
+  </svg>
+  <span class="hm-whatsapp-label">Book via WhatsApp</span>
+</a>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="nav" id="nav">
+  <a href="index.html" class="nav-brand">
+    <svg class="nav-brand-mark" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="1"  y="1"  width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
+      <rect x="23" y="1"  width="20" height="19" fill="#1a1612"/><circle cx="33" cy="10.5" r="3.5" fill="#fff"/>
+      <rect x="46" y="1"  width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
+      <rect x="1"  y="23" width="19" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
+      <rect x="23" y="23" width="20" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="33" cy="33" r="3.5" fill="#1a1612"/>
+      <rect x="46" y="23" width="19" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
+      <rect x="1"  y="46" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
+      <rect x="23" y="46" width="20" height="19" fill="#1a1612"/><circle cx="33" cy="55.5" r="3.5" fill="#fff"/>
+      <rect x="46" y="46" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
+    </svg>
+    <span class="nav-brand-text">
+      漢方現代中醫
+      <span class="nav-brand-en">HansMed Modern TCM</span>
+    </span>
+  </a>
+  <button class="nav-toggle" aria-label="Menu" aria-expanded="false" onclick="toggleNav()">
+    <span class="nav-toggle-icon"></span>
+  </button>
+  <ul class="nav-menu">
+    <li><a href="index.html" class="nav-link">Home · 首頁</a></li>
+    <li><a href="services.html" class="nav-link">Services · 服務</a></li>
+    <li><a href="shop.html" class="nav-link">Shop · 商店</a></li>
+    <li><a href="portal.html#/book" class="nav-link">Book · 預約</a></li>
+    <li><a href="portal.html#/ai-diagnosis" class="nav-link">Wellness Assessment · 健康評估</a></li>
+    <li><a href="contact.html" class="nav-link">Contact · 聯絡</a></li>
+    <li>
+      <a href="shop.html" class="nav-link" id="nav-cart" aria-label="Shopping cart">
+        🛒 <span id="nav-cart-count" class="nav-cart-badge">0</span>
+      </a>
+    </li>
+    <li>
+      <div class="lang-switcher" role="group" aria-label="Language">
+        <button class="lang-btn is-active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="zh">中</button>
+      </div>
+    </li>
+    <li id="nav-auth-slot">
+      <button class="btn btn--primary btn--sm" onclick="location.hash='#/login'">Sign In · 登入</button>
+    </li>
+  </ul>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<main id="main">
+<!-- ══════════════ HERO v3 ══════════════ -->
+<section id="home" class="hero-v3">
+  <div class="hero-v3-inner">
+    <div>
+      <div class="hero-v3-clinic">漢方現代中醫</div>
+      <div class="hero-v3-eyebrow">
+        <span class="font-kaiti">傳統智慧</span>· Modern Care
+      </div>
+      <h1>
+        Healing Begins <em>with Harmony</em>
+        <span class="hero-v3-sub-zh">調和身心 · 恢復健康</span>
+      </h1>
+      <p class="hero-v3-tagline">Licensed Traditional Chinese Medicine, from anywhere in Malaysia.</p>
+      <p class="hero-v3-tagline-zh">持證中醫師 · 線上或臨診預約</p>
+      <div class="hero-v3-cta">
+        <a class="btn btn--primary btn--lg" href="portal.html#/book">📅 Book Appointment · 預約</a>
+        <a class="btn btn--outline btn--lg" id="hero-whatsapp" href="#" target="_blank" rel="noopener">💬 WhatsApp Us · 聯絡</a>
+      </div>
+    </div>
+    <div class="hero-v3-card">
+      <img src="assets/img/brand/logo-mark.svg" class="hero-v3-card-logo" alt="">
+      <div class="hero-v3-card-caption-zh">九宮藥閣 · 漢方精粹</div>
+      <div class="hero-v3-card-caption-en">Traditional Apothecary · Essence of HansMed</div>
+      <div class="hero-v3-pillars">
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">針</div><span class="hero-v3-pillar-label">Acupuncture</span></div>
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">藥</div><span class="hero-v3-pillar-label">Herbal</span></div>
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">心</div><span class="hero-v3-pillar-label">Mind-Body</span></div>
+        <div class="hero-v3-pillar"><div class="hero-v3-pillar-glyph">科</div><span class="hero-v3-pillar-label">Evidence</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════ ABOUT ══════════════ -->
+<section id="about" class="section bg-washi">
+  <div class="container" style="max-width: 900px;">
+    <div class="section-header">
+      <div class="section-label">About Us · 關於我們</div>
+      <h2 class="section-title">Where Tradition Meets <em>Modern Care</em></h2>
+      <p class="text-muted mt-2" style="font-family: var(--font-zh);">傳統中醫智慧，遇見現代科技</p>
+    </div>
+
+    <!-- Origin story -->
+    <div class="about-origin" style="max-width: 760px; margin: 0 auto;">
+      <p style="font-family: var(--font-zh); font-size: var(--text-lg); line-height: 2.1; color: var(--ink); text-align: center;">
+        HansMed Modern TCM 的由來 —
+        <br>
+        <span style="color: var(--stone);">為了方便大眾在忙碌的生活節奏中可以安心看上合格中醫，</span>
+        <br>
+        <span style="color: var(--stone);">我們利用 AI 科技平台，讓中醫師不需要為了繁雜的手續而耽誤了專心看病治病。</span>
+      </p>
+      <p style="font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--stone); text-align: center; margin-top: var(--s-4); font-style: italic;">
+        HansMed Modern TCM was born from a simple idea —
+        <br>
+        to help busy people see a qualified TCM practitioner with peace of mind,
+        <br>
+        while freeing doctors from paperwork so they can focus on healing.
+      </p>
+    </div>
+
+    <!-- Tagline / brand poem -->
+    <div class="about-poem" style="margin: var(--s-8) auto 0; max-width: 640px; text-align: center;">
+      <div class="about-poem-line" style="font-family: var(--font-kaiti); font-size: clamp(1.4rem, 2.4vw, 1.9rem); color: var(--gold); letter-spacing: .12em; line-height: 1.7;">
+        現代化的科技平台<br>
+        傳統式的中醫智慧
+      </div>
+      <div style="width: 40px; height: 1px; background: var(--gold); opacity: 0.4; margin: var(--s-4) auto;"></div>
+      <div style="font-family: var(--font-zh); font-size: var(--text-lg); color: var(--ink); letter-spacing: .08em; line-height: 1.8;">
+        造就了現代與傳統<em style="color: var(--gold); font-style: normal;">不再有代溝</em>
+      </div>
+      <div style="font-family: var(--font-display); font-style: italic; font-size: var(--text-base); color: var(--stone); margin-top: var(--s-2); letter-spacing: .03em;">
+        Modern technology, traditional wisdom —
+        <br>
+        bridging the generations.
+      </div>
+    </div>
+
+    <!-- Key stats (short — always visible) -->
+    <div class="stats-grid mt-8" style="max-width: 700px; margin: var(--s-8) auto 0; grid-template-columns: repeat(3, 1fr);">
+      <div class="stat-card">
+        <div class="stat-number">25+</div>
+        <div class="stat-label">Licensed Doctors · 持證醫師</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">12K</div>
+        <div class="stat-label">Patients Treated · 累計病患</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Chat Support · 線上支援</div>
+      </div>
+    </div>
+
+    <!-- ── Why TCM, Why HansMed (always visible now) ── -->
+    <div class="mt-8" style="padding-top: var(--s-5); border-top: 1px solid var(--border); max-width: 820px; margin: var(--s-8) auto 0;">
+      <div class="text-center mb-5">
+        <div class="section-label">Why TCM, Why HansMed · 為什麼選擇中醫，為什麼選擇我們</div>
+        <h3 style="font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 400; color: var(--ink); line-height: 1.3; margin-top: var(--s-2);">
+          Traditional Chinese Medicine, <em style="color: var(--gold); font-style: italic;">Scientifically Proven</em>
+        </h3>
+        <p style="font-family: var(--font-zh); color: var(--stone); margin-top: var(--s-2); letter-spacing: 0.05em;">
+          中醫智慧 · 科學實證
+        </p>
+      </div>
+
+      <p style="font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--stone); text-align: center;">
+        Modern clinical research has confirmed what Chinese healers observed over two millennia — that TCM works, and now we understand precisely <em>why</em>. At HansMed, every treatment protocol is grounded in both classical theory and peer-reviewed evidence.
+      </p>
+      <p style="font-family: var(--font-zh); font-size: var(--text-base); line-height: 1.9; color: var(--stone); text-align: center; margin-top: var(--s-3);">
+        現代臨床研究證實中醫療效，每項方案皆結合古典理論與同行評審證據，融合傳統與科學。
+      </p>
+
+      <!-- Four science pillars -->
+      <div class="about-pillars">
+        <div class="about-pillar about-pillar--sage">
+          <div class="about-pillar-title">實證基礎 · Evidence-Based</div>
+          <div class="about-pillar-desc">Every protocol supported by published clinical research and WHO-endorsed guidelines. · 基於實證研究與 WHO 準則。</div>
+        </div>
+        <div class="about-pillar about-pillar--gold">
+          <div class="about-pillar-title">整合醫學 · Integrative</div>
+          <div class="about-pillar-desc">TCM and modern diagnostics working together for more complete and accurate assessment. · 中醫與現代診斷結合。</div>
+        </div>
+        <div class="about-pillar about-pillar--red">
+          <div class="about-pillar-title">個人化診療 · Personalised</div>
+          <div class="about-pillar-desc">Constitutional profiling through TCM tongue assessment and symptom mapping — educational wellness insight, not a medical diagnosis. · 中醫體質分析與個人化建議（健康評估，非醫療診斷）。</div>
+        </div>
+        <div class="about-pillar about-pillar--sage">
+          <div class="about-pillar-title">持牌醫師 · Licensed Experts</div>
+          <div class="about-pillar-desc">All practitioners are registered, certified and undergo continuous medical education. · 所有醫師皆持證並持續進修。</div>
+        </div>
+      </div>
+
+      <!-- Track record stats -->
+      <div class="stats-grid" style="max-width: 700px; margin: var(--s-6) auto 0; grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card">
+          <div class="stat-number">25+</div>
+          <div class="stat-label">Years of Practice · 執業經驗</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">10+</div>
+          <div class="stat-label">TCM Specialties · 專科類別</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">8</div>
+          <div class="stat-label">Specialists · 專科醫師</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════ HOW IT WORKS — illustrated ══════════════ -->
+<section id="how-it-works" class="section container">
+  <div class="section-header">
+    <div class="section-label">How It Works · 使用流程</div>
+    <h2 class="section-title">HansMed 123 · <em>簡單三步 Easy Steps</em></h2>
+    <p class="text-muted mt-2" style="max-width: 620px; margin: var(--s-3) auto 0; text-align: center;">
+      From the first tap to the herbs at your door — three steps, one trusted practitioner.
+      <br><span style="font-family: var(--font-zh);">從預約到送藥，三個步驟，一次信任。</span>
+    </p>
+  </div>
+
+  <div class="hiw-grid">
+
+    <!-- Step 1: Book -->
+    <div class="hiw-card">
+      <div class="hiw-step-num">1</div>
+      <div class="hiw-illust">
+        <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f5efe3"/>
+              <stop offset="100%" stop-color="#ede7d8"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="200" height="160" fill="url(#bg1)" rx="8"/>
+          <!-- Calendar -->
+          <rect x="28" y="36" width="80" height="84" rx="4" fill="#fff" stroke="#b8965a" stroke-width="2"/>
+          <rect x="28" y="36" width="80" height="18" rx="4" fill="#c0392b"/>
+          <circle cx="42" cy="32" r="3" fill="#7a7068"/>
+          <circle cx="94" cy="32" r="3" fill="#7a7068"/>
+          <rect x="40" y="30" width="4" height="12" fill="#7a7068" rx="2"/>
+          <rect x="92" y="30" width="4" height="12" fill="#7a7068" rx="2"/>
+          <!-- calendar grid -->
+          <g fill="#b8965a" opacity=".7">
+            <circle cx="42" cy="68" r="2"/><circle cx="56" cy="68" r="2"/><circle cx="70" cy="68" r="2"/><circle cx="84" cy="68" r="2"/><circle cx="98" cy="68" r="2"/>
+            <circle cx="42" cy="82" r="2"/><circle cx="56" cy="82" r="2"/><circle cx="70" cy="82" r="2"/>
+          </g>
+          <!-- highlighted date -->
+          <circle cx="84" cy="82" r="7" fill="#b8965a"/>
+          <text x="84" y="86" text-anchor="middle" fill="#fff" font-size="10" font-weight="700" font-family="sans-serif">15</text>
+          <g fill="#c8baa6">
+            <circle cx="98" cy="82" r="2"/><circle cx="42" cy="96" r="2"/><circle cx="56" cy="96" r="2"/><circle cx="70" cy="96" r="2"/>
+            <circle cx="84" cy="96" r="2"/><circle cx="98" cy="96" r="2"/><circle cx="42" cy="110" r="2"/><circle cx="56" cy="110" r="2"/>
+          </g>
+          <!-- clock -->
+          <circle cx="150" cy="80" r="28" fill="#fff" stroke="#1a1612" stroke-width="2"/>
+          <circle cx="150" cy="80" r="3" fill="#1a1612"/>
+          <line x1="150" y1="80" x2="150" y2="60" stroke="#1a1612" stroke-width="3" stroke-linecap="round"/>
+          <line x1="150" y1="80" x2="165" y2="85" stroke="#b8965a" stroke-width="2" stroke-linecap="round"/>
+          <g fill="#1a1612">
+            <circle cx="150" cy="58" r="1.5"/><circle cx="172" cy="80" r="1.5"/>
+            <circle cx="150" cy="102" r="1.5"/><circle cx="128" cy="80" r="1.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="hiw-title-zh">預約</div>
+      <div class="hiw-title-en">Book Appointment</div>
+      <p class="hiw-desc">
+        Pick your concern and a convenient time.
+        <br><span style="font-family: var(--font-zh);">選擇症狀與時段。</span>
+      </p>
+    </div>
+
+    <!-- Step 2: Consult -->
+    <div class="hiw-card">
+      <div class="hiw-step-num">2</div>
+      <div class="hiw-illust">
+        <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f0ede4"/>
+              <stop offset="100%" stop-color="#e4d9c8"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="200" height="160" fill="url(#bg2)" rx="8"/>
+          <!-- Laptop -->
+          <rect x="42" y="54" width="116" height="72" rx="4" fill="#1a1612"/>
+          <rect x="48" y="60" width="104" height="60" rx="2" fill="#f5efe3"/>
+          <rect x="34" y="126" width="132" height="6" rx="3" fill="#1a1612"/>
+          <!-- Doctor in video call -->
+          <circle cx="100" cy="82" r="12" fill="#c8a882"/>
+          <rect x="90" y="94" width="20" height="14" rx="4" fill="#fff"/>
+          <rect x="88" y="99" width="24" height="3" fill="#b8965a"/>
+          <!-- Stethoscope hint -->
+          <circle cx="100" cy="78" r="2" fill="#1a1612"/>
+          <circle cx="95" cy="78" r="2" fill="#1a1612"/>
+          <!-- Video chat bubble on left -->
+          <rect x="52" y="64" width="28" height="18" rx="2" fill="#b8965a"/>
+          <circle cx="60" cy="73" r="4" fill="#fff"/>
+          <rect x="66" y="70" width="10" height="2" fill="#fff"/>
+          <rect x="66" y="75" width="8" height="2" fill="#fff"/>
+          <!-- Online dot -->
+          <circle cx="146" cy="66" r="4" fill="#7a8c72"/>
+          <!-- Connection waves -->
+          <path d="M 158 110 Q 170 100 180 108" fill="none" stroke="#b8965a" stroke-width="1.5" opacity=".6"/>
+          <path d="M 30 110 Q 20 100 10 108" fill="none" stroke="#b8965a" stroke-width="1.5" opacity=".6"/>
+        </svg>
+      </div>
+      <div class="hiw-title-zh">問診</div>
+      <div class="hiw-title-en">Online Consultation</div>
+      <p class="hiw-desc">
+        Licensed TCM doctor sees you by video.
+        <br><span style="font-family: var(--font-zh);">持證中醫師視訊問診。</span>
+      </p>
+    </div>
+
+    <!-- Step 3: Delivery -->
+    <div class="hiw-card">
+      <div class="hiw-step-num">3</div>
+      <div class="hiw-illust">
+        <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#e9e4d4"/>
+              <stop offset="100%" stop-color="#d8cebb"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="200" height="160" fill="url(#bg3)" rx="8"/>
+          <!-- House -->
+          <polygon points="120,50 160,80 160,130 80,130 80,80" fill="#c8a882"/>
+          <polygon points="120,50 80,80 160,80" fill="#8a6e4a"/>
+          <rect x="104" y="96" width="16" height="24" fill="#5e3c22"/>
+          <rect x="130" y="90" width="14" height="14" fill="#b8965a"/>
+          <!-- Herb box -->
+          <rect x="20" y="90" width="50" height="40" fill="#7a8c72" rx="3"/>
+          <rect x="20" y="100" width="50" height="4" fill="#5a6a55"/>
+          <path d="M 30 90 L 40 80 L 50 90" fill="none" stroke="#5a6a55" stroke-width="1.5"/>
+          <path d="M 40 90 L 40 82" stroke="#5a6a55" stroke-width="1.5"/>
+          <!-- Herb leaves on box -->
+          <ellipse cx="35" cy="112" rx="3" ry="5" fill="#8a9c82" transform="rotate(-20 35 112)"/>
+          <ellipse cx="45" cy="112" rx="3" ry="5" fill="#8a9c82"/>
+          <ellipse cx="55" cy="112" rx="3" ry="5" fill="#8a9c82" transform="rotate(20 55 112)"/>
+          <!-- Arrow/path -->
+          <path d="M 72 118 Q 82 130 90 118" fill="none" stroke="#b8965a" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+          <!-- Checkmark circle -->
+          <circle cx="170" cy="35" r="14" fill="#7a8c72"/>
+          <path d="M 163 35 L 168 40 L 177 31" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="hiw-title-zh">送藥 / 上門</div>
+      <div class="hiw-title-en">Delivery / Home Visit</div>
+      <p class="hiw-desc">
+        Herbs delivered to your door, or a home visit.
+        <br><span style="font-family: var(--font-zh);">送藥到府，或上門服務。</span>
+      </p>
+    </div>
+
+  </div>
+
+  <!-- CTA strip -->
+  <div class="hiw-cta">
+    <div>
+      <div style="font-family: var(--font-kaiti); font-size: 1.3rem; color: var(--ink); letter-spacing: .08em;">簡單三步，安心看中醫</div>
+      <div class="text-sm text-muted mt-1" style="font-style: italic;">Three simple steps to feel better — the modern way.</div>
+    </div>
+    <button class="btn btn--primary btn--lg" onclick="location.href='portal.html#/book'">Start Now · 立即開始 →</button>
+  </div>
+</section>
+
+<!-- ══════════════ WHY HANSMED / PILLARS v3 ══════════════ -->
+<section class="pillars-v3">
+  <div class="pillars-v3-container">
+    <div class="section-header-v3">
+      <div class="section-header-v3-eyebrow">Why HansMed · 為什麼選擇我們</div>
+      <h2 class="section-header-v3-title">Traditional Chinese Medicine, <em>Scientifically Proven</em></h2>
+      <p class="section-header-v3-sub">中醫智慧 · 科學實證</p>
+    </div>
+    <div class="pillars-v3-grid">
+      <div class="pillar-v3 is-sage">
+        <div class="pillar-v3-title">實證基礎 · Evidence-Based</div>
+        <div class="pillar-v3-desc">Every protocol supported by published clinical research and WHO-endorsed guidelines. · <span class="font-zh">基於實證研究與 WHO 準則。</span></div>
+      </div>
+      <div class="pillar-v3 is-gold">
+        <div class="pillar-v3-title">整合醫學 · Integrative</div>
+        <div class="pillar-v3-desc">TCM and modern diagnostics working together for more complete assessment. · <span class="font-zh">中醫與現代診斷結合。</span></div>
+      </div>
+      <div class="pillar-v3 is-red-seal">
+        <div class="pillar-v3-title">個人化診療 · Personalised</div>
+        <div class="pillar-v3-desc">Constitutional profiling through AI-assisted tongue assessment and symptom mapping. · <span class="font-zh">AI 體質分析與個人化診療。</span></div>
+      </div>
+      <div class="pillar-v3 is-sage">
+        <div class="pillar-v3-title">持牌醫師 · Licensed</div>
+        <div class="pillar-v3-desc">Practitioners are registered, certified and undergo continuous medical education. · <span class="font-zh">醫師皆持證並持續進修。</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ══════════════ PARTNERS + CERTIFICATIONS ══════════════ -->
+<section id="trust" class="section bg-washi">
+  <div class="container" style="max-width: 980px;">
+
+    <!-- Pharmacy partners -->
+    <div class="trust-label">合作藥局夥伴 · Pharmacy Partners</div>
+    <div class="cert-row">
+      <div class="cert-logo">
+        <svg viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="140" height="60" rx="3" fill="white"/>
+          <path d="M18 28 C18 22 26 20 26 28 C26 20 34 22 34 28 C34 34 26 40 26 40 C26 40 18 34 18 28Z" fill="#e74c3c"/>
+          <text x="44" y="26" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#1a6b4a" letter-spacing=".3">Caring</text>
+          <text x="44" y="40" font-family="Arial,sans-serif" font-size="9.5" fill="#2e8b57" letter-spacing=".5">PHARMACY</text>
+          <text x="44" y="53" font-family="Arial,sans-serif" font-size="6" fill="#7f8c8d" letter-spacing=".2">We Care For You</text>
+        </svg>
+        <span class="cert-label">CARING PHARMACY</span>
+      </div>
+      <div class="cert-logo">
+        <svg viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="140" height="60" rx="3" fill="white"/>
+          <rect x="6" y="8" width="36" height="44" rx="3" fill="#c0392b"/>
+          <text x="24" y="36" font-family="Arial,sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">B</text>
+          <text x="56" y="27" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#1a1612" letter-spacing=".2">BIG</text>
+          <text x="56" y="40" font-family="Arial,sans-serif" font-size="9" fill="#c0392b" letter-spacing="1">PHARMACY</text>
+          <text x="56" y="53" font-family="Arial,sans-serif" font-size="6" fill="#7f8c8d" letter-spacing=".2">Health &amp; Wellness</text>
+        </svg>
+        <span class="cert-label">BIG PHARMACY</span>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="trust-divider"></div>
+
+    <!-- Certifications -->
+    <div class="trust-label trust-label--gold">認證與監管 · Certified &amp; Regulated</div>
+    <div class="cert-grid">
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 90 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="45" cy="32" r="28" fill="none" stroke="#1a5276" stroke-width="2.5"/>
+          <circle cx="45" cy="32" r="22" fill="#1a5276"/>
+          <path d="M45 14 A18 18 0 1 1 28 42 A12 12 0 1 0 45 14Z" fill="#f4d03f"/>
+          <rect x="12" y="60" width="66" height="16" rx="2" fill="#1a5276"/>
+          <text x="45" y="72" font-family="Arial,sans-serif" font-size="7.5" font-weight="bold" fill="white" text-anchor="middle" letter-spacing=".5">KKM MALAYSIA</text>
+        </svg>
+        <span class="cert-label">KEMENTERIAN KESIHATAN MALAYSIA</span>
+      </div>
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 90 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="45" cy="36" r="30" fill="#27ae60"/>
+          <circle cx="45" cy="36" r="25" fill="none" stroke="white" stroke-width="1.2"/>
+          <text x="45" y="30" font-family="Arial,sans-serif" font-size="8" fill="white" text-anchor="middle" font-weight="bold" letter-spacing="1">حلال</text>
+          <text x="45" y="42" font-family="Arial,sans-serif" font-size="10" fill="white" text-anchor="middle" font-weight="bold" letter-spacing="2">HALAL</text>
+          <text x="45" y="54" font-family="Arial,sans-serif" font-size="6" fill="rgba(255,255,255,.75)" text-anchor="middle">MALAYSIA</text>
+          <rect x="9" y="66" width="72" height="12" rx="2" fill="#1e8449"/>
+          <text x="45" y="75" font-family="Arial,sans-serif" font-size="6.5" fill="white" text-anchor="middle" letter-spacing=".3">JAKIM CERTIFIED</text>
+        </svg>
+        <span class="cert-label">HALAL CERTIFIED JAKIM MALAYSIA</span>
+      </div>
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="4" width="100" height="58" rx="4" fill="#1a3a5c"/>
+          <line x1="40" y1="12" x2="40" y2="54" stroke="#f4d03f" stroke-width="2.5"/>
+          <path d="M33 20 Q40 16 47 20 Q40 24 33 20Z" fill="none" stroke="#27ae60" stroke-width="1.5"/>
+          <path d="M33 30 Q40 26 47 30 Q40 34 33 30Z" fill="none" stroke="#27ae60" stroke-width="1.5"/>
+          <circle cx="40" cy="12" r="3" fill="#f4d03f"/>
+          <text x="62" y="26" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="1">NPRA</text>
+          <text x="62" y="38" font-family="Arial,sans-serif" font-size="5.5" fill="#aed6f1" text-anchor="middle" letter-spacing=".3">National Pharmaceutical</text>
+          <text x="62" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#aed6f1" text-anchor="middle" letter-spacing=".3">Regulatory Agency</text>
+          <rect x="5" y="62" width="100" height="16" rx="2" fill="#f4d03f"/>
+          <text x="55" y="73" font-family="Arial,sans-serif" font-size="7" fill="#1a3a5c" text-anchor="middle" font-weight="bold" letter-spacing=".5">APPROVED · 批准</text>
+        </svg>
+        <span class="cert-label">NPRA APPROVED MALAYSIA</span>
+      </div>
+
+      <div class="cert-logo">
+        <svg viewBox="0 0 90 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="80" height="60" rx="4" fill="#6c3483"/>
+          <circle cx="30" cy="28" r="16" fill="none" stroke="#e8daef" stroke-width="2"/>
+          <text x="30" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">R</text>
+          <text x="60" y="22" font-family="Arial,sans-serif" font-size="7" fill="white" text-anchor="middle" font-weight="bold">REGISTERED</text>
+          <text x="60" y="32" font-family="Arial,sans-serif" font-size="6" fill="#d7bde2" text-anchor="middle">TCM CLINIC</text>
+          <text x="60" y="42" font-family="Arial,sans-serif" font-size="5.5" fill="#d7bde2" text-anchor="middle">登記中醫診所</text>
+          <rect x="5" y="65" width="80" height="13" rx="2" fill="#5b2c6f"/>
+          <text x="45" y="74.5" font-family="Arial,sans-serif" font-size="6.5" fill="white" text-anchor="middle" letter-spacing=".3">MOH MALAYSIA</text>
+        </svg>
+        <span class="cert-label">MOH REGISTERED TCM CLINIC</span>
+      </div>
+
+    </div>
+
+    <p class="cert-quote">
+      <em>Practising with full regulatory compliance &amp; professional accountability</em><br>
+      <span class="cert-quote-zh">依法執業 · 專業負責</span>
+    </p>
+
+  </div>
+</section>
+
+<!-- ══════════════ EMERGENCY DISCLAIMER ══════════════ -->
+<section class="section--sm container">
+  <div class="emergency-banner">
+    <div class="emergency-banner-title">⚠ Medical Emergency Notice</div>
+    <div class="emergency-banner-text">
+      HansMed is designed for non-emergency consultations. If you are experiencing chest pain, difficulty breathing, severe bleeding, or other life-threatening symptoms, please call <strong>999</strong> immediately or visit the nearest emergency department.
+      <br>
+      <span style="font-family: var(--font-zh);">漢方現代中醫僅提供非緊急醫療諮詢。如遇胸痛、呼吸困難、嚴重出血等緊急情況，請立即撥打 999 或前往急診。</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ FINAL CTA ══════════════ -->
+<section class="section--sm container" style="text-align: center;">
+  <p class="text-muted" style="margin-bottom: var(--s-4); font-family: var(--font-zh);">想了解更多？</p>
+  <div class="flex gap-2 flex-wrap" style="justify-content: center;">
+    <a href="services.html" class="btn btn--outline">Our Services · 服務</a>
+    <a href="shop.html" class="btn btn--outline">Shop · 商店</a>
+    <a href="contact.html" class="btn btn--outline">Contact · 聯絡我們</a>
+  </div>
+</section>
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-heading">HansMed</div>
+      <p style="color: rgba(245, 240, 232, 0.65); font-size: var(--text-sm); line-height: var(--leading-relaxed);">
+        Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.
+        <br>
+        <span style="font-family: var(--font-zh); font-size: .85rem;">持證中醫師 · 馬來西亞各地皆可問診。</span>
+      </p>
+    </div>
+    <div>
+      <div class="footer-heading">Platform · 平台</div>
+      <div class="footer-links">
+        <a href="#services" class="footer-link">Services · 服務</a>
+        <a href="portal.html#/shop" class="footer-link">Shop · 商店</a>
+        <a href="portal.html#/book" class="footer-link">Book Consultation · 預約</a>
+        <a href="#/register" class="footer-link">Sign Up · 註冊</a>
+        <a href="#/login" class="footer-link">Sign In · 登入</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-heading">For Professionals · 專業人員</div>
+      <div class="footer-links">
+        <a href="#/login" class="footer-link">Doctor Login · 醫師登入</a>
+        <a href="#/login" class="footer-link">Pharmacy Login · 藥房登入</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-heading">Legal · 法律</div>
+      <div class="footer-links">
+        <a href="javascript:showPage('privacy-policy')" class="footer-link">Privacy Policy · 隱私政策</a>
+        <a href="javascript:showPage('terms')" class="footer-link">Terms of Service · 服務條款</a>
+        <a href="javascript:showPage('faq')" class="footer-link">FAQ · 常見問題</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>&copy; 2026 HansMed Modern TCM · 漢方現代中醫</div>
+    <div>Made with care in Malaysia · 匠心於馬來西亞</div>
+  </div>
+</footer>
+
+<!-- ══════════════ AUTH MODAL (shown via hash router) ══════════════ -->
+<template id="tpl-auth-modal">
+  <div class="auth-modal">
+    <div class="tabs" style="margin-bottom: var(--s-5);">
+      <button class="tab" data-tab="login">Sign In · 登入</button>
+      <button class="tab" data-tab="register">Register · 註冊</button>
+      <button class="tab" data-tab="professional">Doctor/Pharmacy · 專業</button>
+    </div>
+
+    <!-- Login panel -->
+    <form class="tab-panel" data-panel="login">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Welcome Back · 歡迎回來</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in with your email or phone · 以電郵或手機號碼登入</p>
+      <div class="field">
+        <label class="field-label" data-required>Email or Phone · 電郵或手機</label>
+        <input type="text" name="identifier" class="field-input" required autocomplete="username" placeholder="you@example.com  或  +60 12-345 6789">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required autocomplete="current-password">
+        <div class="field-error"></div>
+      </div>
+      <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+
+      <!-- WhatsApp fallback — lets patients book without signing in -->
+      <div style="text-align:center; margin-top: var(--s-5); margin-bottom: var(--s-2); color: var(--stone); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase;">
+        Or Book via WhatsApp · 或以 WhatsApp 預約
+      </div>
+      <a href="#" data-action="whatsapp-book" class="btn btn--block" style="background:#25D366; color:#fff; border-color:#25D366;" target="_blank" rel="noopener">
+        <span style="font-size: 1.1rem; margin-right: 6px;">💬</span> Chat with us on WhatsApp
+      </a>
+    </form>
+
+    <!-- Register panel -->
+    <form class="tab-panel" data-panel="register">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Create Account · 建立帳號</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Join HansMed as a patient · 註冊成為患者</p>
+      <div class="field">
+        <label class="field-label" data-required>Name · 姓名</label>
+        <input type="text" name="nickname" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Phone Number · 手機號碼</label>
+        <input type="tel" name="phone" class="field-input" required autocomplete="tel" placeholder="+60 12-345 6789">
+        <div class="field-hint">We'll use this to contact you about appointments. · 預約聯絡用。</div>
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required autocomplete="new-password" minlength="8">
+        <div class="field-hint">Minimum 8 characters, with at least 1 uppercase letter and 1 number. · 至少8位，須含 1 個大寫字母及 1 個數字。</div>
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Create Account · 建立帳號</button>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">
+        By registering, you agree to our
+        <a href="javascript:showPage('terms')">Terms</a> and
+        <a href="javascript:showPage('privacy-policy')">Privacy Policy</a>
+      </p>
+    </form>
+
+    <!-- Forgot-password panel (hidden by default; opened via "Forgot password?" link) -->
+    <form class="tab-panel" data-panel="forgot">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-5); font-size: var(--text-sm);">Enter your email and we'll send you a reset link. · 輸入電郵，我們將寄出重設連結。</p>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Send Reset Link · 寄送連結</button>
+      <div style="text-align:center; margin-top: var(--s-4);">
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+      </div>
+    </form>
+
+    <!-- Professional login -->
+    <form class="tab-panel" data-panel="professional">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Professional Sign In · 專業人員登入</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">For doctors, pharmacies, and administrators · 醫師 / 藥房 / 管理員登入</p>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="identifier" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">
+        Need an account? Contact your administrator.
+      </p>
+    </form>
+  </div>
+</template>
+
+<!-- ══════════════ PRODUCT CARD TEMPLATE ══════════════ -->
+<template id="tpl-product-card">
+  <div class="card card--clickable product-card" data-id="">
+    <div class="product-card-img" data-bind="emoji" style="font-size: 3rem; text-align:center; padding: var(--s-4); background: var(--washi); border-radius: var(--r-md); margin-bottom: var(--s-3);"></div>
+    <div class="text-label text-gold mb-1" data-bind="category"></div>
+    <div class="card-title" data-bind="name"></div>
+    <div class="text-sm text-muted mt-1 mb-3" data-bind="name_zh" style="font-family: var(--font-zh);"></div>
+    <div class="flex-between" style="align-items:center;">
+      <div class="card-title" style="font-size: var(--text-lg); color: var(--gold);" data-bind="price_formatted"></div>
+      <button class="btn btn--outline btn--sm" data-action="add">+ Cart</button>
+    </div>
+  </div>
+</template>
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/bus.js"></script>
+<script src="assets/js/format.js"></script>
+<script src="assets/js/empty.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/form.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/router.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/lang-switcher.js"></script>
+<script src="assets/js/pages/landing.js"></script>
+
+</body>
+</html>

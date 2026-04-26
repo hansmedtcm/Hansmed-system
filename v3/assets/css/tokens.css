@@ -1,0 +1,298 @@
+/* ============================================================
+   HansMed Design Tokens — v4 (Unified Design System, 2026-04-24)
+   ============================================================
+   Single source of truth for colors, typography, spacing, etc.
+   Approved via the HansMed Design System document:
+   · +15% type scale across all sizes (body min 19.5px)
+   · Stone darkened from #7A7068 → #5F4A33 (7.3:1 on cream)
+   · Gold darkened from #B8965A → #9A7A3E (4.6:1, safe for text)
+   · Body weight 300 → 400, meta labels 300 → 500+
+   · All-age readability: WCAG AA+ on every text token
+
+   Compatibility: legacy token aliases (--washi-dark, --surface-*,
+   --pill-*, --sidebar-width, --z-*) are preserved so existing
+   panel CSS continues to work.
+   ============================================================ */
+
+:root {
+  /* ══════════════════════════════════════════════════════════
+     CORE PALETTE — five named brand colours + neutrals.
+     Stone + Gold darkened for WCAG AA+ contrast on cream.
+     ══════════════════════════════════════════════════════════ */
+  --cream:        #F5F1EA;   /* primary page background — warm off-white */
+  --cream-raised: #FAF7F2;   /* elevated surfaces, modal body, cards on washi */
+  --cream-white:  #FEFCF8;   /* brightest surface — form fields, hero cards */
+  --washi:        #EDE7D8;   /* raised cards, dotted pattern base */
+  --washi-soft:   #F3EDE1;   /* hover / subtle fill */
+  --washi-dark:   #EDE7D8;   /* legacy alias */
+  --ink:          #1A1612;   /* primary text, primary button, borders — 15.2:1 AAA */
+  --ink-soft:     #241608;   /* body copy, strong secondary — 13.5:1 AAA */
+  --ink-mid:      #3D2610;   /* muted paragraph text — 9.8:1 AAA */
+  --stone:        #5F4A33;   /* secondary / muted — 7.3:1 AA+ (was #7A7068) */
+  --stone-light:  #6E5A44;   /* tertiary — 6.0:1 AA  (was #9A9088) */
+  --mist:         #E8E2D6;   /* hairline borders, dividers */
+
+  --sage:         #7A8C72;   /* success, positive, wood element */
+  --sage-light:   #EEF3E8;   /* sage tinted surface */
+  --sage-soft:    #A9B8A2;   /* muted success */
+  --gold:         #9A7A3E;   /* accent — 4.6:1 AA on cream (was #B8965A) */
+  --gold-deep:    #6E4F10;   /* gold text — 8.4:1 AAA */
+  --gold-soft:    #D9BF88;   /* gold tint, hover surface */
+  --gold-pale:    #F0E4C0;   /* gold wash */
+  --gold-whisper: #FBF6E8;   /* lightest gold tint */
+  --terracotta:    #9A6035;  /* warm outline button */
+  --terracotta-dk: #6E4020;
+  --terracotta-lt: #F2E0CC;
+  --wood:          #6B4E2E;  /* dark wood — quote band, footer */
+  --wood-mid:      #8C6340;  /* wood accent italic heading */
+  --wood-light:    #B8895A;  /* wood accent */
+  --wood-pale:     #DFC9A8;
+  --red-seal:      #C0392B;  /* seal stamp, danger, fire element */
+
+  /* Five-element colour strip (used only in Brand motif bars) */
+  --elem-wood:    #7A8C72;   /* 木 green */
+  --elem-fire:    #C0392B;   /* 火 red */
+  --elem-earth:   #B8965A;   /* 土 gold — motif only (not text) */
+  --elem-metal:   #C8BAA6;   /* 金 pale */
+  --elem-water:   #1A3A5C;   /* 水 deep blue */
+
+  /* ══════════════════════════════════════════════════════════
+     SEMANTIC COLOR TOKENS — reference these from components.
+     ══════════════════════════════════════════════════════════ */
+  --fg-1:            var(--ink);
+  --fg-2:            var(--ink-soft);     /* upgraded from --stone for readability */
+  --fg-3:            var(--stone);        /* was --stone-light */
+  --fg-invert:       var(--cream-raised);
+  --fg-accent:       var(--gold);
+  --fg-link:         var(--gold-deep);    /* darker for link contrast */
+
+  --bg:              var(--cream);
+  --bg-raised:       var(--cream-raised);
+  --bg-elevated:     var(--washi);
+  --surface:         var(--cream);            /* legacy alias */
+  --surface-raised:  var(--cream-raised);     /* legacy alias */
+  --surface-elevated: var(--washi);           /* legacy alias */
+
+  --text-primary:    var(--ink);              /* legacy alias */
+  --text-secondary:  var(--ink-soft);         /* legacy alias — upgraded */
+  --text-inverse:    var(--cream-raised);     /* legacy alias */
+
+  --border:          #D8C9AE;                 /* was --mist — stronger edge */
+  --border-light:    #EAE0CF;
+  --border-strong:   #D3CBBC;
+  --divider:         var(--mist);
+
+  --accent:          var(--gold);
+  --success:         var(--sage);
+  --danger:          var(--red-seal);
+  --warning:         #D99B17;
+  --info:            #4A7CA6;
+
+  --focus-ring:      0 0 0 3px rgba(154, 122, 62, 0.45);
+  --selection:       rgba(154, 122, 62, 0.30);
+
+  /* ── Status pills — darkened text colours for AA+ ── */
+  --pill-pending:    #6B4D08;
+  --pill-active:     var(--gold-deep);
+  --pill-progress:   #1E4968;
+  --pill-success:    #2E4418;
+  --pill-danger:     var(--red-seal);
+
+  /* ══════════════════════════════════════════════════════════
+     TYPOGRAPHY — families (user-approved: Cormorant + DM Sans)
+     ══════════════════════════════════════════════════════════ */
+  --font-display: 'Cormorant Garamond', 'Noto Serif SC', Georgia, 'Times New Roman', serif;
+  --font-zh:      'Noto Serif SC', 'Microsoft YaHei', 'PingFang TC', serif;
+  --font-kaiti:   'ZhengYanKaiTi', 'Ma Shan Zheng', 'Noto Serif SC', 'KaiTi', 'BiauKai', serif;
+  --font-body:    'DM Sans', 'Source Sans 3', 'Noto Serif SC', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+
+  /* ══════════════════════════════════════════════════════════
+     TYPE SCALE — +15% uplift for all-age readability.
+     Body minimum is 19.5px (was 17px).
+     Default weight is 400+ (was 300) to prevent thin fade.
+     ══════════════════════════════════════════════════════════ */
+  --text-xs:   0.9375rem;   /* 15px  (was 13) — micro labels only */
+  --text-sm:   1.0625rem;   /* 17px  (was 15) — captions, small meta */
+  --text-base: 1.21875rem;  /* 19.5px (was 17) — body copy MINIMUM */
+  --text-md:   1.375rem;    /* 22px  (was 19) — lead paragraph */
+  --text-lg:   1.5625rem;   /* 25px  (was 22) — pull quotes, h4 */
+  --text-xl:   1.875rem;    /* 30px  (was 26) — h3 */
+  --text-2xl:  2.3rem;      /* 36.8px (was 32) — h2 */
+  --text-3xl:  2.875rem;    /* 46px  (was 40) — section title */
+  --text-4xl:  clamp(2.6rem, 4.6vw, 4rem);      /* display h1 */
+  --text-5xl:  clamp(3.15rem, 6.3vw, 5.45rem);  /* hero display */
+
+  --leading-tight:    1.14;
+  --leading-snug:     1.35;
+  --leading-normal:   1.55;
+  --leading-relaxed:  1.72;
+  --leading-loose:    2.0;
+
+  --tracking-tight:   -0.025em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.08em;
+  --tracking-wider:   0.14em;
+  --tracking-widest:  0.18em;
+
+  /* Default body/meta weights — DO NOT go below 400 for body text */
+  --weight-body:       400;
+  --weight-body-strong:500;
+  --weight-meta:       500;
+  --weight-eyebrow:    600;
+  --weight-heading:    400;
+  --weight-heading-hi: 500;
+
+  /* ══════════════════════════════════════════════════════════
+     SPACING SCALE — geometric, generous
+     4 · 8 · 12 · 16 · 24 · 32 · 40 · 48 · 64 · 80 · 104 · 128
+     ══════════════════════════════════════════════════════════ */
+  --s-0:  0;
+  --s-1:  0.25rem;   /* 4  */
+  --s-2:  0.5rem;    /* 8  */
+  --s-3:  0.75rem;   /* 12 */
+  --s-4:  1rem;      /* 16 */
+  --s-5:  1.5rem;    /* 24 */
+  --s-6:  2rem;      /* 32 */
+  --s-7:  2.5rem;    /* 40 */
+  --s-8:  3rem;      /* 48 */
+  --s-10: 4rem;      /* 64 */
+  --s-12: 5rem;      /* 80 */
+  --s-16: 6.5rem;    /* 104 */
+  --s-20: 8rem;      /* 128 */
+  --s-24: 8rem;      /* legacy alias */
+
+  /* ══════════════════════════════════════════════════════════
+     RADII — "soft" variant approved
+     ══════════════════════════════════════════════════════════ */
+  --r-none: 0;
+  --r-sm:   2px;
+  --r-md:   6px;
+  --r-lg:   10px;
+  --r-xl:   14px;
+  --r-2xl:  18px;
+  --r-pill: 9999px;
+
+  /* ══════════════════════════════════════════════════════════
+     SHADOWS — medical-journal feel, warm-tinted
+     ══════════════════════════════════════════════════════════ */
+  --shadow-xs:   0 1px 2px rgba(26, 22, 18, 0.04);
+  --shadow-sm:   0 2px 6px rgba(26, 22, 18, 0.05);
+  --shadow-md:   0 6px 16px rgba(107, 78, 46, 0.08);
+  --shadow-lg:   0 12px 32px rgba(107, 78, 46, 0.12);
+  --shadow-xl:   0 20px 48px rgba(36, 22, 8, 0.18);
+  --shadow-seal: 0 0 0 4px rgba(192, 57, 43, 0.08);
+
+  /* ══════════════════════════════════════════════════════════
+     LAYOUT
+     ══════════════════════════════════════════════════════════ */
+  --container-sm:  640px;
+  --container-md:  840px;
+  --container-lg:  1080px;
+  --container-xl:  1280px;
+  --container-2xl: 1440px;
+
+  --nav-height:    4.5rem;
+  --sidebar-width: 240px;
+
+  /* ══════════════════════════════════════════════════════════
+     MOTION
+     ══════════════════════════════════════════════════════════ */
+  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:    160ms;
+  --dur-base:    260ms;
+  --dur-slow:    420ms;
+
+  /* ══════════════════════════════════════════════════════════
+     Z-INDEX
+     ══════════════════════════════════════════════════════════ */
+  --z-base:    1;
+  --z-raised:  10;
+  --z-sticky:  100;
+  --z-overlay: 500;
+  --z-modal:   900;
+  --z-toast:   1000;
+  --z-max:     9999;
+}
+
+/* ============================================================
+   BASE TYPOGRAPHY — applied globally so every page inherits
+   the approved weight + color defaults, not just pages that
+   remember to opt in.
+   ============================================================ */
+html {
+  font-size: 16px;              /* anchor for rem math */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Explicit background on html so the area above body content
+     (over-scroll bounce, address-bar collapse zone, etc.) paints
+     cream instead of any default white/transparent that could read
+     as a dark bar against the page surface. */
+  background: var(--cream);
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);       /* 19.5px minimum */
+  font-weight: var(--weight-body);   /* 400 — never 300 */
+  line-height: var(--leading-normal);
+  color: var(--ink-soft);            /* body reads on --ink-soft, not --stone */
+  background: var(--cream);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0 0 var(--s-3);
+}
+h1 { font-size: var(--text-5xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-xl); font-weight: var(--weight-heading-hi); }
+h4 { font-size: var(--text-lg); font-weight: var(--weight-heading-hi); }
+h5 { font-size: var(--text-md); font-weight: var(--weight-heading-hi); }
+h6 { font-size: var(--text-base); font-weight: var(--weight-heading-hi); }
+
+p  { margin: 0 0 var(--s-4); line-height: var(--leading-relaxed); color: var(--ink-soft); }
+
+small,
+.text-small  { font-size: var(--text-sm); color: var(--ink-mid); font-weight: var(--weight-body); }
+.text-micro  { font-size: var(--text-xs); color: var(--stone); font-weight: var(--weight-meta); letter-spacing: 0.02em; }
+
+.eyebrow,
+.text-eyebrow {
+  font-size: 13px;
+  font-weight: var(--weight-eyebrow);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--wood);
+}
+
+.text-zh,
+[lang="zh"] {
+  font-family: var(--font-zh);
+  font-weight: var(--weight-body);
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+
+a { color: var(--gold-deep); text-decoration: none; }
+a:hover { color: var(--ink); }
+
+::selection { background: var(--selection); color: var(--ink); }
+
+/* Reduced-motion preference — respected everywhere */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
