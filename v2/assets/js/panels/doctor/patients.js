@@ -5,6 +5,11 @@
   'use strict';
   HM.doctorPanels = HM.doctorPanels || {};
 
+  // Cache of last-rendered patient detail data, keyed by patient id —
+  // lets inline onclick handlers (referral / MC) hand the full patient
+  // and appointment objects back to documents.js without re-fetching.
+  var _ctx = { byPatient: {} };
+
   async function render(el) {
     el.innerHTML = '<div class="page-header flex-between">' +
       '<div><div class="page-header-label">My Patients · 我的患者</div>' +
@@ -74,6 +79,12 @@
       var appts = consultRes.appointments || [];
       var tongues = tongueRes.data || [];
 
+      // Stash patient + appointments so the inline button handlers
+      // (referral / MC) can read full objects back without round-tripping
+      // the API. Keyed on patient id so multiple detail renders don't
+      // clobber each other.
+      _ctx.byPatient[patient.id] = { patient: patient, appts: appts };
+
       var html = '<div class="page-header">' +
         '<button class="btn btn--ghost" onclick="location.hash=\'#/patients\'">← Back to Patients</button>' +
         '</div>' +
@@ -84,9 +95,10 @@
         '<h2>' + HM.format.esc(name) + '</h2>' +
         '<p class="text-muted">' + (pp.ic_number || '') + ' · ' + (pp.phone || '') + ' · ' + (pp.gender || '') + '</p>' +
         '</div>' +
-        '<div class="flex gap-2">' +
+        '<div class="flex gap-2" style="flex-wrap:wrap;">' +
         '<button class="btn btn--primary btn--sm" onclick="HM.doctorPanels.patients._book(' + patient.id + ', \'' + HM.format.esc(name).replace(/'/g, "\\'") + '\')">+ Book Appointment · 預約</button>' +
         '<button class="btn btn--outline btn--sm" onclick="HM.doctorPanels.patients._chat(' + patient.id + ')">💬 Chat</button>' +
+        '<button class="btn btn--outline btn--sm" onclick="HM.doctorPanels.patients._referral(' + patient.id + ')">📨 Referral · 轉介信</button>' +
         '</div>' +
         '</div>' +
         '<div class="grid-4 grid-auto mt-4" style="gap: var(--s-3);">' +
@@ -142,12 +154,19 @@
 
           html += '<div class="card card--bordered mb-3" style="border-left-color: ' +
             (a.status === 'completed' ? 'var(--sage)' : 'var(--gold)') + ';">' +
-            '<div class="flex-between mb-2" style="align-items:flex-start;">' +
+            '<div class="flex-between mb-2" style="align-items:flex-start;gap:var(--s-2);">' +
               '<div>' +
                 '<strong>' + HM.format.datetime(a.scheduled_start) + '</strong> ' + visitBadge +
                 (a.concern_label ? '<div class="text-xs text-muted mt-1">Concern: ' + HM.format.esc(a.concern_label) + '</div>' : '') +
               '</div>' +
-              HM.format.statusBadge(a.status) +
+              '<div class="flex gap-2" style="align-items:center;flex-wrap:wrap;justify-content:flex-end;">' +
+                HM.format.statusBadge(a.status) +
+                // MC issuance is offered for completed visits — that's
+                // where a real diagnosis exists to write into the cert.
+                (a.status === 'completed'
+                  ? '<button class="btn btn--ghost btn--sm" style="padding:4px 10px;font-size:11px;" onclick="HM.doctorPanels.patients._mc(' + patient.id + ',' + a.id + ')">📋 Issue MC</button>'
+                  : '') +
+              '</div>' +
             '</div>';
 
           // ── Case Record block — chief complaint, BP, pulse, body marks
@@ -368,6 +387,18 @@
     },
     _book: function (patientId, patientName) {
       showBookModal(patientId, patientName);
+    },
+    _referral: function (patientId) {
+      var c = _ctx.byPatient[patientId];
+      if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
+      HM.doctorPanels.documents.openReferral(c.patient);
+    },
+    _mc: function (patientId, appointmentId) {
+      var c = _ctx.byPatient[patientId];
+      if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
+      var appt = (c.appts || []).find(function (a) { return a.id === appointmentId; });
+      if (!appt) { HM.ui.toast('Could not find that appointment in this patient\'s history', 'warn'); return; }
+      HM.doctorPanels.documents.openMc(c.patient, appt);
     },
   };
 })();

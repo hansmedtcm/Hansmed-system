@@ -46,7 +46,10 @@
   HM.router.on('#/tongue-reviews', function () { location.hash = '#/reviews'; });
   HM.router.on('#/constitution-reviews', function () { location.hash = '#/reviews'; });
   HM.router.on('#/schedule', function () { HM.doctorPanels.schedule.render(panel()); });
-  HM.router.on('#/documents', function () { HM.doctorPanels.documents.render(panel()); });
+  // Documents are issued from inside a patient's case record now.
+  // Old bookmarks of #/documents bounce to the patient list, where
+  // the Referral / MC buttons live.
+  HM.router.on('#/documents', function () { location.hash = '#/patients'; });
   HM.router.on('#/blog', function () { HM.doctorPanels.blog.render(panel()); });
   HM.router.on('#/earnings', function () { HM.doctorPanels.earnings.render(panel()); });
   HM.router.on('#/messages', function () { HM.doctorPanels.messages.render(panel()); });
