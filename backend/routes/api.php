@@ -93,6 +93,11 @@ Route::post('/vouchers/preview', function (\Illuminate\Http\Request $r) {
     return response()->json($svc->preview($data['code'], (float) $data['amount'], $data['scope']));
 });
 
+// ── Public blog (no auth) ─────────────────────────────────────
+Route::get('/blog/posts',          [\App\Http\Controllers\Blog\PublicBlogController::class, 'index']);
+Route::get('/blog/posts/{slug}',   [\App\Http\Controllers\Blog\PublicBlogController::class, 'show']);
+Route::get('/blog/categories',     [\App\Http\Controllers\Blog\PublicBlogController::class, 'categories']);
+
 // Feature flags exposed to logged-in patients (sidebar visibility etc.).
 // Defaults are open — admin disables explicitly via system_configs.
 Route::get('/public/features', function () {
@@ -339,6 +344,27 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pos/history',        [\App\Http\Controllers\PosController::class, 'history']);
         Route::get('/pos/sales/{id}',     [\App\Http\Controllers\PosController::class, 'show']);
         Route::get('/pos/daily-summary',  [\App\Http\Controllers\PosController::class, 'dailySummary']);
+    });
+
+    // ================== BLOG (admin + doctor) ==================
+    // Authors include both admins and doctors. Per-post permission
+    // (admins can edit any post; doctors can only edit their own) is
+    // enforced inside BlogAdminController.
+    Route::prefix('admin/blog')->group(function () {
+        Route::get   ('/posts',                  [\App\Http\Controllers\Blog\BlogAdminController::class, 'index']);
+        Route::post  ('/posts',                  [\App\Http\Controllers\Blog\BlogAdminController::class, 'store']);
+        Route::get   ('/posts/{id}',             [\App\Http\Controllers\Blog\BlogAdminController::class, 'show']);
+        Route::put   ('/posts/{id}',             [\App\Http\Controllers\Blog\BlogAdminController::class, 'update']);
+        Route::delete('/posts/{id}',             [\App\Http\Controllers\Blog\BlogAdminController::class, 'destroy']);
+        Route::post  ('/posts/{id}/approve',     [\App\Http\Controllers\Blog\BlogAdminController::class, 'approve']);
+        Route::post  ('/posts/{id}/reject',      [\App\Http\Controllers\Blog\BlogAdminController::class, 'reject']);
+
+        Route::get   ('/categories',             [\App\Http\Controllers\Blog\BlogAdminController::class, 'categoriesIndex']);
+        Route::post  ('/categories',             [\App\Http\Controllers\Blog\BlogAdminController::class, 'categoryStore']);
+        Route::patch ('/categories/{id}',        [\App\Http\Controllers\Blog\BlogAdminController::class, 'categoryUpdate']);
+        Route::delete('/categories/{id}',        [\App\Http\Controllers\Blog\BlogAdminController::class, 'categoryDestroy']);
+
+        Route::post  ('/upload-image',           [\App\Http\Controllers\Blog\BlogImageController::class, 'upload']);
     });
 
     // ================== ADMIN ==================

@@ -177,7 +177,8 @@
       "Bash(git commit -m 'Hide shop link on blog article subpages too — selectors missed ../shop.html *)",
       "Bash(node E:/Hansmed-system/.tmp-blog-footer.mjs)",
       "Bash(git commit -m 'Blog article footer: match index.html footer style \\(4 cols + cert pills\\) *)",
-      "Bash(git commit -m 'Blog feature — Phase 1: schema + models + migration SQL *)"
+      "Bash(git commit -m 'Blog feature — Phase 1: schema + models + migration SQL *)",
+      "Bash(git commit -m 'Blog feature — Phase 2: backend controllers + routes *)"
     ]
   }
 }
