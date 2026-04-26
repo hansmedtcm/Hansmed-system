@@ -200,5 +200,22 @@ html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
 
 <script src="assets/js/pages/doctor.js"></script>
 
+
+<script>
+/* Portal nav language switcher — persists choice in localStorage so
+   it survives navigation across portal pages and reload. Delegates to
+   HM.langSwitch.set when available so the bilingual DOM walker fires;
+   without that the inline-bilingual strings ("Profile · 個人資料")
+   never get split into separate spans and the toggle has no visible
+   effect on the panel content. */
+window.setPortalLang = function (lang) {
+  try { localStorage.setItem('hm-lang-pref', lang); } catch (_) {}
+  if (window.HM && HM.langSwitch && typeof HM.langSwitch.set === 'function') {
+    HM.langSwitch.set(lang);
+  } else {
+    document.documentElement.setAttribute('lang', lang);
+  }
+};
+</script>
 </body>
 </html>

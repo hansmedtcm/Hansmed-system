@@ -149,7 +149,10 @@
       "Bash(grep -nA 20 \"function serialize\" E:/Hansmed-system/v2/assets/js/form.js)",
       "Bash(grep -nA 25 \"function init\" E:/Hansmed-system/v2/assets/js/lang-switcher.js)",
       "Bash(grep -nA 18 \"function reflectActiveOnExistingSwitchers\" E:/Hansmed-system/v2/assets/js/lang-switcher.js)",
-      "Bash(git commit -m 'Fix all checkbox toggles persisting wrong — boolean vs string mismatch *)"
+      "Bash(git commit -m 'Fix all checkbox toggles persisting wrong — boolean vs string mismatch *)",
+      "Bash(curl -sS 'https://hansmedtcm.github.io/Hansmed-system/v2/assets/js/lang-switcher.js')",
+      "Bash(grep -nA 5 \"setPortalLang = function\" E:/Hansmed-system/v2/doctor.html)",
+      "Bash(git commit -m 'Restore setPortalLang on doctor/pharmacy/admin + delegate to lang-switcher *)"
     ]
   }
 }

@@ -304,10 +304,19 @@ html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
 
 <script>
 /* Portal nav language switcher — persists choice in localStorage so
-   it survives navigation across portal pages and reload. */
+   it survives navigation across portal pages and reload.
+   Delegates to HM.langSwitch.set (lang-switcher.js) when available
+   so the DOM walker re-wraps bilingual strings — without this the
+   only effect was setting html[lang], which hid one half but never
+   triggered the walker that swaps 'Profile · 個人資料' style
+   markup into separate spans. */
 window.setPortalLang = function (lang) {
   try { localStorage.setItem('hm-lang-pref', lang); } catch (_) {}
-  document.documentElement.setAttribute('lang', lang);
+  if (window.HM && HM.langSwitch && typeof HM.langSwitch.set === 'function') {
+    HM.langSwitch.set(lang);
+  } else {
+    document.documentElement.setAttribute('lang', lang);
+  }
 };
 </script>
 
