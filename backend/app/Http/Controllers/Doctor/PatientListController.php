@@ -52,10 +52,32 @@ class PatientListController extends Controller
     /** View a patient's tongue diagnosis history */
     public function tongueDiagnoses(Request $request, int $patientId)
     {
-        // Verify doctor has seen this patient
-        $hasSeen = Appointment::where('doctor_id', $request->user()->id)
-            ->where('patient_id', $patientId)->exists();
-        if (!$hasSeen) return response()->json(['message' => 'Forbidden'], 403);
+        $doctorId = $request->user()->id;
+
+        // Access is granted if EITHER:
+        //   (a) the doctor has previously had an appointment with this
+        //       patient (the original 'I've seen them' rule), OR
+        //   (b) the patient currently has a pending AI review in the
+        //       shared review pool — any doctor could pick that up next,
+        //       and they need the tongue history to make an informed
+        //       clinical judgment. Without this, opening the AI Reviews
+        //       queue for a patient you haven't yet seen renders an
+        //       empty 'Recent Tongue Scans' panel even though the data
+        //       exists.
+        $hasSeen = Appointment::where('doctor_id', $doctorId)
+            ->where('patient_id', $patientId)
+            ->exists();
+
+        $hasPendingReview = false;
+        if (! $hasSeen) {
+            $hasPendingReview = TongueAssessment::where('patient_id', $patientId)
+                ->where('review_status', 'pending')
+                ->exists();
+        }
+
+        if (! $hasSeen && ! $hasPendingReview) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
         $diagnoses = TongueAssessment::where('patient_id', $patientId)
             ->orderByDesc('created_at')
