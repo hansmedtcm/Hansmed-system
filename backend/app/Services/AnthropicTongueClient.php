@@ -36,7 +36,13 @@ class AnthropicTongueClient
      */
     public function analyze(string $imageUrl): array
     {
-        $key = config('services.tongue_diagnosis.key');
+        // Resolve the API key from three places, in order of precedence:
+        //   1. system_configs.tongue_api_key   (admin UI overrides)
+        //   2. TONGUE_API_KEY env var          (Railway secret)
+        //   3. legacy config('services.tongue_diagnosis.key') alias
+        // The admin override path lets the operator rotate keys via
+        // /admin → Tongue Config without a redeploy.
+        $key = $this->resolveKey();
         if (empty($key)) {
             return $this->failureResponse('TONGUE_API_KEY is not set on the server');
         }
@@ -176,6 +182,30 @@ class AnthropicTongueClient
      * filesystem reads first, and only fall back to HTTP for genuinely
      * external URLs (e.g. S3-backed storage).
      */
+
+    /** Three-tier API key lookup. See analyze() for ordering. */
+    private function resolveKey(): ?string
+    {
+        // 1. Admin UI override (system_configs.tongue_api_key)
+        try {
+            $val = \Illuminate\Support\Facades\DB::table('system_configs')
+                ->where('config_key', 'tongue_api_key')
+                ->value('config_value');
+            if (! empty($val)) return (string) $val;
+        } catch (\Throwable $e) {
+            // table missing on first boot — fine, fall through
+        }
+
+        // 2. TONGUE_API_KEY env var (the canonical setting)
+        $env = env('TONGUE_API_KEY');
+        if (! empty($env)) return $env;
+
+        // 3. Legacy config alias kept for backward compatibility.
+        $legacy = config('services.tongue_diagnosis.key')
+               ?? config('services.tongue_assessment.key');
+        return ! empty($legacy) ? $legacy : null;
+    }
+
     private function fetchImage(string $imageUrl): ?array
     {
         try {

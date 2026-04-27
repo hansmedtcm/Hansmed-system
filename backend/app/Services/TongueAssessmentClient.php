@@ -34,8 +34,14 @@ class TongueAssessmentClient
      */
     public function analyze(string $imageUrl): array
     {
-        $endpoint = config('services.tongue_assessment.endpoint');
-        $key      = config('services.tongue_assessment.key');
+        // Resolve provider from admin UI override first, then env. The
+        // admin UI writes to system_configs.tongue_api_url; that takes
+        // precedence so the operator can switch providers without a
+        // Railway redeploy.
+        $endpoint = $this->resolveSetting('tongue_api_url')
+                 ?? config('services.tongue_assessment.endpoint');
+        $key      = $this->resolveSetting('tongue_api_key')
+                 ?? config('services.tongue_assessment.key');
 
         // Short-circuit to Anthropic Claude Vision when configured.
         if (is_string($endpoint) && strtolower(trim($endpoint)) === 'anthropic') {
@@ -78,6 +84,24 @@ class TongueAssessmentClient
             'holographic_map'       => KnowledgeBase::HOLOGRAPHIC_MAP,
             'three_burner_zones'    => KnowledgeBase::THREE_BURNER_ZONES,
         ];
+    }
+
+    /**
+     * Read a setting from system_configs (admin UI overrides). Returns
+     * null when the row doesn't exist, the value is empty, or the
+     * table is missing — caller falls back to env / config in those
+     * cases.
+     */
+    private function resolveSetting(string $key): ?string
+    {
+        try {
+            $val = \Illuminate\Support\Facades\DB::table('system_configs')
+                ->where('config_key', $key)
+                ->value('config_value');
+            return ! empty($val) ? (string) $val : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /** Normalize provider JSON -> our schema fields + generate report. */
