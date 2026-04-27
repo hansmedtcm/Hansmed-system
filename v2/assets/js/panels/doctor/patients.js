@@ -129,6 +129,23 @@
         html += '</div>';
       }
 
+      // Pool-review access banner — backend sets pool_review_access=true
+      // on the response when (a) this patient is in the shared review
+      // queue AND (b) the response includes consults from doctors other
+      // than the current viewer. Surface that explicitly so the
+      // reviewing doctor knows they're seeing extra clinical history
+      // they wouldn't normally have access to.
+      if (consultRes.pool_review_access) {
+        html +=
+          '<div class="alert alert--info mb-4" style="border-left:3px solid var(--gold,#B8965A);">' +
+            '<div class="alert-body" style="font-size:13px;">' +
+              '<strong>🔓 Pool Review Access · 共享審核權限</strong><br>' +
+              '<span lang="en">You are viewing this patient\'s consultation history from other practitioners because they currently have a pending review in the AI Reviews queue. Access closes once the review is approved or rejected.</span>' +
+              '<span lang="zh" style="font-family:var(--font-zh);">由於此患者目前有待審核的 AI 報告，您可暫時查看其他中醫師的問診記錄。審核完成後該權限將自動關閉。</span>' +
+            '</div>' +
+          '</div>';
+      }
+
       // Consultations — expanded card shows the full case record
       // (chief complaint, BP, pulse, body diagram findings, doctor's
       // notes), treatments performed, and the full prescription.
@@ -137,6 +154,13 @@
       if (!appts.length) {
         html += '<div class="card"><p class="text-muted text-center">No consultations yet · 暫無問診記錄</p></div>';
       } else {
+        // Used below to decide whether to label a consultation card
+        // with the treating doctor's name. Only shown when the treater
+        // is someone other than the current viewer (i.e. when this
+        // doctor is reviewing the patient via the shared pool).
+        var viewer = (HM.api && HM.api.getUser && HM.api.getUser()) || {};
+        var viewerId = viewer.id;
+
         appts.forEach(function (a) {
           var c = a.consultation || {};
           // case_record + treatments are JSON-casted on the model but
@@ -152,12 +176,26 @@
             ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);font-size:10px;">🏥 Walk-in</span>'
             : '<span class="badge" style="background:rgba(74,144,217,.15);color:#4a90d9;font-size:10px;">📹 Online</span>';
 
+          // If the consult was conducted by a doctor other than the
+          // current viewer (only ever happens in pool-review access
+          // mode), label the card so the reviewer knows it's not their
+          // own note. Backend tags treating_doctor_name on each row.
+          var treatingLabel = '';
+          if (a.treating_doctor_name && a.doctor_id && a.doctor_id !== viewerId) {
+            treatingLabel =
+              '<div class="text-xs mt-1" style="color:var(--wd-md,#9A6035);font-weight:500;">' +
+                '<span lang="en">Treated by: ' + HM.format.esc(a.treating_doctor_name) + '</span>' +
+                '<span lang="zh" style="font-family:var(--font-zh);">主治醫師：' + HM.format.esc(a.treating_doctor_name) + '</span>' +
+              '</div>';
+          }
+
           html += '<div class="card card--bordered mb-3" style="border-left-color: ' +
             (a.status === 'completed' ? 'var(--sage)' : 'var(--gold)') + ';">' +
             '<div class="flex-between mb-2" style="align-items:flex-start;gap:var(--s-2);">' +
               '<div>' +
                 '<strong>' + HM.format.datetime(a.scheduled_start) + '</strong> ' + visitBadge +
                 (a.concern_label ? '<div class="text-xs text-muted mt-1">Concern: ' + HM.format.esc(a.concern_label) + '</div>' : '') +
+                treatingLabel +
               '</div>' +
               '<div class="flex gap-2" style="align-items:center;flex-wrap:wrap;justify-content:flex-end;">' +
                 HM.format.statusBadge(a.status) +
