@@ -87,7 +87,8 @@ class BlogSeedController extends Controller
         $results = [];
 
         foreach (self::ARTICLES as $meta) {
-            $bodyPath = $seedDir . '/' . $meta['slug'] . '.html';
+            $bodyPath   = $seedDir . '/' . $meta['slug'] . '.html';
+            $bodyZhPath = $seedDir . '/' . $meta['slug'] . '-zh.html';
             if (! is_file($bodyPath)) {
                 $results[] = ['slug' => $meta['slug'], 'status' => 'skipped', 'reason' => 'body file missing: ' . $bodyPath];
                 continue;
@@ -97,6 +98,16 @@ class BlogSeedController extends Controller
             if ($bodyHtml === false) {
                 $results[] = ['slug' => $meta['slug'], 'status' => 'error', 'reason' => 'could not read body file'];
                 continue;
+            }
+
+            // Optional ZH body: read <slug>-zh.html if it exists. Older
+            // deploys without these files keep the previous
+            // English-only behaviour (body_zh_html = null) and the
+            // article viewer falls back to EN in 中 mode.
+            $bodyZhHtml = null;
+            if (is_file($bodyZhPath)) {
+                $tmp = file_get_contents($bodyZhPath);
+                if ($tmp !== false) $bodyZhHtml = $tmp;
             }
 
             $categoryId = null;
@@ -119,7 +130,7 @@ class BlogSeedController extends Controller
                     'excerpt'          => $meta['excerpt'] ?? null,
                     'excerpt_zh'       => $meta['excerpt_zh'] ?? null,
                     'body_html'        => $bodyHtml,
-                    'body_zh_html'     => null,
+                    'body_zh_html'     => $bodyZhHtml,
                     'thumb_initial'    => $meta['thumb_initial'] ?? null,
                     'thumb_label'      => $meta['thumb_label'] ?? null,
                     'reading_time_min' => $meta['reading_time_min'] ?? null,
