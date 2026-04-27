@@ -261,6 +261,39 @@ html[lang="zh"] [lang="en"] { display: none !important; }
 <script src="assets/js/public-feature-flags.js"></script>
 
 <script>
+/* Top-nav language toggle — the EN/中 buttons in the navbar carry
+   onclick="setLang('…')". Without this function defined, those buttons
+   are no-ops (which was the bug — clicking them did nothing). Mirrors
+   the implementation on index.html / contact.html / etc. so behaviour
+   stays identical across the site. */
+function setLang(l) {
+  if (l !== 'en' && l !== 'zh') return;
+  if (window.HM && HM.langSwitch && HM.langSwitch.set) {
+    HM.langSwitch.set(l);
+  } else {
+    // Fallback path if lang-switcher.js hasn't booted yet
+    try { localStorage.setItem('hm-lang-pref', l); } catch (_) {}
+    document.documentElement.setAttribute('lang', l);
+  }
+  ['len', 'mlen'].forEach(function (id) {
+    var el = document.getElementById(id); if (el) el.classList.toggle('act', l === 'en');
+  });
+  ['lzh', 'mlzh'].forEach(function (id) {
+    var el = document.getElementById(id); if (el) el.classList.toggle('act', l === 'zh');
+  });
+}
+window.setLang = setLang;
+/* Reflect the stored preference on first paint so the active pill
+   matches the current language without waiting for a click. */
+(function () {
+  try {
+    var pref = localStorage.getItem('hm-lang-pref');
+    if (pref === 'zh' || pref === 'en') setLang(pref);
+  } catch (_) {}
+})();
+</script>
+
+<script>
 /* Article viewer — reads ?slug=… and renders the post body, plus:
    - reading-progress bar (top-of-viewport, fills as you scroll)
    - sticky desktop / collapsible mobile table of contents
