@@ -34,6 +34,25 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  /** Render text with EN/ZH spans when both halves exist; otherwise
+   *  render plain (visible in both modes). Truncate is applied
+   *  per-half so the short-end isn't padded.
+   *  @param {string} en        – English text
+   *  @param {string} zh        – Chinese text (may be null/empty)
+   *  @param {number} [trunc]   – optional max char count per half
+   */
+  function bilingual(en, zh, trunc) {
+    function cut(s) {
+      if (!s) return '';
+      return trunc && s.length > trunc ? s.slice(0, trunc - 1) + '…' : s;
+    }
+    if (en && zh) {
+      return '<span lang="en">' + esc(cut(en)) + '</span>' +
+             '<span lang="zh">' + esc(cut(zh)) + '</span>';
+    }
+    return esc(cut(en || zh || ''));
+  }
+
   function fmtDate(iso) {
     if (!iso) return '';
     try {
@@ -145,11 +164,11 @@
       '<div style="position:relative;">' + coverHtml(post, false) + catPill + '</div>' +
       '<div style="padding:22px 22px 26px;">' +
         '<h3 style="font-family:\'Cormorant Garamond\',serif;font-size:21px;font-weight:500;color:var(--ink);line-height:1.28;margin-bottom:10px;letter-spacing:-0.01em;">' +
-          esc(post.title) +
+          bilingual(post.title, post.title_zh) +
         '</h3>' +
-        (post.excerpt
+        (post.excerpt || post.excerpt_zh
           ? '<p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">' +
-            esc(post.excerpt.length > 130 ? post.excerpt.slice(0, 127) + '…' : post.excerpt) + '</p>'
+            bilingual(post.excerpt, post.excerpt_zh, 130) + '</p>'
           : '') +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
           '<div style="min-width:0;">' +
@@ -187,11 +206,11 @@
           '<span lang="en">Featured Article</span><span lang="zh">精選文章</span>' +
         '</div>' +
         '<h2 style="font-family:\'Cormorant Garamond\',serif;font-size:clamp(24px,3vw,32px);font-weight:500;color:var(--ink);line-height:1.2;margin-bottom:14px;letter-spacing:-0.015em;">' +
-          esc(post.title) +
+          bilingual(post.title, post.title_zh) +
         '</h2>' +
-        (post.excerpt
+        (post.excerpt || post.excerpt_zh
           ? '<p style="font-size:15px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:22px;">' +
-            esc(post.excerpt.length > 200 ? post.excerpt.slice(0, 197) + '…' : post.excerpt) + '</p>'
+            bilingual(post.excerpt, post.excerpt_zh, 200) + '</p>'
           : '') +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">' +
           '<div>' +

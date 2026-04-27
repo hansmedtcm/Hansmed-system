@@ -370,10 +370,20 @@ html[lang="zh"] [lang="en"] { display: none !important; }
         '<div class="art-hero"><div class="art-hero-inner">' +
           '<div class="art-eyebrow">HansMed Blog · 部落格' +
             (category ? ' · ' + esc(category.name) : '') + '</div>' +
-          '<h1 class="art-title" lang="en">' + esc(post.title) + '</h1>' +
-          (post.title_zh ? '<h1 class="art-title" lang="zh">' + esc(post.title_zh) + '</h1>' : '') +
-          (post.subtitle ? '<div class="art-zh-title" lang="en">' + esc(post.subtitle) + '</div>' : '') +
-          (post.subtitle_zh ? '<div class="art-zh-title" lang="zh">' + esc(post.subtitle_zh) + '</div>' : '') +
+          // ── Title: only tag with lang attrs when BOTH halves exist.
+          //    A post with only EN renders untagged (visible in both
+          //    modes) so 中 readers see the EN title rather than a
+          //    blank header. Same for subtitle below.
+          (post.title_zh
+            ? '<h1 class="art-title" lang="en">' + esc(post.title) + '</h1>' +
+              '<h1 class="art-title" lang="zh">' + esc(post.title_zh) + '</h1>'
+            : '<h1 class="art-title">' + esc(post.title) + '</h1>') +
+          (post.subtitle || post.subtitle_zh
+            ? (post.subtitle && post.subtitle_zh
+                ? '<div class="art-zh-title" lang="en">' + esc(post.subtitle) + '</div>' +
+                  '<div class="art-zh-title" lang="zh">' + esc(post.subtitle_zh) + '</div>'
+                : '<div class="art-zh-title">' + esc(post.subtitle || post.subtitle_zh) + '</div>')
+            : '') +
           '<div class="art-meta">' +
             '<div class="art-author">' +
               '<div class="art-avatar">' + esc(avatarFor(post.author_name)) + '</div>' +
@@ -388,8 +398,14 @@ html[lang="zh"] [lang="en"] { display: none !important; }
         // ── Body grid: article content + sticky TOC ──
         '<div class="art-main">' +
           '<div class="art-body">' +
-            (post.body_html    ? '<div lang="en">' + cleanBodyHtml(post.body_html)    + '</div>' : '') +
-            (post.body_zh_html ? '<div lang="zh">' + cleanBodyHtml(post.body_zh_html) + '</div>' : '') +
+            // Body: only tag with lang when both halves exist. If only
+            // EN was authored (legacy migrated articles, doctors who
+            // skipped the ZH tab), render it untagged so 中 readers
+            // see the EN content instead of a blank page.
+            (post.body_html && post.body_zh_html
+              ? '<div lang="en">' + cleanBodyHtml(post.body_html)    + '</div>' +
+                '<div lang="zh">' + cleanBodyHtml(post.body_zh_html) + '</div>'
+              : '<div>' + cleanBodyHtml(post.body_html || post.body_zh_html || '') + '</div>') +
           '</div>' +
           '<aside class="art-toc" id="art-toc" aria-label="Table of contents">' +
             '<div class="art-toc-label">' +
