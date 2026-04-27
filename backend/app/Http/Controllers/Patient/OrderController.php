@@ -132,29 +132,57 @@ class OrderController extends Controller
                         ];
                         continue;
                     }
-                    // Last resort: if the catalog row exists but has no
-                    // price yet ("询"), still accept the order at a
-                    // reference price so the pharmacy can respond with
-                    // a quote. Fallback unit price of 0.50 RM/g is the
-                    // platform-wide default; admin can override later.
-                    if ($catalog && $catalog->unit_price === null) {
-                        $perGram = 0.50;
-                        $lineTotal = $perGram * (float) $item->quantity;
-                        $subtotal += $lineTotal;
-                        $lines[] = [
-                            'product_id'    => null,
-                            'drug_name'     => $item->drug_name,
-                            'specification' => null,
-                            'unit_price'    => $perGram,
-                            'quantity'      => $item->quantity,
-                            'unit'          => $item->unit ?? 'g',
-                            'line_total'    => $lineTotal,
-                        ];
-                        continue;
+                    // Last resort: accept the order at a reference price
+                    // so the pharmacy can respond with a quote. This branch
+                    // covers two cases:
+                    //   a) catalog row exists but unit_price is null ("询")
+                    //   b) catalog row doesn't exist at all (the herb is
+                    //      brand-new to the platform — typed free-text by
+                    //      the doctor, or a regional name the catalog
+                    //      doesn't yet have)
+                    // Either way, blocking the patient at checkout is the
+                    // wrong move — the pharmacy can quote / decline at the
+                    // fulfilment step where they actually see the order.
+                    // Default price 0.50 RM/g is the platform-wide reference;
+                    // admin can adjust at the medicine catalogue UI later.
+                    $perGram = 0.50;
+                    $lineTotal = $perGram * (float) $item->quantity;
+                    $subtotal += $lineTotal;
+                    $lines[] = [
+                        'product_id'    => null,
+                        'drug_name'     => $item->drug_name,
+                        'specification' => null,
+                        'unit_price'    => $perGram,
+                        'quantity'      => $item->quantity,
+                        'unit'          => $item->unit ?? 'g',
+                        'line_total'    => $lineTotal,
+                    ];
+
+                    // Auto-create a placeholder catalog row so admin sees
+                    // the unknown herb in the medicine catalogue and can
+                    // set a real price next time. INSERT IGNOREs by name so
+                    // we don't duplicate if the loose LIKE earlier missed
+                    // it but a strict re-lookup would now match.
+                    try {
+                        \DB::table('medicine_catalog')->insertOrIgnore([
+                            'name_zh'      => $item->drug_name,
+                            'name_pinyin'  => null,
+                            'unit_price'   => null,           // means 'quote on fulfilment'
+                            'pack_grams'   => 100,
+                            'is_active'    => 1,
+                            'created_at'   => now(),
+                            'updated_at'   => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        // Audit-only — don't fail the order over a catalog
+                        // bookkeeping issue. The order line still goes
+                        // through with the placeholder price.
+                        \Illuminate\Support\Facades\Log::warning('order_catalog_autoinsert_failed', [
+                            'drug_name' => $item->drug_name,
+                            'error'     => $e->getMessage(),
+                        ]);
                     }
-                    throw ValidationException::withMessages([
-                        'items' => "Pharmacy does not carry: {$item->drug_name}. Try a different pharmacy or ask the doctor to use an in-catalog herb.",
-                    ]);
+                    continue;
                 }
 
                 $lineTotal = (float) $product->unit_price * (float) $item->quantity;
