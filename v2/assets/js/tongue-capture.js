@@ -260,12 +260,64 @@
       preview.src = e.target.result;
       preview.style.display = 'block';
       root.querySelector('#tc-video').style.display = 'none';
-      root._capturedBlob = file;
       stopStream();
       setMode(root, 'preview');
       root._lastMode = 'upload';
+      // Compress in the background so the Confirm button doesn't have to
+      // wait — the original file is the fallback if compression fails.
+      root._capturedBlob = file;
+      compressForUpload(file).then(function (blob) {
+        // Only swap in the smaller blob if we actually shrank it.
+        if (blob && blob.size < file.size) root._capturedBlob = blob;
+      });
     };
     reader.readAsDataURL(file);
+  }
+
+  /**
+   * Phone cameras produce 4–10 MB JPEGs at full resolution. Backend caps
+   * tongue uploads at 8 MB and PHP/nginx body limits may be tighter — when
+   * the request exceeds that, browsers (Safari especially) report a
+   * generic 'Load failed' instead of the underlying 413/422.
+   *
+   * Re-encodes any image larger than 1.5 MB to a max 1600 px-wide JPEG at
+   * quality 0.85. That's still way more pixels than the AI tongue model
+   * needs (~500–1000 px is plenty), and produces ~300–500 KB output.
+   * Falls back to the original file if anything in the canvas pipeline
+   * fails — no regression, just a no-op.
+   */
+  function compressForUpload(file) {
+    return new Promise(function (resolve) {
+      // Skip if the file is already small or isn't an image we can decode.
+      if (!file || !/^image\//.test(file.type) || file.size <= 1500000) return resolve(file);
+
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var maxW = 1600;
+          var scale = Math.min(1, maxW / img.naturalWidth);
+          var w = Math.round(img.naturalWidth * scale);
+          var h = Math.round(img.naturalHeight * scale);
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function (blob) {
+            URL.revokeObjectURL(url);
+            if (!blob) return resolve(file);
+            // Wrap as File so existing uploadTongue() signature still works.
+            try {
+              resolve(new File([blob], (file.name || 'tongue').replace(/\.[^.]+$/, '') + '.jpg',
+                { type: 'image/jpeg' }));
+            } catch (_) { resolve(blob); }
+          }, 'image/jpeg', 0.85);
+        } catch (_) {
+          URL.revokeObjectURL(url); resolve(file);
+        }
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
   }
 
   function stopStream() {

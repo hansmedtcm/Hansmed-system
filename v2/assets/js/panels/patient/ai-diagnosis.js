@@ -342,10 +342,28 @@
         pollTongueAnalysis(diag.id, box);
       }
     } catch (err) {
+      // Translate the generic browser-level errors into something the
+      // patient can act on. Safari's "Load failed" + status 0 means the
+      // request never landed (network / CORS / payload too large for the
+      // server's body limit). 413 / 422 are size / validation errors.
+      var raw = (err && err.message) || 'Upload failed';
+      var isNetwork = /load failed|failed to fetch|network|abort/i.test(raw) || err.status === 0;
+      var isTooBig  = err.status === 413 || /large|exceeds|max:/i.test(raw);
+      var hint, hintZh;
+      if (isTooBig) {
+        hint   = 'The photo is too large. Try a smaller image (under 8 MB) or use the live camera instead.';
+        hintZh = '照片過大，請使用較小的圖片（8 MB 以下），或改用實時拍攝。';
+      } else if (isNetwork) {
+        hint   = 'Network or upload issue — please check your connection and retry. If you picked a photo from your gallery, try the live camera instead so the photo is auto-compressed.';
+        hintZh = '網路或上傳發生問題，請檢查網路後重試。如果是從相簿挑選的照片，請改用實時拍攝（系統會自動壓縮）。';
+      } else {
+        hint   = 'Please retake the photo and try again.';
+        hintZh = '請重新拍攝後再試。';
+      }
       box.innerHTML = '<div class="alert alert--danger"><div class="alert-body">' +
-        HM.format.esc(err.message || 'Upload failed') +
-        ' — please retake the photo and try again. ' +
-        '<span style="font-family: var(--font-zh);">請重新拍攝後再試。</span>' +
+        '<strong>' + HM.format.esc(raw) + '</strong><br>' +
+        '<span lang="en">' + HM.format.esc(hint) + '</span>' +
+        '<span lang="zh" style="font-family: var(--font-zh);">' + HM.format.esc(hintZh) + '</span>' +
         '</div></div>';
       // Don't enable Continue here — patient must succeed at the
       // tongue capture before moving on.
