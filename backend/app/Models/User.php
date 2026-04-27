@@ -96,13 +96,23 @@ class User extends Authenticatable
         $map = $raw ? (json_decode($raw, true) ?: []) : [];
         $roleMap = $map[$this->role] ?? [];
 
-        /* 3. If admin and no explicit deny, grant by default — avoids
-              accidentally locking out all admins if role_permissions is
-              empty/missing. Other roles default to false. */
-        if (! isset($roleMap[$key])) {
-            return $this->role === 'admin';
+        /* 3. Saved JSON has an explicit setting — honour it (this lets
+              admins flip a default OFF via the UI). */
+        if (isset($roleMap[$key])) {
+            return (bool) $roleMap[$key];
         }
-        return (bool) $roleMap[$key];
+
+        /* 4. Key missing from the saved JSON. This happens whenever a
+              permission is added to the codebase after the admin first
+              ran the permissions setup — the saved JSON predates the
+              new key. Fall back to the in-code default so the new
+              permission grants immediately, no admin action required.
+              Admins still default to true if the key isn't even in the
+              defaults (forward compatibility). */
+        if (\App\Support\PermissionDefaults::isGranted($this->role, $key)) {
+            return true;
+        }
+        return $this->role === 'admin';
     }
 
     /** Full effective permission map for this user (role defaults merged with overrides). */

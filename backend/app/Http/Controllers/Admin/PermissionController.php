@@ -208,42 +208,9 @@ class PermissionController extends Controller
 
     private function defaultPermissions(): array
     {
-        return [
-            'doctor' => [
-                'view_appointments'   => true,
-                'manage_appointments' => true,
-                'issue_prescriptions' => true,
-                'view_patient_records'=> true,
-                'video_consultation'  => true,
-                'chat_with_patients'  => true,
-                'view_earnings'       => true,
-                'request_withdrawal'  => true,
-                'manage_schedule'     => true,
-                'issue_mc'            => true,
-                'issue_referral'      => true,
-            ],
-            'pharmacy' => [
-                'manage_products'     => true,
-                'manage_inventory'    => true,
-                'view_orders'         => true,
-                'dispense_orders'     => true,
-                'ship_orders'         => true,
-                'use_pos'             => true,
-                'view_reconciliation' => true,
-            ],
-            'admin' => [
-                'manage_users'        => true,
-                'manage_doctors'      => true,
-                'manage_pharmacies'   => true,
-                'manage_prescriptions'=> true,
-                'manage_finance'      => true,
-                'manage_configs'      => true,
-                'manage_permissions'  => true,
-                'view_audit_logs'     => true,
-                'manage_content'      => true,
-                'export_data'         => true,
-                'tongue_diagnosis_config' => true,
-            ],
-        ];
+        // Single source of truth. Adding a permission key here lets it
+        // grant immediately for non-admin roles without requiring the
+        // admin to re-save the permissions UI (see User::hasPermission).
+        return \App\Support\PermissionDefaults::all();
     }
 }
