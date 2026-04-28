@@ -1097,6 +1097,22 @@
   }
 
 
+  /**
+   * Recompute and write the treatments running total into the bar
+   * already in the DOM. No card teardown — keeps focus + cursor
+   * position in whatever fee field the user is typing. Hides the bar
+   * entirely when total drops to 0 so the layout doesn\'t leave an
+   * empty 'Treatments total: RM 0' strip hanging around.
+   */
+  function updateTreatmentsTotal() {
+    var bar    = document.getElementById('tx-total-bar');
+    var amount = document.getElementById('tx-total-amount');
+    if (! bar || ! amount) return;
+    var total = state.treatments.reduce(function (s, t) { return s + (parseFloat(t.fee) || 0); }, 0);
+    amount.textContent = HM.format.money(total);
+    bar.style.display = total > 0 ? '' : 'none';
+  }
+
   function renderTreatments() {
     var host = document.getElementById('tx-list');
     if (!host) return;
@@ -1105,14 +1121,16 @@
       return;
     }
 
-    // Running total for this visit
+    // Running total for this visit. Rendered with a stable id so we
+    // can patch its text in place when a fee changes — without
+    // tearing down every card (which was causing the entire list to
+    // flash on every fee keystroke).
     var total = state.treatments.reduce(function (sum, t) { return sum + (parseFloat(t.fee) || 0); }, 0);
-    var totalHtml = total > 0
-      ? '<div class="flex-between" style="padding: var(--s-2) var(--s-3); background: var(--washi); border-radius: var(--r-sm); margin-bottom: var(--s-3); font-size: var(--text-sm);">' +
+    var totalHtml =
+      '<div id="tx-total-bar" class="flex-between" style="padding: var(--s-2) var(--s-3); background: var(--washi); border-radius: var(--r-sm); margin-bottom: var(--s-3); font-size: var(--text-sm);' + (total > 0 ? '' : 'display:none;') + '">' +
         '<span class="text-muted">Treatments total · 治療合計</span>' +
-        '<strong style="color: var(--gold);">' + HM.format.money(total) + '</strong>' +
-        '</div>'
-      : '';
+        '<strong id="tx-total-amount" style="color: var(--gold);">' + HM.format.money(total) + '</strong>' +
+      '</div>';
 
     host.innerHTML = totalHtml;
 
@@ -1150,8 +1168,12 @@
           if (field === 'duration_min') val = parseInt(val, 10) || 0;
           else if (field === 'fee')     val = parseFloat(val) || 0;
           state.treatments[i][field] = val;
-          // Re-render just to update the running total up top
-          if (field === 'fee') renderTreatments();
+          // Patch the running total in place instead of re-rendering
+          // every card. The previous full re-render was tearing down
+          // the focused input on every keystroke, causing the whole
+          // treatments list to flash and (worse) booting the cursor
+          // out of the field mid-type.
+          if (field === 'fee') updateTreatmentsTotal();
         });
       });
 
