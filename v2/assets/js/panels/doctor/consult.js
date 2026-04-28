@@ -1829,7 +1829,14 @@
       '.consult-back:hover{background:var(--bg);border-color:var(--gold);}' +
       '.consult-back svg{width:12px;height:12px;}' +
 
-      '.consult-layout--online{display:grid;grid-template-columns:1fr 540px;gap:var(--s-4);align-items:start;}' +
+      // 60/40 split — video block on the left, case-record /
+      // treatments / prescriptions panel on the right. Replaces the
+      // previous '1fr + 540px-fixed' layout where the rail width was
+      // OK on a 1366 laptop (~60/40 by accident) but shrank to ~28%
+      // on a 1920 monitor and the prescription table got cramped.
+      // Using fr units locks the proportion so it stays 60/40 at
+      // every screen size.
+      '.consult-layout--online{display:grid;grid-template-columns:3fr 2fr;gap:var(--s-4);align-items:start;}' +
       // The video block — sticky to the top of the visible area while
       // the right column scrolls. Calculation accounts for the page
       // nav height + a small buffer.
