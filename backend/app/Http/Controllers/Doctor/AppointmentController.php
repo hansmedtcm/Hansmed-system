@@ -163,8 +163,33 @@ class AppointmentController extends Controller
             }
         }
 
+        // Include the full consultation row when one exists, so the
+        // doctor's consult page can rehydrate case_record + treatments
+        // when re-entering an in-progress / completed appointment.
+        // Previously the consult init only loaded the prescription —
+        // re-opening a saved consult lost everything else (chief
+        // complaint, BP, pulse, body diagrams, treatment list).
+        $consultation = null;
+        if ($cRow) {
+            $consultation = [
+                'id'               => $cRow->id,
+                'appointment_id'   => $cRow->appointment_id,
+                'started_at'       => $cRow->started_at ?? null,
+                'ended_at'         => $cRow->ended_at ?? null,
+                'duration_seconds' => $cRow->duration_seconds ?? null,
+                'doctor_notes'     => $cRow->doctor_notes ?? null,
+                // case_record + treatments come back as JSON strings
+                // from the raw query (we read via DB::table earlier).
+                // Decode here so the frontend doesn't have to deal
+                // with the dual-shape (string vs object) defensively.
+                'case_record'      => $cRow->case_record  ? json_decode($cRow->case_record, true)  : null,
+                'treatments'       => $cRow->treatments   ? json_decode($cRow->treatments, true)   : null,
+            ];
+        }
+
         return response()->json([
             'appointment'        => $appt,
+            'consultation'       => $consultation,
             'tongue_assessment'  => $tongue,
             // Legacy key for one release so older frontend builds don't
             // break mid-deploy. Remove after frontend is fully cycled.

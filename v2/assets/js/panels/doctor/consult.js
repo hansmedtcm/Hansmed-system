@@ -59,6 +59,28 @@
       state.documents = [];
       state.existingRxId = null;
 
+      // Rehydrate case record + treatments from any saved consultation
+      // row. Without this, re-entering a consult after editing
+      // the prescription wipes every field except prescription —
+      // chief complaint, BP, pulse, body diagrams, treatment list
+      // all reset to blank because state defaults to empty above.
+      // Backend includes apptRes.consultation in the response when
+      // a row exists for this appointment.
+      var savedConsult = apptRes.consultation || null;
+      if (savedConsult) {
+        if (savedConsult.case_record && typeof savedConsult.case_record === 'object') {
+          state.caseRecord = savedConsult.case_record;
+          // Documents live inside case_record on save — pull them out
+          // so the upload UI can render the existing attachments.
+          if (Array.isArray(state.caseRecord.documents)) {
+            state.documents = state.caseRecord.documents;
+          }
+        }
+        if (Array.isArray(savedConsult.treatments)) {
+          state.treatments = savedConsult.treatments;
+        }
+      }
+
       // Pre-fill the Rx pad from any existing issued Rx on this
       // appointment. Lets the doctor re-enter the consult to edit
       // medicines — when they re-submit, the backend supersedes the
@@ -159,6 +181,49 @@
     injectStyle();
     wireSidebar();
     wireActions();
+    rehydrateCaseRecordForm();
+  }
+
+  /**
+   * Pre-fill the case-record form inputs and the body diagrams from
+   * state.caseRecord. Called after the consult page markup is in the
+   * DOM. Without this, re-entering an existing consult to edit shows
+   * blank fields even though the saved values are loaded into state —
+   * because the markup is plain <input> with no value attribute.
+   *
+   * Idempotent and safe to call when state.caseRecord is empty (every
+   * setter checks the source field exists first).
+   */
+  function rehydrateCaseRecordForm() {
+    var cr = state.caseRecord || {};
+    function set(id, val) {
+      var el = document.getElementById(id);
+      if (el && val != null) el.value = String(val);
+    }
+    set('cr-chief',     cr.chief_complaint);
+    set('cr-bp',        cr.blood_pressure || cr.bp);
+    set('cr-pulse',     cr.pulse);
+    set('cr-present',   cr.present_illness);
+    set('cr-past',      cr.past_history);
+    set('cr-pattern',   cr.pattern_diagnosis);
+    set('cr-western',   cr.western_diagnosis);
+    set('cr-principle', cr.treatment_principle);
+    set('cr-inst',      cr.doctor_instructions);
+
+    // Body diagrams — restore the saved PNG onto each canvas so the
+    // doctor sees the marks they (or a colleague) drew last time.
+    ['front', 'back'].forEach(function (side) {
+      var url = cr['body_' + side];
+      if (! url) return;
+      var canvas = document.querySelector('canvas.body-canvas[data-side="' + side + '"]');
+      if (! canvas) return;
+      var ctx = canvas.getContext('2d');
+      var img = new Image();
+      img.onload = function () {
+        try { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); } catch (_) {}
+      };
+      img.src = url;
+    });
   }
 
   // ── Daily.co bootstrapper ─────────────────────────────
@@ -286,6 +351,10 @@
     renderRxList();
     renderTreatments();
     renderDocuments();
+    // Rehydrate the form inputs + body diagrams from state.caseRecord
+    // so re-entering a saved walk-in consult shows the data the doctor
+    // entered before, not blank fields.
+    rehydrateCaseRecordForm();
   }
 
   // ── Google Meet setup block ───────────────────────────────
