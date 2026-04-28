@@ -434,6 +434,13 @@
     // Daily.co room URL + meeting token (used when video_provider=daily)
     dailyRoom: function (apptId) { return api.get('/consultations/' + apptId + '/daily'); },
     finish:    function (apptId, d) { return api.post('/consultations/' + apptId + '/finish', d); },
+    /** Persist case_record + treatments without ending the consultation.
+     *  Doctor can resume editing later. Backend honours { draft: true }
+     *  by skipping ended_at / duration_seconds. */
+    saveDraft: function (apptId, d) {
+      var payload = Object.assign({}, d || {}, { draft: true });
+      return api.post('/consultations/' + apptId + '/finish', payload);
+    },
   };
 
   // ── Content pages (public) ──

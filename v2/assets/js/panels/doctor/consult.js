@@ -1415,13 +1415,23 @@
 
   // ── Footer action buttons ────────────────────────────────
   function footerActions() {
-    return '<div class="flex flex-gap-3 mt-4" style="justify-content: flex-end;">' +
+    return '<div class="flex flex-gap-3 mt-4" style="justify-content: flex-end;align-items:center;flex-wrap:wrap;gap:var(--s-2);">' +
+      // Save as Draft — persists case_record + treatments without
+      // ending the consultation, so the doctor can step away mid-
+      // visit (interrupted, second opinion needed, patient asked
+      // for a break) and resume later without losing what they\'ve
+      // typed. Does NOT issue any prescription. Lives ghost-styled
+      // on the LEFT to avoid being mistaken for a primary action.
+      '<button class="btn btn--ghost" id="save-draft" style="margin-right:auto;">' +
+        '💾 <span lang="en">Save as Draft</span><span lang="zh">儲存草稿</span>' +
+      '</button>' +
       '<button class="btn btn--outline" id="issue-only">Complete (No Rx) · 完成（無處方）</button>' +
       '<button class="btn btn--primary" id="issue-rx">Complete &amp; Issue Rx · 完成並開處方</button>' +
       '</div>';
   }
 
   function wireActions() {
+    document.getElementById('save-draft').addEventListener('click', saveDraft);
     document.getElementById('issue-only').addEventListener('click', function () { completeConsult(false); });
     document.getElementById('issue-rx').addEventListener('click', function () { completeConsult(true); });
 
@@ -1435,8 +1445,40 @@
     });
   }
 
-  // ── Complete ──────────────────────────────────────────────
-  async function completeConsult(withRx) {
+  // ── Save as Draft ─────────────────────────────────────────
+  // Persists the case record + treatments to the consultation row
+  // without flipping the appointment status or issuing any
+  // prescription. Doctor stays on the page; a small toast confirms
+  // the save. The shared captureCaseRecord() helper is reused by
+  // completeConsult() so the field shape stays in sync.
+  async function saveDraft() {
+    var btn = document.getElementById('save-draft');
+    var origLabel = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled   = true;
+      btn.innerHTML  = '<span class="spinner" style="margin-right:6px;"></span>Saving…';
+    }
+    try {
+      await HM.api.consultation.saveDraft(state.appt.id, {
+        doctor_notes: val('cr-inst') || '',
+        case_record:  captureCaseRecord(),
+        treatments:   state.treatments,
+      });
+      HM.ui.toast('Draft saved · 草稿已儲存', 'success');
+    } catch (e) {
+      HM.ui.toast('Could not save draft: ' + (e.message || 'unknown'), 'danger');
+    } finally {
+      if (btn) {
+        btn.disabled  = false;
+        btn.innerHTML = origLabel;
+      }
+    }
+  }
+
+  // Reusable: collect every case-record field from the DOM into a
+  // single JSON-serialisable object. Called by both saveDraft and
+  // completeConsult so the two paths can never drift out of sync.
+  function captureCaseRecord() {
     var caseRecord = {
       chief_complaint:     val('cr-chief'),
       present_illness:     val('cr-present'),
@@ -1446,15 +1488,19 @@
       western_diagnosis:   val('cr-western'),
       treatment_principle: val('cr-principle'),
       doctor_instructions: val('cr-inst'),
+      blood_pressure:      val('cr-bp'),
+      documents:           state.documents,
     };
-
-    // Unified fields — captured for both walk-in and teleconsult visits.
-    caseRecord.blood_pressure = val('cr-bp');
-    caseRecord.documents      = state.documents;
-
-    // Body diagrams (front + back) — saved as PNG data URLs only when drawn
     var bodyDiagrams = captureBodyDiagrams();
     Object.keys(bodyDiagrams).forEach(function (k) { caseRecord[k] = bodyDiagrams[k]; });
+    return caseRecord;
+  }
+
+  // ── Complete ──────────────────────────────────────────────
+  async function completeConsult(withRx) {
+    // Use the shared capture helper so saveDraft and completeConsult
+    // can never write different shapes into case_record.
+    var caseRecord = captureCaseRecord();
 
     // Clean up Rx items — drop any row missing drug_name or quantity
     var cleanRx = state.rxItems.filter(function (it) { return it.drug_name && (it.quantity > 0); });

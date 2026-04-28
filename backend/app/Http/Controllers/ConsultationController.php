@@ -130,6 +130,11 @@ class ConsultationController extends Controller
 
     // Called by doctor after video ends — persist notes + duration + case record + treatments.
     // Walk-in visits use the same endpoint but skip the RTC portion.
+    //
+    // 'draft' => true means: persist the case data but DON\'T mark the
+    // consultation as ended. Used by the 'Save as Draft' button so a
+    // doctor can save progress mid-consultation and resume later
+    // without the system thinking the consult is over.
     public function finish(Request $request, int $appointmentId)
     {
         $data = $request->validate([
@@ -138,7 +143,10 @@ class ConsultationController extends Controller
             'transcript'       => ['nullable', 'string'],
             'case_record'      => ['nullable', 'array'],
             'treatments'       => ['nullable', 'array'],
+            'draft'            => ['nullable', 'boolean'],
         ]);
+
+        $isDraft = (bool) ($data['draft'] ?? false);
 
         $appt = Appointment::where('doctor_id', $request->user()->id)
             ->findOrFail($appointmentId);
@@ -150,11 +158,15 @@ class ConsultationController extends Controller
         );
 
         $updates = [
-            'ended_at'         => now(),
-            'duration_seconds' => $data['duration_seconds'] ?? null,
             'doctor_notes'     => $data['doctor_notes']     ?? null,
             'transcript'       => $data['transcript']       ?? null,
         ];
+        // Only stamp ended_at + duration when it's a real finish, not a
+        // mid-consult draft save. Drafts keep the consult open.
+        if (! $isDraft) {
+            $updates['ended_at']         = now();
+            $updates['duration_seconds'] = $data['duration_seconds'] ?? null;
+        }
         if (array_key_exists('case_record', $data)) {
             $updates['case_record'] = json_encode($data['case_record']);
         }
@@ -163,6 +175,9 @@ class ConsultationController extends Controller
         }
         $consult->update($updates);
 
-        return response()->json(['consultation' => $consult]);
+        return response()->json([
+            'consultation' => $consult,
+            'draft'        => $isDraft,
+        ]);
     }
 }
