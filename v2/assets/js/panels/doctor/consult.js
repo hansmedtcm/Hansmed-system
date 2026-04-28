@@ -1263,7 +1263,11 @@
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="rx-col-num">' + (idx + 1) + '</td>' +
-        '<td class="rx-col-herb"><input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '" list="rx-catalog" autocomplete="off"></td>' +
+        // Custom autocomplete (attached below) replaces the native
+        // <datalist> — needed for the 'pick + auto-add-row' keyboard
+        // flow. Native datalist's Enter swallows the keypress and
+        // doesn't let us hook 'add new row' cleanly across browsers.
+        '<td class="rx-col-herb" style="position:relative;"><input data-rx-field="drug_name" data-rx-idx="' + idx + '" class="rx-line-name" placeholder="Drug · 藥名" value="' + HM.format.esc(it.drug_name || '') + '" autocomplete="off" spellcheck="false"></td>' +
         '<td class="rx-col-stock">' + stockPill + '</td>' +
         '<td class="rx-col-qty"><input data-rx-field="quantity" data-rx-idx="' + idx + '" type="number" step="0.1" min="0" class="rx-line-qty" placeholder="0" value="' + (it.quantity || '') + '"></td>' +
         '<td class="rx-col-price">' + priceCell + '</td>' +
@@ -1300,6 +1304,13 @@
         // on the container (wired once per container) — see below. Per-
         // input attachment was flaky across re-renders and could miss
         // the ArrowDown keydown, letting the browser scroll the page.
+
+        // Wire custom autocomplete on drug_name fields. Native datalist
+        // can't surface 'pick from list + advance to new row' as a
+        // single keystroke flow — the custom popup below does.
+        if (inp.getAttribute('data-rx-field') === 'drug_name') {
+          attachHerbAutocomplete(inp);
+        }
       });
 
       tbody.appendChild(tr);
@@ -1317,6 +1328,10 @@
         if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Enter') return;
         var inp = ev.target.closest('[data-rx-field]');
         if (! inp) return;
+        // drug_name inputs have their own custom autocomplete that
+        // handles ArrowDown/ArrowUp/Enter — let it run, otherwise
+        // the row-jump fires before the suggestion commits.
+        if (inp.getAttribute('data-rx-field') === 'drug_name') return;
         ev.preventDefault();
         var field = inp.getAttribute('data-rx-field');
         var i = parseInt(inp.getAttribute('data-rx-idx'), 10);
@@ -1520,6 +1535,194 @@
   }
 
   // ── Load treatment types from admin config (fallback to defaults) ──
+  /**
+   * Custom autocomplete for the herb-name input on the prescription
+   * pad. Designed for keyboard-only entry:
+   *
+   *   1. User types → filter state.drugCatalog → render popup
+   *      under the input (max 8 matches).
+   *   2. ArrowDown / ArrowUp → highlight prev/next match.
+   *   3. Enter →
+   *        a) commit the highlighted match (or just keep typed text
+   *           if nothing is highlighted),
+   *        b) if this is the last row, push a new empty row,
+   *        c) focus the next row's herb-name input,
+   *        d) close the popup.
+   *      Net effect: type-Enter-type-Enter-… moves the doctor
+   *      through herb names without ever touching the mouse.
+   *   4. Escape → close popup, keep input value as-is.
+   *   5. Click on suggestion → same as Enter on it.
+   *   6. Blur (focus moves elsewhere) → close popup after a tick so
+   *      a click on a suggestion still registers.
+   */
+  function attachHerbAutocomplete(inp) {
+    if (inp._hmAcAttached) return; // idempotent across re-renders
+    inp._hmAcAttached = true;
+    injectHerbAutocompleteStyles();
+
+    var pop = null;          // <ul> popup element while open
+    var matches = [];        // current filtered match list
+    var hi = -1;             // highlighted index (-1 = none)
+
+    function close(commitTyped) {
+      if (pop) { try { pop.remove(); } catch (_) {} pop = null; }
+      hi = -1;
+    }
+
+    function open(query) {
+      var q = (query || '').toLowerCase().trim();
+      var cat = state.drugCatalog || [];
+      // Score-based filter: exact-prefix beats infix beats pinyin
+      // contains. Cap to 8 so the popup never gets unwieldy.
+      matches = cat.map(function (d) {
+        var n = (d.name || '').toLowerCase();
+        var py = (d.pinyin || d.name_pinyin || '').toLowerCase();
+        var score = -1;
+        if (!q)                 score = 0;
+        else if (n === q)       score = 100;
+        else if (n.indexOf(q) === 0)  score = 90;
+        else if (py.indexOf(q) === 0) score = 80;
+        else if (n.indexOf(q) >= 0)   score = 50;
+        else if (py.indexOf(q) >= 0)  score = 40;
+        return { d: d, s: score };
+      }).filter(function (x) { return x.s >= 0; })
+        .sort(function (a, b) { return b.s - a.s; })
+        .slice(0, 8)
+        .map(function (x) { return x.d; });
+
+      if (! matches.length) { close(); return; }
+
+      if (! pop) {
+        pop = document.createElement('ul');
+        pop.className = 'rx-ac-pop';
+        pop.setAttribute('role', 'listbox');
+        // Position relative to the wrapping td (which we set
+        // position:relative on in the row markup).
+        var host = inp.parentNode;
+        host.appendChild(pop);
+      }
+      pop.innerHTML = matches.map(function (d, i) {
+        var stock = (parseFloat(d.total_stock) || 0);
+        var stockColor = stock <= 0 ? '#9a3a2a' : stock < 50 ? '#a16207' : '#15803d';
+        return '<li role="option" data-i="' + i + '" class="rx-ac-item' + (i === hi ? ' is-active' : '') + '">' +
+          '<span class="rx-ac-name">' + escapeAcHtml(d.name) + '</span>' +
+          (d.specification ? '<span class="rx-ac-spec">' + escapeAcHtml(d.specification) + '</span>' : '') +
+          '<span class="rx-ac-stock" style="color:' + stockColor + ';">' + stock + (d.unit || 'g') + '</span>' +
+        '</li>';
+      }).join('');
+      // Click-to-pick (mousedown so it fires before the input's blur)
+      pop.querySelectorAll('.rx-ac-item').forEach(function (li) {
+        li.addEventListener('mousedown', function (ev) {
+          ev.preventDefault();
+          hi = parseInt(li.getAttribute('data-i'), 10);
+          commitAndAdvance();
+        });
+      });
+    }
+
+    function escapeAcHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function highlight(delta) {
+      if (! matches.length) return;
+      hi = (hi + delta + matches.length) % matches.length;
+      if (! pop) return;
+      pop.querySelectorAll('.rx-ac-item').forEach(function (li, i) {
+        li.classList.toggle('is-active', i === hi);
+      });
+    }
+
+    /**
+     * Commit the picked herb (or the typed text if nothing highlighted)
+     * and advance to the next row's herb-name input — creating a new
+     * empty row if we're at the bottom.
+     */
+    function commitAndAdvance() {
+      var idx = parseInt(inp.getAttribute('data-rx-idx'), 10);
+      // Commit value
+      if (hi >= 0 && matches[hi]) {
+        inp.value = matches[hi].name;
+        state.rxItems[idx].drug_name = matches[hi].name;
+        if (matches[hi].unit) state.rxItems[idx].unit = matches[hi].unit;
+      } else {
+        // Free-text — keep whatever user typed
+        state.rxItems[idx].drug_name = inp.value;
+      }
+      close();
+
+      // Push a new row if we're at the bottom
+      if (idx >= state.rxItems.length - 1) {
+        state.rxItems.push({ drug_name: '', quantity: 10, unit: 'g' });
+      }
+      // Re-render so the stock pill / unit / new row all show
+      renderRxList();
+      // Focus the NEXT row's herb-name input
+      var next = idx + 1;
+      setTimeout(function () {
+        var n = document.querySelector('[data-rx-field="drug_name"][data-rx-idx="' + next + '"]');
+        if (n) { n.focus(); if (n.select) n.select(); }
+      }, 0);
+    }
+
+    inp.addEventListener('input', function () {
+      // Sync state immediately so the existing 'input' handler that
+      // mirrors typing into state.rxItems also runs (it's defined
+      // earlier in renderRxList for ALL data-rx-field inputs).
+      hi = -1;
+      open(inp.value);
+    });
+
+    inp.addEventListener('keydown', function (ev) {
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        if (! pop) open(inp.value);
+        highlight(1);
+      } else if (ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        if (! pop) open(inp.value);
+        highlight(-1);
+      } else if (ev.key === 'Enter') {
+        ev.preventDefault();
+        commitAndAdvance();
+      } else if (ev.key === 'Escape') {
+        close();
+      }
+    });
+
+    inp.addEventListener('focus', function () {
+      // Reopen popup on focus so re-entering the input shows
+      // suggestions again. Only opens if there's a value or catalog
+      // is non-empty (avoid showing 8 random herbs on empty focus).
+      if ((inp.value || '').trim() && state.drugCatalog && state.drugCatalog.length) {
+        open(inp.value);
+      }
+    });
+    inp.addEventListener('blur', function () {
+      // Close after a short delay so a click on a suggestion can
+      // still register before the popup vanishes.
+      setTimeout(close, 120);
+    });
+  }
+
+  function injectHerbAutocompleteStyles() {
+    if (document.getElementById('rx-ac-style')) return;
+    var s = document.createElement('style');
+    s.id = 'rx-ac-style';
+    s.textContent =
+      '.rx-ac-pop{position:absolute;top:100%;left:0;right:0;z-index:200;' +
+        'background:#fff;border:1px solid var(--border,#D8C9AE);border-radius:8px;' +
+        'box-shadow:0 8px 20px rgba(36,22,8,0.12);max-height:280px;overflow-y:auto;' +
+        'list-style:none;margin:4px 0 0;padding:4px 0;font-size:13px;}' +
+      '.rx-ac-item{display:flex;align-items:center;gap:10px;padding:7px 12px;cursor:pointer;}' +
+      '.rx-ac-item.is-active,.rx-ac-item:hover{background:var(--washi,#FAF7F2);}' +
+      '.rx-ac-name{flex:1;font-weight:500;color:var(--ink,#1a1612);}' +
+      '.rx-ac-spec{font-size:11px;color:var(--mu,#7a7468);}' +
+      '.rx-ac-stock{font-size:11px;font-weight:600;font-family:var(--font-mono,monospace);}';
+    document.head.appendChild(s);
+  }
+
   async function loadTreatmentTypes() {
     try {
       var res = await HM.api.get('/public/treatment-types');
