@@ -217,24 +217,104 @@
               '</div>' +
             '</div>';
 
-          // ── Case Record block — chief complaint, BP, pulse, body marks
-          var hasCR = cr.chief_complaint || cr.bp || cr.pulse || cr.pattern_diagnosis || cr.doctor_instructions || bodyMarks.length;
+          // ── Case Record block ──────────────────────────────────
+          // Renders EVERY field the doctor saves during consultation.
+          // Field names mirror what captureCaseRecord() in consult.js
+          // writes — read both 'bp' and 'blood_pressure' because old
+          // legacy rows used 'bp' while the current consult page saves
+          // 'blood_pressure'. Body diagrams (front + back) embedded
+          // inline as PNG so the doctor can see exactly where the
+          // patient pointed to pain on past visits. Documents listed
+          // with file names so legacy lab reports / MC scans still
+          // surface even if the storage volume cleared the binary.
+          var bp = cr.blood_pressure || cr.bp || '';
+          var docs = Array.isArray(cr.documents) ? cr.documents : [];
+          var hasBodyDiagram = cr.body_front || cr.body_back;
+          var hasCR = cr.chief_complaint || cr.present_illness || cr.past_history ||
+                      bp || cr.pulse || cr.pattern_diagnosis || cr.western_diagnosis ||
+                      cr.treatment_principle || cr.doctor_instructions ||
+                      bodyMarks.length || hasBodyDiagram || docs.length;
+
           if (hasCR) {
-            html += '<div class="mt-2" style="background:var(--washi);padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--gold);">' +
-              '<div class="text-label" style="font-size:10px;">📋 Case Record · 病歷</div>';
-            if (cr.chief_complaint) html += '<div class="text-sm mt-1"><strong>Chief Complaint · 主訴:</strong> ' + HM.format.esc(cr.chief_complaint) + '</div>';
-            if (cr.bp || cr.pulse) {
-              html += '<div class="text-sm mt-1">';
-              if (cr.bp)    html += '<strong>BP · 血壓:</strong> ' + HM.format.esc(cr.bp);
-              if (cr.bp && cr.pulse) html += ' · ';
+            html += '<div class="mt-2" style="background:var(--washi);padding:var(--s-3) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--gold);">' +
+              '<div class="text-label mb-2" style="font-size:10px;">📋 Case Record · 病歷</div>';
+
+            // Helper to add a labelled row only when value exists
+            function row(label, labelZh, value) {
+              return value
+                ? '<div class="text-sm mt-1" style="line-height:1.5;"><strong>' + label + ' · ' + labelZh + ':</strong> ' + HM.format.esc(value) + '</div>'
+                : '';
+            }
+
+            html += row('Chief Complaint', '主訴', cr.chief_complaint);
+            html += row('Present Illness', '現病史', cr.present_illness);
+            html += row('Past History',    '既往史', cr.past_history);
+
+            // Vitals (BP + pulse on same row when both present)
+            if (bp || cr.pulse) {
+              html += '<div class="text-sm mt-1" style="line-height:1.5;">';
+              if (bp)       html += '<strong>BP · 血壓:</strong> ' + HM.format.esc(bp);
+              if (bp && cr.pulse) html += ' · ';
               if (cr.pulse) html += '<strong>Pulse · 脈診:</strong> ' + HM.format.esc(cr.pulse);
               html += '</div>';
             }
-            if (cr.pattern_diagnosis)   html += '<div class="text-sm mt-1"><strong>Pattern · 證型:</strong> ' + HM.format.esc(cr.pattern_diagnosis) + '</div>';
-            if (cr.doctor_instructions) html += '<div class="text-sm mt-1"><strong>Notes · 醫囑:</strong> ' + HM.format.esc(cr.doctor_instructions) + '</div>';
-            if (bodyMarks.length) {
-              html += '<div class="text-xs text-muted mt-1">Body marks: ' + bodyMarks.length + ' point(s) recorded</div>';
+
+            html += row('TCM Pattern',     '中醫證型', cr.pattern_diagnosis);
+            html += row('Western Dx',      '西醫診斷', cr.western_diagnosis);
+            html += row('Treatment Principle', '治法治則', cr.treatment_principle);
+            html += row('Doctor Instructions', '醫囑',   cr.doctor_instructions);
+
+            // Body diagrams — render inline as small thumbnails the
+            // doctor can click to enlarge in a new window.
+            if (hasBodyDiagram) {
+              html += '<div class="text-sm mt-2"><strong>Body Diagrams · 身體圖示:</strong></div>' +
+                '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">';
+              if (cr.body_front) {
+                html += '<a href="' + HM.format.esc(cr.body_front) + '" target="_blank" rel="noopener" title="Front view">' +
+                  '<img src="' + HM.format.esc(cr.body_front) + '" style="height:96px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;">' +
+                  '<div class="text-xs text-muted text-center mt-1">Front · 正面</div>' +
+                  '</a>';
+              }
+              if (cr.body_back) {
+                html += '<a href="' + HM.format.esc(cr.body_back) + '" target="_blank" rel="noopener" title="Back view">' +
+                  '<img src="' + HM.format.esc(cr.body_back) + '" style="height:96px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;">' +
+                  '<div class="text-xs text-muted text-center mt-1">Back · 背面</div>' +
+                  '</a>';
+              }
+              html += '</div>';
             }
+
+            // Body marks (interactive pin-on-figure) — show points if detail data is there
+            if (bodyMarks.length) {
+              html += '<div class="text-xs text-muted mt-2"><strong>Body marks · 標記:</strong> ' + bodyMarks.length + ' point(s) recorded';
+              // Try to surface actual labels if the marks have them
+              var labelled = bodyMarks
+                .filter(function (m) { return m && (m.label || m.note); })
+                .map(function (m) { return HM.format.esc(m.label || m.note); });
+              if (labelled.length) html += ' — ' + labelled.join(', ');
+              html += '</div>';
+            }
+
+            // Document attachments — show name + size + a click-through.
+            // Some legacy rows store {name, dataUrl}, newer rows store
+            // {name, url, size}. Handle both.
+            if (docs.length) {
+              html += '<div class="text-sm mt-2"><strong>Documents · 文件 (' + docs.length + '):</strong></div>' +
+                '<ul style="list-style:none;padding:0;margin:6px 0 0;">';
+              docs.forEach(function (d) {
+                if (! d) return;
+                var href = d.url || d.dataUrl || '';
+                var name = d.name || d.filename || 'document';
+                var size = d.size ? ' · ' + Math.round(d.size / 1024) + ' KB' : '';
+                html += '<li class="text-xs mt-1">📎 ' +
+                  (href
+                    ? '<a href="' + HM.format.esc(href) + '" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline;">' + HM.format.esc(name) + '</a>'
+                    : HM.format.esc(name)) +
+                  '<span class="text-muted">' + size + '</span></li>';
+              });
+              html += '</ul>';
+            }
+
             html += '</div>';
           }
 
