@@ -119,8 +119,18 @@
         html += '<div class="grid-auto mb-6" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s-3);">';
         tongues.slice(0, 3).forEach(function (t) {
           var c = (t.constitution_report && t.constitution_report.constitution) || {};
+          // image_url null = the photo was lost in the pre-volume era
+          // (see clearTongueOrphans migration). Show a friendly
+          // placeholder so the card still reads as a real diagnostic
+          // record instead of a broken-image icon.
+          var thumb = t.image_url
+            ? '<img src="' + HM.format.esc(t.image_url) + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);margin-bottom:var(--s-2);">'
+            : '<div style="width:100%;aspect-ratio:1;background:var(--washi);border:1px dashed var(--border);border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mu);margin-bottom:var(--s-2);text-align:center;padding:var(--s-2);">' +
+                '<div style="font-size:28px;opacity:0.5;margin-bottom:4px;">📷</div>' +
+                '<div style="font-size:11px;line-height:1.4;"><span lang="en">Photo no longer available</span><span lang="zh">照片已不可用</span></div>' +
+              '</div>';
           html += '<div class="card">' +
-            '<img src="' + HM.format.esc(t.image_url) + '" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-md); border: 1px solid var(--border); margin-bottom: var(--s-2);">' +
+            thumb +
             '<div class="text-label">' + HM.format.date(t.created_at) + '</div>' +
             '<div class="text-sm mt-1">' + HM.format.esc(c.name_en || 'Analysis') + '</div>' +
             '<div class="text-xs text-muted">Score: ' + (t.health_score || '—') + '/100</div>' +

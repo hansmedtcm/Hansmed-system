@@ -386,6 +386,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/rx-from-review',     [\App\Http\Controllers\Admin\MigrationController::class, 'rxFromReview']);
         Route::post('/migrate/walk-in-support',    [\App\Http\Controllers\Admin\MigrationController::class, 'walkInSupport']);
         Route::post('/migrate/fix-tongue-image-urls', [\App\Http\Controllers\Admin\MigrationController::class, 'fixTongueImageUrls']);
+        Route::post('/migrate/clear-tongue-orphans',  [\App\Http\Controllers\Admin\MigrationController::class, 'clearTongueOrphans']);
         Route::post('/migrate/medicine-catalog',   [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'migrate']);
 
         // Storage health — confirms whether uploads dir is persistent.

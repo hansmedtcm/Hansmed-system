@@ -325,6 +325,98 @@ class MigrationController extends Controller
      * If the table already exists with NOT NULL, this also widens
      * it to NULL.
      */
+    /**
+     * Clear orphan tongue_assessment.image_url values whose underlying
+     * file no longer exists on disk. These rows date from the
+     * pre-Railway-Volume era when the storage path was on ephemeral
+     * container disk and got wiped on every redeploy.
+     *
+     * Action: set image_url = NULL on those rows, leaving the rest of
+     * the row (constitution_report, score, dimensions, doctor_review)
+     * intact. The frontend renders a 'Photo no longer available'
+     * placeholder for null image_url.
+     *
+     * Idempotent — safe to re-run. Once a row is nulled, future runs
+     * skip it.
+     *
+     * Reports per-row what happened so you can verify the timeline.
+     */
+    public function clearTongueOrphans(Request $request)
+    {
+        $publicDir = storage_path('app/public');
+        $rows = \DB::table('tongue_assessments')
+            ->whereNotNull('image_url')
+            ->select('id', 'patient_id', 'image_url', 'created_at')
+            ->orderByDesc('id')
+            ->get();
+
+        $cleared = 0;
+        $kept    = 0;
+        $details = [];
+
+        foreach ($rows as $r) {
+            // image_url is shaped like https://…/api/uploads/tongue/abc.jpg.
+            // Extract everything after /api/uploads/ — that's the disk
+            // path relative to storage/app/public.
+            $relative = null;
+            if (preg_match('#/api/uploads/(.+)$#', $r->image_url, $m)) {
+                $relative = $m[1];
+            } elseif (str_starts_with($r->image_url, 'tongue/')) {
+                $relative = $r->image_url;
+            }
+
+            if (! $relative) {
+                $details[] = ['id' => $r->id, 'status' => 'unparseable_url', 'url' => $r->image_url];
+                $kept++;
+                continue;
+            }
+
+            $absolute = $publicDir . '/' . $relative;
+            if (is_file($absolute)) {
+                $kept++;
+                continue;
+            }
+
+            \DB::table('tongue_assessments')
+                ->where('id', $r->id)
+                ->update(['image_url' => null, 'updated_at' => now()]);
+            $cleared++;
+            $details[] = [
+                'id'         => $r->id,
+                'patient_id' => $r->patient_id,
+                'created_at' => (string) $r->created_at,
+                'old_url'    => $r->image_url,
+                'status'     => 'cleared',
+            ];
+        }
+
+        // Build a human-readable log so the admin UI's shared
+        // migration handler (which reads res.log / res.errors) renders
+        // a useful summary instead of just "✓ Success".
+        $log = [
+            "checked {$rows->count()} tongue_assessment row(s) with image_url",
+            "{$kept} photo(s) still on disk — no action",
+            "{$cleared} orphan row(s) had image_url cleared",
+        ];
+        if ($cleared > 0) {
+            $log[] = '— affected rows:';
+            foreach ($details as $d) {
+                if (($d['status'] ?? '') !== 'cleared') continue;
+                $log[] = "    #{$d['id']}  patient {$d['patient_id']}  uploaded {$d['created_at']}";
+            }
+        }
+
+        return response()->json([
+            'success'      => true,
+            'log'          => $log,
+            'errors'       => [],
+            'cleared'      => $cleared,
+            'kept'         => $kept,
+            'rows_checked' => $rows->count(),
+            'details'      => $details,
+        ]);
+    }
+
     public function blogTables(Request $request)
     {
         $log = [];
