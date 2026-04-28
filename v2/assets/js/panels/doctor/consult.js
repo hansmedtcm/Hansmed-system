@@ -1780,14 +1780,47 @@
       // ── Consult mode chrome ─────────────────────────────────────
       // body.is-consult-mode is toggled by pages/doctor.js when the
       // route enters #/consult/:id. Hides the portal sidebar so the
-      // video + case-record rail can use the full window width — the
-      // doctor doesn't need portal nav while a patient is in front
-      // of them. A small floating button at top-left lets them
-      // re-open the sidebar if they really do need to navigate
-      // elsewhere mid-consult (rare).
+      // video + case-record rail can use the full window width.
+      //
+      // Reveal pattern: the sidebar becomes position:fixed and
+      // translates off-screen. Layout reclaims the full width — page
+      // content does NOT reflow when the sidebar appears or hides.
+      // When the doctor moves the mouse to the left edge of the
+      // viewport (12px hot zone), JS adds .consult-sidebar-peek to
+      // body and the sidebar slides in as a floating overlay above
+      // the content. Mouseleave (debounced) slides it back out.
       '@media (min-width: 769px){' +
-        'body.is-consult-mode .sidebar{display:none !important;}' +
+        // Layout reclaims the full width. Sidebar doesn\'t affect grid.
         'body.is-consult-mode .portal-layout{grid-template-columns:1fr !important;}' +
+
+        // Sidebar floats — fixed, off-screen by default, overlays
+        // content when peeked. z-index sits above the sticky video
+        // block but below the page nav.
+        'body.is-consult-mode .sidebar{' +
+          'position:fixed !important;' +
+          'top:var(--nav-height) !important;' +
+          'left:0 !important;' +
+          'bottom:0 !important;' +
+          'width:var(--sidebar-width) !important;' +
+          'transform:translateX(-100%);' +
+          'transition:transform 220ms cubic-bezier(.4,0,.2,1);' +
+          'z-index:1300;' +
+          'box-shadow:4px 0 24px rgba(0,0,0,0.18);' +
+          'overflow-y:auto;' +
+        '}' +
+        'body.is-consult-mode.consult-sidebar-peek .sidebar{transform:translateX(0);}' +
+
+        // Invisible 12px hot zone glued to the left edge so the doctor
+        // doesn\'t have to know exactly where to aim. Sits above
+        // content so mousemove always registers, but z-index below
+        // the sidebar so it never blocks clicks once the sidebar is
+        // open. Hidden when sidebar is already peeked (so it doesn\'t
+        // re-trigger on mouseleave events bouncing off the slide-out).
+        'body.is-consult-mode .consult-edge-zone{' +
+          'position:fixed;top:var(--nav-height);left:0;bottom:0;width:12px;' +
+          'z-index:1290;cursor:default;' +
+        '}' +
+        'body.is-consult-mode.consult-sidebar-peek .consult-edge-zone{display:none;}' +
       '}' +
       '.consult-back{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;' +
         'background:var(--washi);border:1px solid var(--border);color:var(--ink);' +
