@@ -174,12 +174,27 @@
         appts.forEach(function (a) {
           var c = a.consultation || {};
           // case_record + treatments are JSON-casted on the model but
-          // can come back as null / string / object on legacy rows.
-          // Coerce defensively so neither .forEach nor .length blows
-          // up the whole patient detail render.
-          var cr = (c.case_record && typeof c.case_record === 'object') ? c.case_record : {};
+          // legacy rows can come back as a JSON STRING (Laravel cast
+          // wasn't always set) — so try to parse before falling back
+          // to {}. Same defensive parse for treatments below.
+          var cr = {};
+          if (c.case_record) {
+            if (typeof c.case_record === 'object') {
+              cr = c.case_record;
+            } else if (typeof c.case_record === 'string') {
+              try { cr = JSON.parse(c.case_record) || {}; } catch (_) { cr = {}; }
+            }
+          }
           var rx = a.prescription || {};
-          var treatments = Array.isArray(c.treatments) ? c.treatments : [];
+          // Treatments — same defensive parse as case_record.
+          var treatments = [];
+          if (c.treatments) {
+            if (Array.isArray(c.treatments)) {
+              treatments = c.treatments;
+            } else if (typeof c.treatments === 'string') {
+              try { var parsed = JSON.parse(c.treatments); if (Array.isArray(parsed)) treatments = parsed; } catch (_) {}
+            }
+          }
           var bodyMarks  = Array.isArray(cr.body_marks) ? cr.body_marks : [];
           var rxItems    = Array.isArray(rx.items) ? rx.items : [];
           var visitBadge = (a.visit_type === 'walk_in')
@@ -235,9 +250,17 @@
                       cr.treatment_principle || cr.doctor_instructions ||
                       bodyMarks.length || hasBodyDiagram || docs.length;
 
+          // Always render the section header so the doctor knows
+          // whether the case record is actually empty (no fields
+          // filled during the consult) vs. missing due to a render
+          // bug. When nothing was entered, the inner content shows a
+          // gentle 'no case record entered' line — easier to debug.
+          html += '<div class="mt-2" style="background:var(--washi);padding:var(--s-3) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--gold);">' +
+            '<div class="flex-between" style="align-items:baseline;">' +
+              '<div class="text-label mb-2" style="font-size:10px;">📋 Case Record · 病歷</div>' +
+              (! hasCR ? '<div class="text-xs text-muted">no case record entered · 未填寫病歷</div>' : '') +
+            '</div>';
           if (hasCR) {
-            html += '<div class="mt-2" style="background:var(--washi);padding:var(--s-3) var(--s-3);border-radius:var(--r-sm);border-left:2px solid var(--gold);">' +
-              '<div class="text-label mb-2" style="font-size:10px;">📋 Case Record · 病歷</div>';
 
             // Helper to add a labelled row only when value exists
             function row(label, labelZh, value) {
@@ -314,9 +337,9 @@
               });
               html += '</ul>';
             }
-
-            html += '</div>';
           }
+          // Always close the section wrapper (open is unconditional now)
+          html += '</div>';
 
           // ── Doctor notes from consultation (separate from case_record)
           if (c.doctor_notes) {
