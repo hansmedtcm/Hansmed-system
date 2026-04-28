@@ -6,9 +6,76 @@
   HM.doctorPanels = HM.doctorPanels || {};
 
   // Cache of last-rendered patient detail data, keyed by patient id —
-  // lets inline onclick handlers (referral / MC) hand the full patient
-  // and appointment objects back to documents.js without re-fetching.
+  // lets inline onclick handlers (referral / MC / case-record viewer /
+  // tongue-history viewer) hand the full patient and appointment
+  // objects back to the modal openers without re-fetching.
   var _ctx = { byPatient: {} };
+
+  // ── Collapsible-section preferences ──
+  // Persisted per-doctor in localStorage so once a user collapses a
+  // section it stays collapsed across reloads. Keys are short, the
+  // 'true' value means 'collapsed'.
+  function isSectionCollapsed(key) {
+    try { return localStorage.getItem('hm-pdetail-collapse-' + key) === '1'; } catch (_) { return false; }
+  }
+  function setSectionCollapsed(key, on) {
+    try { localStorage.setItem('hm-pdetail-collapse-' + key, on ? '1' : '0'); } catch (_) {}
+  }
+
+  /**
+   * Render a collapsible section wrapper with a clickable header.
+   * Caller passes the inner HTML and the persistent storage key.
+   * Header has a chevron that flips on toggle; click anywhere on the
+   * header bar (including the title) to collapse/expand.
+   *
+   *   collapsibleSection({
+   *     key:     'dob',
+   *     icon:    '🌿',
+   *     titleEn: 'Constitution Aide',
+   *     titleZh: '體質分析',
+   *     extras:  '<button>View All</button>',  // optional right-side controls
+   *     body:    '<div>…</div>'
+   *   })
+   */
+  function collapsibleSection(o) {
+    var collapsed = isSectionCollapsed(o.key);
+    return '<div class="card mb-4" data-collapse-key="' + o.key + '" style="padding:0;overflow:hidden;">' +
+      '<div class="collapsible-head" data-collapse-toggle="' + o.key + '" ' +
+        'style="display:flex;align-items:center;gap:var(--s-2);padding:14px 18px;cursor:pointer;background:var(--washi);border-bottom:' +
+          (collapsed ? 'none' : '1px solid var(--border)') + ';user-select:none;">' +
+        '<span style="font-size:18px;">' + (o.icon || '▦') + '</span>' +
+        '<div style="flex:1;font-weight:600;font-size:14px;color:var(--ink);">' +
+          '<span lang="en">' + (o.titleEn || '') + '</span>' +
+          (o.titleZh ? '<span lang="zh">' + (o.titleZh || '') + '</span>' : '') +
+        '</div>' +
+        (o.extras ? '<div onclick="event.stopPropagation();">' + o.extras + '</div>' : '') +
+        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;transition:transform 0.2s;transform:rotate(' + (collapsed ? '-90deg' : '0deg') + ');">' +
+          '<path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="collapsible-body" data-collapse-body="' + o.key + '" style="' +
+        (collapsed ? 'display:none;' : '') + 'padding:var(--s-3) var(--s-4) var(--s-4);">' +
+        o.body +
+      '</div>' +
+    '</div>';
+  }
+
+  /** Wire the click handlers for every collapsible section in a panel. */
+  function wireCollapsibles(rootEl) {
+    rootEl.querySelectorAll('[data-collapse-toggle]').forEach(function (head) {
+      head.addEventListener('click', function () {
+        var key = head.getAttribute('data-collapse-toggle');
+        var body = rootEl.querySelector('[data-collapse-body="' + key + '"]');
+        var chev = head.querySelector('svg');
+        if (! body) return;
+        var open = body.style.display !== 'none';
+        body.style.display = open ? 'none' : '';
+        if (chev) chev.style.transform = open ? 'rotate(-90deg)' : 'rotate(0deg)';
+        head.style.borderBottom = open ? 'none' : '1px solid var(--border)';
+        setSectionCollapsed(key, open);
+      });
+    });
+  }
 
   async function render(el) {
     el.innerHTML = '<div class="page-header flex-between">' +
@@ -83,7 +150,7 @@
       // (referral / MC) can read full objects back without round-tripping
       // the API. Keyed on patient id so multiple detail renders don't
       // clobber each other.
-      _ctx.byPatient[patient.id] = { patient: patient, appts: appts };
+      _ctx.byPatient[patient.id] = { patient: patient, appts: appts, tongues: tongues };
 
       var html = '<div class="page-header">' +
         '<button class="btn btn--ghost" onclick="location.hash=\'#/patients\'">← Back to Patients</button>' +
@@ -109,34 +176,54 @@
         summaryCell('Medical History', HM.format.truncate(pp.medical_history || 'None', 50)) +
         '</div></div>' +
 
-        // Wuyun Liuqi clinical analysis (doctor-only aide, hidden from patient).
-        // Renders only when patient has a birth_date on file.
-        '<div id="wyl-mount-patient" class="mb-6"></div>';
+        // Wuyun Liuqi clinical analysis (doctor-only aide, hidden
+        // from patient). Renders only when patient has a birth_date
+        // on file. Wrapped in a collapsible card so doctors who
+        // don't read the constitution analysis can hide it
+        // permanently (preference persists in localStorage).
+        collapsibleSection({
+          key:     'dob',
+          icon:    '🌿',
+          titleEn: 'Constitution Aide (DOB analysis)',
+          titleZh: '體質分析（出生日推算）',
+          body:    '<div id="wyl-mount-patient"></div>',
+        });
 
-      // Tongue scans
+      // Tongue scans — collapsible. Header includes a 'View All'
+      // button that opens a full-history modal with every tongue
+      // assessment + its AI constitution report (the same data the
+      // patient saw in their wellness panel).
       if (tongues.length) {
-        html += '<div class="text-label mb-3">Tongue Diagnoses · 舌診記錄 (' + tongues.length + ')</div>';
-        html += '<div class="grid-auto mb-6" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s-3);">';
+        var tongueCards = '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s-3);">';
         tongues.slice(0, 3).forEach(function (t) {
           var c = (t.constitution_report && t.constitution_report.constitution) || {};
-          // image_url null = the photo was lost in the pre-volume era
-          // (see clearTongueOrphans migration). Show a friendly
-          // placeholder so the card still reads as a real diagnostic
-          // record instead of a broken-image icon.
           var thumb = t.image_url
             ? '<img src="' + HM.format.esc(t.image_url) + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border);margin-bottom:var(--s-2);">'
             : '<div style="width:100%;aspect-ratio:1;background:var(--washi);border:1px dashed var(--border);border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mu);margin-bottom:var(--s-2);text-align:center;padding:var(--s-2);">' +
                 '<div style="font-size:28px;opacity:0.5;margin-bottom:4px;">📷</div>' +
                 '<div style="font-size:11px;line-height:1.4;"><span lang="en">Photo no longer available</span><span lang="zh">照片已不可用</span></div>' +
               '</div>';
-          html += '<div class="card">' +
+          tongueCards += '<div class="card" style="cursor:pointer;" onclick="HM.doctorPanels.patients._viewTongue(' + patient.id + ',' + t.id + ')" title="Click for full report">' +
             thumb +
             '<div class="text-label">' + HM.format.date(t.created_at) + '</div>' +
             '<div class="text-sm mt-1">' + HM.format.esc(c.name_en || 'Analysis') + '</div>' +
             '<div class="text-xs text-muted">Score: ' + (t.health_score || '—') + '/100</div>' +
             '</div>';
         });
-        html += '</div>';
+        tongueCards += '</div>';
+
+        var viewAllBtn = '<button class="btn btn--ghost btn--sm" onclick="HM.doctorPanels.patients._viewAllTongues(' + patient.id + ')" style="font-size:11px;padding:4px 10px;">' +
+          '📜 <span lang="en">View All</span><span lang="zh">查看全部</span>' +
+        '</button>';
+
+        html += collapsibleSection({
+          key:     'tongue',
+          icon:    '👅',
+          titleEn: 'AI Wellness History · ' + tongues.length + ' assessment' + (tongues.length === 1 ? '' : 's'),
+          titleZh: 'AI 健康評估記錄（' + tongues.length + ' 筆）',
+          extras:  viewAllBtn,
+          body:    tongueCards,
+        });
       }
 
       // Pool-review access banner — backend sets pool_review_access=true
@@ -224,6 +311,12 @@
               '</div>' +
               '<div class="flex gap-2" style="align-items:center;flex-wrap:wrap;justify-content:flex-end;">' +
                 HM.format.statusBadge(a.status) +
+                // 'View Details' opens a modal showing every field the
+                // doctor saved on this visit — full case record, body
+                // diagrams, documents, treatments, prescription. Goes
+                // beyond the inline summary cards which only surface
+                // the highlights.
+                '<button class="btn btn--ghost btn--sm" style="padding:4px 10px;font-size:11px;" onclick="HM.doctorPanels.patients._viewCase(' + patient.id + ',' + a.id + ')">📄 <span lang="en">View Details</span><span lang="zh">查看詳情</span></button>' +
                 // MC issuance is offered for completed visits — that's
                 // where a real diagnosis exists to write into the cert.
                 (a.status === 'completed'
@@ -404,6 +497,10 @@
 
       el.innerHTML = html;
 
+      // Wire all the collapsible section toggles in this panel.
+      // Persists open/closed state per-section to localStorage.
+      wireCollapsibles(el);
+
       // Mount dual Wuyun Liuqi card — innate constitution from DOB plus
       // today's environmental qi so the doctor can weigh both at review time.
       if (window.HM && HM.wuyunLiuqi) {
@@ -570,5 +667,297 @@
       if (!appt) { HM.ui.toast('Could not find that appointment in this patient\'s history', 'warn'); return; }
       HM.doctorPanels.documents.openMc(c.patient, appt);
     },
+
+    /** Full case record modal for one consultation date. */
+    _viewCase: function (patientId, appointmentId) {
+      var c = _ctx.byPatient[patientId];
+      if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
+      var appt = (c.appts || []).find(function (a) { return a.id === appointmentId; });
+      if (!appt) { HM.ui.toast('Could not find that appointment', 'warn'); return; }
+      openCaseRecordModal(c.patient, appt);
+    },
+
+    /** Single tongue assessment modal — full AI report. */
+    _viewTongue: function (patientId, tongueId) {
+      var c = _ctx.byPatient[patientId];
+      if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
+      var t = (c.tongues || []).find(function (x) { return x.id === tongueId; });
+      if (!t) { HM.ui.toast('Could not find that tongue assessment', 'warn'); return; }
+      openTongueDetailModal(c.patient, t);
+    },
+
+    /** Full history of every tongue assessment + AI wellness data. */
+    _viewAllTongues: function (patientId) {
+      var c = _ctx.byPatient[patientId];
+      if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
+      openTongueHistoryModal(c.patient, c.tongues || []);
+    },
   };
+
+  // ── Modal: Full Case Record for a single consultation ──
+  // Shows EVERY field the doctor entered during this visit, even
+  // labels that have no value (so the doctor knows what fields were
+  // available during that visit). Body diagrams render full-size,
+  // documents are downloadable, treatments and prescription are
+  // included in one scrollable view.
+  function openCaseRecordModal(patient, a) {
+    var c = a.consultation || {};
+    var cr = {};
+    if (c.case_record) {
+      if (typeof c.case_record === 'object') cr = c.case_record;
+      else if (typeof c.case_record === 'string') {
+        try { cr = JSON.parse(c.case_record) || {}; } catch (_) {}
+      }
+    }
+    var treatments = [];
+    if (c.treatments) {
+      if (Array.isArray(c.treatments)) treatments = c.treatments;
+      else if (typeof c.treatments === 'string') {
+        try { var p = JSON.parse(c.treatments); if (Array.isArray(p)) treatments = p; } catch (_) {}
+      }
+    }
+    var rx = a.prescription || {};
+    var rxItems = Array.isArray(rx.items) ? rx.items : [];
+    var bodyMarks = Array.isArray(cr.body_marks) ? cr.body_marks : [];
+    var docs = Array.isArray(cr.documents) ? cr.documents : [];
+    var bp = (cr.blood_pressure || cr.bp || '').toString().trim();
+
+    function f(label, labelZh, value) {
+      var v = (value == null) ? '' : String(value).trim();
+      return '<div style="margin-bottom:14px;">' +
+        '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">' +
+          esc(label) + ' · ' + esc(labelZh) +
+        '</div>' +
+        '<div style="font-size:14px;color:var(--ink);line-height:1.6;white-space:pre-wrap;">' +
+          (v ? esc(v) : '<span class="text-muted" style="font-style:italic;">— not recorded —</span>') +
+        '</div>' +
+      '</div>';
+    }
+    function esc(s) { return HM.format.esc(s); }
+
+    var pp = patient.patient_profile || {};
+    var name = pp.full_name || pp.nickname || patient.email;
+
+    var content =
+      '<div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);">' +
+        '<div style="font-size:13px;color:var(--mu);">' +
+          (a.visit_type === 'walk_in' ? '🏥 Walk-in' : '📹 Online') + ' · ' +
+          HM.format.datetime(a.scheduled_start) +
+        '</div>' +
+        '<div style="font-size:18px;font-weight:600;color:var(--ink);margin-top:4px;">' +
+          esc(name) + (a.concern_label ? ' — ' + esc(a.concern_label) : '') +
+        '</div>' +
+      '</div>' +
+
+      // Vitals row
+      (bp || cr.pulse
+        ? '<div style="display:flex;gap:24px;margin-bottom:18px;padding:10px 14px;background:var(--washi);border-radius:var(--r-sm);">' +
+            (bp ? '<div><div class="text-xs text-muted">BP · 血壓</div><strong>' + esc(bp) + '</strong></div>' : '') +
+            (cr.pulse ? '<div><div class="text-xs text-muted">Pulse · 脈診</div><strong>' + esc(cr.pulse) + '</strong></div>' : '') +
+          '</div>'
+        : '') +
+
+      // Case fields (every one rendered with 'not recorded' fallback)
+      f('Chief Complaint', '主訴',         cr.chief_complaint) +
+      f('Present Illness', '現病史',       cr.present_illness) +
+      f('Past History',    '既往史',       cr.past_history) +
+      f('TCM Pattern',     '中醫證型',     cr.pattern_diagnosis) +
+      f('Western Dx',      '西醫診斷',     cr.western_diagnosis) +
+      f('Treatment Principle', '治法治則', cr.treatment_principle) +
+      f('Doctor Instructions', '醫囑',     cr.doctor_instructions) +
+
+      // Body diagrams
+      ((cr.body_front || cr.body_back)
+        ? '<div style="margin-bottom:14px;">' +
+            '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">Body Diagrams · 身體圖示</div>' +
+            '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
+              (cr.body_front ? '<a href="' + esc(cr.body_front) + '" target="_blank" rel="noopener"><img src="' + esc(cr.body_front) + '" style="height:200px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;"><div class="text-xs text-muted text-center mt-1">Front · 正面</div></a>' : '') +
+              (cr.body_back  ? '<a href="' + esc(cr.body_back)  + '" target="_blank" rel="noopener"><img src="' + esc(cr.body_back)  + '" style="height:200px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;"><div class="text-xs text-muted text-center mt-1">Back · 背面</div></a>' : '') +
+            '</div>' +
+          '</div>'
+        : '') +
+
+      // Body marks
+      (bodyMarks.length
+        ? '<div style="margin-bottom:14px;"><div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">Body Marks · 標記</div>' +
+          '<div style="font-size:13px;">' + bodyMarks.length + ' point(s) — ' +
+          bodyMarks.map(function (m) { return esc(m && (m.label || m.note) || ''); }).filter(Boolean).join(', ') +
+          '</div></div>'
+        : '') +
+
+      // Documents
+      (docs.length
+        ? '<div style="margin-bottom:14px;"><div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">Documents · 文件</div>' +
+          '<ul style="list-style:none;padding:0;margin:0;">' +
+            docs.map(function (d) {
+              if (!d) return '';
+              var href = d.url || d.dataUrl || '';
+              var name = d.name || d.filename || 'document';
+              var size = d.size ? ' · ' + Math.round(d.size / 1024) + ' KB' : '';
+              return '<li class="text-sm mt-1">📎 ' + (href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener" style="color:var(--gold);">' + esc(name) + '</a>' : esc(name)) + '<span class="text-muted">' + size + '</span></li>';
+            }).join('') +
+          '</ul></div>'
+        : '') +
+
+      // Treatments
+      (treatments.length
+        ? '<div style="margin-bottom:14px;padding:12px 14px;background:rgba(122,140,114,0.08);border-radius:var(--r-sm);border-left:3px solid var(--sage);">' +
+          '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">💉 Treatments · 治療 (' + treatments.length + ')</div>' +
+          treatments.map(function (t) {
+            return '<div class="text-sm mt-1">' + (t.icon || '•') + ' <strong>' + esc(t.name || t.key || '') + '</strong>' +
+              (t.name_zh ? ' · ' + esc(t.name_zh) : '') +
+              (t.points && t.points.length ? '<div class="text-xs text-muted">Points · 穴位: ' + t.points.map(esc).join(', ') + '</div>' : '') +
+              (t.duration_min ? '<span class="text-xs text-muted"> · ' + t.duration_min + ' min</span>' : '') +
+              (t.fee ? '<span class="text-xs text-muted"> · RM ' + t.fee + '</span>' : '') +
+              (t.notes ? '<div class="text-xs text-muted">' + esc(t.notes) + '</div>' : '') +
+            '</div>';
+          }).join('') +
+          '</div>'
+        : '') +
+
+      // Prescription
+      ((rx.diagnosis || rxItems.length)
+        ? '<div style="margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);">' +
+          '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">💊 Prescription · 處方</div>' +
+          (rx.diagnosis ? '<div class="text-sm"><strong>Dx:</strong> ' + esc(rx.diagnosis) + '</div>' : '') +
+          (rx.instructions ? '<div class="text-sm mt-1"><strong>Instructions:</strong> ' + esc(rx.instructions) + '</div>' : '') +
+          (rxItems.length
+            ? '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">' +
+                rxItems.map(function (it) {
+                  return '<span style="background:var(--washi);padding:3px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;">' +
+                    esc(it.drug_name || '') + ' ' + (it.quantity || '') + (it.unit || 'g') +
+                  '</span>';
+                }).join('') +
+              '</div>'
+            : '') +
+          '</div>'
+        : '');
+
+    HM.ui.modal({
+      size:    'lg',
+      title:   '📄 Case Record · 病歷詳情',
+      content: content,
+    });
+  }
+
+  // ── Modal: Single tongue assessment with full AI report ──
+  function openTongueDetailModal(patient, t) {
+    var report = t.constitution_report || {};
+    var cons   = report.constitution || {};
+    var dims   = Array.isArray(report.dimensions) ? report.dimensions : [];
+    var findings = Array.isArray(report.findings) ? report.findings : [];
+    var alerts   = Array.isArray(report.alerts)   ? report.alerts   : [];
+    var recs     = Array.isArray(report.recommendations) ? report.recommendations : [];
+
+    var thumb = t.image_url
+      ? '<img src="' + HM.format.esc(t.image_url) + '" style="max-width:100%;height:auto;max-height:280px;border-radius:var(--r-md);border:1px solid var(--border);">'
+      : '<div style="height:120px;background:var(--washi);border:1px dashed var(--border);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--mu);">📷 Photo no longer available · 照片已不可用</div>';
+
+    var dimRows = dims.map(function (d) {
+      var v = parseInt(d.score, 10);
+      var color = v > 0 ? '#a16207' : v < 0 ? '#3F6594' : '#7a7468';
+      return '<tr>' +
+        '<td style="padding:4px 8px;font-size:13px;">' + HM.format.esc(d.label_en || d.key || '') + ' · ' + HM.format.esc(d.label_zh || '') + '</td>' +
+        '<td style="padding:4px 8px;text-align:right;color:' + color + ';font-weight:500;font-family:var(--font-mono);">[' + (v > 0 ? '+' + v : v) + ']</td>' +
+      '</tr>';
+    }).join('');
+
+    var content =
+      '<div style="margin-bottom:14px;font-size:13px;color:var(--mu);">' +
+        HM.format.datetime(t.created_at) + ' · Score: <strong>' + (t.health_score || '—') + '/100</strong>' +
+      '</div>' +
+      '<div style="margin-bottom:18px;">' + thumb + '</div>' +
+
+      (cons.name_en
+        ? '<div style="padding:12px 14px;background:var(--washi);border-radius:var(--r-sm);margin-bottom:14px;">' +
+            '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Constitution · 體質</div>' +
+            '<div style="font-size:16px;font-weight:600;color:var(--ink);">' + HM.format.esc(cons.name_en) + (cons.name_zh ? ' · ' + HM.format.esc(cons.name_zh) : '') + '</div>' +
+            (cons.description ? '<div class="text-sm mt-1" style="line-height:1.6;">' + HM.format.esc(cons.description) + '</div>' : '') +
+          '</div>'
+        : '') +
+
+      (dimRows
+        ? '<div style="margin-bottom:14px;">' +
+            '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">Dimensions · 維度</div>' +
+            '<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;">' +
+              '<tbody>' + dimRows + '</tbody>' +
+            '</table>' +
+          '</div>'
+        : '') +
+
+      (findings.length
+        ? '<div style="margin-bottom:14px;"><div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">Findings · 發現</div>' +
+          '<ul style="margin:0;padding-left:20px;font-size:13px;line-height:1.7;">' +
+            findings.map(function (f) { return '<li>' + HM.format.esc(typeof f === 'string' ? f : (f.text || f.finding || '')) + '</li>'; }).join('') +
+          '</ul></div>'
+        : '') +
+
+      (alerts.length
+        ? '<div class="alert alert--danger" style="margin-bottom:14px;"><div class="alert-body text-sm">' +
+            '<strong>⚠️ Safety Alerts</strong><br>' +
+            alerts.map(function (a) { return '• ' + HM.format.esc(a && (a.alert || a.text) || ''); }).join('<br>') +
+          '</div></div>'
+        : '') +
+
+      (recs.length
+        ? '<div style="margin-bottom:14px;"><div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">Recommendations · 建議</div>' +
+          '<ul style="margin:0;padding-left:20px;font-size:13px;line-height:1.7;">' +
+            recs.map(function (r) { return '<li>' + HM.format.esc(typeof r === 'string' ? r : (r.text || r.recommendation || '')) + '</li>'; }).join('') +
+          '</ul></div>'
+        : '') +
+
+      (t.review_status
+        ? '<div class="text-xs text-muted">Review: ' + HM.format.esc(t.review_status) + (t.reviewer_doctor_id ? ' (doctor #' + t.reviewer_doctor_id + ')' : '') + '</div>'
+        : '');
+
+    HM.ui.modal({
+      size:    'lg',
+      title:   '👅 Tongue Assessment · 舌診報告',
+      content: content,
+    });
+  }
+
+  // ── Modal: All tongue + wellness history ──
+  // Lists every tongue assessment in reverse-chronological order with
+  // small thumbnails + headline scores. Click any row to drill into
+  // openTongueDetailModal for the full report.
+  function openTongueHistoryModal(patient, tongues) {
+    if (! tongues.length) {
+      HM.ui.modal({
+        size:    'md',
+        title:   '👅 AI Wellness History · 健康評估記錄',
+        content: '<p class="text-muted">No tongue assessments on file yet for this patient · 暫無記錄</p>',
+      });
+      return;
+    }
+
+    var rows = tongues.map(function (t) {
+      var c = (t.constitution_report && t.constitution_report.constitution) || {};
+      var thumb = t.image_url
+        ? '<img src="' + HM.format.esc(t.image_url) + '" style="width:64px;height:64px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border);">'
+        : '<div style="width:64px;height:64px;background:var(--washi);border:1px dashed var(--border);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:18px;">📷</div>';
+      return '<div onclick="HM.doctorPanels.patients._viewTongue(' + patient.id + ',' + t.id + ')" ' +
+        'style="display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:8px;cursor:pointer;transition:all 0.15s;background:#fff;" ' +
+        'onmouseenter="this.style.borderColor=\'var(--gold)\';this.style.transform=\'translateY(-1px)\';" ' +
+        'onmouseleave="this.style.borderColor=\'var(--border)\';this.style.transform=\'\';">' +
+        thumb +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="text-xs text-muted">' + HM.format.datetime(t.created_at) + '</div>' +
+          '<div class="text-sm" style="font-weight:600;color:var(--ink);">' + HM.format.esc(c.name_en || 'Analysis') + (c.name_zh ? ' · ' + HM.format.esc(c.name_zh) : '') + '</div>' +
+          '<div class="text-xs text-muted">Score: ' + (t.health_score || '—') + '/100' +
+          (t.review_status ? ' · ' + HM.format.esc(t.review_status) : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="text-xs text-muted">→</div>' +
+      '</div>';
+    }).join('');
+
+    HM.ui.modal({
+      size:    'lg',
+      title:   '👅 AI Wellness History · 健康評估記錄 (' + tongues.length + ')',
+      content:
+        '<p class="text-xs text-muted mb-3">Click any row for the full AI report — constitution analysis, dimension scores, findings, recommendations.</p>' +
+        rows,
+    });
+  }
 })();
