@@ -40,6 +40,18 @@
   HM.router.on('#/patients', function () { HM.doctorPanels.patients.render(panel()); });
   HM.router.on('#/patients/:id', function (p) { HM.doctorPanels.patients.renderDetail(panel(), p.id); });
   HM.router.on('#/consult/:id', function (p) { HM.doctorPanels.consult.render(panel(), p.id); });
+
+  // Toggle 'is-consult-mode' on body whenever the route enters/leaves
+  // a consultation. CSS rules in consult.js use this flag to hide the
+  // portal sidebar and widen the case-record rail so the prescription
+  // table fits comfortably. Also re-applied on hashchange so navigating
+  // away cleanly removes the class.
+  function syncConsultMode() {
+    var isConsult = /^#\/consult\//.test(location.hash);
+    document.body.classList.toggle('is-consult-mode', isConsult);
+  }
+  window.addEventListener('hashchange', syncConsultMode);
+  syncConsultMode();
   HM.router.on('#/prescriptions', function () { HM.doctorPanels.prescriptions.render(panel()); });
   HM.router.on('#/reviews', function () { HM.doctorPanels.reviews.render(panel()); });
   // Legacy URLs redirect to the combined queue

@@ -1777,7 +1777,26 @@
       // doctor can keep watching the patient, case record scrolls
       // independently on the right. align-items:start so the right
       // column can grow tall without the left column stretching.
-      '.consult-layout--online{display:grid;grid-template-columns:1fr 460px;gap:var(--s-4);align-items:start;}' +
+      // ── Consult mode chrome ─────────────────────────────────────
+      // body.is-consult-mode is toggled by pages/doctor.js when the
+      // route enters #/consult/:id. Hides the portal sidebar so the
+      // video + case-record rail can use the full window width — the
+      // doctor doesn't need portal nav while a patient is in front
+      // of them. A small floating button at top-left lets them
+      // re-open the sidebar if they really do need to navigate
+      // elsewhere mid-consult (rare).
+      '@media (min-width: 769px){' +
+        'body.is-consult-mode .sidebar{display:none !important;}' +
+        'body.is-consult-mode .portal-layout{grid-template-columns:1fr !important;}' +
+      '}' +
+      '.consult-back{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;' +
+        'background:var(--washi);border:1px solid var(--border);color:var(--ink);' +
+        'font-size:12px;font-weight:500;text-decoration:none;cursor:pointer;' +
+        'font-family:inherit;margin-bottom:var(--s-3);transition:all 0.15s;}' +
+      '.consult-back:hover{background:var(--bg);border-color:var(--gold);}' +
+      '.consult-back svg{width:12px;height:12px;}' +
+
+      '.consult-layout--online{display:grid;grid-template-columns:1fr 540px;gap:var(--s-4);align-items:start;}' +
       // The video block — sticky to the top of the visible area while
       // the right column scrolls. Calculation accounts for the page
       // nav height + a small buffer.
