@@ -173,11 +173,59 @@
     return { close: close, element: drawerEl };
   }
 
+  /**
+   * Render the stock-gate failure that the backend's
+   * PrescriptionController returns when an issue or revise is blocked
+   * because one or more herbs aren't in the catalog or are out of
+   * stock. Pass the caught error directly — this checks the shape and
+   * gracefully falls back to a plain toast if the error is something
+   * else (e.g. network, auth) so callers can use it as a one-liner.
+   *
+   * Returns true if it surfaced the stock error (so caller can skip
+   * its own fallback), false otherwise.
+   */
+  function rxStockError(err) {
+    var data = err && err.data;
+    if (! data || data.reason !== 'stock_unavailable' || ! Array.isArray(data.problems)) {
+      // Not a stock-gate error — let caller handle (toast, retry, etc.)
+      return false;
+    }
+    var rows = data.problems.map(function (p) {
+      return '<li style="margin-bottom:8px;line-height:1.55;">' +
+        '<strong>' + escapeHtml(p.drug_name || '') + '</strong>' +
+        '<div lang="en" style="font-size:13px;color:var(--mu,#7a7468);">' + escapeHtml(p.message || '') + '</div>' +
+        (p.message_zh ? '<div lang="zh" style="font-size:13px;color:var(--mu,#7a7468);">' + escapeHtml(p.message_zh) + '</div>' : '') +
+      '</li>';
+    }).join('');
+    modal({
+      size: 'md',
+      title: '⚠️ Cannot Issue Prescription · 無法開立處方',
+      content:
+        '<p style="margin:0 0 12px;font-size:14px;color:var(--ink,#241608);">' +
+          '<span lang="en">The following herbs cannot be dispensed right now. Update your prescription, then click Issue again.</span>' +
+          '<span lang="zh">下列藥材目前無法配發，請更新處方後再次按下「開立」。</span>' +
+        '</p>' +
+        '<ul style="list-style:disc;padding-left:22px;margin:0 0 14px;">' + rows + '</ul>' +
+        '<div style="font-size:12px;color:var(--mu,#7a7468);background:var(--washi,#FAF7F2);border:1px solid var(--bdr-l,#e5dfd5);padding:10px 12px;border-radius:8px;">' +
+          '<span lang="en">Tip: an admin can adjust stock levels under Medicine Stock. To bypass for a single patient, ask the pharmacy to procure the missing herb manually before re-issuing.</span>' +
+          '<span lang="zh">提示：管理員可於「藥材庫存」調整存量。若僅針對單一患者，可請藥房先行採購所缺藥材後再重新開立。</span>' +
+        '</div>',
+    });
+    return true;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   window.HM.ui = {
     toast: toast,
     modal: modal,
     confirm: confirm,
     prompt: prompt,
     drawer: drawer,
+    rxStockError: rxStockError,
   };
 })();

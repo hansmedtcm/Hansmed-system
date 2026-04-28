@@ -1522,6 +1522,10 @@
         HM.ui.toast('Prescription issued · 處方已開立', 'success');
       } catch (err) {
         HM.form.setLoading(form, false);
+        // Stock-gate failures get a structured modal with each
+        // problem herb listed. Form-level error message stays
+        // as a fallback for other 4xx/5xx responses.
+        if (HM.ui.rxStockError(err)) return;
         HM.form.showGeneralError(form, err.message || 'Failed to issue prescription');
       }
     });

@@ -1464,6 +1464,10 @@
       HM.ui.toast('Consultation completed · 問診完成', 'success');
       setTimeout(function () { location.hash = '#/queue'; }, 800);
     } catch (e) {
+      // Stock-gate failures get a clear modal listing each problem
+      // herb. Other errors (network, auth, validation) fall through
+      // to a generic toast.
+      if (HM.ui.rxStockError(e)) return;
       HM.ui.toast(e.message || 'Failed to complete', 'danger');
     }
   }

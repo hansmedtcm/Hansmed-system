@@ -256,6 +256,9 @@
         if (modal && modal.close) modal.close();
         if (typeof onDone === 'function') onDone();
       } catch (e) {
+        // Stock-gate failure → modal listing each problem herb.
+        // Anything else (network, auth, validation) → toast.
+        if (HM.ui.rxStockError(e)) return;
         HM.ui.toast(e.message || 'Revision failed', 'danger');
       }
     }
