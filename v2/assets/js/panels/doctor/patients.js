@@ -242,12 +242,16 @@
           // patient pointed to pain on past visits. Documents listed
           // with file names so legacy lab reports / MC scans still
           // surface even if the storage volume cleared the binary.
-          var bp = cr.blood_pressure || cr.bp || '';
+          // Trim every string field so accidental whitespace-only
+          // saves don't fool hasCR into showing empty rows.
+          function nz(v) { return (v == null) ? '' : String(v).trim(); }
+          var bp   = nz(cr.blood_pressure) || nz(cr.bp);
+          var pulse = nz(cr.pulse);
           var docs = Array.isArray(cr.documents) ? cr.documents : [];
-          var hasBodyDiagram = cr.body_front || cr.body_back;
-          var hasCR = cr.chief_complaint || cr.present_illness || cr.past_history ||
-                      bp || cr.pulse || cr.pattern_diagnosis || cr.western_diagnosis ||
-                      cr.treatment_principle || cr.doctor_instructions ||
+          var hasBodyDiagram = !! (cr.body_front || cr.body_back);
+          var hasCR = nz(cr.chief_complaint) || nz(cr.present_illness) || nz(cr.past_history) ||
+                      bp || pulse || nz(cr.pattern_diagnosis) || nz(cr.western_diagnosis) ||
+                      nz(cr.treatment_principle) || nz(cr.doctor_instructions) ||
                       bodyMarks.length || hasBodyDiagram || docs.length;
 
           // Always render the section header so the doctor knows
@@ -260,25 +264,40 @@
               '<div class="text-label mb-2" style="font-size:10px;">📋 Case Record · 病歷</div>' +
               (! hasCR ? '<div class="text-xs text-muted">no case record entered · 未填寫病歷</div>' : '') +
             '</div>';
+          // Diagnostic: log raw case_record so when users report 'I see
+          // labels with no values' we can see exactly what's in the
+          // saved row. Cheap, only fires when the case-record block
+          // exists. Strip after a few weeks of stable behaviour.
+          if (window.HM && HM.api && c.case_record !== undefined) {
+            try { console.log('[case_record dump]', a.id, a.scheduled_start, c.case_record); } catch (_) {}
+          }
+
           if (hasCR) {
 
-            // Helper to add a labelled row only when value exists
+            // Helper to add a labelled row only when the trimmed value
+            // is non-empty. Trims defensively in case a stored value
+            // is something like ' ' or '\n' which is truthy but reads
+            // as blank in the UI.
             function row(label, labelZh, value) {
-              return value
-                ? '<div class="text-sm mt-1" style="line-height:1.5;"><strong>' + label + ' · ' + labelZh + ':</strong> ' + HM.format.esc(value) + '</div>'
-                : '';
+              var v = (value == null) ? '' : String(value).trim();
+              if (! v) return '';
+              return '<div class="text-sm mt-1" style="line-height:1.5;">' +
+                '<strong>' + label + ' · ' + labelZh + ':</strong> ' +
+                HM.format.esc(v) +
+              '</div>';
             }
 
             html += row('Chief Complaint', '主訴', cr.chief_complaint);
             html += row('Present Illness', '現病史', cr.present_illness);
             html += row('Past History',    '既往史', cr.past_history);
 
-            // Vitals (BP + pulse on same row when both present)
-            if (bp || cr.pulse) {
+            // Vitals (BP + pulse on same row when both present).
+            // Both already trimmed at the top via nz().
+            if (bp || pulse) {
               html += '<div class="text-sm mt-1" style="line-height:1.5;">';
-              if (bp)       html += '<strong>BP · 血壓:</strong> ' + HM.format.esc(bp);
-              if (bp && cr.pulse) html += ' · ';
-              if (cr.pulse) html += '<strong>Pulse · 脈診:</strong> ' + HM.format.esc(cr.pulse);
+              if (bp)    html += '<strong>BP · 血壓:</strong> ' + HM.format.esc(bp);
+              if (bp && pulse) html += ' · ';
+              if (pulse) html += '<strong>Pulse · 脈診:</strong> ' + HM.format.esc(pulse);
               html += '</div>';
             }
 
