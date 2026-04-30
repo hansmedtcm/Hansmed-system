@@ -68,16 +68,28 @@
       // a row exists for this appointment.
       var savedConsult = apptRes.consultation || null;
       if (savedConsult) {
-        if (savedConsult.case_record && typeof savedConsult.case_record === 'object') {
-          state.caseRecord = savedConsult.case_record;
+        // case_record may arrive as either a parsed object or a JSON string
+        // (depending on whether the backend's json_decode ran). Handle both.
+        var cr = savedConsult.case_record;
+        if (typeof cr === 'string' && cr.length > 0) {
+          try { cr = JSON.parse(cr); } catch (_) { cr = null; }
+        }
+        if (cr && typeof cr === 'object') {
+          state.caseRecord = cr;
           // Documents live inside case_record on save — pull them out
           // so the upload UI can render the existing attachments.
           if (Array.isArray(state.caseRecord.documents)) {
             state.documents = state.caseRecord.documents;
           }
         }
-        if (Array.isArray(savedConsult.treatments)) {
-          state.treatments = savedConsult.treatments;
+
+        // treatments may also arrive as a JSON string or a real array.
+        var tx = savedConsult.treatments;
+        if (typeof tx === 'string' && tx.length > 0) {
+          try { tx = JSON.parse(tx); } catch (_) { tx = null; }
+        }
+        if (Array.isArray(tx)) {
+          state.treatments = tx;
         }
       }
 
