@@ -167,11 +167,16 @@ class ConsultationController extends Controller
             $updates['ended_at']         = now();
             $updates['duration_seconds'] = $data['duration_seconds'] ?? null;
         }
+        // The Consultation model casts case_record + treatments as 'array',
+        // so Eloquent json_encodes them on save. Passing already-encoded
+        // strings here would double-encode and AppointmentController::show's
+        // single json_decode would then return a string instead of an
+        // object/array, breaking 'Edit in consult' rehydration.
         if (array_key_exists('case_record', $data)) {
-            $updates['case_record'] = json_encode($data['case_record']);
+            $updates['case_record'] = $data['case_record'];
         }
         if (array_key_exists('treatments', $data)) {
-            $updates['treatments'] = json_encode($data['treatments']);
+            $updates['treatments'] = $data['treatments'];
         }
         $consult->update($updates);
 
