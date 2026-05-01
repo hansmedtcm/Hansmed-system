@@ -892,19 +892,93 @@
     });
   }
 
-  function captureBodyDiagrams() {
+  // Decode an <img> source with a hard 5s timeout. Used by the
+  // silhouette-bake path so a slow network or missing asset can NEVER
+  // hang the save — captureBodyDiagrams catches a rejection here and
+  // falls back to writing only the legacy drawing-only field.
+  function loadSilhouette(src) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var timer = setTimeout(function () {
+        reject(new Error('silhouette load timeout: ' + src));
+      }, 5000);
+      img.onload  = function () { clearTimeout(timer); resolve(img); };
+      img.onerror = function () { clearTimeout(timer); reject(new Error('silhouette load error: ' + src)); };
+      img.src = src;
+    });
+  }
+
+  // Capture body-diagram drawings as data-URLs. For the combined
+  // stage we ALSO composite the front/back silhouette images
+  // underneath the strokes and export that merged result as
+  // body_combined_baked — a self-contained image suitable for PDF
+  // export and long-term archival. The legacy drawing-only
+  // body_combined value is still written for one transition release
+  // so any patient/doctor client running stale JS keeps working; the
+  // patients.js render layer prefers _baked when present and layers
+  // the silhouette at render time when it isn't.
+  async function captureBodyDiagrams() {
     var out = {};
-    document.querySelectorAll('canvas.body-canvas').forEach(function (canvas) {
+    var canvases = document.querySelectorAll('canvas.body-canvas');
+    for (var i = 0; i < canvases.length; i++) {
+      var canvas = canvases[i];
       var side = canvas.getAttribute('data-side');
       try {
-        // Only save if there's anything drawn (cheap check: any non-transparent pixel)
+        // Cheap ink check: any non-transparent pixel?
         var ctx = canvas.getContext('2d');
         var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         var hasInk = false;
-        for (var i = 3; i < imgData.length; i += 4) { if (imgData[i] > 0) { hasInk = true; break; } }
-        if (hasInk) out['body_' + side] = canvas.toDataURL('image/png');
-      } catch (_) {}
-    });
+        for (var j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { hasInk = true; break; } }
+        if (!hasInk) continue;
+
+        // DEPRECATED — drawing-only export. Kept for one transition
+        // release so older clients still see something. Remove after
+        // every active deploy is on the _baked field.
+        out['body_' + side] = canvas.toDataURL('image/png');
+
+        // Silhouette bake — only for the combined stage. Front/back
+        // are drawn side-by-side underneath the strokes so the saved
+        // PNG is fully self-contained. If silhouette load fails, skip
+        // the bake (don't write half-baked data) — the display-side
+        // fallback in patients.js layers the silhouette at render time.
+        if (side === 'combined') {
+          try {
+            var silhouettes = await Promise.all([
+              loadSilhouette('assets/img/front.png'),
+              loadSilhouette('assets/img/back.png'),
+            ]);
+            var tmp  = document.createElement('canvas');
+            tmp.width  = canvas.width;
+            tmp.height = canvas.height;
+            var tctx = tmp.getContext('2d');
+            // White background — the live stage card is white; match
+            // it so the archived PNG looks the same as the on-screen
+            // view rather than showing transparency in PDF viewers.
+            tctx.fillStyle = '#ffffff';
+            tctx.fillRect(0, 0, tmp.width, tmp.height);
+            var halfW = tmp.width / 2;
+            [silhouettes[0], silhouettes[1]].forEach(function (sImg, idx) {
+              var scale = Math.min(halfW / sImg.width, tmp.height / sImg.height);
+              var w = sImg.width  * scale;
+              var h = sImg.height * scale;
+              var x = idx * halfW + (halfW - w) / 2;
+              var y = (tmp.height - h) / 2;
+              tctx.drawImage(sImg, x, y, w, h);
+            });
+            // Drawing canvas on top, same dimensions → strokes line
+            // up with the silhouette positions used at draw time.
+            tctx.drawImage(canvas, 0, 0);
+            out['body_' + side + '_baked'] = tmp.toDataURL('image/png');
+          } catch (silErr) {
+            // Half-baked data must NEVER hit the DB. Skip _baked and
+            // let the legacy field carry the drawing-only payload.
+            console.warn('[body-diagram] silhouette bake skipped:',
+              silErr && silErr.message,
+              '— wrote drawing-only body_' + side + ' instead');
+          }
+        }
+      } catch (_) { /* canvas inaccessible — skip silently */ }
+    }
     return out;
   }
 
@@ -1540,9 +1614,10 @@
       btn.innerHTML  = '<span class="spinner" style="margin-right:6px;"></span>Saving…';
     }
     try {
+      var draftCaseRecord = await captureCaseRecord();
       await HM.api.consultation.saveDraft(state.appt.id, {
         doctor_notes: val('cr-inst') || '',
-        case_record:  captureCaseRecord(),
+        case_record:  draftCaseRecord,
         treatments:   state.treatments,
       });
       HM.ui.toast('Draft saved · 草稿已儲存', 'success');
@@ -1559,7 +1634,7 @@
   // Reusable: collect every case-record field from the DOM into a
   // single JSON-serialisable object. Called by both saveDraft and
   // completeConsult so the two paths can never drift out of sync.
-  function captureCaseRecord() {
+  async function captureCaseRecord() {
     var caseRecord = {
       chief_complaint:     val('cr-chief'),
       present_illness:     val('cr-present'),
@@ -1572,18 +1647,26 @@
       blood_pressure:      val('cr-bp'),
       documents:           state.documents,
     };
-    var bodyDiagrams = captureBodyDiagrams();
-    Object.keys(bodyDiagrams).forEach(function (k) { caseRecord[k] = bodyDiagrams[k]; });
+    // captureBodyDiagrams is async (awaits silhouette image decode for
+    // the bake step). Type-guard each returned value so a missed await
+    // or any future capture-side bug surfaces loudly here instead of
+    // writing '[object Promise]' or undefined into the DB.
+    var bodyDiagrams = await captureBodyDiagrams();
+    Object.keys(bodyDiagrams).forEach(function (k) {
+      var v = bodyDiagrams[k];
+      if (typeof v !== 'string' || v.indexOf('data:image/') !== 0) {
+        throw new Error('captureBodyDiagrams produced invalid value for ' + k +
+          ' (typeof=' + typeof v + ')');
+      }
+      caseRecord[k] = v;
+    });
     return caseRecord;
   }
 
   // ── Complete ──────────────────────────────────────────────
   async function completeConsult(withRx) {
-    // Use the shared capture helper so saveDraft and completeConsult
-    // can never write different shapes into case_record.
-    var caseRecord = captureCaseRecord();
-
-    // Clean up Rx items — drop any row missing drug_name or quantity
+    // Validate Rx first so we don't pay the silhouette-bake cost only
+    // to bail on a missing-herb toast.
     var cleanRx = state.rxItems.filter(function (it) { return it.drug_name && (it.quantity > 0); });
     if (withRx && !cleanRx.length) {
       HM.ui.toast('Add at least one herb (name + quantity) · 至少新增一項藥材', 'warning');
@@ -1607,6 +1690,12 @@
     });
 
     try {
+      // captureCaseRecord is async (silhouette bake). Run it inside
+      // the try block so the type-guard throw lands in our existing
+      // catch handler — rxStockError will return false and the user
+      // sees a clear toast instead of an unhandled rejection.
+      var caseRecord = await captureCaseRecord();
+
       await HM.api.consultation.finish(state.appt.id, {
         duration_seconds: 0,
         doctor_notes:     caseRecord.doctor_instructions || '',
