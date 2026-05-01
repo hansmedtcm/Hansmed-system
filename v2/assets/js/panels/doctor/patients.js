@@ -77,55 +77,81 @@
     });
   }
 
+  // Inject the body-diagram size classes once. Dimensions match the
+  // consult page's drawing canvas CSS box exactly so saved PNGs
+  // (which carry the canvas's internal 1400x1600 aspect, 0.875)
+  // visually line up with what the doctor drew. object-fit:fill on
+  // the inner image stretches the saved PNG to the wrapper's
+  // 0.465 aspect, undoing the squish that happens at draw time.
+  //
+  //   .body-diagram-modal  → 200x430 desktop (matches consult), 160x350 < 768px
+  //   .body-diagram-thumb  → 100x215 (compact, half-modal — for the patient
+  //                          detail card list view)
+  function ensureBodyDiagramStyles() {
+    if (document.getElementById('hm-body-diagram-styles')) return;
+    var s = document.createElement('style');
+    s.id = 'hm-body-diagram-styles';
+    s.textContent =
+      '.body-diagram-modal,.body-diagram-thumb{display:inline-block;line-height:0;position:relative;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;}' +
+      '.body-diagram-modal{width:200px;height:430px;}' +
+      '.body-diagram-thumb{width:100px;height:215px;}' +
+      '.body-diagram-modal>img,.body-diagram-thumb>img{width:100%;height:100%;object-fit:fill;display:block;}' +
+      '.body-diagram-modal .bd-half,.body-diagram-thumb .bd-half{width:50%;height:100%;object-fit:fill;display:inline-block;vertical-align:top;}' +
+      '.body-diagram-modal .bd-overlay,.body-diagram-thumb .bd-overlay{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;pointer-events:none;}' +
+      '@media (max-width:767px){.body-diagram-modal{width:160px;height:350px;}}';
+    document.head.appendChild(s);
+  }
+
   /**
-   * Render the body diagram from a saved case_record at a given height.
-   * Three preference tiers, oldest fallback last:
+   * Render the body diagram from a saved case_record at one of two
+   * preset sizes. Three preference tiers, oldest fallback last:
    *   1. body_combined_baked — silhouette + strokes pre-composited
    *      into one PNG. Render as a single <img>.
    *   2. body_combined        — drawing-only legacy. Layer the live
    *      silhouette (front.png + back.png side-by-side) under the
    *      drawing at render time so historical rows still look right.
    *   3. body_front / body_back — original split-view rows.
-   * The returned HTML always wraps in an anchor so the doctor can
-   * click to open the image (or the layered stage's own drawing) in
-   * a new tab. Used by both the inline thumbnail (96px) and the modal
-   * (200px). Returns '' when nothing diagram-related is on the row.
+   *
+   * `size` is 'modal' (200x430 desktop / 160x350 mobile, matches the
+   * live consult drawing canvas) or 'thumb' (100x215, half size for
+   * the patient detail card list view). Both use the same 0.465
+   * aspect ratio + object-fit:fill so saved PNGs visually line up
+   * with what was drawn — the consult canvas is internally 1400x1600
+   * (0.875 aspect) but is shown at 200x430 (0.465 aspect) on screen,
+   * so the same display-side stretch is needed here.
    */
-  function renderBodyDiagram(cr, height) {
+  function renderBodyDiagram(cr, size) {
+    ensureBodyDiagramStyles();
     var esc = HM.format.esc;
-    var imgStyle = 'height:' + height + 'px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;';
+    var cls = (size === 'thumb') ? 'body-diagram-thumb' : 'body-diagram-modal';
+
     if (cr.body_combined_baked) {
-      return '<a href="' + esc(cr.body_combined_baked) + '" target="_blank" rel="noopener" title="Body diagram">' +
-        '<img src="' + esc(cr.body_combined_baked) + '" style="' + imgStyle + '">' +
+      return '<a href="' + esc(cr.body_combined_baked) + '" target="_blank" rel="noopener" title="Body diagram" class="' + cls + '">' +
+        '<img src="' + esc(cr.body_combined_baked) + '">' +
         '</a>';
     }
     if (cr.body_combined) {
-      // Layered fallback: silhouettes at the back, drawing on top.
-      // The wrapper is the click target — opens the drawing-only
-      // PNG in a new tab (silhouette is a static asset the doctor
-      // can also open separately if needed).
-      var stageStyle = 'position:relative;display:inline-block;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);';
-      var sStyle = 'height:' + height + 'px;width:auto;display:block;';
-      var oStyle = 'position:absolute;top:0;left:0;height:' + height + 'px;width:100%;pointer-events:none;';
-      return '<a href="' + esc(cr.body_combined) + '" target="_blank" rel="noopener" title="Body diagram (drawings only — silhouette layered for display)">' +
-        '<div class="body-history-stage" style="' + stageStyle + '">' +
-          '<img src="assets/img/front.png" style="' + sStyle + 'display:inline-block;">' +
-          '<img src="assets/img/back.png"  style="' + sStyle + 'display:inline-block;">' +
-          '<img src="' + esc(cr.body_combined) + '" style="' + oStyle + '">' +
-        '</div>' +
+      // Layered fallback: silhouettes (front + back, half-width each
+      // via .bd-half) at the back, drawing canvas (full bounds via
+      // .bd-overlay) on top. The wrapper is the click target — opens
+      // the drawing-only PNG in a new tab.
+      return '<a href="' + esc(cr.body_combined) + '" target="_blank" rel="noopener" title="Body diagram (drawings only — silhouette layered for display)" class="' + cls + '">' +
+        '<img class="bd-half" src="assets/img/front.png">' +
+        '<img class="bd-half" src="assets/img/back.png">' +
+        '<img class="bd-overlay" src="' + esc(cr.body_combined) + '">' +
         '</a>';
     }
+    // Original split-view rows: keep the explicit Front/Back side-by-
+    // side layout but match each one to the same wrapper dimensions.
     var out = '';
     if (cr.body_front) {
-      out += '<a href="' + esc(cr.body_front) + '" target="_blank" rel="noopener" title="Front view">' +
-        '<img src="' + esc(cr.body_front) + '" style="' + imgStyle + '">' +
-        '<div class="text-xs text-muted text-center mt-1">Front · 正面</div>' +
+      out += '<a href="' + esc(cr.body_front) + '" target="_blank" rel="noopener" title="Front view" class="' + cls + '">' +
+        '<img src="' + esc(cr.body_front) + '">' +
         '</a>';
     }
     if (cr.body_back) {
-      out += '<a href="' + esc(cr.body_back) + '" target="_blank" rel="noopener" title="Back view">' +
-        '<img src="' + esc(cr.body_back) + '" style="' + imgStyle + '">' +
-        '<div class="text-xs text-muted text-center mt-1">Back · 背面</div>' +
+      out += '<a href="' + esc(cr.body_back) + '" target="_blank" rel="noopener" title="Back view" class="' + cls + '">' +
+        '<img src="' + esc(cr.body_back) + '">' +
         '</a>';
     }
     return out;
@@ -466,7 +492,7 @@
             if (hasBodyDiagram) {
               html += '<div class="text-sm mt-2"><strong>Body Diagram · 身體圖示:</strong></div>' +
                 '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">' +
-                renderBodyDiagram(cr, 96) +
+                renderBodyDiagram(cr, 'thumb') +
                 '</div>';
             }
 
@@ -843,7 +869,7 @@
         ? '<div style="margin-bottom:var(--s-4);">' +
             sectionHead('🖊️ Body Diagram · 身體圖示') +
             '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
-              renderBodyDiagram(cr, 200) +
+              renderBodyDiagram(cr, 'modal') +
             '</div>' +
           '</div>'
         : '') +
