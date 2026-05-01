@@ -16,16 +16,9 @@ html[lang="zh"] .hm-lang-en,
 html[lang="zh"] .bi-en { display: none !important; }
 html[lang="en"] .hm-lang-sep { display: none; }
 html[lang="zh"] .hm-lang-sep { display: none; }
-
-/* Two-state home-page herb shop CTA. The .shop-disabled class is set
-   on <html> by the pre-paint script above (line 6) when the cached
-   shop_enabled flag is false, so the swap happens BEFORE first paint.
-   public-feature-flags.js applies the same swap at runtime once the
-   live /public/features response lands. */
-.home-shop-cta__live { display: inline-flex; }
-.home-shop-cta__soon { display: none; }
-.shop-disabled .home-shop-cta__live { display: none !important; }
-.shop-disabled .home-shop-cta__soon { display: inline-flex !important; }
+/* .home-shop-cta__live / __soon swap rules live in landing-v4.css
+   so every public landing page (index, services, …) gets the same
+   pre-paint behaviour from a single source. */
 </style>
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">

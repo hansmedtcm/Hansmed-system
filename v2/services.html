@@ -936,7 +936,20 @@ body.lang-zh #len, body.lang-zh #mlen { background: transparent; color: var(--mu
         <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">Herb Shop · 中藥商店</h3>
         <p style="font-size:14px;color:var(--mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Quality single herbs and classical formulas from verified Malaysian suppliers. Prescription-linked orders reviewed by your practitioner.</p>
         <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">品質驗證 · 藥師審核</p>
-        <button class="btn btn-outline btn-sm" onclick="go('services')">Browse herbs →</button>
+        <!-- Two-state shop CTA — see landing-v4.css .home-shop-cta__*
+             rules + public-feature-flags.js step 1b. Fixes the prior
+             go('services') typo to go('shop'). -->
+        <div class="home-shop-cta" data-home-shop-cta>
+          <button class="btn btn-outline btn-sm home-shop-cta__live" onclick="go('shop')">
+            <span lang="en">Browse herbs →</span>
+            <span lang="zh">瀏覽藥材 →</span>
+          </button>
+          <span class="btn btn-outline btn-sm home-shop-cta__soon" hidden aria-disabled="true"
+                style="opacity:0.55;cursor:not-allowed;pointer-events:none;">
+            <span lang="en">Coming Soon</span>
+            <span lang="zh">即將推出</span>
+          </span>
+        </div>
       </div>
     </div>
   </section>
@@ -1025,7 +1038,19 @@ body.lang-zh #len, body.lang-zh #mlen { background: transparent; color: var(--mu
       <div><div class="eyebrow">中藥商店 Herb Shop</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">
         <span lang="en">Quality <em>Herb Shop</em></span>
         <span lang="zh">優質 <em>中藥商店</em></span>
-      </h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Browse single herbs and classical formulas from verified suppliers. Prescription-linked orders reviewed by your practitioner. Over-the-counter items offered as herbal food supplements only.</div><div class="bi-zh">品質驗證草藥 · 藥師審核 · 處方藥需醫師開方</div></div><button class="btn btn-wd" onclick="go('register')">Browse Shop · 瀏覽商店</button></div>
+      </h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Browse single herbs and classical formulas from verified suppliers. Prescription-linked orders reviewed by your practitioner. Over-the-counter items offered as herbal food supplements only.</div><div class="bi-zh">品質驗證草藥 · 藥師審核 · 處方藥需醫師開方</div></div><!-- Two-state shop CTA. Fixes the prior go('register') mismatch:
+        the label said Browse Shop but routed to register. -->
+   <div class="home-shop-cta" data-home-shop-cta>
+     <button class="btn btn-wd home-shop-cta__live" onclick="go('shop')">
+       <span lang="en">Browse Shop</span>
+       <span lang="zh">瀏覽商店</span>
+     </button>
+     <span class="btn btn-wd home-shop-cta__soon" hidden aria-disabled="true"
+           style="opacity:0.55;cursor:not-allowed;pointer-events:none;">
+       <span lang="en">Coming Soon</span>
+       <span lang="zh">即將推出</span>
+     </span>
+   </div></div>
       <div class="svc-box"><div style="font-size:36px;margin-bottom:16px;">🌿</div><div class="sfi"><span class="sfi-dot"></span>Verified supplier network · 驗證供應商</div><div class="sfi"><span class="sfi-dot"></span>Chinese name + pinyin labels · 中文及拼音標示</div><div class="sfi"><span class="sfi-dot"></span>Prescription-linked orders · 處方連結</div><div class="sfi"><span class="sfi-dot"></span>Pharmacist review gate · 藥師審核</div><div class="sfi"><span class="sfi-dot"></span>Transparent sourcing · 透明來源</div></div>
     </div>
   </section>

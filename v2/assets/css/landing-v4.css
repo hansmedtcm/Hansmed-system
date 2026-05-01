@@ -653,3 +653,26 @@ body.landing-v4 #about-trigger,
 body.landing-v4 #about-wrap,
 #about-wrap { display: inline-block; vertical-align: middle; }
 
+/* ── Two-state shop CTA ─────────────────────────────────────────
+   Used by [data-home-shop-cta] wrappers on index.html and
+   services.html (and any future landing page) to flip between a
+   live "Browse herbs / Browse Shop" button and a "Coming Soon"
+   placeholder when the admin has disabled the herb shop.
+
+   .shop-disabled is set on <html> by each page's pre-paint inline
+   <head> script (reads localStorage hm-shop-enabled === '0') so
+   the swap happens BEFORE first paint — no flash. The runtime
+   /public/features fetch in public-feature-flags.js applies the
+   same swap once the live response lands, in case the cache was
+   stale. Both branches are styled like buttons; only one is
+   visible at a time.
+
+   These rules live in landing-v4.css (not components.css) because
+   landing-v4.css is the stylesheet shared by every public landing
+   page; components.css is only loaded by index.html and the app
+   shell. */
+.home-shop-cta__live { display: inline-flex; }
+.home-shop-cta__soon { display: none; }
+.shop-disabled .home-shop-cta__live { display: none !important; }
+.shop-disabled .home-shop-cta__soon { display: inline-flex !important; }
+
