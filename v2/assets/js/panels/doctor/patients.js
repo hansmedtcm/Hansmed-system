@@ -77,28 +77,42 @@
     });
   }
 
-  // Inject the body-diagram size classes once. Dimensions match the
-  // consult page's drawing canvas CSS box exactly so saved PNGs
-  // (which carry the canvas's internal 1400x1600 aspect, 0.875)
-  // visually line up with what the doctor drew. object-fit:fill on
-  // the inner image stretches the saved PNG to the wrapper's
-  // 0.465 aspect, undoing the squish that happens at draw time.
+  // Inject the body-diagram wrapper styles once. Aspect mirrors the
+  // live consult stage (.body-combined-stage in components.css:650 —
+  // 7/8 desktop, 6/8 ≤640px) so the baked PNG (which carries the
+  // 1400x1600 = 7/8 canvas aspect) renders without distortion.
+  // object-fit: contain lets the natural image proportions win — no
+  // stretch, no squish — strokes land on the silhouette in exactly
+  // the positions they were drawn.
   //
-  //   .body-diagram-modal  → 200x430 desktop (matches consult), 160x350 < 768px
-  //   .body-diagram-thumb  → 100x215 (compact, half-modal — for the patient
-  //                          detail card list view)
+  //   .body-diagram-modal  → width:min(700px,90vw), aspect 7/8
+  //                          (≤640px: width:min(400px,95vw), aspect 6/8)
+  //   .body-diagram-thumb  → width:240px, aspect 7/8
+  //                          (≤640px: width:200px, aspect 6/8)
   function ensureBodyDiagramStyles() {
     if (document.getElementById('hm-body-diagram-styles')) return;
     var s = document.createElement('style');
     s.id = 'hm-body-diagram-styles';
     s.textContent =
-      '.body-diagram-modal,.body-diagram-thumb{display:inline-block;line-height:0;position:relative;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;}' +
-      '.body-diagram-modal{width:200px;height:430px;}' +
-      '.body-diagram-thumb{width:100px;height:215px;}' +
-      '.body-diagram-modal>img,.body-diagram-thumb>img{width:100%;height:100%;object-fit:fill;display:block;}' +
-      '.body-diagram-modal .bd-half,.body-diagram-thumb .bd-half{width:50%;height:100%;object-fit:fill;display:inline-block;vertical-align:top;}' +
-      '.body-diagram-modal .bd-overlay,.body-diagram-thumb .bd-overlay{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;pointer-events:none;}' +
-      '@media (max-width:767px){.body-diagram-modal{width:160px;height:350px;}}';
+      '.body-diagram-modal,.body-diagram-thumb{display:block;line-height:0;position:relative;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;box-sizing:border-box;}' +
+      '.body-diagram-modal{width:min(700px,90vw);aspect-ratio:7/8;margin:0 auto;}' +
+      '.body-diagram-thumb{width:240px;aspect-ratio:7/8;}' +
+      '.body-diagram-modal>img,.body-diagram-thumb>img{width:100%;height:100%;object-fit:contain;display:block;}' +
+      // Layered legacy fallback: silhouettes side-by-side at the
+      // back, drawing canvas full-bounds on top. Mirror the live
+      // stage padding/gap so historical strokes line up with the
+      // silhouette as closely as possible at render time.
+      '.body-diagram-modal .bd-silhouettes,.body-diagram-thumb .bd-silhouettes{position:absolute;inset:0;display:flex;justify-content:space-around;align-items:center;padding:3% 4%;gap:4%;box-sizing:border-box;pointer-events:none;}' +
+      '.body-diagram-modal .bd-half,.body-diagram-thumb .bd-half{height:94%;max-width:42%;width:auto;object-fit:contain;display:block;}' +
+      '.body-diagram-modal .bd-overlay,.body-diagram-thumb .bd-overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;}' +
+      // Side-by-side legacy front/back (.body_front + .body_back).
+      // Two stages laid out horizontally; each one its own 7:8 box
+      // so the strokes inside each render correctly proportioned.
+      '.body-diagram-pair{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}' +
+      '@media (max-width:640px){' +
+        '.body-diagram-modal{width:min(400px,95vw);aspect-ratio:6/8;}' +
+        '.body-diagram-thumb{width:200px;aspect-ratio:6/8;}' +
+      '}';
     document.head.appendChild(s);
   }
 
@@ -131,30 +145,32 @@
         '</a>';
     }
     if (cr.body_combined) {
-      // Layered fallback: silhouettes (front + back, half-width each
-      // via .bd-half) at the back, drawing canvas (full bounds via
-      // .bd-overlay) on top. The wrapper is the click target — opens
-      // the drawing-only PNG in a new tab.
+      // Layered fallback: a flex row of silhouettes (.bd-silhouettes
+      // mirrors the live stage's padding/gap) at the back, drawing
+      // canvas (.bd-overlay, full bounds) on top. Wrapper is the
+      // click target — opens the drawing-only PNG in a new tab.
       return '<a href="' + esc(cr.body_combined) + '" target="_blank" rel="noopener" title="Body diagram (drawings only — silhouette layered for display)" class="' + cls + '">' +
-        '<img class="bd-half" src="assets/img/front.png">' +
-        '<img class="bd-half" src="assets/img/back.png">' +
+        '<div class="bd-silhouettes">' +
+          '<img class="bd-half" src="assets/img/front.png">' +
+          '<img class="bd-half" src="assets/img/back.png">' +
+        '</div>' +
         '<img class="bd-overlay" src="' + esc(cr.body_combined) + '">' +
         '</a>';
     }
-    // Original split-view rows: keep the explicit Front/Back side-by-
-    // side layout but match each one to the same wrapper dimensions.
-    var out = '';
+    // Original split-view rows: explicit Front/Back, each in its own
+    // 7:8 stage so its strokes render correctly proportioned.
+    var halves = '';
     if (cr.body_front) {
-      out += '<a href="' + esc(cr.body_front) + '" target="_blank" rel="noopener" title="Front view" class="' + cls + '">' +
+      halves += '<a href="' + esc(cr.body_front) + '" target="_blank" rel="noopener" title="Front view" class="' + cls + '">' +
         '<img src="' + esc(cr.body_front) + '">' +
         '</a>';
     }
     if (cr.body_back) {
-      out += '<a href="' + esc(cr.body_back) + '" target="_blank" rel="noopener" title="Back view" class="' + cls + '">' +
+      halves += '<a href="' + esc(cr.body_back) + '" target="_blank" rel="noopener" title="Back view" class="' + cls + '">' +
         '<img src="' + esc(cr.body_back) + '">' +
         '</a>';
     }
-    return out;
+    return halves ? '<div class="body-diagram-pair">' + halves + '</div>' : '';
   }
 
   async function render(el) {
