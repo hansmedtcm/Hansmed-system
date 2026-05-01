@@ -341,7 +341,11 @@
           var bp   = nz(cr.blood_pressure) || nz(cr.bp);
           var pulse = nz(cr.pulse);
           var docs = Array.isArray(cr.documents) ? cr.documents : [];
-          var hasBodyDiagram = !! (cr.body_front || cr.body_back);
+          // Current save path writes a single combined canvas to
+          // body_combined; legacy / future split-view rows may use
+          // body_front + body_back. Accept any of the three so the
+          // diagram surfaces regardless of which shape is on disk.
+          var hasBodyDiagram = !! (cr.body_combined || cr.body_front || cr.body_back);
           var hasCR = nz(cr.chief_complaint) || nz(cr.present_illness) || nz(cr.past_history) ||
                       bp || pulse || nz(cr.pattern_diagnosis) || nz(cr.western_diagnosis) ||
                       nz(cr.treatment_principle) || nz(cr.doctor_instructions) ||
@@ -402,19 +406,29 @@
             // Body diagrams — render inline as small thumbnails the
             // doctor can click to enlarge in a new window.
             if (hasBodyDiagram) {
-              html += '<div class="text-sm mt-2"><strong>Body Diagrams · 身體圖示:</strong></div>' +
+              html += '<div class="text-sm mt-2"><strong>Body Diagram · 身體圖示:</strong></div>' +
                 '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">';
-              if (cr.body_front) {
-                html += '<a href="' + HM.format.esc(cr.body_front) + '" target="_blank" rel="noopener" title="Front view">' +
-                  '<img src="' + HM.format.esc(cr.body_front) + '" style="height:96px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;">' +
-                  '<div class="text-xs text-muted text-center mt-1">Front · 正面</div>' +
+              // Prefer the single combined canvas — that's what the
+              // current consult.js save path writes. Only fall back to
+              // the legacy split front/back fields when body_combined
+              // isn't on the row.
+              if (cr.body_combined) {
+                html += '<a href="' + HM.format.esc(cr.body_combined) + '" target="_blank" rel="noopener" title="Body diagram">' +
+                  '<img src="' + HM.format.esc(cr.body_combined) + '" style="height:96px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;">' +
                   '</a>';
-              }
-              if (cr.body_back) {
-                html += '<a href="' + HM.format.esc(cr.body_back) + '" target="_blank" rel="noopener" title="Back view">' +
-                  '<img src="' + HM.format.esc(cr.body_back) + '" style="height:96px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;">' +
-                  '<div class="text-xs text-muted text-center mt-1">Back · 背面</div>' +
-                  '</a>';
+              } else {
+                if (cr.body_front) {
+                  html += '<a href="' + HM.format.esc(cr.body_front) + '" target="_blank" rel="noopener" title="Front view">' +
+                    '<img src="' + HM.format.esc(cr.body_front) + '" style="height:96px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;">' +
+                    '<div class="text-xs text-muted text-center mt-1">Front · 正面</div>' +
+                    '</a>';
+                }
+                if (cr.body_back) {
+                  html += '<a href="' + HM.format.esc(cr.body_back) + '" target="_blank" rel="noopener" title="Back view">' +
+                    '<img src="' + HM.format.esc(cr.body_back) + '" style="height:96px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;">' +
+                    '<div class="text-xs text-muted text-center mt-1">Back · 背面</div>' +
+                    '</a>';
+                }
               }
               html += '</div>';
             }
@@ -766,13 +780,20 @@
       f('Treatment Principle', '治法治則', cr.treatment_principle) +
       f('Doctor Instructions', '醫囑',     cr.doctor_instructions) +
 
-      // Body diagrams
-      ((cr.body_front || cr.body_back)
+      // Body diagram — prefer body_combined (current save path);
+      // fall back to legacy body_front + body_back when only those
+      // exist on older rows.
+      ((cr.body_combined || cr.body_front || cr.body_back)
         ? '<div style="margin-bottom:14px;">' +
-            '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">Body Diagrams · 身體圖示</div>' +
+            '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">Body Diagram · 身體圖示</div>' +
             '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
-              (cr.body_front ? '<a href="' + esc(cr.body_front) + '" target="_blank" rel="noopener"><img src="' + esc(cr.body_front) + '" style="height:200px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;"><div class="text-xs text-muted text-center mt-1">Front · 正面</div></a>' : '') +
-              (cr.body_back  ? '<a href="' + esc(cr.body_back)  + '" target="_blank" rel="noopener"><img src="' + esc(cr.body_back)  + '" style="height:200px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;"><div class="text-xs text-muted text-center mt-1">Back · 背面</div></a>' : '') +
+              (cr.body_combined
+                ? '<a href="' + esc(cr.body_combined) + '" target="_blank" rel="noopener"><img src="' + esc(cr.body_combined) + '" style="height:200px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;"></a>'
+                : (
+                  (cr.body_front ? '<a href="' + esc(cr.body_front) + '" target="_blank" rel="noopener"><img src="' + esc(cr.body_front) + '" style="height:200px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;"><div class="text-xs text-muted text-center mt-1">Front · 正面</div></a>' : '') +
+                  (cr.body_back  ? '<a href="' + esc(cr.body_back)  + '" target="_blank" rel="noopener"><img src="' + esc(cr.body_back)  + '" style="height:200px;width:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:#fff;"><div class="text-xs text-muted text-center mt-1">Back · 背面</div></a>' : '')
+                )
+              ) +
             '</div>' +
           '</div>'
         : '') +
