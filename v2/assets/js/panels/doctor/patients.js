@@ -773,16 +773,26 @@
     var docs = Array.isArray(cr.documents) ? cr.documents : [];
     var bp = (cr.blood_pressure || cr.bp || '').toString().trim();
 
+    // Field renderer styled to echo the consult page's case-record
+    // markup: gold uppercase label (.field-label), value flows
+    // beneath in body type with pre-wrap, dotted bottom rule between
+    // fields to mirror the consult form's quiet horizontal rhythm.
+    // Keeps the 'not recorded' italic placeholder so a blank field is
+    // visibly intentional rather than missing.
     function f(label, labelZh, value) {
       var v = (value == null) ? '' : String(value).trim();
-      return '<div style="margin-bottom:14px;">' +
-        '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">' +
-          esc(label) + ' · ' + esc(labelZh) +
-        '</div>' +
-        '<div style="font-size:14px;color:var(--ink);line-height:1.6;white-space:pre-wrap;">' +
+      return '<div class="field" style="margin-bottom:var(--s-3);padding-bottom:var(--s-3);border-bottom:1px dotted var(--gold-soft);">' +
+        '<label class="field-label">' + esc(label) + ' · ' + esc(labelZh) + '</label>' +
+        '<div style="font-size:14px;color:var(--ink);line-height:1.6;white-space:pre-wrap;padding-top:var(--s-1);">' +
           (v ? esc(v) : '<span class="text-muted" style="font-style:italic;">— not recorded —</span>') +
         '</div>' +
       '</div>';
+    }
+    // Section heading helper — a single style for "Body Diagram",
+    // "Body Marks", "Documents", "Treatments", "Prescription" so the
+    // modal reads as one document instead of five different cards.
+    function sectionHead(text) {
+      return '<label class="field-label" style="display:block;margin-bottom:var(--s-2);">' + esc(text) + '</label>';
     }
     function esc(s) { return HM.format.esc(s); }
 
@@ -800,28 +810,38 @@
         '</div>' +
       '</div>' +
 
-      // Vitals row
+      // Vitals row — mirrors the consult page's BP/Pulse pair on a
+      // single line; gold-accented label keeps it stylistically tied
+      // to the rest of the form rather than reading as a callout.
       (bp || cr.pulse
-        ? '<div style="display:flex;gap:24px;margin-bottom:18px;padding:10px 14px;background:var(--washi);border-radius:var(--r-sm);">' +
-            (bp ? '<div><div class="text-xs text-muted">BP · 血壓</div><strong>' + esc(bp) + '</strong></div>' : '') +
-            (cr.pulse ? '<div><div class="text-xs text-muted">Pulse · 脈診</div><strong>' + esc(cr.pulse) + '</strong></div>' : '') +
+        ? '<div style="display:flex;gap:32px;margin-bottom:var(--s-4);padding:var(--s-3) var(--s-4);background:var(--washi);border-left:2px solid var(--gold);border-radius:var(--r-sm);">' +
+            (bp ? '<div><label class="field-label">BP · 血壓</label><div style="font-size:15px;color:var(--ink);">' + esc(bp) + '</div></div>' : '') +
+            (cr.pulse ? '<div><label class="field-label">Pulse · 脈診</label><div style="font-size:15px;color:var(--ink);">' + esc(cr.pulse) + '</div></div>' : '') +
           '</div>'
         : '') +
 
-      // Case fields (every one rendered with 'not recorded' fallback)
-      f('Chief Complaint', '主訴',         cr.chief_complaint) +
-      f('Present Illness', '現病史',       cr.present_illness) +
-      f('Past History',    '既往史',       cr.past_history) +
-      f('TCM Pattern',     '中醫證型',     cr.pattern_diagnosis) +
-      f('Western Dx',      '西醫診斷',     cr.western_diagnosis) +
-      f('Treatment Principle', '治法治則', cr.treatment_principle) +
-      f('Doctor Instructions', '醫囑',     cr.doctor_instructions) +
+      // Case fields wrapped in a gold-accented section so the modal
+      // reads visually like the consult page's case-record card
+      // rather than a flat list. Pattern + Western Dx pair into a
+      // 2-col grid to match the consult form (caseRecordMarkup
+      // uses field-grid--2 for that exact pair).
+      '<div style="border-left:2px solid var(--gold);padding:var(--s-1) var(--s-4);margin-bottom:var(--s-4);">' +
+        f('Chief Complaint',     '主訴',     cr.chief_complaint) +
+        f('Present Illness',     '現病史',    cr.present_illness) +
+        f('Past History',        '既往史',    cr.past_history) +
+        '<div class="field-grid field-grid--2" style="gap:var(--s-3);">' +
+          f('Pattern Diagnosis', '辨證',      cr.pattern_diagnosis) +
+          f('Western Dx',        '西醫診斷',  cr.western_diagnosis) +
+        '</div>' +
+        f('Treatment Principle', '治法',      cr.treatment_principle) +
+        f('Doctor Instructions', '醫囑',      cr.doctor_instructions) +
+      '</div>' +
 
       // Body diagram — shared helper handles all three storage shapes
       // (baked, drawing-only legacy, split front/back).
       ((cr.body_combined_baked || cr.body_combined || cr.body_front || cr.body_back)
-        ? '<div style="margin-bottom:14px;">' +
-            '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">Body Diagram · 身體圖示</div>' +
+        ? '<div style="margin-bottom:var(--s-4);">' +
+            sectionHead('🖊️ Body Diagram · 身體圖示') +
             '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
               renderBodyDiagram(cr, 200) +
             '</div>' +
@@ -830,15 +850,17 @@
 
       // Body marks
       (bodyMarks.length
-        ? '<div style="margin-bottom:14px;"><div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">Body Marks · 標記</div>' +
-          '<div style="font-size:13px;">' + bodyMarks.length + ' point(s) — ' +
+        ? '<div style="margin-bottom:var(--s-4);">' +
+          sectionHead('Body Marks · 標記') +
+          '<div style="font-size:14px;color:var(--ink);">' + bodyMarks.length + ' point(s) — ' +
           bodyMarks.map(function (m) { return esc(m && (m.label || m.note) || ''); }).filter(Boolean).join(', ') +
           '</div></div>'
         : '') +
 
       // Documents
       (docs.length
-        ? '<div style="margin-bottom:14px;"><div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:4px;">Documents · 文件</div>' +
+        ? '<div style="margin-bottom:var(--s-4);">' +
+          sectionHead('📎 Medical Documents · 醫療文件') +
           '<ul style="list-style:none;padding:0;margin:0;">' +
             docs.map(function (d) {
               if (!d) return '';
@@ -850,12 +872,13 @@
           '</ul></div>'
         : '') +
 
-      // Treatments
+      // Treatments — sage accent matches the consult page's
+      // treatments tab signal (sage = active treatment).
       (treatments.length
-        ? '<div style="margin-bottom:14px;padding:12px 14px;background:rgba(122,140,114,0.08);border-radius:var(--r-sm);border-left:3px solid var(--sage);">' +
-          '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">💉 Treatments · 治療 (' + treatments.length + ')</div>' +
+        ? '<div style="margin-bottom:var(--s-4);padding:var(--s-3) var(--s-4);background:rgba(122,140,114,0.08);border-radius:var(--r-sm);border-left:2px solid var(--sage);">' +
+          sectionHead('💉 Treatments · 治療 (' + treatments.length + ')') +
           treatments.map(function (t) {
-            return '<div class="text-sm mt-1">' + (t.icon || '•') + ' <strong>' + esc(t.name || t.key || '') + '</strong>' +
+            return '<div class="text-sm mt-1" style="line-height:1.6;">' + (t.icon || '•') + ' <strong>' + esc(t.name || t.key || '') + '</strong>' +
               (t.name_zh ? ' · ' + esc(t.name_zh) : '') +
               (t.points && t.points.length ? '<div class="text-xs text-muted">Points · 穴位: ' + t.points.map(esc).join(', ') + '</div>' : '') +
               (t.duration_min ? '<span class="text-xs text-muted"> · ' + t.duration_min + ' min</span>' : '') +
@@ -866,14 +889,15 @@
           '</div>'
         : '') +
 
-      // Prescription
+      // Prescription — gold accent (echoes the prescription tab in
+      // the consult sidebar). Contained pill chips, same pattern.
       ((rx.diagnosis || rxItems.length)
-        ? '<div style="margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);">' +
-          '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;">💊 Prescription · 處方</div>' +
-          (rx.diagnosis ? '<div class="text-sm"><strong>Dx:</strong> ' + esc(rx.diagnosis) + '</div>' : '') +
-          (rx.instructions ? '<div class="text-sm mt-1"><strong>Instructions:</strong> ' + esc(rx.instructions) + '</div>' : '') +
+        ? '<div style="margin-bottom:var(--s-4);padding:var(--s-3) var(--s-4);background:#fff;border:1px solid var(--border);border-left:2px solid var(--gold);border-radius:var(--r-sm);">' +
+          sectionHead('💊 Prescription · 處方') +
+          (rx.diagnosis ? '<div class="text-sm" style="line-height:1.6;"><strong>Dx · 辨證:</strong> ' + esc(rx.diagnosis) + '</div>' : '') +
+          (rx.instructions ? '<div class="text-sm mt-1" style="line-height:1.6;"><strong>Instructions · 醫囑:</strong> ' + esc(rx.instructions) + '</div>' : '') +
           (rxItems.length
-            ? '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">' +
+            ? '<div style="margin-top:var(--s-2);display:flex;flex-wrap:wrap;gap:6px;">' +
                 rxItems.map(function (it) {
                   return '<span style="background:var(--washi);padding:3px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;">' +
                     esc(it.drug_name || '') + ' ' + (it.quantity || '') + (it.unit || 'g') +
