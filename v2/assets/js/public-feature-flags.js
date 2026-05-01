@@ -42,6 +42,17 @@
       });
     });
 
+    // 1b. Home-page herb shop service card: instead of leaving the
+    //     card with no CTA, reveal the "Coming Soon" placeholder. The
+    //     live button was just hidden by step 1's selector match. The
+    //     CSS in index.html does the same swap pre-paint via
+    //     html.shop-disabled — this is the runtime equivalent for
+    //     when the /public/features response disagrees with cache.
+    document.querySelectorAll('[data-home-shop-cta]').forEach(function (wrap) {
+      var soon = wrap.querySelector('.home-shop-cta__soon');
+      if (soon) soon.hidden = false;
+    });
+
     // 2. Hide the Shop entry inside the About dropdown if present.
     //    The dropdown items have <span lang="en">Shop</span> as
     //    children, so target the parent <a class="dd-item">.
@@ -87,6 +98,16 @@
             applyShopDisabled();
           } else {
             document.documentElement.classList.remove('shop-disabled');
+            // Restore the live home-page CTA + re-hide the placeholder
+            // in case a stale 'shop disabled' state had flipped them.
+            // The live button's display:none from a prior step 1 run
+            // stays as an inline style, so clear it explicitly.
+            document.querySelectorAll('[data-home-shop-cta]').forEach(function (wrap) {
+              var live = wrap.querySelector('.home-shop-cta__live');
+              var soon = wrap.querySelector('.home-shop-cta__soon');
+              if (live) live.style.display = '';
+              if (soon) soon.hidden = true;
+            });
           }
         })
         .catch(function () { /* network error → assume cached value */ });

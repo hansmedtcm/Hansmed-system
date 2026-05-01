@@ -16,6 +16,16 @@ html[lang="zh"] .hm-lang-en,
 html[lang="zh"] .bi-en { display: none !important; }
 html[lang="en"] .hm-lang-sep { display: none; }
 html[lang="zh"] .hm-lang-sep { display: none; }
+
+/* Two-state home-page herb shop CTA. The .shop-disabled class is set
+   on <html> by the pre-paint script above (line 6) when the cached
+   shop_enabled flag is false, so the swap happens BEFORE first paint.
+   public-feature-flags.js applies the same swap at runtime once the
+   live /public/features response lands. */
+.home-shop-cta__live { display: inline-flex; }
+.home-shop-cta__soon { display: none; }
+.shop-disabled .home-shop-cta__live { display: none !important; }
+.shop-disabled .home-shop-cta__soon { display: inline-flex !important; }
 </style>
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
@@ -373,7 +383,22 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">Herb Shop · 中藥商店</h3>
       <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Quality single herbs and classical formulas from verified Malaysian suppliers. Prescription-linked orders reviewed by your practitioner.</p>
       <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--v4-bdr);margin-bottom:22px;font-weight:300;">品質驗證 · 藥師審核</p>
-      <button class="btn-v4 btn-outline btn-sm" onclick="go('shop')">Browse herbs →</button>
+      <!-- Two-state CTA: live button when shop_enabled, "Coming Soon"
+           placeholder otherwise. public-feature-flags.js flips
+           visibility via [data-home-shop-cta]; pre-paint .shop-disabled
+           class on <html> (set in <head> from localStorage) does the
+           same swap before paint to kill the flash. -->
+      <div class="home-shop-cta" data-home-shop-cta>
+        <button class="btn-v4 btn-outline btn-sm home-shop-cta__live" onclick="go('shop')">
+          <span lang="en">Browse herbs →</span>
+          <span lang="zh">瀏覽藥材 →</span>
+        </button>
+        <span class="btn-v4 btn-outline btn-sm home-shop-cta__soon" hidden aria-disabled="true"
+              style="opacity:0.55;cursor:not-allowed;pointer-events:none;">
+          <span lang="en">Coming Soon</span>
+          <span lang="zh">即將推出</span>
+        </span>
+      </div>
     </div>
   </div>
 </section>
