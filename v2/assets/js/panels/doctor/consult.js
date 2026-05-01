@@ -956,13 +956,34 @@
             // view rather than showing transparency in PDF viewers.
             tctx.fillStyle = '#ffffff';
             tctx.fillRect(0, 0, tmp.width, tmp.height);
-            var halfW = tmp.width / 2;
+            // Mirror .body-combined-silhouettes flex layout from
+            // components.css:663-684 EXACTLY so silhouettes land at
+            // the same logical pixel positions on the baked PNG as
+            // they appeared on screen during drawing — otherwise
+            // strokes shift relative to the silhouette by the delta
+            // between the naive layout and the live CSS layout.
+            //   padding: 3% 4%  · gap: 4%
+            //   img: height 94%, max-width 42%, object-fit contain,
+            //        centered in its flex column.
+            var stageW = tmp.width;
+            var stageH = tmp.height;
+            var padH   = stageW * 0.04;
+            var padV   = stageH * 0.03;
+            var gap    = stageW * 0.04;
+            var innerW = stageW - 2 * padH;
+            var innerH = stageH - 2 * padV;
+            var colW   = (innerW - gap) / 2;
+            var maxImgW = stageW * 0.42;
+            var imgH    = innerH * 0.94;
             [silhouettes[0], silhouettes[1]].forEach(function (sImg, idx) {
-              var scale = Math.min(halfW / sImg.width, tmp.height / sImg.height);
+              // object-fit: contain — preserve aspect, fit within
+              // (maxImgW × imgH).
+              var scale = Math.min(maxImgW / sImg.width, imgH / sImg.height);
               var w = sImg.width  * scale;
               var h = sImg.height * scale;
-              var x = idx * halfW + (halfW - w) / 2;
-              var y = (tmp.height - h) / 2;
+              var colStartX = padH + idx * (colW + gap);
+              var x = colStartX + (colW - w) / 2;   // center in column
+              var y = padV + (innerH - h) / 2;      // center vertically
               tctx.drawImage(sImg, x, y, w, h);
             });
             // Drawing canvas on top, same dimensions → strokes line
