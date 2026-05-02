@@ -180,13 +180,13 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <span>so the old way and the new way meet</span>
     </h1>
     <p class="hero-sub-story">
-      <span lang="en">Modern technology, traditional wisdom — TCM that fits the way you live now.</span>
-      <span lang="zh">现代科技、传统智慧 —— 适合您现在生活节奏的中医照护。</span>
+      <span lang="en">AI tongue analysis, reviewed by licensed practitioners. The first step to understanding your TCM constitution.</span>
+      <span lang="zh">AI 舌診 + 持牌中醫師審核 —— 了解您體質的第一步。</span>
     </p>
     <div class="hero-ctas-story">
       <button class="btn-v4 btn-dark hero-cta-primary" onclick="go('wellness')">
-        <span lang="en">Try the Wellness Assessment · Free, 5 min</span>
-        <span lang="zh">试一试体质评估 · 免费 5 分钟</span>
+        <span lang="en">Try AI Tongue Analysis · 試試 AI 舌診</span>
+        <span lang="zh">試試 AI 舌診 · Try AI Tongue Analysis</span>
       </button>
       <a class="hero-cta-secondary" href="../v2/portal.html#/book">
         <span lang="en">Or book a consultation →</span>
@@ -194,6 +194,631 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </a>
     </div>
   </div>
+</section>
+
+<!-- Brief #6 — Interactive AI Tongue Analysis widget. Two tabs:
+     (1) Tongue Map: stylized SVG with 6 hover/click zones mapped to
+         TCM organs, info card updates on selection.
+     (2) Common Tongue Types: 8 stylized tongue cards in a strip;
+         click opens a modal with full TCM interpretation.
+     Both tabs end with the same CTA pointing to the AI Tongue
+     Analysis flow. Self-contained — styles + script live inside
+     the section so it doesn't leak into the rest of the landing. -->
+<section class="tongue-widget" id="tongue-widget">
+  <style>
+    /* All scoped under .tongue-widget so nothing leaks. */
+    .tongue-widget{
+      background:linear-gradient(180deg, var(--v4-bg-3) 0%, #fbf6ec 100%);
+      padding:88px max(1.5rem,calc(50% - 540px));
+      border-top:1px solid var(--v4-bdr-l);
+      border-bottom:1px solid var(--v4-bdr-l);
+    }
+    .tongue-widget .tw-container{max-width:1100px;margin:0 auto;}
+    .tongue-widget .tw-head{text-align:center;margin-bottom:36px;}
+    .tongue-widget .tw-eyebrow{
+      display:inline-flex;align-items:center;gap:12px;
+      font-size:13px;font-weight:600;letter-spacing:0.18em;
+      text-transform:uppercase;color:var(--v4-wd-lt);margin-bottom:14px;
+    }
+    .tongue-widget .tw-eyebrow::before,
+    .tongue-widget .tw-eyebrow::after{
+      content:'';display:block;width:28px;height:1px;
+      background:linear-gradient(90deg,var(--v4-go),transparent);
+    }
+    .tongue-widget .tw-eyebrow::after{
+      background:linear-gradient(270deg,var(--v4-go),transparent);
+    }
+    .tongue-widget h2{
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(28px,3.8vw,42px);
+      color:var(--v4-ink);font-weight:400;line-height:1.15;
+      letter-spacing:-0.02em;margin:0 0 14px;
+    }
+    .tongue-widget h2 span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:0.62em;color:var(--v4-wd-md);margin-top:6px;
+    }
+    .tongue-widget .tw-lead{
+      max-width:620px;margin:0 auto;
+      font-size:15px;color:var(--v4-mu);font-weight:300;line-height:1.7;
+    }
+    .tongue-widget .tw-lead span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:14px;margin-top:6px;
+    }
+    .tongue-widget .tongue-tabs{
+      display:flex;justify-content:center;gap:6px;
+      border-bottom:1px solid var(--v4-bdr-l);
+      margin:38px auto 32px;max-width:560px;
+    }
+    .tongue-widget .tongue-tab{
+      background:transparent;border:none;cursor:pointer;
+      padding:14px 22px;font-family:'DM Sans',sans-serif;
+      font-size:14px;font-weight:500;letter-spacing:0.04em;
+      color:var(--v4-mu);position:relative;transition:color .2s;
+    }
+    .tongue-widget .tongue-tab:hover{color:var(--v4-ink);}
+    .tongue-widget .tongue-tab.active{color:var(--v4-ink);}
+    .tongue-widget .tongue-tab.active::after{
+      content:'';position:absolute;left:18px;right:18px;bottom:-1px;
+      height:2px;background:var(--v4-go);
+    }
+    .tongue-widget .tongue-panel{display:block;}
+    .tongue-widget .tongue-panel[hidden]{display:none;}
+
+    /* Tab 1 layout */
+    .tongue-widget .tw-map-grid{
+      display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);
+      gap:48px;align-items:center;
+      background:#fffaf0;border:1px solid var(--v4-bdr-l);
+      border-radius:18px;padding:42px;
+      box-shadow:0 6px 24px rgba(122,84,40,0.06);
+    }
+    .tongue-widget .tongue-zone{
+      transition:fill .2s ease, stroke .2s ease;
+    }
+    .tongue-widget .tongue-zone:hover{
+      fill:rgba(181,136,26,0.18) !important;
+      stroke:rgba(181,136,26,0.6) !important;
+    }
+    .tongue-widget .tongue-zone.active{
+      fill:rgba(181,136,26,0.28) !important;
+      stroke:rgba(181,136,26,0.9) !important;
+    }
+    .tongue-widget .tw-info{
+      background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);
+      border-left:3px solid var(--v4-go);border-radius:12px;
+      padding:28px 30px;min-height:240px;
+    }
+    .tongue-widget .tw-info-eyebrow{
+      font-size:11px;letter-spacing:0.16em;text-transform:uppercase;
+      color:var(--v4-wd-lt);font-weight:600;margin-bottom:14px;
+    }
+    .tongue-widget .tw-info-eyebrow span[lang="zh"]{
+      font-family:'Noto Serif SC',serif;text-transform:none;
+      letter-spacing:0.04em;display:block;margin-top:4px;
+    }
+    .tongue-widget .tw-info-h{
+      font-family:'Cormorant Garamond',serif;font-size:24px;
+      color:var(--v4-ink);font-weight:500;letter-spacing:-0.01em;
+      margin:0 0 4px;
+    }
+    .tongue-widget .tw-info-h span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:18px;color:var(--v4-wd-md);margin-top:4px;
+    }
+    .tongue-widget .tw-info-body{
+      margin-top:14px;font-size:14px;color:var(--v4-mu);
+      line-height:1.78;font-weight:300;
+    }
+    .tongue-widget .tw-info-body span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:13px;margin-top:8px;
+    }
+
+    /* Tab 1 + Tab 2 CTA tail */
+    .tongue-widget .tw-cta-tail{
+      text-align:center;margin-top:32px;
+    }
+    .tongue-widget .tw-cta-tail-line{
+      font-size:14px;color:var(--v4-mu);font-weight:300;margin:0 0 14px;
+    }
+    .tongue-widget .tw-cta-tail-line span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;font-size:13px;margin-top:4px;
+    }
+    .tongue-widget .tw-cta-btn{
+      padding:14px 28px;font-size:13px;font-weight:500;letter-spacing:0.06em;
+    }
+
+    /* Tab 2 strip */
+    .tongue-widget .tw-strip{
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;
+    }
+    .tongue-widget .tt-card{
+      background:#fff;border:1px solid var(--v4-bdr-l);border-radius:14px;
+      padding:22px 18px;cursor:pointer;text-align:center;
+      transition:transform .2s, box-shadow .2s, border-color .2s;
+      display:flex;flex-direction:column;align-items:center;gap:10px;
+    }
+    .tongue-widget .tt-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 10px 24px rgba(122,84,40,0.12);
+      border-color:var(--v4-go);
+    }
+    .tongue-widget .tt-card svg{width:80px;height:auto;}
+    .tongue-widget .tt-name{
+      font-family:'Cormorant Garamond',serif;font-size:17px;
+      color:var(--v4-ink);font-weight:500;line-height:1.2;
+    }
+    .tongue-widget .tt-name span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:13px;color:var(--v4-wd-md);margin-top:2px;
+    }
+    .tongue-widget .tt-teaser{
+      font-size:12px;color:var(--v4-mu);font-weight:300;line-height:1.55;
+    }
+    .tongue-widget .tt-teaser span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;font-size:11px;margin-top:3px;
+    }
+
+    /* Modal */
+    .tw-modal-backdrop{
+      position:fixed;inset:0;background:rgba(36,22,8,0.55);
+      display:none;align-items:center;justify-content:center;
+      z-index:9000;padding:20px;
+    }
+    .tw-modal-backdrop.open{display:flex;}
+    .tw-modal{
+      background:#fffaf0;border:1px solid var(--v4-bdr-l);
+      border-radius:18px;max-width:560px;width:100%;
+      max-height:86vh;overflow:auto;
+      padding:36px 36px 32px;position:relative;
+      box-shadow:0 30px 80px rgba(36,22,8,0.35);
+    }
+    .tw-modal-close{
+      position:absolute;top:14px;right:18px;
+      background:transparent;border:none;cursor:pointer;
+      font-size:22px;color:var(--v4-mu);line-height:1;padding:6px;
+    }
+    .tw-modal-close:hover{color:var(--v4-ink);}
+    .tw-modal-svg{display:block;margin:0 auto 18px;width:120px;height:auto;}
+    .tw-modal-h{
+      font-family:'Cormorant Garamond',serif;font-size:28px;
+      color:var(--v4-ink);font-weight:500;letter-spacing:-0.01em;
+      margin:0 0 6px;text-align:center;
+    }
+    .tw-modal-h span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:18px;color:var(--v4-wd-md);margin-top:4px;
+    }
+    .tw-modal-body{
+      margin-top:18px;font-size:15px;color:var(--v4-mu);
+      line-height:1.78;font-weight:300;
+    }
+    .tw-modal-body span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:14px;margin-top:12px;
+    }
+
+    @media (max-width:760px){
+      .tongue-widget .tw-map-grid{
+        grid-template-columns:1fr;padding:28px 22px;gap:28px;
+      }
+      .tongue-widget .tw-strip{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+    @media (max-width:480px){
+      .tongue-widget{padding:60px 18px;}
+      .tongue-widget .tongue-tabs{flex-wrap:wrap;}
+      .tongue-widget .tw-info{padding:22px 20px;min-height:0;}
+      .tw-modal{padding:28px 22px;}
+    }
+  </style>
+
+  <div class="tw-container">
+    <div class="tw-head">
+      <div class="tw-eyebrow">
+        <span lang="en">AI Tongue Analysis</span>
+        <span lang="zh">AI 舌診</span>
+      </div>
+      <h2>
+        <span lang="en">Your tongue tells a story</span>
+        <span lang="zh">舌頭 · 內在的訊號</span>
+      </h2>
+      <p class="tw-lead">
+        <span lang="en">Modern AI meets a 2,000-year-old diagnostic tradition. Explore how TCM reads the tongue, then try yours.</span>
+        <span lang="zh">現代 AI 結合兩千年中醫舌診智慧。先了解中醫如何看舌，再體驗您自己的。</span>
+      </p>
+    </div>
+
+    <div class="tongue-tabs" role="tablist">
+      <button class="tongue-tab active" data-tab="map" type="button" role="tab" aria-selected="true">
+        <span lang="en">Tongue Map · 舌診地圖</span>
+        <span lang="zh">舌診地圖 · Tongue Map</span>
+      </button>
+      <button class="tongue-tab" data-tab="types" type="button" role="tab" aria-selected="false">
+        <span lang="en">Common Tongue Types · 常見舌象</span>
+        <span lang="zh">常見舌象 · Common Types</span>
+      </button>
+    </div>
+
+    <!-- ─── Tab 1: Tongue Map ─── -->
+    <div class="tongue-panel" data-panel="map">
+      <div class="tw-map-grid">
+        <div class="tw-svg-wrap">
+          <svg id="tongue-map-svg" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:280px; height:auto; display:block; margin:0 auto;">
+            <!-- Stylized tongue body -->
+            <path d="M 110 12
+                     C 70 12, 38 42, 38 100
+                     C 38 160, 42 210, 58 260
+                     C 72 295, 92 310, 110 310
+                     C 128 310, 148 295, 162 260
+                     C 178 210, 182 160, 182 100
+                     C 182 42, 150 12, 110 12 Z"
+                  fill="#F5C6C6" stroke="#9E5E5E" stroke-width="2.5"/>
+            <!-- Center vertical groove -->
+            <path d="M 110 35 L 110 285"
+                  stroke="#9E5E5E" stroke-width="1.5" fill="none" opacity="0.35" stroke-dasharray="4 6"/>
+            <!-- Zone overlays — invisible by default, hover/click highlights -->
+            <!-- Tip (Heart/Lung) -->
+            <ellipse class="tongue-zone" data-zone="tip" cx="110" cy="40" rx="38" ry="22"
+                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
+            <!-- Front-center (Lung) -->
+            <ellipse class="tongue-zone" data-zone="front" cx="110" cy="90" rx="32" ry="22"
+                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
+            <!-- Left side mid (Liver) -->
+            <ellipse class="tongue-zone" data-zone="left-side" cx="60" cy="155" rx="22" ry="50"
+                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
+            <!-- Right side mid (Gallbladder) -->
+            <ellipse class="tongue-zone" data-zone="right-side" cx="160" cy="155" rx="22" ry="50"
+                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
+            <!-- Mid-center (Stomach/Spleen) -->
+            <ellipse class="tongue-zone" data-zone="center" cx="110" cy="160" rx="32" ry="50"
+                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
+            <!-- Root (Kidney/Bladder/Intestines) -->
+            <ellipse class="tongue-zone" data-zone="root" cx="110" cy="265" rx="50" ry="32"
+                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
+          </svg>
+        </div>
+        <div class="tw-info" id="tongue-info">
+          <!-- Default state — JS swaps innerHTML on hover/click. -->
+          <div class="tw-info-eyebrow">
+            <span lang="en">Hover any region</span>
+            <span lang="zh">將鼠標移到任意區域</span>
+          </div>
+          <h3 class="tw-info-h">
+            <span lang="en">Each zone of your tongue reveals a different organ system.</span>
+            <span lang="zh">舌頭的每個部位反映不同的臟腑狀態。</span>
+          </h3>
+        </div>
+      </div>
+
+      <div class="tw-cta-tail">
+        <p class="tw-cta-tail-line">
+          <span lang="en">Want a real analysis of your tongue?</span>
+          <span lang="zh">想體驗 AI 分析您的舌頭？</span>
+        </p>
+        <button class="btn-v4 btn-dark tw-cta-btn" onclick="go('wellness')">
+          <span lang="en">Try AI Tongue Analysis · 試試 AI 舌診</span>
+          <span lang="zh">試試 AI 舌診 · Try AI Tongue Analysis</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── Tab 2: Common Tongue Types ─── -->
+    <div class="tongue-panel" data-panel="types" hidden>
+      <div class="tw-strip" id="tw-types-strip"><!-- JS-rendered --></div>
+
+      <div class="tw-cta-tail">
+        <p class="tw-cta-tail-line">
+          <span lang="en">Ready to see what YOUR tongue says?</span>
+          <span lang="zh">想知道您的舌頭告訴我們什麼？</span>
+        </p>
+        <button class="btn-v4 btn-dark tw-cta-btn" onclick="go('wellness')">
+          <span lang="en">Try AI Tongue Analysis · 試試 AI 舌診</span>
+          <span lang="zh">試試 AI 舌診 · Try AI Tongue Analysis</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal — single instance reused for any of the 8 tongue type cards. -->
+  <div class="tw-modal-backdrop" id="tw-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="tw-modal">
+      <button class="tw-modal-close" type="button" aria-label="Close">×</button>
+      <div id="tw-modal-content"><!-- JS-injected --></div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    'use strict';
+    var root = document.getElementById('tongue-widget');
+    if (!root) return;
+
+    // ── Tabs ───────────────────────────────────────────────────
+    var tabs = root.querySelectorAll('.tongue-tab');
+    var panels = root.querySelectorAll('.tongue-panel');
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        var key = t.getAttribute('data-tab');
+        tabs.forEach(function(x){
+          var on = x === t;
+          x.classList.toggle('active', on);
+          x.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        panels.forEach(function(p){
+          p.hidden = (p.getAttribute('data-panel') !== key);
+        });
+      });
+    });
+
+    // ── Tab 1: Tongue Map zone interactions ───────────────────
+    // Per-zone copy. Heading + body, EN + ZH. Default state lives
+    // in the markup (the gentle invitation), restored on mouseleave
+    // unless a zone has been click-locked.
+    var ZONES = {
+      'tip': {
+        eb_en:'Tip · 前端', eb_zh:'前端 · Tip',
+        h_en:'Heart · Lung', h_zh:'心 · 肺',
+        b_en:'A red or purple tip can suggest heart heat or stress. Cracks here may relate to emotional strain.',
+        b_zh:'舌尖偏紅或偏紫，可能反映心火或情志壓力。裂紋常與情志有關。'
+      },
+      'front': {
+        eb_en:'Front-center · 前部', eb_zh:'前部 · Front-center',
+        h_en:'Lung', h_zh:'肺',
+        b_en:'A pale or coated front-center area can suggest lung qi weakness or recent respiratory strain.',
+        b_zh:'舌前中部偏白或苔厚，可能反映肺氣虛弱或近期呼吸系統不適。'
+      },
+      'left-side': {
+        eb_en:'Left side · 左側', eb_zh:'左側 · Left side',
+        h_en:'Liver', h_zh:'肝',
+        b_en:'Swelling or red edges on the left can suggest liver qi stagnation — often linked to stress or sleep disturbance.',
+        b_zh:'舌左側腫脹或邊緣偏紅，可能反映肝氣鬱結 —— 多與壓力或睡眠不安有關。'
+      },
+      'right-side': {
+        eb_en:'Right side · 右側', eb_zh:'右側 · Right side',
+        h_en:'Gallbladder', h_zh:'膽',
+        b_en:'Yellow coating on the right can indicate damp-heat in the gallbladder — common with rich diets.',
+        b_zh:'舌右側苔黃，可能反映膽腑濕熱 —— 多與飲食肥膩有關。'
+      },
+      'center': {
+        eb_en:'Center · 中部', eb_zh:'中部 · Center',
+        h_en:'Stomach · Spleen', h_zh:'胃 · 脾',
+        b_en:'This is the digestion zone. A thick coating, scalloped edges, or pale color can indicate spleen qi deficiency or damp accumulation.',
+        b_zh:'此為消化中樞。苔厚、齒痕、或舌色偏白，常反映脾氣虛或濕氣滯留。'
+      },
+      'root': {
+        eb_en:'Root · 根部', eb_zh:'根部 · Root',
+        h_en:'Kidney · Bladder · Intestines', h_zh:'腎 · 膀胱 · 腸',
+        b_en:'A thick coating at the back can reflect lower jiao dampness. A peeled root may suggest kidney yin deficiency.',
+        b_zh:'舌根苔厚，常反映下焦濕滯。舌根剝落可能反映腎陰不足。'
+      }
+    };
+    var DEFAULT_INFO_HTML =
+      '<div class="tw-info-eyebrow">' +
+        '<span lang="en">Hover any region</span>' +
+        '<span lang="zh">將鼠標移到任意區域</span>' +
+      '</div>' +
+      '<h3 class="tw-info-h">' +
+        '<span lang="en">Each zone of your tongue reveals a different organ system.</span>' +
+        '<span lang="zh">舌頭的每個部位反映不同的臟腑狀態。</span>' +
+      '</h3>';
+    function zoneHtml(z){
+      return '<div class="tw-info-eyebrow">' +
+               '<span lang="en">' + z.eb_en + '</span>' +
+               '<span lang="zh">' + z.eb_zh + '</span>' +
+             '</div>' +
+             '<h3 class="tw-info-h">' +
+               '<span lang="en">' + z.h_en + '</span>' +
+               '<span lang="zh">' + z.h_zh + '</span>' +
+             '</h3>' +
+             '<p class="tw-info-body">' +
+               '<span lang="en">' + z.b_en + '</span>' +
+               '<span lang="zh">' + z.b_zh + '</span>' +
+             '</p>';
+    }
+    var info = document.getElementById('tongue-info');
+    var svg  = document.getElementById('tongue-map-svg');
+    var zoneEls = svg.querySelectorAll('.tongue-zone');
+    var locked = null;     // zone key currently click-locked (null = not locked)
+
+    function setActive(key){
+      zoneEls.forEach(function(el){
+        el.classList.toggle('active', el.getAttribute('data-zone') === key);
+      });
+      info.innerHTML = ZONES[key] ? zoneHtml(ZONES[key]) : DEFAULT_INFO_HTML;
+    }
+    function clearActive(){
+      zoneEls.forEach(function(el){ el.classList.remove('active'); });
+      info.innerHTML = DEFAULT_INFO_HTML;
+    }
+
+    zoneEls.forEach(function(el){
+      var key = el.getAttribute('data-zone');
+      el.addEventListener('mouseenter', function(){ if (!locked) setActive(key); });
+      el.addEventListener('click', function(e){
+        e.stopPropagation();
+        if (locked === key) { locked = null; clearActive(); }
+        else { locked = key; setActive(key); }
+      });
+    });
+    svg.addEventListener('mouseleave', function(){
+      if (!locked) clearActive();
+    });
+    // Click outside the SVG clears any lock.
+    document.addEventListener('click', function(e){
+      if (!locked) return;
+      if (svg.contains(e.target)) return;
+      locked = null; clearActive();
+    });
+
+    // ── Tab 2: Common Tongue Types ─────────────────────────────
+    // Reusable stylized SVG template — variant params control fill,
+    // coating overlay, edge style, and optional fissure lines.
+    function tongueSvg(opts){
+      var fill    = opts.fill    || '#F5C6C6';
+      var stroke  = opts.stroke  || '#9E5E5E';
+      var coating = opts.coating || null;     // {color, opacity}
+      var edge    = opts.edge    || 'smooth'; // 'smooth' | 'scalloped'
+      var fissures = !!opts.fissures;
+      var patches  = !!opts.patches;
+
+      var bodyPath;
+      if (edge === 'scalloped') {
+        // Wavy edges via small inward arcs along the sides — keeps
+        // the same overall silhouette but gives the 'teeth marks'
+        // shape characteristic of a scalloped tongue.
+        bodyPath =
+          'M 110 12 ' +
+          'C 70 12, 38 42, 38 100 ' +
+          'q 6 18 -2 24 q 10 18 0 32 q 8 20 -2 30 q 10 18 0 30 q 12 14 4 30 ' +
+          'C 72 295, 92 310, 110 310 ' +
+          'C 128 310, 148 295, 162 260 ' +
+          'q -10 -16 4 -30 q -10 -12 0 -30 q -10 -10 -2 -30 q -10 -14 0 -32 q -8 -6 -2 -24 ' +
+          'C 182 42, 150 12, 110 12 Z';
+      } else {
+        bodyPath =
+          'M 110 12 ' +
+          'C 70 12, 38 42, 38 100 ' +
+          'C 38 160, 42 210, 58 260 ' +
+          'C 72 295, 92 310, 110 310 ' +
+          'C 128 310, 148 295, 162 260 ' +
+          'C 178 210, 182 160, 182 100 ' +
+          'C 182 42, 150 12, 110 12 Z';
+      }
+
+      var svg = '<svg viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+        '<path d="' + bodyPath + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2.5"/>';
+
+      if (coating) {
+        svg += '<path d="' + bodyPath + '" fill="' + coating.color +
+               '" opacity="' + coating.opacity + '"/>';
+      }
+      if (patches) {
+        // Geographic — peeled patches in lighter tone + one darker patch
+        svg += '<ellipse cx="80"  cy="120" rx="22" ry="18" fill="#FBE3DC" opacity="0.85"/>' +
+               '<ellipse cx="140" cy="180" rx="26" ry="20" fill="#F8D5CB" opacity="0.85"/>' +
+               '<ellipse cx="100" cy="230" rx="20" ry="14" fill="#E89A8E" opacity="0.55"/>';
+      }
+      if (fissures) {
+        // Subtle horizontal cracks across the body
+        svg += '<line x1="78"  y1="110" x2="142" y2="110" stroke="#9E5E5E" stroke-width="1.2" opacity="0.55"/>' +
+               '<line x1="68"  y1="170" x2="152" y2="170" stroke="#9E5E5E" stroke-width="1.2" opacity="0.55"/>' +
+               '<line x1="80"  y1="225" x2="140" y2="225" stroke="#9E5E5E" stroke-width="1.2" opacity="0.55"/>';
+      }
+      // Center groove
+      svg += '<path d="M 110 35 L 110 285" stroke="' + stroke +
+             '" stroke-width="1.2" fill="none" opacity="0.3" stroke-dasharray="4 6"/>';
+      svg += '</svg>';
+      return svg;
+    }
+
+    var TYPES = [
+      { key:'pale', name_en:'Pale tongue', name_zh:'淡白舌',
+        teaser_en:'May indicate Qi or Blood deficiency',
+        teaser_zh:'可能反映氣虛或血虛',
+        full_en:'A pale tongue often suggests insufficient Qi (vital energy) or blood. People with this presentation may feel tired easily, have a soft voice, or feel cold often. Diet and gentle herbal support can help build reserves.',
+        full_zh:'淡白舌常見於氣血不足。多有疲倦、聲音低弱、畏寒等表現。可透過飲食調理與溫補中藥幫助身體建立儲備。',
+        svg:{ fill:'#F8DDD8', stroke:'#B07873' } },
+      { key:'red', name_en:'Red tongue', name_zh:'紅舌',
+        teaser_en:'Heat in the body',
+        teaser_zh:'體內有熱',
+        full_en:'A red tongue without coating typically signals internal heat — often from stress, spicy foods, or insufficient sleep. Cooling foods and stress reduction are common recommendations.',
+        full_zh:'紅舌少苔常反映體內陰虛火旺，多與壓力大、嗜辣、熬夜有關。飲食宜清涼，作息應調整。',
+        svg:{ fill:'#E25656', stroke:'#7A2A2A' } },
+      { key:'purple', name_en:'Purple tongue', name_zh:'紫舌',
+        teaser_en:'Blood circulation may be sluggish',
+        teaser_zh:'可能血液循環不暢',
+        full_en:'A purple tongue often indicates blood stasis — sluggish circulation that may correlate with cold extremities, chronic pain, or menstrual irregularities. Movement and warming herbs are commonly used to support flow.',
+        full_zh:'紫舌常反映血瘀，多與手足冰冷、慢性疼痛、月經不調相關。適度運動與活血溫經中藥有助改善。',
+        svg:{ fill:'#8A4060', stroke:'#4A1E32' } },
+      { key:'fissured', name_en:'Fissured tongue', name_zh:'裂紋舌',
+        teaser_en:'Possible Yin deficiency',
+        teaser_zh:'可能陰虛',
+        full_en:'Cracks or fissures often suggest Yin (the body\'s cooling, moistening fluids) is depleted. Common with long-term stress, dehydration, or aging. Hydration and Yin-nourishing foods are typical first steps.',
+        full_zh:'裂紋舌常反映陰液虧虛，多見於長期壓力、脫水、年長者。充足飲水與滋陰食物是基本調理方向。',
+        svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', fissures:true } },
+      { key:'scalloped', name_en:'Scalloped tongue', name_zh:'齒痕舌',
+        teaser_en:'Spleen Qi may be weak',
+        teaser_zh:'可能脾氣虛弱',
+        full_en:'Teeth marks on the sides of the tongue typically signal spleen Qi deficiency — the spleen in TCM governs digestion. Bloating, fatigue after meals, and loose stools are common companions.',
+        full_zh:'舌邊齒痕常反映脾氣虛弱。脾主運化，多伴有飯後易倦、腹脹、便溏等。',
+        svg:{ fill:'#F5D2CB', stroke:'#9E5E5E', edge:'scalloped' } },
+      { key:'white', name_en:'White coating', name_zh:'白苔',
+        teaser_en:'Cold or damp accumulation',
+        teaser_zh:'寒象或濕氣積聚',
+        full_en:'A thin white coating is normal. A thick white coating often suggests cold or damp accumulation, common in humid weather or after heavy meals. Light, warming foods help disperse it.',
+        full_zh:'薄白苔屬正常。厚白苔常反映寒濕積聚，多見於潮濕氣候或飲食肥膩後。清淡溫熱飲食有助化解。',
+        svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', coating:{ color:'#FFFFFF', opacity:0.55 } } },
+      { key:'yellow', name_en:'Yellow coating', name_zh:'黃苔',
+        teaser_en:'Heat, often in the digestive system',
+        teaser_zh:'多反映胃熱',
+        full_en:'Yellow coating typically indicates heat — often in the stomach. Common with acid reflux, bad breath, or irritability. Cooling, light foods are commonly recommended; reduce fried and spicy intake.',
+        full_zh:'黃苔多反映胃中有熱。常見胃酸、口臭、易煩躁。飲食宜清涼，減少油炸與辛辣。',
+        svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', coating:{ color:'#E8C24A', opacity:0.55 } } },
+      { key:'geographic', name_en:'Geographic tongue', name_zh:'地圖舌',
+        teaser_en:'Stomach Yin deficiency',
+        teaser_zh:'胃陰不足',
+        full_en:'Patchy "geographic" patterns often signal stomach Yin deficiency. May correlate with hunger pains, dry mouth, or trouble gaining weight. Yin-nourishing diet plus avoiding very hot foods can help.',
+        full_zh:'舌面地圖樣剝落常反映胃陰不足。多伴飢餓痛、口乾、體重難增。滋陰飲食、避免過燙食物有助改善。',
+        svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', patches:true } }
+    ];
+
+    var strip = document.getElementById('tw-types-strip');
+    TYPES.forEach(function(t){
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'tt-card';
+      card.setAttribute('data-type', t.key);
+      card.innerHTML =
+        tongueSvg(t.svg) +
+        '<div class="tt-name">' +
+          '<span lang="en">' + t.name_en + '</span>' +
+          '<span lang="zh">' + t.name_zh + '</span>' +
+        '</div>' +
+        '<div class="tt-teaser">' +
+          '<span lang="en">' + t.teaser_en + '</span>' +
+          '<span lang="zh">' + t.teaser_zh + '</span>' +
+        '</div>';
+      card.addEventListener('click', function(){ openModal(t); });
+      strip.appendChild(card);
+    });
+
+    // ── Modal ─────────────────────────────────────────────────
+    var backdrop = document.getElementById('tw-modal-backdrop');
+    var modalContent = document.getElementById('tw-modal-content');
+    var closeBtn = backdrop.querySelector('.tw-modal-close');
+    function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function openModal(t){
+      modalContent.innerHTML =
+        tongueSvg(Object.assign({}, t.svg)) +
+        '<h3 class="tw-modal-h">' +
+          '<span lang="en">' + t.name_en + '</span>' +
+          '<span lang="zh">' + t.name_zh + '</span>' +
+        '</h3>' +
+        '<div class="tw-modal-body">' +
+          '<span lang="en">' + escHtml(t.full_en) + '</span>' +
+          '<span lang="zh">' + escHtml(t.full_zh) + '</span>' +
+        '</div>';
+      // Replace the body SVG's default size with the modal size.
+      var svg = modalContent.querySelector('svg');
+      if (svg) svg.setAttribute('class', 'tw-modal-svg');
+      backdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal(){
+      backdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', function(e){
+      if (e.target === backdrop) closeModal();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal();
+    });
+  })();
+  </script>
 </section>
 
 <!-- TCM Organ Clock — preserved from the prior hero-right block as
