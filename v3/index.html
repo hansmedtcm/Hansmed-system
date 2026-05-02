@@ -1030,7 +1030,18 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <!-- CTA — BUG-013: label and target update dynamically with the
                current peak-organ/element. Clicking pre-fills the booking
                flow with the organ/element as a concern hint. -->
-          <a id="hm-book-cta" class="btn-v4 btn-dark" style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;" href="../v2/portal.html#/book"><span lang="en" id="hm-book-cta-en">Book a TCM Consultation →</span><span lang="zh" id="hm-book-cta-zh">預約中醫問診 →</span></a>
+          <!-- Brief #7 sub-task — was a 'Book a {Organ}-window
+               consult' anchor; now an in-place 'View {Organ} info'
+               button that opens the educational modal for the
+               currently-active organ. Booking is still reachable
+               from inside that modal, so this becomes an
+               education-led conversion path (clock → View info →
+               read modal → book) rather than a blunt CTA. -->
+          <button id="hm-info-cta" class="btn-v4 btn-dark" type="button"
+                  style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;cursor:pointer;border:none;font-family:inherit;">
+            <span lang="en" id="hm-info-cta-en">View organ info →</span>
+            <span lang="zh" id="hm-info-cta-zh">了解臟腑詳情 →</span>
+          </button>
           <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
       </div>
@@ -1989,20 +2000,30 @@ function drawAllClocks() {
   var elapsed = ((h - organ.start + 24) % 24) * 60 + m;
   var prog = byId('hm-prog');       if (prog) prog.style.width = Math.min(100, Math.max(0, (elapsed / 120) * 100)).toFixed(1) + '%';
 
-  /* BUG-013 — Book CTA follows the current peak organ/element.
-     Label reflects the organ ("Book a Heart-window consult") and
-     href passes element + organ as query hints so the booking
-     wizard can pre-select the matching concern chip. */
-  var cta = byId('hm-book-cta');
-  var ctaEn = byId('hm-book-cta-en');
-  var ctaZh = byId('hm-book-cta-zh');
-  if (cta) {
-    cta.setAttribute('href',
-      'portal.html#/book?element=' + encodeURIComponent(organ.el) +
-      '&organ=' + encodeURIComponent(organ.name));
+  /* Brief #7 sub-task — the in-clock CTA is now 'View {Organ}
+     info' and opens the educational modal for the currently-
+     active organ instead of jumping to booking. Booking lives
+     inside the modal's bottom CTA. Label updates with whichever
+     organ is currently at peak window. */
+  var infoEn = byId('hm-info-cta-en');
+  var infoZh = byId('hm-info-cta-zh');
+  if (infoEn) infoEn.textContent = 'View ' + organ.name + ' info →';
+  if (infoZh) infoZh.textContent = '了解「' + organ.zh + '」詳情 →';
+  var infoBtn = byId('hm-info-cta');
+  if (infoBtn && !infoBtn._wired) {
+    /* One-time bind — drawAllClocks runs every 30 s and the
+       button itself is never replaced (only its label text), so
+       we don't want to stack listeners. */
+    infoBtn._wired = true;
+    infoBtn.addEventListener('click', function () {
+      var nowH = new Date().getHours();
+      var ai = hmGetOrgan(nowH);
+      var key = (CLOCK_ORGANS[ai] || {}).key;
+      if (key && typeof openOrganDetailModal === 'function') {
+        openOrganDetailModal(key);
+      }
+    });
   }
-  if (ctaEn) ctaEn.textContent = 'Book a ' + organ.name + '-window consult →';
-  if (ctaZh) ctaZh.textContent = '預約「' + organ.zh + '」時段問診 →';
 
   /* Brief #7 — every render wipes the SVG, so click eligibility
      and listeners must be re-applied to the freshly painted
@@ -2219,8 +2240,10 @@ function openOrganDetailModal(key) {
   }
 
   // The CTA label and href both encode the organ context so the
-  // booking flow can pre-select a matching concern chip — same
-  // pattern as the existing hm-book-cta inline handling.
+  // booking flow can pre-select a matching concern chip — this
+  // is now the only path to booking from the clock area (the
+  // in-clock CTA was swapped from a booking link to 'View info'
+  // per Brief #7 sub-task; education-led conversion).
   var organForCta = (CLOCK_ORGANS.filter(function (o) { return o.key === key; })[0] || {});
   var ctaHref = '../v2/portal.html#/book?element=' + encodeURIComponent((data.element || '').split(' ')[0]) +
                 '&organ=' + encodeURIComponent(data.enName);
