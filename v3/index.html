@@ -49,6 +49,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
      into portal/admin/doctor pages. -->
 <link rel="stylesheet" href="../v2/assets/css/landing-v4.css">
 <link rel="stylesheet" href="../v2/assets/css/dropdown.css">
+<!-- Brief #8 — v3 visual upgrade (imagery, scroll reveals, parallax,
+     tilt, textures). v3-only; no v2 stylesheet was modified. -->
+<link rel="stylesheet" href="assets/css/visual-upgrade.css">
+<!-- Preload the hero PNG so the LCP element paints immediately. -->
+<link rel="preload" as="image" href="assets/img/hero-bg.png" fetchpriority="high">
 </head>
 <body class="landing-v4">
 <!-- Preview banner — this page is the refactored homepage from Brief #4.
@@ -162,7 +167,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
      two-column-with-clock layout. The TCM Organ Clock is preserved
      in its own dedicated section immediately below this hero so no
      existing functionality is lost. -->
-<section class="hero-v4 hero-v4--story">
+<section class="hero-v4 hero-v4--story hero-v3">
   <div class="hero-bg"></div>
   <div class="hero-story">
     <div class="eyebrow" style="margin-bottom:24px;">
@@ -415,7 +420,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </style>
 
   <div class="tw-container">
-    <div class="tw-head">
+    <div class="tw-head reveal">
       <div class="tw-eyebrow">
         <span lang="en">AI Tongue Analysis</span>
         <span lang="zh">AI 舌診</span>
@@ -964,7 +969,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     }
   </style>
 
-  <div class="sh center" style="margin-bottom:32px;">
+  <div class="sh center reveal" style="margin-bottom:32px;">
     <div class="eyebrow">
       <span lang="en">Body wisdom</span>
       <span lang="zh">身體智慧</span>
@@ -1049,7 +1054,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 
   <!-- Brief #7 — "Why this matters" educational context, anchors
        the clock as content rather than decoration. -->
-  <div class="organ-clock-context" style="max-width:680px;margin:36px auto 0;padding:0 var(--s-3);">
+  <div class="organ-clock-context reveal" style="max-width:680px;margin:36px auto 0;padding:0 var(--s-3);">
     <h3 class="organ-clock-h" style="text-align:center;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(22px,3vw,30px);color:var(--v4-ink);letter-spacing:-0.01em;margin-bottom:18px;">
       <span lang="en">Your body has a <em>24-hour rhythm</em></span>
       <span lang="zh">您的身體有 <em>24小時的節律</em></span>
@@ -1083,23 +1088,36 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
 </div>
 
+<!-- Brief #8 — ink-wash divider before brand story. Placed here
+     (rather than directly after the hero) because the brief
+     forbids ink dividers adjacent to the tongue widget and organ
+     clock, both of which sit between hero and brand story. -->
+<div class="ink-divider reveal" aria-hidden="true">
+  <img src="assets/img/texture-ink-wash.png" alt="" loading="lazy" class="fade-in-load">
+</div>
+
 <!-- Brand story · 缘起 — founder voice, first-person plural, no
      marketing claims. Sits between the trust bar and the services
      grid so a brand-new visitor reads "why HansMed" before "what
      HansMed sells." -->
-<section class="sec sec-white brand-story">
-  <div class="brand-story-inner">
-    <div class="eyebrow center" style="margin-bottom:18px;">
-      <span lang="en">Our story</span>
-      <span lang="zh">缘起</span>
+<section class="sec sec-white brand-story has-rice-bg">
+  <div class="brand-story-grid">
+    <div class="brand-story-img reveal">
+      <img src="assets/img/brand-story.png" alt="Practitioner taking a patient's pulse" loading="lazy" class="fade-in-load" width="640" height="800">
     </div>
-    <h2 class="brand-story-h">
-      <span lang="en">Why <em>HansMed</em> exists</span>
-      <span lang="zh">为什么有 <em>汉方</em></span>
-    </h2>
-    <div class="brand-story-body">
-      <p lang="en">We started HansMed because too many people skip seeing a TCM doctor — not because they don't want to, but because life is busy and clinic visits don't fit. We thought: if we can use technology to handle the queueing, the paperwork, the prescription pickup, then our practitioners can focus on what they trained for — listening to you, feeling your pulse, understanding your constitution.</p>
-      <p lang="zh">我们创立汉方，是因为太多人想看中医，却被忙碌的生活拦在门外。我们想：如果科技可以处理排队、文书、取药，那中医师就能专心做他们一辈子在做的事 —— 听您说，把您的脉，了解您的体质。</p>
+    <div class="brand-story-text reveal">
+      <div class="eyebrow" style="margin-bottom:18px;">
+        <span lang="en">Our story</span>
+        <span lang="zh">缘起</span>
+      </div>
+      <h2 class="brand-story-h">
+        <span lang="en">Why <em>HansMed</em> exists</span>
+        <span lang="zh">为什么有 <em>汉方</em></span>
+      </h2>
+      <div class="brand-story-body">
+        <p lang="en">We started HansMed because too many people skip seeing a TCM doctor — not because they don't want to, but because life is busy and clinic visits don't fit. We thought: if we can use technology to handle the queueing, the paperwork, the prescription pickup, then our practitioners can focus on what they trained for — listening to you, feeling your pulse, understanding your constitution.</p>
+        <p lang="zh">我们创立汉方，是因为太多人想看中医，却被忙碌的生活拦在门外。我们想：如果科技可以处理排队、文书、取药，那中医师就能专心做他们一辈子在做的事 —— 听您说，把您的脉，了解您的体质。</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1254,7 +1272,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
   <div class="g3">
     <!-- Card 1: AI Wellness Assessment (now first — the funnel entry) -->
-    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
+    <div class="card-v4 reveal"><div class="ctr"></div><div class="cbl"></div>
+      <div class="card-v4-img"><img src="assets/img/service-wellness.png" alt="" loading="lazy" class="fade-in-load" width="640" height="480"></div>
       <div class="card-icon">👅</div>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
         <span lang="en">AI Wellness Assessment</span>
@@ -1271,7 +1290,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </button>
     </div>
     <!-- Card 2: TCM Consultations -->
-    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
+    <div class="card-v4 reveal" style="transition-delay:0.1s;"><div class="ctr"></div><div class="cbl"></div>
+      <div class="card-v4-img"><img src="assets/img/service-consultation.png" alt="" loading="lazy" class="fade-in-load" width="640" height="480"></div>
       <div class="card-icon">🩺</div>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
         <span lang="en">TCM Consultations</span>
@@ -1288,7 +1308,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </button>
     </div>
     <!-- Card 3: Herb Shop — keeps the Brief #3 two-state CTA wrapper -->
-    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
+    <div class="card-v4 reveal" style="transition-delay:0.2s;"><div class="ctr"></div><div class="cbl"></div>
+      <div class="card-v4-img"><img src="assets/img/service-shop.png" alt="" loading="lazy" class="fade-in-load" width="640" height="480"></div>
       <div class="card-icon">🌿</div>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
         <span lang="en">Herb Shop</span>
@@ -1316,13 +1337,18 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
 </section>
 
+<!-- Brief #8 — ink-wash divider between Services and How-it-works. -->
+<div class="ink-divider reveal" aria-hidden="true">
+  <img src="assets/img/texture-ink-wash.png" alt="" loading="lazy" class="fade-in-load">
+</div>
+
 <!-- How it works — Brief #4 new section. For a brand-new visitor
      who hasn't experienced TCM telemedicine: a 3-step funnel
      showing what their journey looks like, framed in plain
      language. Sits between Services and Practitioners so the
      visitor reads "what we offer → how the journey unfolds → who
      will be looking after me." -->
-<section class="sec sec-white">
+<section class="sec sec-white how-it-works-sec has-rice-bg">
   <div class="sh center">
     <div class="eyebrow">
       <span lang="en">Your first visit</span>
@@ -1334,7 +1360,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     </h2>
   </div>
   <div class="g3 how-it-works">
-    <div class="card-v4 hiw-card"><div class="ctr"></div><div class="cbl"></div>
+    <div class="card-v4 hiw-card reveal"><div class="ctr"></div><div class="cbl"></div>
+      <div class="step-card-img"><img src="assets/img/step1-discover.png" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
       <div class="hiw-step">01</div>
       <div class="card-icon">🌿</div>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
@@ -1346,7 +1373,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <span lang="zh">先做免费体质评估，了解自己的体质。无需预约。</span>
       </p>
     </div>
-    <div class="card-v4 hiw-card"><div class="ctr"></div><div class="cbl"></div>
+    <div class="card-v4 hiw-card reveal" style="transition-delay:0.1s;"><div class="ctr"></div><div class="cbl"></div>
+      <div class="step-card-img"><img src="assets/img/step2-talk.png" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
       <div class="hiw-step">02</div>
       <div class="card-icon">🩺</div>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
@@ -1358,7 +1386,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <span lang="zh">准备好就预约问诊。您的中医师会和您一起看评估结果、回答您的问题。</span>
       </p>
     </div>
-    <div class="card-v4 hiw-card"><div class="ctr"></div><div class="cbl"></div>
+    <div class="card-v4 hiw-card reveal" style="transition-delay:0.2s;"><div class="ctr"></div><div class="cbl"></div>
+      <div class="step-card-img"><img src="assets/img/step3-receive.png" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
       <div class="hiw-step">03</div>
       <div class="card-icon">📦</div>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
@@ -1373,6 +1402,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
 </section>
 
+<!-- Brief #8 — ink-wash divider between How-it-works and Practitioners. -->
+<div class="ink-divider reveal" aria-hidden="true">
+  <img src="assets/img/texture-ink-wash.png" alt="" loading="lazy" class="fade-in-load">
+</div>
+
 <!-- Our Practitioners — Brief #4 placeholder section. The user
      does NOT yet have practitioner photos / bios / videos, so this
      is structural: trust line about T&CM Council registration,
@@ -1380,7 +1414,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
      .seal style so they look intentional, not broken), and a quiet
      email line for visitors who want to know more before booking. -->
 <section class="sec sec-alt practitioners">
-  <div class="sh center">
+  <div class="sh center reveal">
     <div class="eyebrow">
       <span lang="en">Our practitioners</span>
       <span lang="zh">我们的医师</span>
@@ -1395,7 +1429,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     </p>
   </div>
   <div class="g3 practitioners-grid">
-    <div class="practitioner-card">
+    <div class="practitioner-card reveal">
+      <div class="practitioner-card-img"><img src="assets/img/practitioner-placeholder.png" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
       <div class="seal seal-go practitioner-seal">醫</div>
       <div class="practitioner-line">
         <span lang="en">Practitioner profile</span>
@@ -1406,7 +1441,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <span lang="zh">即将推出</span>
       </div>
     </div>
-    <div class="practitioner-card">
+    <div class="practitioner-card reveal" style="transition-delay:0.1s;">
+      <div class="practitioner-card-img"><img src="assets/img/practitioner-placeholder.png" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
       <div class="seal seal-go practitioner-seal">師</div>
       <div class="practitioner-line">
         <span lang="en">Practitioner profile</span>
@@ -1417,7 +1453,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <span lang="zh">即将推出</span>
       </div>
     </div>
-    <div class="practitioner-card">
+    <div class="practitioner-card reveal" style="transition-delay:0.2s;">
+      <div class="practitioner-card-img"><img src="assets/img/practitioner-placeholder.png" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
       <div class="seal seal-go practitioner-seal">仁</div>
       <div class="practitioner-line">
         <span lang="en">Practitioner profile</span>
@@ -1439,8 +1476,9 @@ html[lang="zh"] .hm-lang-sep { display: none; }
      so the section reads as intentional architecture rather than
      a broken testimonials grid. Will fill in once early patients
      opt in. -->
-<section class="sec sec-white patient-stories">
-  <div class="patient-stories-inner">
+<section class="patient-stories-section patient-stories">
+  <div class="patient-stories-bg" style="background-image:url('assets/img/patient-stories-placeholder.png');"></div>
+  <div class="patient-stories-overlay reveal">
     <div class="eyebrow center" style="margin-bottom:14px;">
       <span lang="en">Patient stories</span>
       <span lang="zh">患者反馈</span>
@@ -1455,6 +1493,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     </p>
   </div>
 </section>
+
+<!-- Brief #8 — ink-wash divider between Patient stories and Explore. -->
+<div class="ink-divider reveal" aria-hidden="true">
+  <img src="assets/img/texture-ink-wash.png" alt="" loading="lazy" class="fade-in-load">
+</div>
 
 <!-- Explore -->
 <section class="sec sec-white">
@@ -2375,6 +2418,104 @@ function openOrganDetailModal(key) {
   document.querySelectorAll('.sec, .trust').forEach(function (el) { io.observe(el); });
 })();
 </script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     Brief #8 — visual-upgrade JS layer.
+     Smooth scroll (Lenis), scroll-reveal observer, hero parallax,
+     image fade-in. All four respect prefers-reduced-motion; the
+     scroll/parallax also bow out on touch-mobile so we don't
+     fight iOS Safari's native momentum scroll.
+     Total inline JS budget: ~1.5KB; Lenis library ~10KB.
+     ════════════════════════════════════════════════════════════════ -->
+
+<!-- Lenis smooth scroll (Task B) — desktop only. -->
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.0.42/dist/lenis.min.js" defer></script>
+<script>
+(function () {
+  function start() {
+    if (typeof Lenis === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if ('ontouchstart' in window && window.matchMedia('(max-width: 768px)').matches) return;
+    var lenis = new Lenis({
+      duration: 1.05,
+      easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
+      smoothWheel: true
+    });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 0); });
+  } else {
+    /* Lenis is loaded via defer, so it lands after DOMContentLoaded.
+       Defer one tick so the library has a chance to attach. */
+    setTimeout(start, 50);
+  }
+})();
+</script>
+
+<!-- Scroll-reveal observer (Task C). Falls back to immediate
+     visibility if IntersectionObserver is unsupported. -->
+<script>
+(function () {
+  function reveal(el) { el.classList.add('is-visible'); }
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(reveal);
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        reveal(e.target);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+<!-- Hero parallax (Task D) — desktop, no reduced-motion. Updates
+     background-position via rAF, only while the hero is in view. -->
+<script>
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (window.matchMedia('(max-width: 768px)').matches) return;
+  var hero = document.querySelector('.hero-v3');
+  if (!hero) return;
+  var ticking = false;
+  function update() {
+    var y = window.scrollY;
+    if (y > window.innerHeight) { ticking = false; return; }
+    var offset = y * 0.20;
+    hero.style.backgroundPosition = 'center calc(50% + ' + offset + 'px)';
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+})();
+</script>
+
+<!-- Image fade-in on load (Task F). Adds .loaded once the image
+     completes; CSS handles the opacity transition. Reduced-motion
+     users skip the transition via the CSS media query. -->
+<script>
+(function () {
+  document.querySelectorAll('img.fade-in-load').forEach(function (img) {
+    if (img.complete && img.naturalWidth > 0) {
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load',  function () { img.classList.add('loaded'); }, { once: true });
+      img.addEventListener('error', function () { img.classList.add('loaded'); }, { once: true });
+    }
+  });
+})();
+</script>
+
 <script>
 /* ─── Sign In → My Portal swap (auth-aware nav) ───
    When the visitor is signed in, the "Sign In · 登入" nav button

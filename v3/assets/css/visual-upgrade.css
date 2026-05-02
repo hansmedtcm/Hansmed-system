@@ -1,0 +1,317 @@
+/* ====================================================================
+   v3 visual upgrade — Brief #8
+   Imagery, scroll reveals, parallax, tilt, spacing, textures.
+   All rules scoped under .landing-v4 (the body class) or under
+   v3-only selectors so nothing leaks into v2 pages that share
+   landing-v4.css.
+   ====================================================================
+   MANDATORY SAFEGUARDS HONORED:
+   · prefers-reduced-motion respected on every transition / animation.
+   · Mobile parallax + tilt explicitly disabled in media queries.
+   · Every image wrapper sets aspect-ratio so the browser reserves
+     space before the image loads (no CLS).
+   · Image fade-in is a CSS-only opacity transition driven by a
+     'loaded' class added by tiny inline JS — no library, no FOUC
+     because reduced-motion users get opacity:1 immediately.
+   ==================================================================== */
+
+
+/* ════════════ TASK A1 — Hero background image + gradient ═════════ */
+
+/* Layer the new background photo onto the section, then layer the
+   readability gradient onto the existing .hero-bg overlay div (which
+   already carries landing-v4's decorative radial gradients). This
+   preserves landing-v4's gold-strip ::before, bottom-border ::after,
+   and the radial ambient warmth — the brief was clear: ADD, don't
+   replace. */
+body.landing-v4 .hero-v3 {
+  background-image: url('../img/hero-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+body.landing-v4 .hero-v3 .hero-bg {
+  background:
+    linear-gradient(
+      to right,
+      rgba(245, 241, 234, 0.92) 0%,
+      rgba(245, 241, 234, 0.65) 40%,
+      rgba(245, 241, 234, 0.20) 75%,
+      rgba(245, 241, 234, 0.05) 100%
+    ),
+    radial-gradient(ellipse 65% 85% at 100% 50%, rgba(196,154,90,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 55% at 5% 95%, rgba(155,114,72,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.55) 0%, transparent 50%);
+}
+@media (max-width: 768px) {
+  body.landing-v4 .hero-v3 .hero-bg {
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(245, 241, 234, 0.92) 0%,
+        rgba(245, 241, 234, 0.55) 100%
+      ),
+      radial-gradient(ellipse 65% 85% at 100% 50%, rgba(196,154,90,0.09) 0%, transparent 65%),
+      radial-gradient(ellipse 45% 55% at 5% 95%, rgba(155,114,72,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.55) 0%, transparent 50%);
+  }
+}
+
+
+/* ════════════ TASK A2 — Brand story 2-column with image ══════════ */
+
+body.landing-v4 .brand-story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: left;
+}
+body.landing-v4 .brand-story-img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--v4-bg-3);
+}
+body.landing-v4 .brand-story-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+body.landing-v4 .brand-story-text {
+  text-align: left;
+}
+/* The original .brand-story-inner was centered; inside the grid we
+   left-align it because the image carries the visual weight. */
+body.landing-v4 .brand-story-grid .brand-story-h,
+body.landing-v4 .brand-story-grid .eyebrow {
+  text-align: left;
+}
+body.landing-v4 .brand-story-grid .eyebrow {
+  display: inline-flex;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .brand-story-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+  }
+  body.landing-v4 .brand-story-img { aspect-ratio: 4 / 3; }
+  body.landing-v4 .brand-story-grid .brand-story-h,
+  body.landing-v4 .brand-story-grid .eyebrow,
+  body.landing-v4 .brand-story-grid .brand-story-text { text-align: center; }
+}
+
+
+/* ════════════ TASK A3 — Service card images (bleed top) ══════════ */
+
+body.landing-v4 .card-v4-img {
+  /* card-v4 already has padding: 22px (approx); bleed image to edges. */
+  margin: -22px -22px 18px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  background: var(--v4-bg-3);
+}
+body.landing-v4 .card-v4-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+body.landing-v4 .card-v4:hover .card-v4-img img {
+  transform: scale(1.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  body.landing-v4 .card-v4:hover .card-v4-img img { transform: none; }
+}
+
+
+/* ════════════ TASK A4 — How-it-works step images ═════════════════ */
+
+body.landing-v4 .step-card-img {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  background: var(--v4-bg-3);
+}
+body.landing-v4 .step-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+/* ════════════ TASK A5 — Practitioner placeholder image ═══════════ */
+
+body.landing-v4 .practitioner-card-img {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: var(--v4-bg-3);
+}
+body.landing-v4 .practitioner-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(20%);
+  transition: filter 0.4s ease;
+}
+body.landing-v4 .practitioner-card:hover .practitioner-card-img img {
+  filter: grayscale(0%);
+}
+@media (prefers-reduced-motion: reduce) {
+  body.landing-v4 .practitioner-card-img img { transition: none; }
+}
+
+
+/* ════════════ TASK A6 — Patient stories full-width bg + overlay ══ */
+
+body.landing-v4 .patient-stories-section {
+  position: relative;
+  min-height: 360px;
+  overflow: hidden;
+  margin: 64px 0;
+}
+body.landing-v4 .patient-stories-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+body.landing-v4 .patient-stories-overlay {
+  position: relative;
+  background: rgba(245, 241, 234, 0.78);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  padding: 64px 8vw;
+  text-align: center;
+}
+
+
+/* ════════════ TASK C — Scroll reveal base classes ════════════════ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+
+/* ════════════ TASK E — Subtle 3D card tilt on hover ══════════════ */
+
+body.landing-v4 .card-v4,
+body.landing-v4 .step-card,
+body.landing-v4 .practitioner-card {
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(0) rotateY(0);
+  transition: transform 0.5s ease, box-shadow 0.4s ease;
+}
+@media (hover: hover) and (min-width: 769px) {
+  body.landing-v4 .card-v4:hover,
+  body.landing-v4 .step-card:hover,
+  body.landing-v4 .practitioner-card:hover {
+    transform: perspective(1000px) translateY(-6px) rotateX(1.5deg) rotateY(-1.5deg);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.landing-v4 .card-v4:hover,
+  body.landing-v4 .step-card:hover,
+  body.landing-v4 .practitioner-card:hover {
+    transform: translateY(-6px);   /* keep the lift, drop the tilt */
+  }
+}
+
+
+/* ════════════ TASK F — Image fade-in on load ═════════════════════ */
+
+img.fade-in-load {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+img.fade-in-load.loaded {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  img.fade-in-load { opacity: 1; transition: none; }
+}
+
+
+/* ════════════ TASK G — Spacing reverence ═════════════════════════ */
+
+body.landing-v4 .brand-story            { padding: clamp(48px, 7vw, 96px) 0; }
+body.landing-v4 .sec.sec-alt.dot-tex    { padding: clamp(48px, 7vw, 96px) 0; }
+body.landing-v4 .sec.sec-white          { /* default — left to existing rules */ }
+body.landing-v4 section.how-it-works-sec{ padding: clamp(40px, 6vw, 80px) 0; }
+body.landing-v4 section.practitioners   { padding: clamp(40px, 6vw, 80px) 0; }
+body.landing-v4 section.patient-stories { padding: clamp(48px, 7vw, 96px) 0; }
+body.landing-v4 .organ-clock-section    { padding: clamp(40px, 6vw, 80px) 0 !important; }
+body.landing-v4 .tongue-widget          { padding: clamp(40px, 6vw, 80px) max(1.5rem, calc(50% - 540px)) !important; }
+
+
+/* ════════════ TASK H1 — Rice-paper subtle background texture ═════ */
+
+.has-rice-bg {
+  position: relative;
+}
+.has-rice-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../img/texture-rice-paper.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 0;
+}
+.has-rice-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ════════════ TASK H2 — Ink-wash horizontal section divider ══════ */
+
+.ink-divider {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ink-divider img {
+  max-width: 320px;
+  width: 60%;
+  height: auto;
+  opacity: 0.25;
+  filter: grayscale(100%) brightness(0.4);
+  display: block;
+}
+@media (max-width: 768px) {
+  .ink-divider { height: 40px; }
+  .ink-divider img { max-width: 220px; width: 70%; opacity: 0.20; }
+}
