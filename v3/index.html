@@ -821,19 +821,178 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </script>
 </section>
 
-<!-- TCM Organ Clock — preserved from the prior hero-right block as
-     its own section so the live子午流注 functionality stays available
-     after the hero refactor. Same markup, same wiring, just a
-     different containing section. -->
-<section class="sec sec-white" style="padding-top:36px;padding-bottom:36px;">
-  <div class="sh center" style="margin-bottom:18px;">
+<!-- TCM Organ Clock — Brief #7 reframing. Section now opens with an
+     eyebrow + intriguing question (museum-caption tone), holds the
+     clock as the visual focal point, and closes with a 2-paragraph
+     "why this matters" explanation that turns the clock from
+     "wait, why is there a clock here?" into educational context.
+     Brief #7 also adds: (a) data-organ + clock-organ-wedge on each
+     wedge inside drawClock so wedges can be targeted; (b) an
+     "Explore all organs" toggle that controls click eligibility;
+     (c) a 12-organ educational modal opened by clicking a wedge. -->
+<section class="sec sec-white organ-clock-section" style="padding-top:48px;padding-bottom:48px;">
+  <style>
+    .organ-clock-section .organ-clock-question{
+      font-family:'Cormorant Garamond',serif;
+      font-style:italic;
+      font-size:clamp(18px,2.4vw,24px);
+      font-weight:400;
+      color:var(--v4-tc);
+      margin-top:14px;margin-bottom:0;
+      letter-spacing:0.01em;
+    }
+    .organ-clock-section .organ-clock-question span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-style:normal;font-size:0.78em;color:var(--v4-wd-md);margin-top:6px;
+    }
+    .organ-clock-section .organ-clock-toggle{
+      display:flex;justify-content:center;align-items:center;
+      gap:10px;margin-bottom:14px;font-size:12px;color:var(--v4-mu);
+      flex-wrap:wrap;
+    }
+    .organ-clock-section .organ-clock-toggle label{
+      display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    }
+    .organ-clock-section #organ-explore-hint{
+      opacity:0.55;font-size:11px;
+    }
+    /* Wedge interaction states. Non-clickable wedges are muted +
+       cursor:default; the active wedge (or any wedge in explore
+       mode) gets cursor:pointer and a subtle hover-glow outline. */
+    .organ-clock-section .clock-organ-wedge{
+      transition:opacity .25s ease, filter .25s ease;
+    }
+    .organ-clock-section .clock-organ-wedge.is-locked{
+      opacity:0.62;cursor:default;
+    }
+    .organ-clock-section .clock-organ-wedge.is-clickable{
+      cursor:pointer;
+    }
+    .organ-clock-section .clock-organ-wedge.is-clickable:hover{
+      filter:drop-shadow(0 0 4px rgba(181,136,26,0.55));
+    }
+    .organ-clock-section.is-explore-all .clock-organ-wedge{
+      opacity:1 !important;cursor:pointer;
+    }
+
+    /* Organ-detail modal — same visual language as the tongue
+       widget modal so the two interactive widgets feel paired. */
+    .organ-modal-backdrop{
+      position:fixed;inset:0;background:rgba(36,22,8,0.55);
+      display:none;align-items:center;justify-content:center;
+      z-index:9000;padding:20px;
+    }
+    .organ-modal-backdrop.open{display:flex;}
+    .organ-modal{
+      background:#fffaf0;border:1px solid var(--v4-bdr-l);
+      border-radius:18px;max-width:620px;width:100%;
+      max-height:88vh;overflow:auto;
+      padding:36px 36px 32px;position:relative;
+      box-shadow:0 30px 80px rgba(36,22,8,0.35);
+    }
+    .organ-modal-close{
+      position:absolute;top:14px;right:18px;background:transparent;
+      border:none;cursor:pointer;font-size:22px;color:var(--v4-mu);
+      line-height:1;padding:6px;
+    }
+    .organ-modal-close:hover{color:var(--v4-ink);}
+    .organ-modal-zh{
+      font-family:'Noto Serif SC',serif;font-size:64px;
+      color:var(--v4-tc);font-weight:300;line-height:1;
+      text-align:center;margin:4px 0 8px;letter-spacing:0.04em;
+    }
+    .organ-modal-name{
+      font-family:'Cormorant Garamond',serif;font-size:24px;
+      color:var(--v4-ink);font-weight:500;text-align:center;
+      letter-spacing:-0.01em;margin:0 0 18px;
+    }
+    .organ-modal-name span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:16px;color:var(--v4-wd-md);margin-top:2px;
+    }
+    .organ-modal-pills{
+      display:flex;justify-content:center;gap:10px;flex-wrap:wrap;
+      margin:0 0 22px;
+    }
+    .organ-modal-pill{
+      background:var(--v4-bg-3);border:1px solid var(--v4-bdr-l);
+      border-radius:999px;padding:6px 14px;font-size:11px;
+      color:var(--v4-mu);font-weight:500;letter-spacing:0.04em;
+      display:flex;flex-direction:column;align-items:center;
+    }
+    .organ-modal-pill .opl{font-size:9px;text-transform:uppercase;
+      letter-spacing:0.12em;color:var(--v4-bdr);}
+    .organ-modal-pill .opv{font-size:12px;color:var(--v4-ink);
+      font-weight:500;margin-top:1px;}
+    .organ-modal-section{margin:0 0 18px;}
+    .organ-modal-section h4{
+      font-family:'DM Sans',sans-serif;font-size:11px;
+      letter-spacing:0.16em;text-transform:uppercase;
+      color:var(--v4-wd-lt);font-weight:600;margin:0 0 8px;
+      border-bottom:1px solid var(--v4-bdr-l);padding-bottom:6px;
+    }
+    .organ-modal-section h4 span[lang="zh"]{
+      font-family:'Noto Serif SC',serif;text-transform:none;
+      letter-spacing:0.04em;font-size:12px;
+    }
+    .organ-modal-section p{
+      font-size:14px;color:var(--v4-mu);line-height:1.78;
+      font-weight:300;margin:0;
+    }
+    .organ-modal-section p span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      font-size:13px;margin-top:8px;
+    }
+    .organ-modal-cta{
+      display:block;text-align:center;margin:24px 0 10px;
+    }
+    .organ-modal-cta .btn-v4{
+      padding:12px 24px;font-size:13px;
+      letter-spacing:0.06em;font-weight:500;
+    }
+    .organ-modal-disclaimer{
+      text-align:center;font-size:11px;color:var(--v4-bdr);
+      font-style:italic;margin:0;
+    }
+    .organ-modal-disclaimer span[lang="zh"]{
+      display:block;font-family:'Noto Serif SC',serif;
+      margin-top:4px;font-size:10px;
+    }
+    @media (max-width:480px){
+      .organ-modal{padding:28px 22px;}
+      .organ-modal-zh{font-size:52px;}
+    }
+  </style>
+
+  <div class="sh center" style="margin-bottom:32px;">
     <div class="eyebrow">
-      <span lang="en">Live TCM Organ Clock</span>
-      <span lang="zh">子午流注 · 当令时段</span>
+      <span lang="en">Body wisdom</span>
+      <span lang="zh">身體智慧</span>
     </div>
+    <p class="organ-clock-question">
+      <span lang="en">Did you know your liver peaks at 2 AM?</span>
+      <span lang="zh">您知道您的肝經高峰是凌晨兩點嗎？</span>
+    </p>
   </div>
+
   <div style="display:flex;justify-content:center;">
     <div style="width:min(420px,90vw);display:flex;flex-direction:column;gap:0;">
+        <!-- Brief #7 — Explore-all toggle. Default OFF: only the
+             currently-active wedge is clickable; others are muted.
+             ON: all 12 wedges become clickable. JS reapplies state
+             every minute when drawClock re-renders. -->
+        <div class="organ-clock-toggle">
+          <label>
+            <input type="checkbox" id="organ-explore-all" style="cursor:pointer;">
+            <span>
+              <span lang="en">Explore all organs</span><span lang="zh">探索所有臟腑</span>
+            </span>
+          </label>
+          <span id="organ-explore-hint">
+            <span lang="en">(default: only the active organ is clickable)</span>
+            <span lang="zh">（預設：只可點擊正在當令的臟腑）</span>
+          </span>
+        </div>
         <!-- Clock SVG -->
         <svg id="hero-clk" viewBox="0 0 380 320" width="100%" style="display:block;overflow:visible;" aria-label="Live TCM organ clock"></svg>
         <!-- Info panel -->
@@ -875,6 +1034,31 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
       </div>
+  </div>
+
+  <!-- Brief #7 — "Why this matters" educational context, anchors
+       the clock as content rather than decoration. -->
+  <div class="organ-clock-context" style="max-width:680px;margin:36px auto 0;padding:0 var(--s-3);">
+    <h3 class="organ-clock-h" style="text-align:center;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(22px,3vw,30px);color:var(--v4-ink);letter-spacing:-0.01em;margin-bottom:18px;">
+      <span lang="en">Your body has a <em>24-hour rhythm</em></span>
+      <span lang="zh">您的身體有 <em>24小時的節律</em></span>
+    </h3>
+    <p style="font-size:15px;line-height:1.78;color:var(--v4-mu);font-weight:300;margin-bottom:14px;">
+      <span lang="en">For 2,000 years, TCM has mapped how vital energy flows through 12 organ meridians — each with a 2-hour peak window. Knowing which organ is at its strongest right now helps you read your symptoms, plan your day, and time your care.</span>
+      <span lang="zh">兩千年來，中醫觀察到生命能量在十二經絡間循環流動，每個臟腑都有兩小時的高峰時段。了解此刻哪個臟腑最活躍，有助於理解身體訊號、安排作息、規劃調理。</span>
+    </p>
+    <p style="font-size:14px;line-height:1.78;color:var(--v4-mu);font-weight:300;font-style:italic;">
+      <span lang="en">Click the active organ above to learn its TCM theory, modern function, and what symptoms might suggest care during its window.</span>
+      <span lang="zh">點擊上方正在當令的臟腑，了解它的中醫理論、現代生理功能、以及在它當令時可能需要關注的症狀。</span>
+    </p>
+  </div>
+
+  <!-- Brief #7 — Single shared modal reused by every organ wedge. -->
+  <div class="organ-modal-backdrop" id="organ-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="organ-modal">
+      <button class="organ-modal-close" type="button" aria-label="Close">×</button>
+      <div id="organ-modal-content"><!-- populated by openOrganDetailModal --></div>
+    </div>
   </div>
 </section>
 
@@ -1575,18 +1759,18 @@ window.setLang = setLang;
    and the info panel updates as real time passes.
    ══════════════════════════════════════════════════════════════════ */
 var CLOCK_ORGANS = [
-  { name: 'Gallbladder',     zh: '膽',   start: 23, el: 'Wood',  elZh: '木', col: '#7A9060', tip: 'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.',            tipZh: '晚上 11 時前就寢。膽經此時排濁更新，休息就是最好的養生。' },
-  { name: 'Liver',           zh: '肝',   start: 1,  el: 'Wood',  elZh: '木', col: '#6E8858', tip: 'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.',                  tipZh: '肝經當令，深度排毒時段。應臥床休息，忌飲酒、強光與壓力。' },
-  { name: 'Lung',            zh: '肺',   start: 3,  el: 'Metal', elZh: '金', col: '#A09888', tip: 'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.',                            tipZh: '肺氣最旺。此時做深呼吸或太極，最能養肺補氣。' },
-  { name: 'Large Intestine', zh: '大腸', start: 5,  el: 'Metal', elZh: '金', col: '#909080', tip: 'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.',                      tipZh: '起床喝溫水、排便。身體正準備排濁，順應之即養生。' },
-  { name: 'Stomach',         zh: '胃',   start: 7,  el: 'Earth', elZh: '土', col: '#C49840', tip: 'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.',                                    tipZh: '脾胃消化力最強。此時宜吃最豐盛、溫熱的一餐。' },
-  { name: 'Spleen',          zh: '脾',   start: 9,  el: 'Earth', elZh: '土', col: '#B88A38', tip: 'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.',                                    tipZh: '思慮最清明。適合專注學習、分析與精細創作。' },
-  { name: 'Heart',           zh: '心',   start: 11, el: 'Fire',  elZh: '火', col: '#B85840', tip: 'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.',                            tipZh: '心氣最旺。午後小憩 20 分鐘，長年護心。' },
-  { name: 'Small Intestine', zh: '小腸', start: 13, el: 'Fire',  elZh: '火', col: '#A84830', tip: 'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.',                         tipZh: '小腸分清別濁。午後散步片刻，有助消化吸收。' },
-  { name: 'Bladder',         zh: '膀胱', start: 15, el: 'Water', elZh: '水', col: '#4A7890', tip: 'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.',                             tipZh: '體力腦力俱佳時段。多飲水，膀胱經主水液代謝。' },
-  { name: 'Kidney',          zh: '腎',   start: 17, el: 'Water', elZh: '水', col: '#3A6080', tip: 'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.',                        tipZh: '腎為先天之本。宜節飲食、忌生冷，漸入晚間收斂。' },
-  { name: 'Pericardium',     zh: '心包', start: 19, el: 'Fire',  elZh: '火', col: '#8A6070', tip: 'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.',                                   tipZh: '心包經當令。此時宜歡聚、溫情相伴，養神安心。' },
-  { name: 'Triple Warmer',   zh: '三焦', start: 21, el: 'Fire',  elZh: '火', col: '#705058', tip: 'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.',                      tipZh: '三焦通調，準備入眠。調暗燈光、靜心收攝，迎接安眠。' },
+  { key: 'gallbladder',     name: 'Gallbladder',     zh: '膽',   start: 23, el: 'Wood',  elZh: '木', col: '#7A9060', tip: 'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.',            tipZh: '晚上 11 時前就寢。膽經此時排濁更新，休息就是最好的養生。' },
+  { key: 'liver',           name: 'Liver',           zh: '肝',   start: 1,  el: 'Wood',  elZh: '木', col: '#6E8858', tip: 'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.',                  tipZh: '肝經當令，深度排毒時段。應臥床休息，忌飲酒、強光與壓力。' },
+  { key: 'lung',            name: 'Lung',            zh: '肺',   start: 3,  el: 'Metal', elZh: '金', col: '#A09888', tip: 'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.',                            tipZh: '肺氣最旺。此時做深呼吸或太極，最能養肺補氣。' },
+  { key: 'large_intestine', name: 'Large Intestine', zh: '大腸', start: 5,  el: 'Metal', elZh: '金', col: '#909080', tip: 'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.',                      tipZh: '起床喝溫水、排便。身體正準備排濁，順應之即養生。' },
+  { key: 'stomach',         name: 'Stomach',         zh: '胃',   start: 7,  el: 'Earth', elZh: '土', col: '#C49840', tip: 'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.',                                    tipZh: '脾胃消化力最強。此時宜吃最豐盛、溫熱的一餐。' },
+  { key: 'spleen',          name: 'Spleen',          zh: '脾',   start: 9,  el: 'Earth', elZh: '土', col: '#B88A38', tip: 'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.',                                    tipZh: '思慮最清明。適合專注學習、分析與精細創作。' },
+  { key: 'heart',           name: 'Heart',           zh: '心',   start: 11, el: 'Fire',  elZh: '火', col: '#B85840', tip: 'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.',                            tipZh: '心氣最旺。午後小憩 20 分鐘，長年護心。' },
+  { key: 'small_intestine', name: 'Small Intestine', zh: '小腸', start: 13, el: 'Fire',  elZh: '火', col: '#A84830', tip: 'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.',                         tipZh: '小腸分清別濁。午後散步片刻，有助消化吸收。' },
+  { key: 'bladder',         name: 'Bladder',         zh: '膀胱', start: 15, el: 'Water', elZh: '水', col: '#4A7890', tip: 'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.',                             tipZh: '體力腦力俱佳時段。多飲水，膀胱經主水液代謝。' },
+  { key: 'kidney',          name: 'Kidney',          zh: '腎',   start: 17, el: 'Water', elZh: '水', col: '#3A6080', tip: 'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.',                        tipZh: '腎為先天之本。宜節飲食、忌生冷，漸入晚間收斂。' },
+  { key: 'pericardium',     name: 'Pericardium',     zh: '心包', start: 19, el: 'Fire',  elZh: '火', col: '#8A6070', tip: 'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.',                                   tipZh: '心包經當令。此時宜歡聚、溫情相伴，養神安心。' },
+  { key: 'triple_warmer',   name: 'Triple Warmer',   zh: '三焦', start: 21, el: 'Fire',  elZh: '火', col: '#705058', tip: 'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.',                      tipZh: '三焦通調，準備入眠。調暗燈光、靜心收攝，迎接安眠。' },
 ];
 
 function hmNs(t)  { return document.createElementNS('http://www.w3.org/2000/svg', t); }
@@ -1646,6 +1830,12 @@ function drawClock(svgId, cx, cy, ro, ri, rl, fontSize, showLabel, showHand, sho
     path.setAttribute('fill',   active ? o.col + 'CC' : o.col + '35');
     path.setAttribute('stroke', active ? '#B5881A' : 'rgba(254,252,248,0.8)');
     path.setAttribute('stroke-width', active ? '1.5' : '1.2');
+    /* Brief #7 — make each wedge addressable for the click-to-learn
+       interaction. data-organ pairs with ORGAN_EDU keys; the
+       'clock-organ-wedge' class lets the post-render pass apply
+       muting / hover / cursor rules from CSS. */
+    path.setAttribute('class',     'clock-organ-wedge');
+    path.setAttribute('data-organ', o.key);
     svg.appendChild(path);
 
     if (showLabel) {
@@ -1813,6 +2003,13 @@ function drawAllClocks() {
   }
   if (ctaEn) ctaEn.textContent = 'Book a ' + organ.name + '-window consult →';
   if (ctaZh) ctaZh.textContent = '預約「' + organ.zh + '」時段問診 →';
+
+  /* Brief #7 — every render wipes the SVG, so click eligibility
+     and listeners must be re-applied to the freshly painted
+     wedges. Cheap; runs every 30 s alongside the clock tick. */
+  if (typeof syncOrganClockInteractivity === 'function') {
+    syncOrganClockInteractivity();
+  }
 }
 
 drawAllClocks();
@@ -1824,6 +2021,282 @@ setInterval(function () {
   var dt = document.getElementById('hm-dtime');
   if (dt) dt.textContent = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 }, 1000);
+
+/* ════════════════════════════════════════════════════════════════
+   Brief #7 — Organ-detail education layer for the live clock.
+   - ORGAN_EDU: full TCM theory / function / imbalances / when-to-
+     seek-care content for every one of the 12 meridian organs,
+     bilingual (EN + ZH). Used by the modal opened on wedge click.
+   - syncOrganClockInteractivity: toggles the .is-clickable /
+     .is-locked classes on each .clock-organ-wedge based on the
+     current explore-all checkbox state and the currently-active
+     organ. Re-runs after every drawClock pass (the SVG is wiped
+     and repainted, so wedges + their listeners need to be re-
+     hooked each render) and on toggle change.
+   - openOrganDetailModal(key): renders the matching ORGAN_EDU
+     entry into the shared #organ-modal-backdrop. Closes on X,
+     backdrop click, and Escape.
+   ════════════════════════════════════════════════════════════════ */
+var ORGAN_EDU = {
+  gallbladder: {
+    zh: '膽', enName: 'Gallbladder', element: 'Wood · 木', window: '23:00 – 01:00', paired: 'Liver · 肝',
+    theory_en: 'In TCM, the Gallbladder governs decisive judgement and the courage to act. It works in close partnership with the Liver, helping turn intention into decision.',
+    theory_zh: '中醫認為，膽主決斷，與肝相表裡。膽氣足則決斷有力，遇事不疑。',
+    function_en: 'Stores and releases bile to aid the digestion of fats. In TCM theory, also supports clear thinking and confident decision-making.',
+    function_zh: '儲存與排放膽汁，幫助消化脂肪。中醫認為亦主決斷力與清晰思考。',
+    imbalance_en: 'Indecisiveness, timidity, bitter taste in the mouth on waking, headaches at the temples, restless sleep between 11 PM and 1 AM.',
+    imbalance_zh: '優柔寡斷、易驚膽怯、晨起口苦、太陽穴頭痛、夜半11點至1點難以入睡。',
+    seek_care_en: 'Persistent right upper abdominal discomfort, recurring bitter taste, chronic indecisiveness affecting daily life, or sleep disruption around midnight.',
+    seek_care_zh: '右上腹持續不適、反覆口苦、長期優柔寡斷影響生活、或半夜時段持續睡眠困擾。'
+  },
+  liver: {
+    zh: '肝', enName: 'Liver', element: 'Wood · 木', window: '01:00 – 03:00', paired: 'Gallbladder · 膽',
+    theory_en: 'The Liver governs the smooth flow of qi and blood, stores blood, and houses the ethereal soul (魂). It is the body\'s great strategist — holding plans and direction.',
+    theory_zh: '肝主疏泄，藏血，藏魂。中醫稱肝為將軍之官，主謀慮，掌人體氣機之通暢。',
+    function_en: 'Detoxifies blood, regulates emotional flow, supports tendon and eye health. Modern parallel: liver metabolism + emotional regulation systems.',
+    function_zh: '解毒、藏血、調節情緒、養筋明目。對應現代醫學：肝臟代謝與情緒調節系統。',
+    imbalance_en: 'Irritability, frustration, sighing, tight neck and shoulders, menstrual irregularities, dry or bloodshot eyes, waking around 1–3 AM.',
+    imbalance_zh: '易怒、鬱悶、嘆息、頸肩緊繃、月經不調、目乾或紅赤、凌晨1至3點易醒。',
+    seek_care_en: 'Chronic irritability or low mood, persistent right-side pain, eye problems, menstrual irregularities, or repeatedly waking 1–3 AM.',
+    seek_care_zh: '長期煩躁或情緒低落、右側持續疼痛、目疾、月經不調、或反覆於凌晨1至3點驚醒。'
+  },
+  lung: {
+    zh: '肺', enName: 'Lung', element: 'Metal · 金', window: '03:00 – 05:00', paired: 'Large Intestine · 大腸',
+    theory_en: 'The Lung governs qi and respiration, controls the skin and body hair, and houses the corporeal soul (魄). It is the prime minister of organs — distributing qi throughout the body.',
+    theory_zh: '肺主氣，司呼吸，主皮毛，藏魄。中醫稱肺為相傅之官，朝百脈，輸布氣血津液。',
+    function_en: 'Gas exchange, oxygenation, immune defence at the body surface. Modern parallel: respiratory + skin barrier + frontline immunity.',
+    function_zh: '氣體交換、供氧、體表免疫防護。對應現代醫學：呼吸系統、皮膚屏障、第一線免疫。',
+    imbalance_en: 'Shortness of breath, weak voice, frequent colds, dry or sensitive skin, grief or melancholy that lingers, waking around 3–5 AM.',
+    imbalance_zh: '氣短、聲音低弱、易感冒、皮膚乾燥或敏感、悲憂難解、凌晨3至5點易醒。',
+    seek_care_en: 'Chronic cough, persistent shortness of breath, recurring respiratory infections, unresolved grief affecting wellbeing, or skin conditions that won\'t settle.',
+    seek_care_zh: '慢性咳嗽、持續氣短、反覆呼吸道感染、長期悲傷影響身心、或久治不癒之皮膚問題。'
+  },
+  large_intestine: {
+    zh: '大腸', enName: 'Large Intestine', element: 'Metal · 金', window: '05:00 – 07:00', paired: 'Lung · 肺',
+    theory_en: 'The Large Intestine governs the elimination of waste — both physical and metaphorical. In TCM theory, it also supports the ability to "let go" emotionally.',
+    theory_zh: '大腸主傳導，將廢物排出體外。中醫認為亦助於情志的「放下」與更新。',
+    function_en: 'Reabsorbs water and forms stool. Modern parallel: colon function, microbiome health, regular elimination.',
+    function_zh: '吸收水分、形成糞便。對應現代醫學：大腸功能、腸道菌群、規律排便。',
+    imbalance_en: 'Constipation or loose stools, bloating, difficulty letting go of past hurts, abdominal cramping, skin breakouts (TCM links skin to large intestine).',
+    imbalance_zh: '便秘或便溏、腹脹、難以放下舊事、腹部絞痛、皮膚痘瘡（中醫認為肺與大腸相表裡，影響皮膚）。',
+    seek_care_en: 'Chronic constipation or diarrhoea, blood in stool, persistent abdominal pain, or recurring skin issues alongside digestive problems.',
+    seek_care_zh: '長期便秘或腹瀉、便血、持續腹痛、或皮膚問題與消化問題並存反覆發作。'
+  },
+  stomach: {
+    zh: '胃', enName: 'Stomach', element: 'Earth · 土', window: '07:00 – 09:00', paired: 'Spleen · 脾',
+    theory_en: 'The Stomach is the "sea of grain and water" — receiving food and beginning digestion. It works in close partnership with the Spleen as the centre of post-natal qi.',
+    theory_zh: '胃為水穀之海，主受納腐熟。與脾相表裡，共為後天之本。',
+    function_en: 'Mechanical and chemical breakdown of food. Modern parallel: gastric digestion, acid production, gastric emptying.',
+    function_zh: '對食物進行機械與化學的初步消化。對應現代醫學：胃部消化、胃酸分泌、胃排空。',
+    imbalance_en: 'Acid reflux, bad breath, hunger pangs without appetite, mouth ulcers, bloating after meals, irregular eating disrupting the 7–9 AM window.',
+    imbalance_zh: '胃酸逆流、口臭、飢而不欲食、口瘡、餐後腹脹、不按時進餐影響晨間7至9點吸收。',
+    seek_care_en: 'Persistent reflux, recurring mouth ulcers, unexplained weight loss, blood in vomit or stool, or chronic loss of appetite.',
+    seek_care_zh: '持續胃酸逆流、反覆口瘡、不明原因消瘦、嘔吐物或糞便帶血、或長期食慾不振。'
+  },
+  spleen: {
+    zh: '脾', enName: 'Spleen', element: 'Earth · 土', window: '09:00 – 11:00', paired: 'Stomach · 胃',
+    theory_en: 'The Spleen governs transformation and transport — turning food into qi and blood. It also "holds" the blood in vessels and supports the muscles and limbs.',
+    theory_zh: '脾主運化，化生氣血，統血，主肌肉四肢。為氣血生化之源。',
+    function_en: 'In TCM the "spleen" is closer to the modern understanding of pancreas + small intestine + lymphatic absorption, not just the anatomical spleen organ.',
+    function_zh: '中醫所稱「脾」涵蓋現代醫學的胰臟、小腸、淋巴吸收等多個系統，並非僅指脾臟本身。',
+    imbalance_en: 'Fatigue (especially after meals), poor appetite, loose stools, easy bruising, heavy or foggy thinking, swollen tongue with teeth marks.',
+    imbalance_zh: '疲倦（餐後尤甚）、食慾不振、便溏、易瘀青、頭重思緒不清、舌胖有齒痕。',
+    seek_care_en: 'Chronic fatigue with digestive symptoms, unexplained bruising, persistent loose stools, or significant appetite loss affecting nutrition.',
+    seek_care_zh: '慢性疲勞伴消化不良、不明原因瘀青、持續便溏、或食慾顯著下降影響營養。'
+  },
+  heart: {
+    zh: '心', enName: 'Heart', element: 'Fire · 火', window: '11:00 – 13:00', paired: 'Small Intestine · 小腸',
+    theory_en: 'The Heart governs blood and houses the spirit (神). It is the emperor of organs — when the Heart is settled, all other organs follow in harmony.',
+    theory_zh: '心主血脈，藏神。中醫稱心為君主之官，心定則五臟和。',
+    function_en: 'Pumps blood throughout the body. Modern parallel: cardiovascular function + the broader nervous-system seat of consciousness and emotional clarity.',
+    function_zh: '推動血液循環全身。對應現代醫學：心血管功能、以及神經系統所主之意識與情志清明。',
+    imbalance_en: 'Palpitations, anxiety, insomnia (especially difficulty falling asleep), tongue tip redness, vivid or disturbing dreams, easily startled.',
+    imbalance_zh: '心悸、焦慮、入睡困難、舌尖紅赤、多夢易驚、稍受刺激即受驚。',
+    seek_care_en: 'Persistent chest pain or palpitations, severe insomnia, sudden anxiety attacks, or any cardiovascular symptom — please also see a Western doctor for any chest symptom.',
+    seek_care_zh: '持續胸悶心悸、嚴重失眠、突發焦慮、或任何心血管症狀 —— 任何胸部症狀亦請同時就診西醫。'
+  },
+  small_intestine: {
+    zh: '小腸', enName: 'Small Intestine', element: 'Fire · 火', window: '13:00 – 15:00', paired: 'Heart · 心',
+    theory_en: 'The Small Intestine separates the pure from the impure — clear nutrients ascend to nourish, turbid waste descends. It also helps the mind discern what to keep and what to release.',
+    theory_zh: '小腸主分清泌濁 —— 清者上升以養身，濁者下降以排出。亦助心神辨明取捨。',
+    function_en: 'Major site of nutrient absorption. Modern parallel: small bowel absorption, microbiome diversity in the upper intestine.',
+    function_zh: '主要吸收養分之處。對應現代醫學：小腸吸收、上段腸道菌群多樣性。',
+    imbalance_en: 'Lower abdominal discomfort after lunch, difficulty discerning priorities, urinary symptoms (TCM links small intestine and bladder), painful or scant urination.',
+    imbalance_zh: '午餐後下腹不適、難以判斷輕重緩急、小便異常（中醫認為小腸與膀胱相關）、小便短赤或刺痛。',
+    seek_care_en: 'Chronic lower abdominal pain, persistent malabsorption symptoms (weight loss, nutritional deficiency), or recurring urinary tract symptoms.',
+    seek_care_zh: '慢性下腹疼痛、持續吸收不良（體重下降、營養缺乏）、或反覆泌尿道症狀。'
+  },
+  bladder: {
+    zh: '膀胱', enName: 'Bladder', element: 'Water · 水', window: '15:00 – 17:00', paired: 'Kidney · 腎',
+    theory_en: 'The Bladder stores and releases water. The Bladder meridian is the longest in the body, running from the head down the back to the feet — it carries the body\'s defensive qi along the spine.',
+    theory_zh: '膀胱主藏津液。足太陽膀胱經為人體最長之經，自頭沿背走足，行衛氣於背部。',
+    function_en: 'Stores urine until release. Modern parallel: urinary bladder function plus the broader autonomic regulation along the spine.',
+    function_zh: '儲存與排放尿液。對應現代醫學：膀胱功能、以及沿脊柱之自主神經調節。',
+    imbalance_en: 'Frequent or scant urination, urinary urgency, lower back pain, neck and shoulder tension along the bladder meridian, late-afternoon energy slump.',
+    imbalance_zh: '小便頻數或短少、尿急、腰痛、頸肩沿膀胱經緊繃、午後體力下降。',
+    seek_care_en: 'Persistent urinary frequency or urgency, blood in urine, recurring back or neck pain, or unexplained late-afternoon fatigue affecting daily life.',
+    seek_care_zh: '持續尿頻或尿急、尿血、反覆腰頸疼痛、或不明原因午後疲憊影響生活。'
+  },
+  kidney: {
+    zh: '腎', enName: 'Kidney', element: 'Water · 水', window: '17:00 – 19:00', paired: 'Bladder · 膀胱',
+    theory_en: 'The Kidney stores Essence (精) — the foundation of constitution, growth, reproduction, and longevity. In TCM, the Kidney is "the root of pre-natal qi" — what your parents gave you.',
+    theory_zh: '腎藏精，主生殖、生長、發育、壽命。腎為先天之本 —— 來自父母之根本能量。',
+    function_en: 'Filters blood, regulates fluid balance, governs the adrenal-reproductive axis. Modern parallel: renal function plus endocrine systems including adrenal and gonadal hormones.',
+    function_zh: '過濾血液、調節水液、主導腎上腺與生殖軸。對應現代醫學：腎臟功能、腎上腺與性腺內分泌。',
+    imbalance_en: 'Low back pain, weak knees, ringing in the ears, hair loss or premature greying, low libido, fearfulness, dark circles under the eyes.',
+    imbalance_zh: '腰痠膝軟、耳鳴、脫髮或早白、性欲低下、易恐懼、目下黑暈。',
+    seek_care_en: 'Persistent lower back or knee pain, swelling in legs/feet, changes in urination, hearing problems, or fertility/hormonal concerns.',
+    seek_care_zh: '持續腰膝疼痛、下肢水腫、小便異常、聽力問題、或生殖與荷爾蒙相關之困擾。'
+  },
+  pericardium: {
+    zh: '心包', enName: 'Pericardium', element: 'Fire · 火', window: '19:00 – 21:00', paired: 'Triple Warmer · 三焦',
+    theory_en: 'The Pericardium is the Heart\'s protector — it shields the emperor (Heart) from external pathogens and emotional shock. It governs the warmth of intimate connection.',
+    theory_zh: '心包為心之外衛，代心受邪。中醫稱之為臣使之官，主喜樂、人際溫情之傳達。',
+    function_en: 'Anatomically the membrane around the heart. In TCM, also the seat of emotional warmth and intimate connection — chest tightness from heartbreak lives here.',
+    function_zh: '解剖上為心臟外膜。中醫認為亦主情感溫度與親密連結 —— 失戀之胸悶即與心包相關。',
+    imbalance_en: 'Chest tightness, palpitations linked to emotional stress, difficulty in close relationships, evening anxiety, hot palms.',
+    imbalance_zh: '胸悶、情緒壓力引發之心悸、人際親密困難、晚間焦慮、手心發熱。',
+    seek_care_en: 'Persistent chest tightness, panic attacks at night, palpitations linked to emotional triggers, or chronic difficulty in close relationships affecting wellbeing.',
+    seek_care_zh: '持續胸悶、夜間恐慌發作、情緒觸發之心悸、或親密關係困擾長期影響身心。'
+  },
+  triple_warmer: {
+    zh: '三焦', enName: 'Triple Warmer', element: 'Fire · 火', window: '21:00 – 23:00', paired: 'Pericardium · 心包',
+    theory_en: 'The Triple Warmer (San Jiao) is the unique TCM organ with no Western anatomical equivalent. It coordinates the upper, middle, and lower body cavities — governing fluid metabolism, temperature regulation, and overall qi flow.',
+    theory_zh: '三焦為中醫特有之腑，無西醫對應實體。統管上中下三焦，主水液代謝、體溫調節、氣機通暢。',
+    function_en: 'A "functional system" rather than a single organ — coordinates how qi and fluids move between body cavities. Modern parallel: lymphatic system + autonomic temperature regulation + interstitial fluid network.',
+    function_zh: '功能性系統，非單一臟器 —— 協調氣血津液在三焦間流動。對應現代醫學：淋巴系統、體溫自主調節、組織間液網絡。',
+    imbalance_en: 'Difficulty regulating temperature (always hot or always cold), edema, metabolic sluggishness, evening restlessness, trouble winding down for sleep.',
+    imbalance_zh: '體溫調節失常（常熱或常冷）、水腫、代謝遲緩、晚間躁動、難以放鬆入睡。',
+    seek_care_en: 'Persistent edema, severe temperature dysregulation, chronic insomnia in the 9–11 PM window, or metabolic concerns alongside fluid retention.',
+    seek_care_zh: '持續水腫、嚴重體溫失調、晚間9至11點長期失眠、或代謝問題伴水液滯留。'
+  }
+};
+
+/* Re-apply click eligibility after every drawClock pass. The SVG is
+   wiped each render, so listeners + classes must be re-attached. */
+function syncOrganClockInteractivity() {
+  var section = document.querySelector('.organ-clock-section');
+  if (!section) return;
+  var exploreAll = !!(document.getElementById('organ-explore-all') || {}).checked;
+  section.classList.toggle('is-explore-all', exploreAll);
+
+  var now = new Date();
+  var ai = hmGetOrgan(now.getHours());
+  var activeKey = (CLOCK_ORGANS[ai] || {}).key;
+
+  section.querySelectorAll('.clock-organ-wedge').forEach(function (w) {
+    var key = w.getAttribute('data-organ');
+    var canClick = exploreAll || key === activeKey;
+    w.classList.toggle('is-clickable', canClick);
+    w.classList.toggle('is-locked', !canClick);
+    // Replace any prior listener cleanly by cloning the element —
+    // SVG paths don't have removeEventListener-friendly state for
+    // anonymous handlers and we re-render the SVG from scratch
+    // every drawClock pass anyway, so wholesale replacement is the
+    // simplest reliable wiring strategy.
+    if (canClick) {
+      w.style.pointerEvents = 'auto';
+      w.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        if (typeof openOrganDetailModal === 'function') openOrganDetailModal(key);
+      });
+    } else {
+      w.style.pointerEvents = 'none';
+    }
+  });
+}
+
+/* Modal renderer for any organ key in ORGAN_EDU. */
+function openOrganDetailModal(key) {
+  var data = ORGAN_EDU[key];
+  var backdrop = document.getElementById('organ-modal-backdrop');
+  var content  = document.getElementById('organ-modal-content');
+  if (!data || !backdrop || !content) return;
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // The CTA label and href both encode the organ context so the
+  // booking flow can pre-select a matching concern chip — same
+  // pattern as the existing hm-book-cta inline handling.
+  var organForCta = (CLOCK_ORGANS.filter(function (o) { return o.key === key; })[0] || {});
+  var ctaHref = '../v2/portal.html#/book?element=' + encodeURIComponent((data.element || '').split(' ')[0]) +
+                '&organ=' + encodeURIComponent(data.enName);
+
+  content.innerHTML =
+    '<div class="organ-modal-zh">' + esc(data.zh) + '</div>' +
+    '<h3 class="organ-modal-name">' +
+      '<span lang="en">' + esc(data.enName) + '</span>' +
+      '<span lang="zh">' + esc(data.zh) + '</span>' +
+    '</h3>' +
+    '<div class="organ-modal-pills">' +
+      '<div class="organ-modal-pill"><span class="opl">Element · 元素</span><span class="opv">' + esc(data.element) + '</span></div>' +
+      '<div class="organ-modal-pill"><span class="opl">Peak window · 當令</span><span class="opv">' + esc(data.window) + '</span></div>' +
+      '<div class="organ-modal-pill"><span class="opl">Paired · 表裡</span><span class="opv">' + esc(data.paired) + '</span></div>' +
+    '</div>' +
+    '<div class="organ-modal-section">' +
+      '<h4><span lang="en">TCM theory</span><span lang="zh">中醫理論</span></h4>' +
+      '<p><span lang="en">' + esc(data.theory_en) + '</span><span lang="zh">' + esc(data.theory_zh) + '</span></p>' +
+    '</div>' +
+    '<div class="organ-modal-section">' +
+      '<h4><span lang="en">Function</span><span lang="zh">功能</span></h4>' +
+      '<p><span lang="en">' + esc(data.function_en) + '</span><span lang="zh">' + esc(data.function_zh) + '</span></p>' +
+    '</div>' +
+    '<div class="organ-modal-section">' +
+      '<h4><span lang="en">When out of balance</span><span lang="zh">失調時</span></h4>' +
+      '<p><span lang="en">' + esc(data.imbalance_en) + '</span><span lang="zh">' + esc(data.imbalance_zh) + '</span></p>' +
+    '</div>' +
+    '<div class="organ-modal-section">' +
+      '<h4><span lang="en">When to seek care</span><span lang="zh">何時就診</span></h4>' +
+      '<p><span lang="en">' + esc(data.seek_care_en) + '</span><span lang="zh">' + esc(data.seek_care_zh) + '</span></p>' +
+    '</div>' +
+    '<div class="organ-modal-cta">' +
+      '<a class="btn-v4 btn-dark" href="' + ctaHref + '">' +
+        '<span lang="en">Book a ' + esc(data.enName) + '-window consult →</span>' +
+        '<span lang="zh">預約「' + esc(data.zh) + '」時段問診 →</span>' +
+      '</a>' +
+    '</div>' +
+    '<p class="organ-modal-disclaimer">' +
+      '<span lang="en">Educational content. Not a medical diagnosis.</span>' +
+      '<span lang="zh">教育內容，並非醫療診斷。</span>' +
+    '</p>';
+
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+(function wireOrganModal() {
+  var backdrop = document.getElementById('organ-modal-backdrop');
+  if (!backdrop) return;
+  var closeBtn = backdrop.querySelector('.organ-modal-close');
+  function close() {
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && backdrop.classList.contains('open')) close();
+  });
+
+  // Toggle wires once on load — drawAllClocks calls
+  // syncOrganClockInteractivity to re-apply state every render.
+  var toggle = document.getElementById('organ-explore-all');
+  var hint   = document.getElementById('organ-explore-hint');
+  if (toggle) {
+    toggle.addEventListener('change', function () {
+      if (hint) {
+        hint.innerHTML = toggle.checked
+          ? '<span lang="en">(all organs unlocked)</span><span lang="zh">（所有臟腑已解鎖）</span>'
+          : '<span lang="en">(default: only the active organ is clickable)</span><span lang="zh">（預設：只可點擊正在當令的臟腑）</span>';
+      }
+      syncOrganClockInteractivity();
+    });
+  }
+})();
+
 
 /* ══════════════ INK-BRUSH SCROLL REVEALS ══════════════ */
 (function initInkBrush() {
