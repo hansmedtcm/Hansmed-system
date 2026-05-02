@@ -304,14 +304,19 @@ body.landing-v4 .tongue-widget          { padding: clamp(40px, 6vw, 80px) max(1.
   pointer-events: none;
 }
 .ink-divider img {
-  max-width: 320px;
-  width: 60%;
+  max-width: 280px;
+  width: 50%;
   height: auto;
-  opacity: 0.25;
-  filter: grayscale(100%) brightness(0.4);
+  /* Original ink stroke is a strong dark mark — at high opacity it
+     reads as a heavy black band. Drop opacity hard and use brightness
+     >1 to wash the ink out to a soft gray hint, not a hard line.
+     Goal: subtle visual punctuation, not a divider bar that grabs
+     the eye away from the photography. */
+  opacity: 0.10;
+  filter: grayscale(100%) brightness(1.4);
   display: block;
 }
 @media (max-width: 768px) {
-  .ink-divider { height: 40px; }
-  .ink-divider img { max-width: 220px; width: 70%; opacity: 0.20; }
+  .ink-divider { height: 32px; }
+  .ink-divider img { max-width: 180px; width: 55%; opacity: 0.07; }
 }

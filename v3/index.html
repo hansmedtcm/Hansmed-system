@@ -464,11 +464,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
             <path d="M 110 35 L 110 285"
                   stroke="#9E5E5E" stroke-width="1.5" fill="none" opacity="0.35" stroke-dasharray="4 6"/>
             <!-- Zone overlays — invisible by default, hover/click highlights -->
-            <!-- Tip (Heart/Lung) -->
-            <ellipse class="tongue-zone" data-zone="tip" cx="110" cy="40" rx="38" ry="22"
-                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
-            <!-- Front-center (Lung) -->
-            <ellipse class="tongue-zone" data-zone="front" cx="110" cy="90" rx="32" ry="22"
+            <!-- Tongue is drawn root-up, tip-down (anatomically: wider base
+                 at top where tongue attaches in mouth, pointed tip at bottom
+                 where it sticks out). Zone labels match this orientation. -->
+            <!-- Root (Kidney/Bladder/Intestines) — top of SVG = back of mouth -->
+            <ellipse class="tongue-zone" data-zone="root" cx="110" cy="40" rx="38" ry="22"
                      fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
             <!-- Left side mid (Liver) -->
             <ellipse class="tongue-zone" data-zone="left-side" cx="60" cy="155" rx="22" ry="50"
@@ -479,8 +479,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
             <!-- Mid-center (Stomach/Spleen) -->
             <ellipse class="tongue-zone" data-zone="center" cx="110" cy="160" rx="32" ry="50"
                      fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
-            <!-- Root (Kidney/Bladder/Intestines) -->
-            <ellipse class="tongue-zone" data-zone="root" cx="110" cy="265" rx="50" ry="32"
+            <!-- Front-center (Lung) — moved to between center and tip after
+                 tip/root swap so anatomy stays correct (Lung sits just behind tip) -->
+            <ellipse class="tongue-zone" data-zone="front" cx="110" cy="220" rx="32" ry="22"
+                     fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
+            <!-- Tip (Heart/Lung) — bottom of SVG = front of mouth, pointed -->
+            <ellipse class="tongue-zone" data-zone="tip" cx="110" cy="270" rx="42" ry="20"
                      fill="rgba(181,136,26,0)" stroke="rgba(181,136,26,0)" stroke-width="2" style="cursor:pointer;"/>
           </svg>
         </div>
@@ -2435,7 +2439,11 @@ function openOrganDetailModal(key) {
   function start() {
     if (typeof Lenis === 'undefined') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if ('ontouchstart' in window && window.matchMedia('(max-width: 768px)').matches) return;
+    // Bug-fix 2026-05-03: previous guard used AND between touch-device
+    // and small-viewport, so large phones/tablets in landscape still
+    // ran Lenis and lagged badly. Switch to OR — any touch device OR
+    // any small viewport gets native scroll. Lenis is desktop-mouse only.
+    if ('ontouchstart' in window || window.matchMedia('(max-width: 1024px)').matches) return;
     var lenis = new Lenis({
       duration: 1.05,
       easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
@@ -2480,7 +2488,10 @@ function openOrganDetailModal(key) {
 <script>
 (function () {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (window.matchMedia('(max-width: 768px)').matches) return;
+  // Bug-fix 2026-05-03: also disable parallax on any touch device,
+  // not just narrow viewport. Touch + scroll-driven background
+  // position updates is the worst-case lag combo.
+  if ('ontouchstart' in window || window.matchMedia('(max-width: 1024px)').matches) return;
   var hero = document.querySelector('.hero-v3');
   if (!hero) return;
   var ticking = false;
