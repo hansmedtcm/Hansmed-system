@@ -653,6 +653,292 @@ body.landing-v4 #about-trigger,
 body.landing-v4 #about-wrap,
 #about-wrap { display: inline-block; vertical-align: middle; }
 
+/* ── Brief #4 homepage refactor ─────────────────────────────────
+   Hero is now centered + brand-spine-led. The TCM Organ Clock has
+   moved to its own section right below; .hero-v4--story overrides
+   the original two-column hero-grid layout. New sections (brand
+   story, how-it-works, practitioners placeholder, patient stories
+   placeholder) all reuse existing tokens and the .card-v4 chrome. */
+
+body.landing-v4 .hero-v4--story{
+  min-height:auto;
+  padding:96px max(1.5rem,calc(50% - 540px)) 88px;
+  display:block;          /* override flex from base .hero-v4 */
+}
+body.landing-v4 .hero-story{
+  max-width:880px;
+  margin:0 auto;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+body.landing-v4 .hero-story .eyebrow{
+  display:inline-flex;
+  margin-bottom:24px;
+}
+body.landing-v4 .hero-spine{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(34px,5.2vw,58px);
+  color:var(--v4-ink);
+  font-weight:400;
+  line-height:1.32;
+  letter-spacing:0.04em;
+  margin:0 0 18px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+body.landing-v4 .hero-spine span{display:block;}
+body.landing-v4 .hero-spine--en{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(22px,2.4vw,30px);
+  color:var(--v4-mu);
+  font-weight:300;
+  line-height:1.4;
+  letter-spacing:-0.005em;
+  font-style:italic;
+  margin-bottom:32px;
+  gap:2px;
+}
+body.landing-v4 .hero-sub-story{
+  font-family:'DM Sans',sans-serif;
+  font-size:16px;
+  color:var(--v4-mu);
+  font-weight:300;
+  line-height:1.7;
+  max-width:620px;
+  margin:0 auto 38px;
+}
+body.landing-v4 .hero-sub-story span{display:block;}
+body.landing-v4 .hero-sub-story span[lang="zh"]{
+  font-family:'Noto Serif SC',serif;
+  font-size:14px;
+  margin-top:6px;
+}
+body.landing-v4 .hero-ctas-story{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+body.landing-v4 .hero-cta-primary{
+  padding:16px 32px;
+  font-size:14px;
+  font-weight:500;
+  letter-spacing:0.06em;
+}
+body.landing-v4 .hero-cta-secondary{
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  color:var(--v4-wd-md);
+  text-decoration:none;
+  border-bottom:1px solid var(--v4-bdr-l);
+  padding-bottom:2px;
+  transition:color .2s, border-color .2s;
+}
+body.landing-v4 .hero-cta-secondary:hover{
+  color:var(--v4-ink);
+  border-color:var(--v4-go);
+}
+
+/* Brand story — single centered column, founder voice. */
+body.landing-v4 .brand-story{
+  padding-top:88px;
+  padding-bottom:88px;
+}
+body.landing-v4 .brand-story-inner{
+  max-width:740px;
+  margin:0 auto;
+  text-align:center;
+}
+body.landing-v4 .brand-story-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(28px,3.8vw,44px);
+  color:var(--v4-ink);
+  font-weight:400;
+  letter-spacing:-0.02em;
+  margin:0 0 28px;
+}
+body.landing-v4 .brand-story-h em{font-style:italic;color:var(--v4-wd-md);}
+body.landing-v4 .brand-story-h span[lang="zh"]{
+  display:block;
+  font-family:'Noto Serif SC',serif;
+  font-size:0.7em;
+  color:var(--v4-wd-md);
+  margin-top:6px;
+  font-weight:400;
+  letter-spacing:0.02em;
+}
+body.landing-v4 .brand-story-body p{
+  font-family:'DM Sans',sans-serif;
+  font-size:16px;
+  color:var(--v4-mu);
+  line-height:1.85;
+  font-weight:300;
+  margin:0 0 18px;
+}
+body.landing-v4 .brand-story-body p[lang="zh"]{
+  font-family:'Noto Serif SC',serif;
+  font-size:15px;
+  letter-spacing:0.01em;
+}
+
+/* How it works — 3-step cards with subtle step numbers. Reuses
+   .card-v4 chrome so it visually belongs to the services grid. */
+body.landing-v4 .how-it-works{margin-top:24px;}
+body.landing-v4 .hiw-card{position:relative;}
+body.landing-v4 .hiw-step{
+  position:absolute;
+  top:18px;
+  right:22px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:300;
+  color:var(--v4-bdr-l);
+  letter-spacing:-0.02em;
+  line-height:1;
+}
+
+/* Practitioners — trust line + 3 placeholder cards + email line. */
+body.landing-v4 .practitioners-trust{
+  max-width:680px;
+  margin:0 auto;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  line-height:1.75;
+  color:var(--v4-mu);
+  font-weight:300;
+}
+body.landing-v4 .practitioners-trust span[lang="zh"]{
+  display:block;
+  font-family:'Noto Serif SC',serif;
+  margin-top:6px;
+  font-size:13px;
+}
+body.landing-v4 .practitioners-grid{margin-top:36px;}
+body.landing-v4 .practitioner-card{
+  background:#fff;
+  border:1px solid var(--v4-bdr-l);
+  border-radius:14px;
+  padding:42px 24px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  opacity:0.78;
+  transition:opacity .2s;
+}
+body.landing-v4 .practitioner-card:hover{opacity:1;}
+body.landing-v4 .practitioner-seal{
+  width:64px;
+  height:64px;
+  font-size:24px;
+  margin-bottom:6px;
+}
+body.landing-v4 .practitioner-line{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;
+  color:var(--v4-ink);
+  font-weight:500;
+}
+body.landing-v4 .practitioner-line span[lang="zh"]{
+  display:block;
+  font-family:'Noto Serif SC',serif;
+  font-size:13px;
+  color:var(--v4-mu);
+  margin-top:2px;
+}
+body.landing-v4 .practitioner-soon{
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  color:var(--v4-bdr);
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+body.landing-v4 .practitioner-soon span[lang="zh"]{
+  font-family:'Noto Serif SC',serif;
+  text-transform:none;
+  letter-spacing:0.04em;
+}
+body.landing-v4 .practitioners-email{
+  max-width:680px;
+  margin:36px auto 0;
+  text-align:center;
+  font-size:13px;
+  color:var(--v4-mu);
+  font-weight:300;
+  line-height:1.7;
+}
+body.landing-v4 .practitioners-email a{
+  color:var(--v4-wd-md);
+  text-decoration:underline;
+  text-decoration-color:var(--v4-bdr-l);
+}
+body.landing-v4 .practitioners-email span[lang="zh"]{
+  display:block;
+  font-family:'Noto Serif SC',serif;
+  margin-top:8px;
+  font-size:12px;
+}
+
+/* Patient stories placeholder — quiet, intentional, single column. */
+body.landing-v4 .patient-stories{
+  padding-top:80px;
+  padding-bottom:80px;
+}
+body.landing-v4 .patient-stories-inner{
+  max-width:680px;
+  margin:0 auto;
+  text-align:center;
+  background:var(--v4-bg-3);
+  border:1px solid var(--v4-bdr-l);
+  border-radius:18px;
+  padding:48px 36px;
+}
+body.landing-v4 .patient-stories-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(24px,3.4vw,36px);
+  color:var(--v4-ink);
+  font-weight:400;
+  margin:0 0 22px;
+  letter-spacing:-0.02em;
+}
+body.landing-v4 .patient-stories-h em{font-style:italic;color:var(--v4-wd-md);}
+body.landing-v4 .patient-stories-h span[lang="zh"]{
+  display:block;
+  font-family:'Noto Serif SC',serif;
+  font-size:0.7em;
+  margin-top:6px;
+  color:var(--v4-wd-md);
+}
+body.landing-v4 .patient-stories-body{
+  font-size:14px;
+  color:var(--v4-mu);
+  font-weight:300;
+  line-height:1.85;
+  font-style:italic;
+  margin:0;
+}
+body.landing-v4 .patient-stories-body span[lang="zh"]{
+  display:block;
+  font-family:'Noto Serif SC',serif;
+  margin-top:10px;
+  font-style:normal;
+  font-size:13px;
+}
+
+/* Mobile breakpoint — stacks cleanly under 640px. */
+@media (max-width:640px){
+  body.landing-v4 .hero-v4--story{padding:64px 20px 56px;}
+  body.landing-v4 .hero-spine{font-size:clamp(28px,8vw,40px);letter-spacing:0.02em;}
+  body.landing-v4 .hero-spine--en{font-size:clamp(18px,5vw,22px);}
+  body.landing-v4 .brand-story{padding-top:60px;padding-bottom:60px;}
+  body.landing-v4 .practitioner-card{padding:32px 20px;}
+  body.landing-v4 .patient-stories-inner{padding:36px 22px;}
+  body.landing-v4 .hiw-step{font-size:32px;top:14px;right:16px;}
+}
+
 /* ── Two-state shop CTA ─────────────────────────────────────────
    Used by [data-home-shop-cta] wrappers on index.html and
    services.html (and any future landing page) to flip between a

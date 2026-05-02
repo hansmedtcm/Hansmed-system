@@ -143,28 +143,60 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <!-- ══════════════ HOME ══════════════ -->
 <main id="main">
 
-<!-- Hero -->
-<section class="hero-v4">
+<!-- Hero — Brief #4 refactor. Brand spine as headline (3 Chinese
+     lines treated typographically with reverence), bilingual subhead,
+     primary CTA to wellness assessment, secondary text link to book.
+     Generous whitespace and centered framing — softens the prior
+     two-column-with-clock layout. The TCM Organ Clock is preserved
+     in its own dedicated section immediately below this hero so no
+     existing functionality is lost. -->
+<section class="hero-v4 hero-v4--story">
   <div class="hero-bg"></div>
-  <div class="hero-grid">
-    <div class="hero-left">
-      <h1 lang="en">Traditional<br/>wisdom.<br/><em>Modern care.</em></h1>
-      <h1 lang="zh" style="font-family:'Noto Serif SC',serif;">傳統智慧。<br/><em style="font-family:'Noto Serif SC',serif;font-weight:400;">現代中醫。</em></h1>
-      <div class="hero-zh" lang="en">傳統智慧 · 現代中醫</div>
-      <p class="hero-sub" lang="en">Licensed TCM practitioners, AI-assisted wellness insights, and quality herbs — all in one platform, built for Malaysia.</p>
-      <p class="hero-sub" lang="zh">持牌中醫師、AI 健康分析與優質中藥 — 一站式平台，專為馬來西亞而建。</p>
-      <div class="hero-ctas">
-        <button class="btn-v4 btn-dark" onclick="go('book')"><span lang="en">Book Appointment</span><span lang="zh">預約問診</span></button>
-        <button class="btn-v4 btn-outline-cream" onclick="go('register')"><span lang="en">Create Account</span><span lang="zh">建立帳號</span></button>
-        <a class="btn-v4 btn-wa" id="hm-wa-hero" target="_blank" rel="noopener" href="https://wa.me/601165600393">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-          WhatsApp Us
-        </a>
-      </div>
+  <div class="hero-story">
+    <div class="eyebrow" style="margin-bottom:24px;">
+      <span lang="en">HansMed Modern TCM</span>
+      <span lang="zh">汉方现代中医</span>
     </div>
-    <div class="hero-right">
-      <!-- Live TCM Organ Clock — borderless, floats in hero -->
-      <div style="width:min(420px,44vw);display:flex;flex-direction:column;gap:0;">
+    <h1 class="hero-spine" lang="zh">
+      <span>现代化的科技平台</span>
+      <span>传统式的中医智慧</span>
+      <span>现代与传统不再有代沟</span>
+    </h1>
+    <h1 class="hero-spine hero-spine--en" lang="en">
+      <span>A modern technology platform</span>
+      <span>built on traditional TCM wisdom</span>
+      <span>so the old way and the new way meet</span>
+    </h1>
+    <p class="hero-sub-story">
+      <span lang="en">Modern technology, traditional wisdom — TCM that fits the way you live now.</span>
+      <span lang="zh">现代科技、传统智慧 —— 适合您现在生活节奏的中医照护。</span>
+    </p>
+    <div class="hero-ctas-story">
+      <button class="btn-v4 btn-dark hero-cta-primary" onclick="go('wellness')">
+        <span lang="en">Try the Wellness Assessment · Free, 5 min</span>
+        <span lang="zh">试一试体质评估 · 免费 5 分钟</span>
+      </button>
+      <a class="hero-cta-secondary" href="portal.html#/book">
+        <span lang="en">Or book a consultation →</span>
+        <span lang="zh">或预约问诊 →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- TCM Organ Clock — preserved from the prior hero-right block as
+     its own section so the live子午流注 functionality stays available
+     after the hero refactor. Same markup, same wiring, just a
+     different containing section. -->
+<section class="sec sec-white" style="padding-top:36px;padding-bottom:36px;">
+  <div class="sh center" style="margin-bottom:18px;">
+    <div class="eyebrow">
+      <span lang="en">Live TCM Organ Clock</span>
+      <span lang="zh">子午流注 · 当令时段</span>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;">
+    <div style="width:min(420px,90vw);display:flex;flex-direction:column;gap:0;">
         <!-- Clock SVG -->
         <svg id="hero-clk" viewBox="0 0 380 320" width="100%" style="display:block;overflow:visible;" aria-label="Live TCM organ clock"></svg>
         <!-- Info panel -->
@@ -206,7 +238,6 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
       </div>
-    </div>
   </div>
 </section>
 
@@ -219,6 +250,27 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="ti"><div class="ti-n">PDPA</div><div class="ti-l">Data Compliant · 資料保護</div></div>
   </div>
 </div>
+
+<!-- Brand story · 缘起 — founder voice, first-person plural, no
+     marketing claims. Sits between the trust bar and the services
+     grid so a brand-new visitor reads "why HansMed" before "what
+     HansMed sells." -->
+<section class="sec sec-white brand-story">
+  <div class="brand-story-inner">
+    <div class="eyebrow center" style="margin-bottom:18px;">
+      <span lang="en">Our story</span>
+      <span lang="zh">缘起</span>
+    </div>
+    <h2 class="brand-story-h">
+      <span lang="en">Why <em>HansMed</em> exists</span>
+      <span lang="zh">为什么有 <em>汉方</em></span>
+    </h2>
+    <div class="brand-story-body">
+      <p lang="en">We started HansMed because too many people skip seeing a TCM doctor — not because they don't want to, but because life is busy and clinic visits don't fit. We thought: if we can use technology to handle the queueing, the paperwork, the prescription pickup, then our practitioners can focus on what they trained for — listening to you, feeling your pulse, understanding your constitution.</p>
+      <p lang="zh">我们创立汉方，是因为太多人想看中医，却被忙碌的生活拦在门外。我们想：如果科技可以处理排队、文书、取药，那中医师就能专心做他们一辈子在做的事 —— 听您说，把您的脉，了解您的体质。</p>
+    </div>
+  </div>
+</section>
 
 <!-- (The former stand-alone TCM Organ Clock section was removed — the
      clock now lives inside the hero on the right side. Its info-panel
@@ -349,38 +401,74 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
 </section>
 
-<!-- Our Services -->
+<!-- Our Services — Brief #4 reorder: AI Wellness first (the funnel
+     entry-point), Consultations second, Herb Shop third. Copy
+     rewritten in patient-centric voice, bilingual span pattern
+     preserved, all three cards retained. -->
 <section class="sec sec-alt dot-tex">
   <div class="sh center">
-    <div class="eyebrow">Our Services · 我們的服務</div>
-    <h2>Care that <em>fits your life</em></h2>
-    <p>Every consultation is led by a licensed TCM practitioner. AI assists — it never replaces — clinical expertise.</p>
+    <div class="eyebrow">
+      <span lang="en">Our services</span>
+      <span lang="zh">我们的服务</span>
+    </div>
+    <h2>
+      <span lang="en">Care that <em>fits your life</em></span>
+      <span lang="zh">适合您生活节奏的 <em>照护</em></span>
+    </h2>
+    <p>
+      <span lang="en">Every consultation is led by a licensed TCM practitioner. AI assists — it never replaces — clinical expertise.</span>
+      <span lang="zh">每一次问诊皆由持牌中医师主理，AI 仅作辅助，绝不取代医师判断。</span>
+    </p>
   </div>
   <div class="g3">
-    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
-      <div class="card-icon">🩺</div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">TCM Consultations · 問診</h3>
-      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Book in-person or video sessions. Your doctor reviews your case, writes a treatment plan, and can prescribe herbs directly.</p>
-      <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--v4-bdr);margin-bottom:22px;font-weight:300;">持牌中醫師 · 親診或視訊</p>
-      <button class="btn-v4 btn-outline btn-sm" onclick="go('book')">Book now →</button>
-    </div>
+    <!-- Card 1: AI Wellness Assessment (now first — the funnel entry) -->
     <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
       <div class="card-icon">👅</div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">AI Wellness Assessment · AI 健康評估</h3>
-      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Upload a tongue photo or complete a constitution questionnaire. A licensed practitioner reviews every AI report before it reaches you.</p>
-      <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--v4-bdr);margin-bottom:22px;font-weight:300;">AI 體質分析 · 非醫療診斷</p>
-      <button class="btn-v4 btn-outline btn-sm" onclick="go('wellness')">Start assessment →</button>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
+        <span lang="en">AI Wellness Assessment</span>
+        <span lang="zh">AI 体质评估</span>
+      </h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;margin-bottom:6px;font-weight:300;">
+        <span lang="en">Start with a free 5-minute assessment. Upload a tongue photo or answer a short questionnaire — every AI report is reviewed by a licensed practitioner before it reaches you.</span>
+        <span lang="zh">5 分钟免费评估。拍一张舌头照片或回答几道问题 —— 每一份 AI 分析都经持牌中医师审核才呈交给您。</span>
+      </p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--v4-bdr);margin-bottom:22px;font-weight:300;font-style:italic;">AI 体质分析 · 非医疗诊断</p>
+      <button class="btn-v4 btn-outline btn-sm" onclick="go('wellness')">
+        <span lang="en">Start free assessment →</span>
+        <span lang="zh">免费评估 →</span>
+      </button>
     </div>
+    <!-- Card 2: TCM Consultations -->
+    <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
+      <div class="card-icon">🩺</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
+        <span lang="en">TCM Consultations</span>
+        <span lang="zh">中医问诊</span>
+      </h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;margin-bottom:6px;font-weight:300;">
+        <span lang="en">Book a video or in-person session with a licensed TCM practitioner. Your doctor reviews your case, talks through the diagnosis with you, and can issue herbs delivered to your door.</span>
+        <span lang="zh">预约视频或亲诊问诊。您的医师会和您仔细谈过病情，写下治疗方案，并可直接开方，药材送到家门。</span>
+      </p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--v4-bdr);margin-bottom:22px;font-weight:300;">持牌中医师 · 视诊或亲诊</p>
+      <button class="btn-v4 btn-outline btn-sm" onclick="go('book')">
+        <span lang="en">Book a consultation →</span>
+        <span lang="zh">预约问诊 →</span>
+      </button>
+    </div>
+    <!-- Card 3: Herb Shop — keeps the Brief #3 two-state CTA wrapper -->
     <div class="card-v4"><div class="ctr"></div><div class="cbl"></div>
       <div class="card-icon">🌿</div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">Herb Shop · 中藥商店</h3>
-      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Quality single herbs and classical formulas from verified Malaysian suppliers. Prescription-linked orders reviewed by your practitioner.</p>
-      <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--v4-bdr);margin-bottom:22px;font-weight:300;">品質驗證 · 藥師審核</p>
-      <!-- Two-state CTA: live button when shop_enabled, "Coming Soon"
-           placeholder otherwise. public-feature-flags.js flips
-           visibility via [data-home-shop-cta]; pre-paint .shop-disabled
-           class on <html> (set in <head> from localStorage) does the
-           same swap before paint to kill the flash. -->
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
+        <span lang="en">Herb Shop</span>
+        <span lang="zh">中药商店</span>
+      </h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;margin-bottom:6px;font-weight:300;">
+        <span lang="en">Quality single herbs and classical formulas from verified Malaysian suppliers. Prescription-linked orders are double-checked by your practitioner before they ship.</span>
+        <span lang="zh">来自马来西亚验证供应商的优质单味药材与传统药方。处方药材在出货前由您的医师再次确认。</span>
+      </p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--v4-bdr);margin-bottom:22px;font-weight:300;">品质验证 · 药师审核</p>
+      <!-- Two-state CTA from Brief #3 — landing-v4.css .home-shop-cta__*
+           rules + public-feature-flags.js step 1b handle the swap. -->
       <div class="home-shop-cta" data-home-shop-cta>
         <button class="btn-v4 btn-outline btn-sm home-shop-cta__live" onclick="go('shop')">
           <span lang="en">Browse herbs →</span>
@@ -389,10 +477,150 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <span class="btn-v4 btn-outline btn-sm home-shop-cta__soon" hidden aria-disabled="true"
               style="opacity:0.55;cursor:not-allowed;pointer-events:none;">
           <span lang="en">Coming Soon</span>
-          <span lang="zh">即將推出</span>
+          <span lang="zh">即将推出</span>
         </span>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- How it works — Brief #4 new section. For a brand-new visitor
+     who hasn't experienced TCM telemedicine: a 3-step funnel
+     showing what their journey looks like, framed in plain
+     language. Sits between Services and Practitioners so the
+     visitor reads "what we offer → how the journey unfolds → who
+     will be looking after me." -->
+<section class="sec sec-white">
+  <div class="sh center">
+    <div class="eyebrow">
+      <span lang="en">Your first visit</span>
+      <span lang="zh">第一次的体验</span>
+    </div>
+    <h2>
+      <span lang="en">Three steps to <em>start</em></span>
+      <span lang="zh">三步 <em>开始</em></span>
+    </h2>
+  </div>
+  <div class="g3 how-it-works">
+    <div class="card-v4 hiw-card"><div class="ctr"></div><div class="cbl"></div>
+      <div class="hiw-step">01</div>
+      <div class="card-icon">🌿</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
+        <span lang="en">Discover</span>
+        <span lang="zh">了解</span>
+      </h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;font-weight:300;">
+        <span lang="en">Take the free wellness assessment to understand your TCM constitution. No appointment needed.</span>
+        <span lang="zh">先做免费体质评估，了解自己的体质。无需预约。</span>
+      </p>
+    </div>
+    <div class="card-v4 hiw-card"><div class="ctr"></div><div class="cbl"></div>
+      <div class="hiw-step">02</div>
+      <div class="card-icon">🩺</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
+        <span lang="en">Talk</span>
+        <span lang="zh">对话</span>
+      </h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;font-weight:300;">
+        <span lang="en">Book a consultation when you're ready. Your practitioner reviews your assessment with you and answers your questions.</span>
+        <span lang="zh">准备好就预约问诊。您的中医师会和您一起看评估结果、回答您的问题。</span>
+      </p>
+    </div>
+    <div class="card-v4 hiw-card"><div class="ctr"></div><div class="cbl"></div>
+      <div class="hiw-step">03</div>
+      <div class="card-icon">📦</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--v4-ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">
+        <span lang="en">Receive</span>
+        <span lang="zh">调理</span>
+      </h3>
+      <p style="font-size:14px;color:var(--v4-mu);line-height:1.76;font-weight:300;">
+        <span lang="en">If herbs are needed, your prescription is dispensed by our partner pharmacy and delivered. Follow-ups happen on the same platform.</span>
+        <span lang="zh">若需要药材，由我们的合作药房调配并送上门。复诊也在同一平台。</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Our Practitioners — Brief #4 placeholder section. The user
+     does NOT yet have practitioner photos / bios / videos, so this
+     is structural: trust line about T&CM Council registration,
+     three muted "profile coming soon" cards (using the existing
+     .seal style so they look intentional, not broken), and a quiet
+     email line for visitors who want to know more before booking. -->
+<section class="sec sec-alt practitioners">
+  <div class="sh center">
+    <div class="eyebrow">
+      <span lang="en">Our practitioners</span>
+      <span lang="zh">我们的医师</span>
+    </div>
+    <h2>
+      <span lang="en">Licensed. Experienced. <em>Approachable.</em></span>
+      <span lang="zh">持牌 · 经验 · <em>平易近人</em></span>
+    </h2>
+    <p class="practitioners-trust">
+      <span lang="en">Every practitioner on HansMed is registered with the Traditional and Complementary Medicine Council under Malaysia's Ministry of Health (T&amp;CM Act 2016).</span>
+      <span lang="zh">汉方所有中医师皆于马来西亚卫生部传统与辅助医药局注册（T&amp;CM Act 2016）。</span>
+    </p>
+  </div>
+  <div class="g3 practitioners-grid">
+    <div class="practitioner-card">
+      <div class="seal seal-go practitioner-seal">醫</div>
+      <div class="practitioner-line">
+        <span lang="en">Practitioner profile</span>
+        <span lang="zh">医师介绍</span>
+      </div>
+      <div class="practitioner-soon">
+        <span lang="en">Coming soon</span>
+        <span lang="zh">即将推出</span>
+      </div>
+    </div>
+    <div class="practitioner-card">
+      <div class="seal seal-go practitioner-seal">師</div>
+      <div class="practitioner-line">
+        <span lang="en">Practitioner profile</span>
+        <span lang="zh">医师介绍</span>
+      </div>
+      <div class="practitioner-soon">
+        <span lang="en">Coming soon</span>
+        <span lang="zh">即将推出</span>
+      </div>
+    </div>
+    <div class="practitioner-card">
+      <div class="seal seal-go practitioner-seal">仁</div>
+      <div class="practitioner-line">
+        <span lang="en">Practitioner profile</span>
+        <span lang="zh">医师介绍</span>
+      </div>
+      <div class="practitioner-soon">
+        <span lang="en">Coming soon</span>
+        <span lang="zh">即将推出</span>
+      </div>
+    </div>
+  </div>
+  <p class="practitioners-email">
+    <span lang="en">Want to know who you'll be seeing before you book? Email us at <a href="mailto:hansmed.moderntcm@gmail.com">hansmed.moderntcm@gmail.com</a> — we'll match you and share the practitioner's background.</span>
+    <span lang="zh">想在预约前先了解您的中医师？欢迎邮件 <a href="mailto:hansmed.moderntcm@gmail.com">hansmed.moderntcm@gmail.com</a>，我们会为您匹配并介绍。</span>
+  </p>
+</section>
+
+<!-- What patients say — Brief #4 placeholder. Single muted block
+     so the section reads as intentional architecture rather than
+     a broken testimonials grid. Will fill in once early patients
+     opt in. -->
+<section class="sec sec-white patient-stories">
+  <div class="patient-stories-inner">
+    <div class="eyebrow center" style="margin-bottom:14px;">
+      <span lang="en">Patient stories</span>
+      <span lang="zh">患者反馈</span>
+    </div>
+    <h2 class="patient-stories-h">
+      <span lang="en">Real stories, <em>coming soon</em></span>
+      <span lang="zh">真实故事 · <em>即将分享</em></span>
+    </h2>
+    <p class="patient-stories-body">
+      <span lang="en">We're collecting permission from our early patients to share their stories. If HansMed has helped you and you'd like to contribute, please reach out — your words help others find care.</span>
+      <span lang="zh">我们正在征集早期患者的授权，分享他们的故事。如果汉方帮到了您，欢迎联系我们 —— 您的分享会帮助更多人找到合适的照护。</span>
+    </p>
   </div>
 </section>
 
