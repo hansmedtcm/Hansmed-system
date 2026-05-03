@@ -259,15 +259,22 @@ body.landing-v4 .practitioner-card {
 
 /* ════════════ TASK F — Image fade-in on load ═════════════════════ */
 
+/* Bug-fix 2026-05-03: previous spec set opacity:0 by default and
+   waited for the JS load-handler to add .loaded. With lazy-loading,
+   the browser defers the image download until near-viewport — meaning
+   the user could see an EMPTY card (opacity:0 image inside) before
+   the image finished downloading and the fade-in started. Steps 2/3
+   on the homepage were silently invisible after Brief #8 shipped.
+   Default opacity to 1 so images appear naturally as they download.
+   .loaded class is now harmless (kept so old JS handler doesn't
+   throw if anything still references it). No fade-in animation —
+   trade polish for reliability. WebP files are ~50KB and load in
+   under 100ms, so the fade was doing more harm than good. */
 img.fade-in-load {
-  opacity: 0;
-  transition: opacity 0.8s ease;
+  opacity: 1;
 }
 img.fade-in-load.loaded {
   opacity: 1;
-}
-@media (prefers-reduced-motion: reduce) {
-  img.fade-in-load { opacity: 1; transition: none; }
 }
 
 
