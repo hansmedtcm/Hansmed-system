@@ -412,7 +412,14 @@ body.landing-v4 .origin-grid {
   align-items: center;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 max(1.5rem, calc(50% - 540px));
+  /* Bug-fix 2026-05-03: previous padding used calc(50% - 540px)
+     which scales with VIEWPORT width, not container width. On
+     wider screens it consumed ~200px each side INSIDE the already
+     1100px-max container, squeezing the text column to ~180px wide
+     and breaking the heading into one-word-per-line. Use a flat
+     responsive padding instead. */
+  padding: 0 24px;
+  box-sizing: border-box;
 }
 body.landing-v4 .origin-h {
   font-family: 'Cormorant Garamond', serif;
@@ -521,7 +528,9 @@ body.landing-v4 .about-space-inner {
   align-items: center;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 max(1.5rem, calc(50% - 540px));
+  /* Same calc-padding bug fix as .origin-grid above. */
+  padding: 0 24px;
+  box-sizing: border-box;
 }
 body.landing-v4 .about-space-img {
   aspect-ratio: 4 / 3;
