@@ -1151,3 +1151,367 @@ body.landing-v4 .cross-faq-list details p a {
   text-decoration: underline;
   text-decoration-color: var(--v4-bdr-l);
 }
+
+
+/* ════════════ Brief #11 — Practitioners page ══════════════════════
+   Scoped under body.landing-v4. Reuses .hero-v3, .has-rice-bg,
+   .reveal, .fade-in-load, .about-cta from earlier briefs. */
+
+body.landing-v4 .practitioners-hero { min-height: 60vh; }
+
+/* ── Trust + licensing 4-card grid ─────────────────────────────── */
+body.landing-v4 .practitioners-trust {
+  padding: clamp(56px, 7vw, 96px) 24px;
+}
+body.landing-v4 .trust-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+body.landing-v4 .trust-item {
+  background: var(--v4-bg-2);
+  border: 1px solid var(--v4-bdr-l);
+  border-radius: 14px;
+  padding: 32px;
+}
+body.landing-v4 .trust-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--v4-go);
+  margin-bottom: 12px;
+}
+body.landing-v4 .trust-item h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--v4-ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.005em;
+}
+body.landing-v4 .trust-item h3 span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  color: var(--v4-wd-md);
+  margin-top: 4px;
+  font-weight: 400;
+}
+body.landing-v4 .trust-item p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--v4-mu);
+  font-weight: 300;
+  margin: 0;
+}
+body.landing-v4 .trust-item p span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+  margin-top: 8px;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .trust-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Meet our team — placeholder cards ─────────────────────────── */
+body.landing-v4 .practitioners-grid-section {
+  padding: clamp(56px, 7vw, 96px) 24px;
+}
+body.landing-v4 .practitioners-intro {
+  max-width: 680px;
+  margin: 18px auto 0;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.78;
+  color: var(--v4-mu);
+  font-weight: 300;
+}
+body.landing-v4 .practitioners-intro span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  margin-top: 10px;
+}
+body.landing-v4 .practitioners-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+body.landing-v4 .practitioner-card-placeholder {
+  background: var(--v4-bg-2);
+  border: 1px solid var(--v4-bdr-l);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+body.landing-v4 .practitioner-card-placeholder .practitioner-card-img {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--v4-bg-3);
+}
+body.landing-v4 .practitioner-card-placeholder .practitioner-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(35%) brightness(1.02);
+  transition: filter 0.4s ease;
+}
+body.landing-v4 .practitioner-card-placeholder:hover .practitioner-card-img img {
+  filter: grayscale(0%) brightness(1);
+}
+body.landing-v4 .practitioner-card-meta {
+  padding: 22px;
+}
+body.landing-v4 .practitioner-card-tag {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--v4-ink);
+  margin-bottom: 6px;
+}
+body.landing-v4 .practitioner-card-tag span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--v4-wd-md);
+  margin-top: 2px;
+}
+body.landing-v4 .practitioner-card-soon {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--v4-go);
+  font-weight: 500;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .practitioners-card-grid {
+    grid-template-columns: 1fr;
+    max-width: 380px;
+  }
+}
+
+/* ── How we examine you — 四診合參 ──────────────────────────────── */
+body.landing-v4 .practitioners-method {
+  padding: clamp(56px, 7vw, 96px) 24px;
+}
+body.landing-v4 .practitioners-method-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 64px;
+  align-items: start;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+body.landing-v4 .practitioners-method-img {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 16px;
+  position: sticky;
+  top: 96px;
+  background: var(--v4-bg-3);
+}
+body.landing-v4 .practitioners-method-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+body.landing-v4 .practitioners-method-text h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 3.6vw, 38px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--v4-ink);
+  margin: 14px 0 18px;
+}
+body.landing-v4 .practitioners-method-text h2 em { font-style: italic; color: var(--v4-wd-md); }
+body.landing-v4 .practitioners-method-text h2 span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.62em;
+  color: var(--v4-wd-md);
+  margin-top: 6px;
+  font-weight: 400;
+}
+body.landing-v4 .practitioners-method-lead {
+  font-size: 15px;
+  line-height: 1.78;
+  color: var(--v4-mu);
+  font-weight: 300;
+  margin: 0 0 28px;
+}
+body.landing-v4 .practitioners-method-lead span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  margin-top: 10px;
+}
+body.landing-v4 .four-methods {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+body.landing-v4 .four-methods li {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 20px;
+  padding: 22px 0;
+  border-top: 1px solid var(--v4-bdr-l);
+  align-items: start;
+}
+body.landing-v4 .four-methods li:last-child { border-bottom: 1px solid var(--v4-bdr-l); }
+body.landing-v4 .fm-zh {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--v4-go);
+  text-align: center;
+  line-height: 1;
+}
+body.landing-v4 .four-methods li strong {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--v4-ink);
+  margin-bottom: 6px;
+  letter-spacing: -0.005em;
+}
+body.landing-v4 .four-methods li p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--v4-mu);
+  font-weight: 300;
+  margin: 0;
+}
+body.landing-v4 .four-methods li p span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+  margin-top: 8px;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .practitioners-method-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  body.landing-v4 .practitioners-method-img {
+    position: static;
+    aspect-ratio: 4 / 3;
+  }
+  body.landing-v4 .four-methods li {
+    grid-template-columns: 48px 1fr;
+    gap: 14px;
+  }
+  body.landing-v4 .fm-zh { font-size: 30px; }
+}
+
+/* ── Three ways to get matched ─────────────────────────────────── */
+body.landing-v4 .practitioners-match {
+  padding: clamp(56px, 7vw, 96px) 24px;
+  background: var(--v4-bg-2);
+}
+body.landing-v4 .match-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+body.landing-v4 .match-h {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 3.4vw, 36px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--v4-ink);
+  margin: 14px 0 36px;
+}
+body.landing-v4 .match-h em { font-style: italic; color: var(--v4-wd-md); }
+body.landing-v4 .match-h span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.65em;
+  color: var(--v4-wd-md);
+  margin-top: 6px;
+  font-weight: 400;
+}
+body.landing-v4 .match-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  text-align: left;
+}
+body.landing-v4 .match-card {
+  background: #fff;
+  border: 1px solid var(--v4-bdr-l);
+  border-radius: 14px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+}
+body.landing-v4 .match-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--v4-go);
+  margin-bottom: 10px;
+}
+body.landing-v4 .match-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--v4-ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.005em;
+}
+body.landing-v4 .match-card h3 span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  color: var(--v4-wd-md);
+  margin-top: 2px;
+  font-weight: 400;
+}
+body.landing-v4 .match-card p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--v4-mu);
+  font-weight: 300;
+  margin: 0 0 16px;
+  flex: 1;
+}
+body.landing-v4 .match-card p span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+  margin-top: 8px;
+}
+body.landing-v4 .match-link {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--v4-ink);
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--v4-go);
+  padding-bottom: 2px;
+  transition: color 0.2s, border-color 0.2s;
+  align-self: flex-start;
+}
+body.landing-v4 .match-link:hover {
+  color: var(--v4-wd-dk);
+  border-color: var(--v4-wd-dk);
+}
+body.landing-v4 .match-link span[lang="zh"] {
+  font-family: 'Noto Serif SC', serif;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .match-grid { grid-template-columns: 1fr; }
+}
