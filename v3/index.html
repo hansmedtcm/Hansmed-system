@@ -201,6 +201,19 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
 </section>
 
+<!-- Trust bar — moved 2026-05-03 (CEO request) from below the organ
+     clock to directly below the hero. Acts as the immediate trust
+     proof-point a first-time visitor sees right after the brand
+     spine: licensed doctors, AI+human review, support, compliance. -->
+<div class="trust">
+  <div class="trust-in">
+    <div class="ti"><div class="ti-n">2</div><div class="ti-l">Licensed Doctors · 持證醫師</div></div>
+    <div class="ti"><div class="ti-n">AI +</div><div class="ti-l">Doctor Reviewed · 醫師審核報告</div></div>
+    <div class="ti"><div class="ti-n">24/7</div><div class="ti-l">Chat Support · 線上支援</div></div>
+    <div class="ti"><div class="ti-n">PDPA</div><div class="ti-l">Data Compliant · 資料保護</div></div>
+  </div>
+</div>
+
 <!-- Brief #6 — Interactive AI Tongue Analysis widget. Two tabs:
      (1) Tongue Map: stylized SVG with 6 hover/click zones mapped to
          TCM organs, info card updates on selection.
@@ -982,6 +995,18 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <span lang="en">Did you know your liver peaks at 2 AM?</span>
       <span lang="zh">您知道您的肝經高峰是凌晨兩點嗎？</span>
     </p>
+    <!-- "Your body has a 24-hour rhythm" — moved here 2026-05-03
+         (CEO request) so the explanation reads BEFORE the clock,
+         not after. The italic "click the active organ" hint stays
+         below the clock so its "above" reference still resolves. -->
+    <h3 class="organ-clock-h" style="text-align:center;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(22px,3vw,30px);color:var(--v4-ink);letter-spacing:-0.01em;margin:24px auto 14px;max-width:680px;">
+      <span lang="en">Your body has a <em>24-hour rhythm</em></span>
+      <span lang="zh">您的身體有 <em>24小時的節律</em></span>
+    </h3>
+    <p style="font-size:15px;line-height:1.78;color:var(--v4-mu);font-weight:300;margin:0 auto;max-width:680px;padding:0 var(--s-3);">
+      <span lang="en">For 2,000 years, TCM has mapped how vital energy flows through 12 organ meridians — each with a 2-hour peak window. Knowing which organ is at its strongest right now helps you read your symptoms, plan your day, and time your care.</span>
+      <span lang="zh">兩千年來，中醫觀察到生命能量在十二經絡間循環流動，每個臟腑都有兩小時的高峰時段。了解此刻哪個臟腑最活躍，有助於理解身體訊號、安排作息、規劃調理。</span>
+    </p>
   </div>
 
   <div style="display:flex;justify-content:center;">
@@ -1056,18 +1081,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </div>
   </div>
 
-  <!-- Brief #7 — "Why this matters" educational context, anchors
-       the clock as content rather than decoration. -->
-  <div class="organ-clock-context reveal" style="max-width:680px;margin:36px auto 0;padding:0 var(--s-3);">
-    <h3 class="organ-clock-h" style="text-align:center;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(22px,3vw,30px);color:var(--v4-ink);letter-spacing:-0.01em;margin-bottom:18px;">
-      <span lang="en">Your body has a <em>24-hour rhythm</em></span>
-      <span lang="zh">您的身體有 <em>24小時的節律</em></span>
-    </h3>
-    <p style="font-size:15px;line-height:1.78;color:var(--v4-mu);font-weight:300;margin-bottom:14px;">
-      <span lang="en">For 2,000 years, TCM has mapped how vital energy flows through 12 organ meridians — each with a 2-hour peak window. Knowing which organ is at its strongest right now helps you read your symptoms, plan your day, and time your care.</span>
-      <span lang="zh">兩千年來，中醫觀察到生命能量在十二經絡間循環流動，每個臟腑都有兩小時的高峰時段。了解此刻哪個臟腑最活躍，有助於理解身體訊號、安排作息、規劃調理。</span>
-    </p>
-    <p style="font-size:14px;line-height:1.78;color:var(--v4-mu);font-weight:300;font-style:italic;">
+  <!-- Heading + main paragraph moved ABOVE clock (2026-05-03, CEO
+       request). Only the click hint stays here so its "above"
+       reference still resolves to the clock immediately above. -->
+  <div class="organ-clock-context reveal" style="max-width:680px;margin:24px auto 0;padding:0 var(--s-3);">
+    <p style="font-size:14px;line-height:1.78;color:var(--v4-mu);font-weight:300;font-style:italic;text-align:center;">
       <span lang="en">Click the active organ above to learn its TCM theory, modern function, and what symptoms might suggest care during its window.</span>
       <span lang="zh">點擊上方正在當令的臟腑，了解它的中醫理論、現代生理功能、以及在它當令時可能需要關注的症狀。</span>
     </p>
@@ -1082,15 +1100,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   </div>
 </section>
 
-<!-- Trust bar -->
-<div class="trust">
-  <div class="trust-in">
-    <div class="ti"><div class="ti-n">2</div><div class="ti-l">Licensed Doctors · 持證醫師</div></div>
-    <div class="ti"><div class="ti-n">AI +</div><div class="ti-l">Doctor Reviewed · 醫師審核報告</div></div>
-    <div class="ti"><div class="ti-n">24/7</div><div class="ti-l">Chat Support · 線上支援</div></div>
-    <div class="ti"><div class="ti-n">PDPA</div><div class="ti-l">Data Compliant · 資料保護</div></div>
-  </div>
-</div>
+<!-- (Trust bar moved to directly below hero — see line ~204.) -->
 
 <!-- Ink-wash divider removed 2026-05-03: even at opacity:0.10 the
      ink stroke read as a heavy black artifact rather than subtle
