@@ -25,7 +25,7 @@
    and the radial ambient warmth — the brief was clear: ADD, don't
    replace. */
 body.landing-v4 .hero-v3 {
-  background-image: url('../img/hero-bg.png');
+  background-image: url('../img/hero-bg.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -277,7 +277,7 @@ body.landing-v4 .tongue-widget          { padding: clamp(40px, 6vw, 80px) max(1.
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('../img/texture-rice-paper.png');
+  background-image: url('../img/texture-rice-paper.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
