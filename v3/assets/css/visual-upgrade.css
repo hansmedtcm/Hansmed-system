@@ -735,35 +735,48 @@ body.landing-v4 .cta-row {
    services-specific. */
 
 body.landing-v4 .services-hero { min-height: 60vh; }
-/* Bug-fix 2026-05-03: services hero text was left-aligned by default
-   (hero-content class doesn't center) but the radial overlay is
-   centered, so left-edge text was in the faded zone and unreadable.
-   Center the content to match the overlay (and the home hero). */
+
+/* Bug-fix 2026-05-03 (revised): services hero needed two fixes —
+   (a) center text so it sits in the opaque part of the radial
+       overlay, (b) make the overlay strong enough that text is
+       fully readable, and force dark ink color + text-shadow on
+       the headline so it pops against the tea-ceremony image.
+   Apply same to .about-hero so it gets the same treatment. */
 body.landing-v4 .services-hero .hero-content,
 body.landing-v4 .about-hero .hero-content {
   max-width: 760px;
   margin: 0 auto;
   text-align: center;
   padding: 0 24px;
+  position: relative;
+  z-index: 2;
 }
 body.landing-v4 .services-hero .hero-content .eyebrow,
 body.landing-v4 .about-hero .hero-content .eyebrow {
   display: inline-flex;
+  color: var(--v4-tc) !important;
 }
 body.landing-v4 .services-hero .hero-content .hero-h1,
 body.landing-v4 .about-hero .hero-content .hero-h1 {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(36px, 5vw, 56px);
-  font-weight: 400;
+  font-weight: 500 !important;
   letter-spacing: -0.02em;
-  color: var(--v4-ink);
+  color: var(--v4-ink) !important;
   line-height: 1.15;
   margin: 18px 0 22px;
+  /* Strong cream-tone text-shadow — pulls text crisp against
+     whatever portion of the tea-ceremony image shows through the
+     radial overlay. */
+  text-shadow:
+    0 1px 0 rgba(245, 241, 234, 0.95),
+    0 0 24px rgba(245, 241, 234, 0.85),
+    0 0 48px rgba(245, 241, 234, 0.55);
 }
 body.landing-v4 .services-hero .hero-content .hero-h1 em,
 body.landing-v4 .about-hero .hero-content .hero-h1 em {
   font-style: italic;
-  color: var(--v4-wd-md);
+  color: var(--v4-wd-dk) !important;
 }
 body.landing-v4 .services-hero .hero-content .hero-sub,
 body.landing-v4 .about-hero .hero-content .hero-sub {
@@ -771,8 +784,40 @@ body.landing-v4 .about-hero .hero-content .hero-sub {
   margin: 0 auto;
   font-size: 16px;
   line-height: 1.7;
-  color: var(--v4-mu);
-  font-weight: 300;
+  color: var(--v4-ink) !important;
+  font-weight: 400 !important;
+  text-shadow:
+    0 1px 0 rgba(245, 241, 234, 0.95),
+    0 0 18px rgba(245, 241, 234, 0.7);
+}
+
+/* Boost the centered radial overlay opacity for sub-pages (services,
+   about) so the text background is much more solid. The home hero
+   already uses the same .hero-v3 overlay; sub-pages add an extra
+   inner radial on top. */
+body.landing-v4 .services-hero .hero-bg,
+body.landing-v4 .about-hero .hero-bg {
+  background:
+    radial-gradient(
+      ellipse 70% 60% at 50% 50%,
+      rgba(245, 241, 234, 0.97) 0%,
+      rgba(245, 241, 234, 0.92) 45%,
+      rgba(245, 241, 234, 0.65) 80%,
+      rgba(245, 241, 234, 0.35) 100%
+    ),
+    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.45) 0%, transparent 55%) !important;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .services-hero .hero-bg,
+  body.landing-v4 .about-hero .hero-bg {
+    background:
+      radial-gradient(
+        ellipse 95% 80% at 50% 50%,
+        rgba(245, 241, 234, 0.96) 0%,
+        rgba(245, 241, 234, 0.88) 65%,
+        rgba(245, 241, 234, 0.55) 100%
+      ) !important;
+  }
 }
 
 /* ── Comparison table ──────────────────────────────────────────── */
