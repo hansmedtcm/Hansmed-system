@@ -203,8 +203,8 @@ body.landing-v4 .patient-stories-overlay {
 
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(10px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
   will-change: opacity, transform;
 }
 .reveal.is-visible {
