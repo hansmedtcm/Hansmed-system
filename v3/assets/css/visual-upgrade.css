@@ -278,6 +278,47 @@ img.fade-in-load.loaded {
 }
 
 
+/* ════════════ "Or book a consultation" — boost contrast ══════════ */
+
+/* CEO 2026-05-03: secondary hero link was barely visible against the
+   tea-ceremony background — gold on cream blended in. Override the
+   v2 base style with a much higher-contrast variant. */
+body.landing-v4 .hero-cta-secondary {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--v4-ink) !important;          /* was --v4-wd-md (faint gold) */
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--v4-go) !important;
+  padding-bottom: 3px;
+  letter-spacing: 0.01em;
+  transition: color .2s, border-color .2s, transform .2s;
+}
+body.landing-v4 .hero-cta-secondary:hover {
+  color: var(--v4-wd-dk) !important;
+  border-color: var(--v4-wd-dk) !important;
+  transform: translateY(-1px);
+}
+
+
+/* ════════════ Reveals — neutralized for "smoother than v2" feel ═══ */
+
+/* CEO 2026-05-03 follow-up: even at snappy timing (0.45s, 10px),
+   the cumulative effect of reveals firing across many sections
+   made v3 feel less smooth than v2 (which has no animations at
+   all). Neutralize the .reveal class — keep it on elements so
+   any future animation work has a hook, but make the default
+   state visible. Page now renders content as it loads, matching
+   v2's natural feel. The IntersectionObserver still runs but its
+   class additions are visually no-ops. */
+.reveal,
+.reveal.is-visible {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+
 /* ════════════ TASK G — Spacing reverence ═════════════════════════ */
 
 body.landing-v4 .brand-story            { padding: clamp(48px, 7vw, 96px) 0; }
