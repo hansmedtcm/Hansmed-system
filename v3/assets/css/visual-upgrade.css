@@ -734,16 +734,32 @@ body.landing-v4 .cta-row {
    .about-cta from earlier briefs; rules below add only what's
    services-specific. */
 
-body.landing-v4 .services-hero { min-height: 60vh; }
+/* ════════════════════════════════════════════════════════════════
+   UNIVERSAL v3 SUB-PAGE HERO TREATMENT — applies to ANY .hero-v3
+   that uses the .hero-content text-block pattern (which all
+   non-home v3 pages use: about, services, practitioners, and any
+   future page like contact, blog, faq, etc). Any new sub-page
+   hero just needs <section class="hero-v3 SOMETHING-hero"> with a
+   .hero-bg overlay div and .hero-content text — NO additional CSS
+   needed per page.
 
-/* Bug-fix 2026-05-03 (revised): services hero needed two fixes —
-   (a) center text so it sits in the opaque part of the radial
-       overlay, (b) make the overlay strong enough that text is
-       fully readable, and force dark ink color + text-shadow on
-       the headline so it pops against the tea-ceremony image.
-   Apply same to .about-hero so it gets the same treatment. */
-body.landing-v4 .services-hero .hero-content,
-body.landing-v4 .about-hero .hero-content {
+   Why it's universal: previously each page (services, about,
+   practitioners) needed its own selector added to this CSS. New
+   pages were silently broken until someone remembered to add
+   them. This rule targets .hero-v3 .hero-content directly so
+   future v3 sub-pages inherit the treatment automatically.
+
+   Home page hero uses .hero-spine (not .hero-h1) and .hero-story
+   (not .hero-content), so it has its own dedicated treatment
+   above and is not affected by these rules.
+   ════════════════════════════════════════════════════════════════ */
+
+body.landing-v4 .services-hero,
+body.landing-v4 .about-hero,
+body.landing-v4 .practitioners-hero { min-height: 60vh; }
+
+/* Center the .hero-content text block in any v3 sub-page hero. */
+body.landing-v4 .hero-v3 .hero-content {
   max-width: 760px;
   margin: 0 auto;
   text-align: center;
@@ -751,13 +767,11 @@ body.landing-v4 .about-hero .hero-content {
   position: relative;
   z-index: 2;
 }
-body.landing-v4 .services-hero .hero-content .eyebrow,
-body.landing-v4 .about-hero .hero-content .eyebrow {
+body.landing-v4 .hero-v3 .hero-content .eyebrow {
   display: inline-flex;
   color: var(--v4-tc) !important;
 }
-body.landing-v4 .services-hero .hero-content .hero-h1,
-body.landing-v4 .about-hero .hero-content .hero-h1 {
+body.landing-v4 .hero-v3 .hero-content .hero-h1 {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(36px, 5vw, 56px);
   font-weight: 500 !important;
@@ -765,21 +779,19 @@ body.landing-v4 .about-hero .hero-content .hero-h1 {
   color: var(--v4-ink) !important;
   line-height: 1.15;
   margin: 18px 0 22px;
-  /* Strong cream-tone text-shadow — pulls text crisp against
-     whatever portion of the tea-ceremony image shows through the
-     radial overlay. */
+  /* Cream-tone text-shadow — keeps headline crisp against any
+     portion of the hero background image that bleeds through the
+     overlay. */
   text-shadow:
     0 1px 0 rgba(245, 241, 234, 0.95),
     0 0 24px rgba(245, 241, 234, 0.85),
     0 0 48px rgba(245, 241, 234, 0.55);
 }
-body.landing-v4 .services-hero .hero-content .hero-h1 em,
-body.landing-v4 .about-hero .hero-content .hero-h1 em {
+body.landing-v4 .hero-v3 .hero-content .hero-h1 em {
   font-style: italic;
   color: var(--v4-wd-dk) !important;
 }
-body.landing-v4 .services-hero .hero-content .hero-sub,
-body.landing-v4 .about-hero .hero-content .hero-sub {
+body.landing-v4 .hero-v3 .hero-content .hero-sub {
   max-width: 560px;
   margin: 0 auto;
   font-size: 16px;
@@ -791,12 +803,11 @@ body.landing-v4 .about-hero .hero-content .hero-sub {
     0 0 18px rgba(245, 241, 234, 0.7);
 }
 
-/* Boost the centered radial overlay opacity for sub-pages (services,
-   about) so the text background is much more solid. The home hero
-   already uses the same .hero-v3 overlay; sub-pages add an extra
-   inner radial on top. */
-body.landing-v4 .services-hero .hero-bg,
-body.landing-v4 .about-hero .hero-bg {
+/* Strong centered radial overlay so text sits on near-opaque cream
+   even though the background image is still visible at the edges.
+   Universal: any .hero-v3 that has a .hero-bg child + uses the
+   .hero-content pattern (i.e. all sub-pages) gets this. */
+body.landing-v4 .hero-v3:not(.hero-v4--story) .hero-bg {
   background:
     radial-gradient(
       ellipse 70% 60% at 50% 50%,
@@ -808,8 +819,7 @@ body.landing-v4 .about-hero .hero-bg {
     radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.45) 0%, transparent 55%) !important;
 }
 @media (max-width: 768px) {
-  body.landing-v4 .services-hero .hero-bg,
-  body.landing-v4 .about-hero .hero-bg {
+  body.landing-v4 .hero-v3:not(.hero-v4--story) .hero-bg {
     background:
       radial-gradient(
         ellipse 95% 80% at 50% 50%,
@@ -819,6 +829,9 @@ body.landing-v4 .about-hero .hero-bg {
       ) !important;
   }
 }
+/* The :not(.hero-v4--story) excludes the home hero, which uses
+   its own brand-spine treatment with a different overlay tuned
+   for the 3-line stack. */
 
 /* ── Comparison table ──────────────────────────────────────────── */
 body.landing-v4 .services-compare {
