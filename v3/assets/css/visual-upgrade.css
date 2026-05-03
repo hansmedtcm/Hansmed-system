@@ -32,30 +32,45 @@ body.landing-v4 .hero-v3 {
   overflow: hidden;
 }
 body.landing-v4 .hero-v3 .hero-bg {
+  /* Bug-fix 2026-05-03: previous left-to-right gradient was tuned for
+     left-aligned text. The Brief #4 hero is centered, so the centered
+     text was landing in the faint (right-side) part of the overlay,
+     making it hard to read against the tea-ceremony image. Switch to
+     a centered radial: opaque cream behind the text block, fading
+     outward so the image still shows around the edges (vignette in
+     reverse). */
   background:
-    linear-gradient(
-      to right,
-      rgba(245, 241, 234, 0.92) 0%,
-      rgba(245, 241, 234, 0.65) 40%,
-      rgba(245, 241, 234, 0.20) 75%,
-      rgba(245, 241, 234, 0.05) 100%
+    radial-gradient(
+      ellipse 75% 65% at 50% 50%,
+      rgba(245, 241, 234, 0.94) 0%,
+      rgba(245, 241, 234, 0.86) 35%,
+      rgba(245, 241, 234, 0.55) 75%,
+      rgba(245, 241, 234, 0.30) 100%
     ),
-    radial-gradient(ellipse 65% 85% at 100% 50%, rgba(196,154,90,0.09) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 55% at 5% 95%, rgba(155,114,72,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.55) 0%, transparent 50%);
+    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 55% at 5% 95%, rgba(155,114,72,0.05) 0%, transparent 60%);
 }
 @media (max-width: 768px) {
   body.landing-v4 .hero-v3 .hero-bg {
+    /* Mobile: text stack is tall and narrow, so use a slightly more
+       opaque radial that covers more vertical area. */
     background:
-      linear-gradient(
-        to bottom,
-        rgba(245, 241, 234, 0.92) 0%,
-        rgba(245, 241, 234, 0.55) 100%
+      radial-gradient(
+        ellipse 90% 75% at 50% 50%,
+        rgba(245, 241, 234, 0.94) 0%,
+        rgba(245, 241, 234, 0.82) 60%,
+        rgba(245, 241, 234, 0.45) 100%
       ),
-      radial-gradient(ellipse 65% 85% at 100% 50%, rgba(196,154,90,0.09) 0%, transparent 65%),
-      radial-gradient(ellipse 45% 55% at 5% 95%, rgba(155,114,72,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.55) 0%, transparent 50%);
+      radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.45) 0%, transparent 55%);
   }
+}
+
+/* Brief #4 brand spine — give it a hint of text-shadow so it stays
+   crisp against the tea-ceremony image even where the radial overlay
+   is at 86% rather than 94%. Subtle: 1px soft cream shadow, not a
+   drop-shadow look. */
+body.landing-v4 .hero-spine span {
+  text-shadow: 0 1px 0 rgba(245, 241, 234, 0.9), 0 0 18px rgba(245, 241, 234, 0.4);
 }
 
 
@@ -319,4 +334,338 @@ body.landing-v4 .tongue-widget          { padding: clamp(40px, 6vw, 80px) max(1.
 @media (max-width: 768px) {
   .ink-divider { height: 32px; }
   .ink-divider img { max-width: 180px; width: 55%; opacity: 0.07; }
+}
+
+
+/* ════════════ Brief #9 — About page ═══════════════════════════════
+   Scoped to body.landing-v4 so nothing leaks into v2. The about
+   page reuses .hero-v3 / .has-rice-bg / .reveal / .fade-in-load /
+   .card-v4 from earlier briefs; rules below add only what's
+   about-specific. */
+
+body.landing-v4 .about-hero {
+  min-height: 60vh;            /* shorter than home hero (88vh) */
+  display: flex;
+  align-items: center;
+  padding: 0 8vw;
+}
+body.landing-v4 .about-hero .hero-content {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+body.landing-v4 .about-hero .hero-h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 5.5vw, 64px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--v4-ink);
+  margin: 0 0 20px;
+}
+body.landing-v4 .about-hero .hero-h1 em {
+  font-style: italic;
+  color: var(--v4-wd-md);
+}
+body.landing-v4 .about-hero .hero-h1 span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.65em;
+  font-weight: 400;
+  margin-top: 10px;
+  color: var(--v4-wd-md);
+  letter-spacing: 0.04em;
+}
+body.landing-v4 .about-hero .hero-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: var(--v4-mu);
+  font-weight: 300;
+  line-height: 1.7;
+  max-width: 600px;
+  margin: 0 auto;
+}
+body.landing-v4 .about-hero .hero-sub span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* Origin section — 2-col text + stats. */
+body.landing-v4 .about-origin {
+  padding: clamp(56px, 7vw, 96px) 0;
+}
+body.landing-v4 .origin-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 64px;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 max(1.5rem, calc(50% - 540px));
+}
+body.landing-v4 .origin-h {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 3.8vw, 42px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--v4-ink);
+  margin: 0 0 22px;
+}
+body.landing-v4 .origin-h em { font-style: italic; color: var(--v4-wd-md); }
+body.landing-v4 .origin-h span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.62em;
+  color: var(--v4-wd-md);
+  margin-top: 6px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+body.landing-v4 .origin-body {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--v4-mu);
+  font-weight: 300;
+  margin: 0 0 18px;
+}
+body.landing-v4 .origin-body span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  margin-top: 10px;
+  letter-spacing: 0.01em;
+}
+body.landing-v4 .origin-spine {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 19px;
+  color: var(--v4-tc);
+  border-left: 2px solid var(--v4-go);
+  padding-left: 16px;
+  margin: 18px 0 0;
+  line-height: 1.5;
+}
+body.landing-v4 .origin-spine span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-style: normal;
+  font-size: 16px;
+  color: var(--v4-wd-md);
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+}
+body.landing-v4 .origin-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+body.landing-v4 .stat-b {
+  background: var(--v4-bg-3);
+  border: 1px solid var(--v4-bdr-l);
+  border-radius: 12px;
+  padding: 22px 18px;
+  text-align: center;
+}
+body.landing-v4 .stat-n {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 500;
+  color: var(--v4-go);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+body.landing-v4 .stat-n span[lang="zh"] {
+  display: inline;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.85em;
+}
+body.landing-v4 .stat-l {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--v4-mu);
+  font-weight: 500;
+}
+body.landing-v4 .stat-l span[lang="zh"] {
+  font-family: 'Noto Serif SC', serif;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .origin-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+}
+
+/* Practice space section — 2-col image + text. */
+body.landing-v4 .about-space {
+  padding: clamp(56px, 7vw, 96px) 0;
+}
+body.landing-v4 .about-space-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 max(1.5rem, calc(50% - 540px));
+}
+body.landing-v4 .about-space-img {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--v4-bg-3);
+}
+body.landing-v4 .about-space-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+body.landing-v4 .about-space-text h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 3.6vw, 38px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--v4-ink);
+  margin: 0 0 18px;
+}
+body.landing-v4 .about-space-text h2 em { font-style: italic; color: var(--v4-wd-md); }
+body.landing-v4 .about-space-text h2 span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.62em;
+  color: var(--v4-wd-md);
+  margin-top: 6px;
+  font-weight: 400;
+}
+body.landing-v4 .about-space-text p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--v4-mu);
+  font-weight: 300;
+  margin: 0;
+}
+body.landing-v4 .about-space-text p span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  margin-top: 10px;
+}
+@media (max-width: 768px) {
+  body.landing-v4 .about-space-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+/* Three-principles section. */
+body.landing-v4 .about-principles {
+  padding: clamp(56px, 7vw, 96px) 0;
+}
+body.landing-v4 .about-principles .principles-grid {
+  margin-top: 40px;
+}
+body.landing-v4 .principle-card {
+  text-align: left;
+  padding: 32px;
+}
+body.landing-v4 .principle-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--v4-ink);
+  margin: 0 0 12px;
+}
+body.landing-v4 .principle-card h3 span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  color: var(--v4-wd-md);
+  margin-top: 4px;
+  font-weight: 400;
+}
+body.landing-v4 .principle-card p {
+  font-size: 14px;
+  line-height: 1.78;
+  color: var(--v4-mu);
+  font-weight: 300;
+  margin: 0;
+}
+body.landing-v4 .principle-card p span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+  margin-top: 10px;
+}
+/* Calligraphic seal — typographic, NOT emoji. Single Chinese
+   character on a soft gold-tinted square that recalls a Chinese
+   chop without being literal. */
+body.landing-v4 .principle-seal {
+  display: inline-block;
+  width: 56px;
+  height: 56px;
+  line-height: 56px;
+  text-align: center;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--v4-go);
+  background: rgba(181, 136, 26, 0.08);
+  border: 1px solid rgba(181, 136, 26, 0.25);
+  border-radius: 6px;
+  margin-bottom: 18px;
+}
+
+/* Closing CTA band — dark ink background, two clear paths. */
+body.landing-v4 .about-cta {
+  background: var(--v4-ink);
+  text-align: center;
+  padding: clamp(56px, 7vw, 96px) 8vw;
+  color: #fff;
+}
+body.landing-v4 .about-cta .cta-inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+body.landing-v4 .about-cta h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 400;
+  margin: 0 0 14px;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+body.landing-v4 .about-cta h2 span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.7em;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.78);
+}
+body.landing-v4 .about-cta p {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 30px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+body.landing-v4 .about-cta p span[lang="zh"] {
+  display: block;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  margin-top: 6px;
+}
+body.landing-v4 .cta-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }

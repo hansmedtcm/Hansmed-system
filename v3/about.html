@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
+<script>try{if(localStorage.getItem("hm-shop-enabled")==="0")document.documentElement.classList.add("shop-disabled");}catch(_){}</script>
+<script>try{var p=localStorage.getItem('hm-lang-pref');if(p==='zh')document.documentElement.setAttribute('lang','zh');else document.documentElement.setAttribute('lang','en');}catch(_){}</script>
+<style>
+/* Synchronous language hide — applies before lang-switcher.js runs.
+   Uses html[lang] attribute set by the script above so no FOUC. */
+html[lang="en"] [lang="zh"],
+html[lang="en"] .hm-lang-zh,
+html[lang="en"] .bi-zh { display: none !important; }
+html[lang="zh"] [lang="en"],
+html[lang="zh"] .hm-lang-en,
+html[lang="zh"] .bi-en { display: none !important; }
+html[lang="en"] .hm-lang-sep { display: none; }
+html[lang="zh"] .hm-lang-sep { display: none; }
+/* .home-shop-cta__live / __soon swap rules live in landing-v4.css
+   so every public landing page (index, services, …) gets the same
+   pre-paint behaviour from a single source. */
+</style>
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
+<meta name="description" content="HansMed Modern TCM — bridging traditional Chinese medicine wisdom with modern technology. Licensed practitioners, AI-assisted assessment, herbs delivered. Serving Malaysia.">
+<meta name="theme-color" content="#F5F0E8">
+<title>About · 關於 · HansMed Modern TCM</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  /* 正顏楷體 — system fallback chain */
+  @font-face {
+    font-family: 'ZhengYanKaiTi';
+    src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+         local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
+    font-display: swap;
+  }
+</style>
+
+<!-- Portal tokens + utility CSS (needed for auth modal, form controls,
+     toasts, buttons on hash-routed sub-panels). -->
+<link rel="stylesheet" href="../v2/assets/css/tokens.css">
+<link rel="stylesheet" href="../v2/assets/css/base.css">
+<link rel="stylesheet" href="../v2/assets/css/components.css">
+
+<!-- Landing v4 CSS — scoped under body.landing-v4 so it can't leak
+     into portal/admin/doctor pages. -->
+<link rel="stylesheet" href="../v2/assets/css/landing-v4.css">
+<link rel="stylesheet" href="../v2/assets/css/dropdown.css">
+<!-- v3 visual upgrade — imagery, scroll reveals, textures, plus the
+     about-page additions in the same file (Brief #9). -->
+<link rel="stylesheet" href="assets/css/visual-upgrade.css">
+<!-- Preload the about hero image so the LCP element paints quickly. -->
+<link rel="preload" as="image" href="assets/img/brand-story.webp" fetchpriority="high">
+</head>
+<body class="landing-v4">
+<!-- Preview banner — Brief #9 v3/about.html. Sits alongside live
+     v2/about.html for side-by-side comparison until v3 cuts over. -->
+<div id="preview-banner" style="position:sticky;top:0;left:0;right:0;z-index:10000;background:linear-gradient(90deg,#B5881A,#9A7A3E);color:#fff;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;text-align:center;letter-spacing:0.02em;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+  <span lang="en">⚠️ Preview version — this is a draft of the new about page. </span>
+  <span lang="zh">⚠️ 预览版 — 这是新版关于页面的草稿。</span>
+  <a href="../v2/about.html" style="color:#fff;text-decoration:underline;margin-left:8px;font-weight:600;">
+    <span lang="en">View current live About page →</span>
+    <span lang="zh">查看现行关于页 →</span>
+  </a>
+</div>
+<a href="#main" class="skip-link" style="position:absolute;left:-9999px;">Skip to main content</a>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav id="nav-v4">
+  <div class="nav-in">
+    <button class="nav-brand-v4" onclick="location.href='index.html'">
+      <img src="../v2/assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
+      <span lang="en" style="display:flex;align-items:baseline;">
+        <span class="nav-bn">HansMed</span>
+      </span>
+      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;">
+        <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span></span>
+    </button>
+    <div class="nav-links-v4">
+      <a class="nl" href="index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <!-- About dropdown wrapper — active state on this page. -->
+      <div style="position:relative;display:inline-block;" id="about-wrap">
+        <button id="about-trigger" type="button" class="nl act" onclick="toggleAboutMenu(event)">
+          <span lang="en">About</span><span lang="zh">關於</span>
+          <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none"
+            style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="about-dropdown"
+          style="display:none;position:absolute;top:calc(100% + 6px);left:0;
+                 min-width:190px;background:#FEFCF8;border:1px solid #D8C9AE;
+                 border-radius:10px;box-shadow:0 8px 32px rgba(36,22,8,0.12);
+                 z-index:9999;overflow:hidden;padding:4px 0;">
+          <div style="height:2px;background:linear-gradient(90deg,transparent,#B5881A,transparent);"></div>
+          <a id="dd-about"   href="about.html"                  class="dd-item is-current"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
+          <a id="dd-prac"    href="../v2/practitioners.html"   class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
+          <a id="dd-svc"     href="../v2/services.html"        class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a id="dd-blog"    href="../v2/blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
+          <a id="dd-faq"     href="../v2/faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
+          <a id="dd-contact" href="../v2/contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+        </div>
+      </div>
+      <a class="nl"     href="../v2/shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
+      <a class="nl"     href="../v2/portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
+      <div class="lang-wrap">
+        <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
+      </div>
+      <button class="nl nav-signin" onclick="go('login')" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
+      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
+    </div>
+    <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-menu" id="mob-menu">
+  <div style="padding:20px 0;">
+    <button class="mob-nl" onclick="location.href='index.html'"><span lang="en">Home</span><span lang="zh">首頁</span></button>
+    <button class="mob-nl" onclick="location.href='about.html'"><span lang="en">About</span><span lang="zh">關於我們</span></button>
+    <button class="mob-nl" onclick="go('services');closeMob();"><span lang="en">Services</span><span lang="zh">服務項目</span></button>
+    <button class="mob-nl" onclick="go('shop');closeMob();"><span lang="en">Shop</span><span lang="zh">中藥商店</span></button>
+    <button class="mob-nl" onclick="go('wellness');closeMob();"><span lang="en">AI Wellness Assessment</span><span lang="zh">AI 健康評估</span></button>
+    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">聯絡我們</span></button>
+    <button class="mob-nl mob-nl-signin" onclick="navMobSignin()"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
+    <button class="mob-nl mob-nl-logout" onclick="navLogout()" style="display:none;color:#9a3a2a;"><span lang="en">Sign Out</span><span lang="zh">登出</span></button>
+    <div class="mob-lang">
+      <button id="mlen" class="mob-lb act" data-lang="en" onclick="setLang('en')">EN</button>
+      <button id="mlzh" class="mob-lb"     data-lang="zh" onclick="setLang('zh')">中</button>
+    </div>
+    <div class="mob-ctas">
+      <button class="btn-v4 btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">預約</span></button>
+      <button class="btn-v4 btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();"><span lang="en">Create Account</span><span lang="zh">建立帳號</span></button>
+      <a class="btn-v4 btn-wa" id="hm-wa-drawer" target="_blank" rel="noopener" style="width:100%;padding:15px;font-size:15px;justify-content:center;" href="https://wa.me/601165600393">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        WhatsApp Us
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY BOTTOM BAR (mobile) -->
+<div class="bottom-bar" id="bottom-bar">
+  <a class="bb-wa" id="hm-wa-bb" target="_blank" rel="noopener" href="https://wa.me/601165600393">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+    WhatsApp
+  </a>
+  <button class="bb-book" onclick="go('book')">📅 Book · 預約</button>
+</div>
+
+<!-- ══════════════ ABOUT PAGE ══════════════ -->
+<main id="main">
+
+<!-- Hero — image-led, shorter than home (60vh). brand-story.webp
+     (the practitioner-pulse photo) sets the tone: a real clinical
+     moment, hands and patient, not stock. -->
+<section class="hero-v3 about-hero" style="background-image: url('assets/img/brand-story.webp');">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="eyebrow" style="margin-bottom:24px;">
+      <span lang="en">About HansMed</span>
+      <span lang="zh">關於 漢方</span>
+    </div>
+    <h1 class="hero-h1">
+      <span lang="en">Where tradition meets <em>modern care</em></span>
+      <span lang="zh">傳統智慧 · <em>現代中醫</em></span>
+    </h1>
+    <p class="hero-sub">
+      <span lang="en">Quality TCM, made accessible to every Malaysian.</span>
+      <span lang="zh">傳統中醫智慧 · 讓每位馬來西亞人都能輕鬆獲得優質中醫服務。</span>
+    </p>
+  </div>
+</section>
+
+<!-- Origin — "Why we built HansMed". Founder voice, brand spine
+     line set apart visually. Stats grid on the right anchors the
+     trust signal at first scroll. -->
+<section class="sec sec-white about-origin">
+  <div class="origin-grid">
+    <div class="origin-text reveal">
+      <div class="eyebrow" style="margin-bottom:18px;">
+        <span lang="en">Our origin</span>
+        <span lang="zh">緣起</span>
+      </div>
+      <h2 class="origin-h">
+        <span lang="en">Why we built <em>HansMed</em></span>
+        <span lang="zh">為何創辦 <em>HansMed</em></span>
+      </h2>
+      <p class="origin-body">
+        <span lang="en">HansMed was born from a simple idea — to help busy Malaysians see a qualified TCM practitioner with peace of mind, while freeing doctors from paperwork so they can focus on what they trained for: listening, feeling the pulse, understanding your constitution.</span>
+        <span lang="zh">為了方便大眾在忙碌的生活節奏中可以安心看上合格中醫，讓中醫師專心做他們一輩子在做的事 —— 聽您說，把您的脈，了解您的體質。</span>
+      </p>
+      <p class="origin-spine">
+        <span lang="en">Modern technology, traditional wisdom — bridging the generations.</span>
+        <span lang="zh">現代化的科技平台，傳統式的中醫智慧 — 造就了現代與傳統不再有代溝。</span>
+      </p>
+    </div>
+    <div class="origin-stats reveal" style="transition-delay:0.04s;">
+      <div class="stat-b">
+        <div class="stat-n">2</div>
+        <div class="stat-l"><span lang="en">Licensed Doctors</span><span lang="zh">持證醫師</span></div>
+      </div>
+      <div class="stat-b">
+        <div class="stat-n"><span lang="en">New</span><span lang="zh">全新</span></div>
+        <div class="stat-l"><span lang="en">Modern Platform</span><span lang="zh">現代化平台</span></div>
+      </div>
+      <div class="stat-b">
+        <div class="stat-n">10+</div>
+        <div class="stat-l"><span lang="en">TCM Specialties</span><span lang="zh">專科類別</span></div>
+      </div>
+      <div class="stat-b">
+        <div class="stat-n">24/7</div>
+        <div class="stat-l"><span lang="en">Chat Support</span><span lang="zh">線上支援</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Practice space — uses practitioner-placeholder.webp (empty
+     clinic interior) to reinforce the "real clinic, real practice"
+     trust signal. Single 2-col block, image left, copy right. -->
+<section class="sec sec-alt about-space has-rice-bg">
+  <div class="about-space-inner">
+    <div class="about-space-img reveal">
+      <img src="assets/img/practitioner-placeholder.webp" alt="A quiet TCM consultation room" loading="lazy" class="fade-in-load" width="1000" height="1000">
+    </div>
+    <div class="about-space-text reveal" style="transition-delay:0.04s;">
+      <div class="eyebrow" style="margin-bottom:14px;">
+        <span lang="en">Our practice</span>
+        <span lang="zh">診室</span>
+      </div>
+      <h2>
+        <span lang="en">A space for <em>quiet listening</em></span>
+        <span lang="zh">為您 <em>專注傾聽</em></span>
+      </h2>
+      <p>
+        <span lang="en">Our practitioners work in a calm, traditional setting designed for the time-honored craft of TCM diagnosis — pulse, tongue, voice, observation. The technology is invisible; what you experience is care.</span>
+        <span lang="zh">我們的中醫師在一個寧靜、傳統的環境中工作，專為望聞問切而設。科技在背後運作，您所體驗的是照護本身。</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Three principles — verbatim v2 copy (Clinical Integrity /
+     Privacy First / Quality Herbs), restyled with calligraphic
+     seal characters (醫 / 私 / 質) as elegant typography, NOT
+     emoji. .principle-seal styled in visual-upgrade.css. -->
+<section class="sec sec-white about-principles">
+  <div class="sh center reveal">
+    <div class="eyebrow">
+      <span lang="en">Our approach</span>
+      <span lang="zh">原則</span>
+    </div>
+    <h2>
+      <span lang="en">Three things we <em>never compromise</em> on</span>
+      <span lang="zh">我們絕不妥協的 <em>三件事</em></span>
+    </h2>
+  </div>
+  <div class="g3 principles-grid">
+    <div class="card-v4 principle-card reveal">
+      <div class="principle-seal" aria-hidden="true">醫</div>
+      <h3>
+        <span lang="en">Clinical integrity</span>
+        <span lang="zh">臨床誠信</span>
+      </h3>
+      <p>
+        <span lang="en">Every AI output and wellness report is reviewed by a licensed TCM practitioner before it reaches you. All practitioners are registered with Malaysia's T&amp;CM Council and undergo continuous education.</span>
+        <span lang="zh">所有 AI 健康報告均由持牌中醫師審核後才呈現給您。所有醫師均於馬來西亞傳統與輔助醫藥局註冊，並持續進修中醫學識。</span>
+      </p>
+    </div>
+    <div class="card-v4 principle-card reveal" style="transition-delay:0.04s;">
+      <div class="principle-seal" aria-hidden="true">私</div>
+      <h3>
+        <span lang="en">Privacy first</span>
+        <span lang="zh">私隱優先</span>
+      </h3>
+      <p>
+        <span lang="en">Fully PDPA 2010 compliant. Explicit consent before any AI processing. Encrypted storage — export or delete your data at any time from settings.</span>
+        <span lang="zh">完全符合 2010 年個人資料保護法（PDPA）。AI 處理前必須取得明確同意。資料加密儲存 — 您可隨時於設定中匯出或刪除個人資料。</span>
+      </p>
+    </div>
+    <div class="card-v4 principle-card reveal" style="transition-delay:0.08s;">
+      <div class="principle-seal" aria-hidden="true">質</div>
+      <h3>
+        <span lang="en">Quality herbs</span>
+        <span lang="zh">品質藥材</span>
+      </h3>
+      <p>
+        <span lang="en">Only verified Malaysian and international suppliers. Every product labelled with Chinese name, pinyin, and transparent sourcing details.</span>
+        <span lang="zh">只與經認證的本地及國際供應商合作。每款藥材均附上中文名稱、拼音及完整的來源資訊，公開透明。</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA — dark band, two clear paths. -->
+<section class="sec about-cta reveal">
+  <div class="cta-inner">
+    <h2>
+      <span lang="en">Ready to begin?</span>
+      <span lang="zh">準備好了嗎？</span>
+    </h2>
+    <p>
+      <span lang="en">Book your first consultation, or try the free wellness assessment.</span>
+      <span lang="zh">立即預約您的首次問診，或先試試免費的體質評估。</span>
+    </p>
+    <div class="cta-row">
+      <a class="btn-v4 btn-dark" href="../v2/portal.html#/book">
+        <span lang="en">Book a consultation · 預約問診</span>
+        <span lang="zh">預約問診 · Book a consultation</span>
+      </a>
+      <a class="btn-v4 btn-outline" href="../v2/portal.html#/wellness-assessment">
+        <span lang="en">Try wellness assessment · 體質評估</span>
+        <span lang="zh">體質評估 · Try wellness assessment</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer-v4">
+  <div class="fg">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <svg viewBox="0 0 66 66" width="44" height="44" aria-hidden="true" style="opacity:0.95;flex-shrink:0;">
+          <rect x="1"  y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="1"  width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="10.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="23" width="20" height="20" fill="#B8965A"/><circle cx="33" cy="33" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="46" width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="55.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
+        </svg>
+        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+      </div>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+    </div>
+    <div>
+      <div class="flbl">Platform · 平台</div>
+      <a class="fl" href="../v2/services.html">Services · 服務</a>
+      <a class="fl" href="../v2/shop.html">Shop · 商店</a>
+      <a class="fl" href="../v2/portal.html#/book">Book · 預約</a>
+      <a class="fl" href="../v2/portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
+      <a class="fl" href="../v2/contact.html">Contact · 聯絡</a>
+    </div>
+    <div>
+      <div class="flbl">Account · 帳號</div>
+      <a class="fl" href="#/login">Sign In · 登入</a>
+      <a class="fl" href="#/register">Create Account · 註冊</a>
+      <a class="fl" href="#/login">Doctor Login · 醫師</a>
+      <a class="fl" href="#/login">Pharmacy Login · 藥房</a>
+    </div>
+    <div>
+      <div class="flbl">Compliance · 合規</div>
+      <a class="fl" href="../v2/privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <a class="fl" href="../v2/security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
+
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+    </div>
+  </div>
+  <div class="f-cert-row">
+    <div class="f-cert"><div class="f-cert-top">KKM</div><div class="f-cert-bot">Malaysia</div></div>
+    <div class="f-cert"><div class="f-cert-top">HALAL</div><div class="f-cert-bot">JAKIM</div></div>
+    <div class="f-cert"><div class="f-cert-top">NPRA</div><div class="f-cert-bot">Approved</div></div>
+    <div class="f-cert"><div class="f-cert-top">MOH</div><div class="f-cert-bot">Registered TCM</div></div>
+    <div class="f-cert"><div class="f-cert-top">T&amp;CM Act</div><div class="f-cert-bot">2016</div></div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心於馬來西亞</span>
+    <span>PDPA · T&amp;CM Act 2016</span>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp (desktop) -->
+<a class="wa-f" id="hm-wa-fab" target="_blank" rel="noopener" title="WhatsApp us" href="https://wa.me/601165600393">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+</a>
+
+<!-- ══════════════ AUTH MODAL (shown via hash router #/login #/register) ══════════════ -->
+<template id="tpl-auth-modal">
+  <div class="auth-modal">
+    <div class="tabs" style="margin-bottom: var(--s-5);">
+      <button class="tab" data-tab="login">Sign In · 登入</button>
+      <button class="tab" data-tab="register">Register · 註冊</button>
+      <button class="tab" data-tab="professional">Doctor/Pharmacy · 專業</button>
+    </div>
+
+    <form class="tab-panel" data-panel="login">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Welcome Back · 歡迎回來</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in with your email or phone · 以電郵或手機號碼登入</p>
+      <div class="field">
+        <label class="field-label" data-required>Email or Phone · 電郵或手機</label>
+        <input type="text" name="identifier" class="field-input" required autocomplete="username" placeholder="you@example.com  或  +60 12-345 6789">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required autocomplete="current-password">
+        <div class="field-error"></div>
+      </div>
+      <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+    </form>
+
+    <form class="tab-panel" data-panel="register">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Create Account · 建立帳號</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Free — takes less than a minute · 免費建立 · 不需一分鐘</p>
+      <div class="field">
+        <label class="field-label" data-required>Full Name · 姓名</label>
+        <input type="text" name="name" class="field-input" required autocomplete="name">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label">Phone · 電話</label>
+        <input type="tel" name="phone" class="field-input" autocomplete="tel" placeholder="+60 12-345 6789">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required minlength="8" autocomplete="new-password">
+        <div class="field-hint">Min 8 characters · 至少8字元</div>
+        <div class="field-error"></div>
+      </div>
+      <div class="field" style="margin-bottom: var(--s-3);">
+        <label class="consent-row">
+          <input type="checkbox" name="consent_pdpa" required>
+          <span class="consent-text">I consent to HansMed processing my personal data (name, email, phone, health information) in accordance with the <a href="../v2/privacy-policy.html" target="_blank">Privacy Policy</a> and Malaysia's PDPA 2010. · 本人同意依據私隱政策及《2010年個人資料保護法》處理個人資料。</span>
+        </label>
+      </div>
+      <div class="field" style="margin-bottom: var(--s-4);">
+        <label class="consent-row">
+          <input type="checkbox" name="consent_ai" required>
+          <span class="consent-text">I understand that HansMed uses AI-assisted wellness tools (tongue image analysis, constitution questionnaires) which are <strong>not medical diagnoses</strong>. Licensed practitioners review all AI-generated suggestions. · 本人知悉 AI 輔助工具並非醫療診斷，所有結果均由持牌中醫師審核。</span>
+        </label>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Create Account · 建立帳號</button>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">Both consents are required by Malaysian law and T&amp;CM Act 2016. · 兩項同意均為法例要求。</p>
+    </form>
+
+    <form class="tab-panel" data-panel="forgot">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Enter your email and we'll send a reset link · 輸入電郵以接收重設連結</p>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="email" class="field-input" required autocomplete="email">
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Send Reset Link · 寄送連結</button>
+      <div style="text-align:center; margin-top: var(--s-4);">
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+      </div>
+    </form>
+
+    <form class="tab-panel" data-panel="professional">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Professional Sign In · 專業人員登入</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">For doctors, pharmacies, and administrators · 醫師 / 藥房 / 管理員登入</p>
+      <div class="field">
+        <label class="field-label" data-required>Email · 電郵</label>
+        <input type="email" name="identifier" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>Password · 密碼</label>
+        <input type="password" name="password" class="field-input" required>
+        <div class="field-error"></div>
+      </div>
+      <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">
+        Need an account? Contact your administrator.
+      </p>
+    </form>
+  </div>
+</template>
+
+<!-- ══════════════ SCRIPTS — portal integration preserved ══════════════ -->
+<script src="../v2/assets/js/config.js"></script>
+<script src="../v2/assets/js/api.js"></script>
+<script src="../v2/assets/js/auth.js"></script>
+<script src="../v2/assets/js/bus.js"></script>
+<script src="../v2/assets/js/format.js"></script>
+<script src="../v2/assets/js/empty.js"></script>
+<script src="../v2/assets/js/ui.js"></script>
+<script src="../v2/assets/js/form.js"></script>
+<script src="../v2/assets/js/render.js"></script>
+<script src="../v2/assets/js/router.js"></script>
+<script src="../v2/assets/js/i18n.js"></script>
+<script src="../v2/assets/js/lang-switcher.js"></script>
+<script src="../v2/assets/js/pages/landing.js"></script>
+
+<!-- ══════════════ INLINE BEHAVIOUR ══════════════ -->
+<script>
+/* WhatsApp link wiring — single-source from HM.config. */
+(function () {
+  var num = (window.HM && HM.config && HM.config.CLINIC && HM.config.CLINIC.whatsapp) || '601165600393';
+  var href = 'https://wa.me/' + num.replace(/^\+/, '').replace(/\D/g, '');
+  ['hm-wa-drawer','hm-wa-bb','hm-wa-fab'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.setAttribute('href', href);
+  });
+})();
+</script>
+
+<script>
+/* About-dropdown toggle (matches index.html behaviour). */
+function toggleAboutMenu(e) {
+  if (e) e.stopPropagation();
+  var dd = document.getElementById('about-dropdown');
+  var ch = document.getElementById('about-chevron');
+  if (!dd) return;
+  var open = dd.style.display === 'block';
+  dd.style.display = open ? 'none' : 'block';
+  if (ch) ch.style.transform = open ? '' : 'rotate(180deg)';
+}
+document.addEventListener('click', function (e) {
+  var wrap = document.getElementById('about-wrap');
+  var dd   = document.getElementById('about-dropdown');
+  if (!wrap || !dd) return;
+  if (!wrap.contains(e.target)) {
+    dd.style.display = 'none';
+    var ch = document.getElementById('about-chevron');
+    if (ch) ch.style.transform = '';
+  }
+});
+
+/* Mobile drawer + sign-in / logout helpers — copied from
+   v3/index.html behaviour so nav buttons work the same here. */
+function toggleMob() {
+  var menu = document.getElementById('mob-menu');
+  var ham  = document.getElementById('ham');
+  if (!menu) return;
+  var open = menu.classList.toggle('is-open');
+  if (ham) ham.classList.toggle('is-open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeMob() {
+  var menu = document.getElementById('mob-menu');
+  var ham  = document.getElementById('ham');
+  if (menu) menu.classList.remove('is-open');
+  if (ham)  ham.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+function navMobSignin() {
+  closeMob();
+  if (window.HM && HM.auth && HM.auth.user && HM.auth.user()) {
+    var role = HM.auth.user().role || 'patient';
+    location.href = ({patient:'../v2/portal.html',doctor:'../v2/doctor.html',pharmacy:'../v2/pharmacy.html',admin:'../v2/admin.html'})[role] || '../v2/portal.html';
+  } else {
+    if (window.go) go('login');
+  }
+}
+function navLogout() {
+  if (window.HM && HM.auth && HM.auth.logout) HM.auth.logout();
+  closeMob();
+  location.reload();
+}
+function setLang(l) {
+  try { localStorage.setItem('hm-lang-pref', l); } catch (_) {}
+  document.documentElement.setAttribute('lang', l);
+  document.querySelectorAll('.lang-btn-v4, .mob-lb').forEach(function (b) {
+    b.classList.toggle('act', b.getAttribute('data-lang') === l);
+  });
+}
+</script>
+
+<!-- ══════════════ Visual-upgrade JS layer (Brief #8 reused) ══════════════
+     Smooth scroll (Lenis), scroll-reveal observer, image fade-in.
+     About page intentionally OMITS the hero parallax script —
+     the hero is shorter (60vh) and parallax adds little. All three
+     respect prefers-reduced-motion; smooth scroll also bows out on
+     touch devices and viewports ≤1024px. -->
+
+<!-- Lenis smooth scroll — desktop only. -->
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.0.42/dist/lenis.min.js" defer></script>
+<script>
+(function () {
+  function start() {
+    if (typeof Lenis === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if ('ontouchstart' in window || window.matchMedia('(max-width: 1024px)').matches) return;
+    var lenis = new Lenis({
+      duration: 1.05,
+      easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
+      smoothWheel: true
+    });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 0); });
+  } else {
+    setTimeout(start, 50);
+  }
+})();
+</script>
+
+<!-- Scroll-reveal observer. -->
+<script>
+(function () {
+  function reveal(el) { el.classList.add('is-visible'); }
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(reveal);
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        reveal(e.target);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0, rootMargin: '0px 0px 200px 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+<!-- Image fade-in on load. -->
+<script>
+(function () {
+  document.querySelectorAll('img.fade-in-load').forEach(function (img) {
+    if (img.complete && img.naturalWidth > 0) {
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load',  function () { img.classList.add('loaded'); }, { once: true });
+      img.addEventListener('error', function () { img.classList.add('loaded'); }, { once: true });
+    }
+  });
+})();
+</script>
+
+<script>
+/* Sign In → My Portal swap (auth-aware nav). When the visitor is
+   signed in, the "Sign In · 登入" nav button becomes "My Portal ·
+   我的入口" linking to their role-appropriate portal page. */
+(function () {
+  var PORTAL_URL = {
+    patient:  '../v2/portal.html',
+    doctor:   '../v2/doctor.html',
+    pharmacy: '../v2/pharmacy.html',
+    admin:    '../v2/admin.html'
+  };
+  function applySignInSwap() {
+    var user = (window.HM && HM.auth && typeof HM.auth.user === 'function') ? HM.auth.user() : null;
+    if (!user || !user.role) return;
+    var dest = PORTAL_URL[user.role] || '../v2/portal.html';
+    document.querySelectorAll('.nav-signin').forEach(function (el) {
+      el.setAttribute('onclick', "location.href='" + dest + "'");
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySignInSwap);
+  } else {
+    applySignInSwap();
+  }
+  window.addEventListener('storage', function (e) { if (e.key === 'hm_user') applySignInSwap(); });
+})();
+</script>
+
+</body>
+</html>
