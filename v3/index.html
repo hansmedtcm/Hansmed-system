@@ -1708,6 +1708,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <script src="../v2/assets/js/i18n.js"></script>
 <script src="../v2/assets/js/lang-switcher.js"></script>
 <script src="../v2/assets/js/pages/landing.js"></script>
+<!-- Bug-fix 2026-05-03: v3/index.html was missing about-dropdown.js,
+     so clicking the "About" nav button did nothing (toggleAboutMenu
+     undefined). Pulled in from v2 alongside the other shared scripts. -->
+<script src="../v2/assets/js/about-dropdown.js"></script>
 
 <!-- ══════════════ LANDING v4 INLINE BEHAVIOUR ══════════════ -->
 <script>
