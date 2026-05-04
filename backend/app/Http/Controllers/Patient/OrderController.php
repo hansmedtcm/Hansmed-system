@@ -295,11 +295,15 @@ class OrderController extends Controller
         }
 
         // Voucher application — preview to validate, then apply if ok.
+        // Brief #16: pass the authenticated user's id so per-user
+        // limits are enforced (and the redemption row carries the
+        // correct user reference for the admin "Used by" view).
         $voucher = null;
         $discount = 0.0;
+        $userId = $request->user()?->id;
         if (! empty($data['voucher_code'])) {
             $svc = app(\App\Services\VoucherService::class);
-            $preview = $svc->preview($data['voucher_code'], (float) $order->total, 'order');
+            $preview = $svc->preview($data['voucher_code'], (float) $order->total, 'order', $userId);
             if (! $preview['ok']) {
                 return response()->json(['message' => $preview['message']], 422);
             }
@@ -307,7 +311,7 @@ class OrderController extends Controller
             $discount = $preview['discount_amount'];
         }
 
-        return DB::transaction(function () use ($order, $data, $request, $voucher, $discount) {
+        return DB::transaction(function () use ($order, $data, $request, $voucher, $discount, $userId) {
             // Apply discount to order total before marking paid so the
             // pharmacy + finance reports see the discounted figure.
             if ($discount > 0) {
@@ -316,7 +320,16 @@ class OrderController extends Controller
                     'total'   => $newTotal,
                 ]);
                 if ($voucher) {
-                    app(\App\Services\VoucherService::class)->recordRedemption((int) $voucher->id);
+                    // Brief #16: record full redemption context (user
+                    // + ref + discount). The service is race-condition
+                    // safe via lockForUpdate inside its own transaction.
+                    app(\App\Services\VoucherService::class)->recordRedemption(
+                        (int) $voucher->id,
+                        $userId,
+                        'order',
+                        (int) $order->id,
+                        (float) $discount
+                    );
                 }
             }
 

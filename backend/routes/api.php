@@ -83,6 +83,11 @@ Route::get('/pages/{slug}', function (string $slug) {
 // Voucher preview — patient enters a code at payment, we validate
 // and return the discount preview. POST so the body carries the
 // scope ('appointment' | 'order') and amount cleanly.
+// Brief #16: pass authenticated user id (when present) so per-user
+// limits are enforced at preview time too — patient sees the "you
+// already used this" message before they think the discount is
+// pending. Public-by-default route, so user_id may legitimately be
+// null for unauthenticated previews; service handles that case.
 Route::post('/vouchers/preview', function (\Illuminate\Http\Request $r) {
     $data = $r->validate([
         'code'   => ['required', 'string', 'max:40'],
@@ -90,7 +95,8 @@ Route::post('/vouchers/preview', function (\Illuminate\Http\Request $r) {
         'scope'  => ['required', 'in:appointment,order'],
     ]);
     $svc = app(\App\Services\VoucherService::class);
-    return response()->json($svc->preview($data['code'], (float) $data['amount'], $data['scope']));
+    $uid = $r->user()?->id;
+    return response()->json($svc->preview($data['code'], (float) $data['amount'], $data['scope'], $uid));
 });
 
 // ── Public blog (no auth) ─────────────────────────────────────
@@ -393,10 +399,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get ('/storage-health',             [\App\Http\Controllers\Admin\MigrationController::class, 'storageHealth']);
 
         // Vouchers / discount codes
-        Route::get   ('/vouchers',       [\App\Http\Controllers\Admin\VoucherController::class, 'index']);
-        Route::post  ('/vouchers',       [\App\Http\Controllers\Admin\VoucherController::class, 'store']);
-        Route::patch ('/vouchers/{id}',  [\App\Http\Controllers\Admin\VoucherController::class, 'update']);
-        Route::delete('/vouchers/{id}',  [\App\Http\Controllers\Admin\VoucherController::class, 'destroy']);
+        Route::get   ('/vouchers',                       [\App\Http\Controllers\Admin\VoucherController::class, 'index']);
+        Route::post  ('/vouchers',                       [\App\Http\Controllers\Admin\VoucherController::class, 'store']);
+        Route::patch ('/vouchers/{id}',                  [\App\Http\Controllers\Admin\VoucherController::class, 'update']);
+        Route::delete('/vouchers/{id}',                  [\App\Http\Controllers\Admin\VoucherController::class, 'destroy']);
+        // Brief #16: per-voucher redemption list for the admin "Used by" modal.
+        Route::get   ('/vouchers/{id}/redemptions',      [\App\Http\Controllers\Admin\VoucherController::class, 'listRedemptions']);
 
         // Medicine catalogue (Timing Herbs master price list)
         // Static POST routes MUST register before the {id} wildcards below;

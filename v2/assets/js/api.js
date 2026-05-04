@@ -358,6 +358,8 @@
     createVoucher:   function (d) { return api.post('/admin/vouchers', d); },
     updateVoucher:   function (id, d) { return api.patch('/admin/vouchers/' + id, d); },
     deleteVoucher:   function (id) { return api.delete('/admin/vouchers/' + id); },
+    // Brief #16: per-voucher redemption list for the admin "Used by" modal.
+    listVoucherRedemptions: function (id) { return api.get('/admin/vouchers/' + id + '/redemptions'); },
     exportMedicineCsv:      function () { return api.get('/admin/medicine-catalog/export'); },
     importMedicineCsv:      function (file) {
       var fd = new FormData();

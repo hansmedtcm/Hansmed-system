@@ -46,9 +46,12 @@
         return;
       }
 
+      // Brief #16: added "Per Person" column + "Used by" action so
+      // admin can see who has redeemed each voucher and how many
+      // times each individual user can still use it.
       container.innerHTML = '<div class="table-wrap"><table class="table"><thead><tr>' +
         '<th>Code</th><th>Discount</th><th>Scope</th><th>Valid</th>' +
-        '<th>Used / Cap</th><th>Status</th><th></th>' +
+        '<th>Total Used / Cap</th><th>Per Person</th><th>Status</th><th></th>' +
         '</tr></thead><tbody></tbody></table></div>';
       var tbody = container.querySelector('tbody');
 
@@ -56,6 +59,10 @@
         var validRange = (v.valid_from || '—') + ' → ' + (v.valid_until || '—');
         if (!v.valid_from && !v.valid_until) validRange = '<span class="text-muted">always</span>';
         var usage = v.redemption_count + ' / ' + (v.max_redemptions || '∞');
+        // Brief #16: null per_user_limit = unlimited per person.
+        var perPersonLabel = (v.per_user_limit === null || v.per_user_limit === undefined)
+          ? '<span class="text-muted">∞</span>'
+          : String(v.per_user_limit);
         var statusBadge = v.is_active
           ? '<span class="badge badge--success">Active</span>'
           : '<span class="badge">Inactive</span>';
@@ -69,8 +76,10 @@
           '<td>' + scopeLabel + '</td>' +
           '<td class="text-xs">' + validRange + '</td>' +
           '<td>' + usage + '</td>' +
+          '<td class="text-xs">' + perPersonLabel + '</td>' +
           '<td>' + statusBadge + '</td>' +
-          '<td style="text-align:right;">' +
+          '<td style="text-align:right;white-space:nowrap;">' +
+          '<button class="btn btn--ghost btn--sm" data-usedby title="Show users who have redeemed">Used by</button> ' +
           '<button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
           '<button class="btn btn--ghost btn--sm" data-del style="color:var(--red-seal);">Delete</button>' +
           '</td>';
@@ -81,6 +90,7 @@
           try { await HM.api.admin.deleteVoucher(v.id); HM.ui.toast('Deleted · 已刪除', 'success'); load(); }
           catch (e) { HM.ui.toast(e.message || 'Failed', 'danger'); }
         });
+        tr.querySelector('[data-usedby]').addEventListener('click', function () { openUsedByModal(v); });
         tbody.appendChild(tr);
       });
     } catch (e) { HM.state.error(container, e); }
@@ -103,8 +113,17 @@
       '<div class="field-grid field-grid--2">' +
       '<div class="field"><label class="field-label" data-required>Discount % · 折扣百分比</label>' +
       '<input name="discount_pct" type="number" min="0.01" max="100" step="0.01" class="field-input field-input--boxed" value="' + (d.discount_pct || '10') + '" required></div>' +
-      '<div class="field"><label class="field-label">Max Redemptions · 使用上限</label>' +
+      '<div class="field"><label class="field-label">Max Redemptions · 總使用上限</label>' +
       '<input name="max_redemptions" type="number" min="1" class="field-input field-input--boxed" value="' + (d.max_redemptions || '') + '" placeholder="Leave blank = unlimited"></div>' +
+      '</div>' +
+
+      // Brief #16: per-user limit. Default 1 = each user can use this
+      // code only once. Blank = no per-person cap (only total cap).
+      '<div class="field"><label class="field-label">Max Uses Per Person · 每人使用次數上限</label>' +
+      '<input name="per_user_limit" type="number" min="1" class="field-input field-input--boxed" value="' +
+      (d.per_user_limit !== undefined && d.per_user_limit !== null ? d.per_user_limit : (isEdit ? '' : '1')) +
+      '" placeholder="Leave blank = unlimited per person">' +
+      '<div class="text-xs text-muted" style="margin-top:4px;">Default 1 — each user can use this code only once. Set higher for multi-use codes per person; leave blank to remove the per-person cap (only the total cap applies). · 預設每人 1 次；留空則每人不限次數。</div>' +
       '</div>' +
 
       '<div class="field-grid field-grid--2">' +
@@ -146,6 +165,13 @@
       if (! data.max_redemptions) data.max_redemptions = null;
       if (! data.valid_from)      data.valid_from = null;
       if (! data.valid_until)     data.valid_until = null;
+      // Brief #16: per_user_limit — blank means unlimited per person
+      // (send explicit null), otherwise coerce to integer.
+      if (! data.per_user_limit || data.per_user_limit === '') {
+        data.per_user_limit = null;
+      } else {
+        data.per_user_limit = parseInt(data.per_user_limit, 10);
+      }
       HM.form.setLoading(form, true);
       try {
         if (isEdit) await HM.api.admin.updateVoucher(v.id, data);
@@ -158,6 +184,50 @@
         HM.form.showGeneralError(form, err.message || 'Failed');
       }
     });
+  }
+
+  /**
+   * Brief #16 — "Used by" modal showing every user who has redeemed
+   * a voucher, with timestamps + the order/appointment ref + the
+   * actual discount amount applied. Sourced from the new
+   * voucher_redemptions table via /api/admin/vouchers/{id}/redemptions.
+   */
+  async function openUsedByModal(v) {
+    try {
+      var res = await HM.api.admin.listVoucherRedemptions(v.id);
+      var redemptions = res.data || [];
+      var content;
+      if (! redemptions.length) {
+        content = '<p class="text-muted">No one has used this voucher yet · 尚無人使用此優惠券</p>';
+      } else {
+        content = '<p class="text-xs text-muted mb-3">' +
+          redemptions.length + ' redemption' + (redemptions.length === 1 ? '' : 's') + ' total · ' +
+          '共 ' + redemptions.length + ' 次使用記錄。' +
+          '</p>' +
+          '<div class="table-wrap"><table class="table"><thead><tr>' +
+          '<th>User · 使用者</th><th>Email · 電郵</th><th>Applied to · 用途</th><th>Discount · 折扣</th><th>When · 時間</th>' +
+          '</tr></thead><tbody>' +
+          redemptions.map(function (r) {
+            var refLabel = r.ref_type ? (r.ref_type + (r.ref_id ? ' #' + r.ref_id : '')) : '—';
+            var userName = r.user_name || ('user #' + (r.user_id || '?'));
+            return '<tr>' +
+              '<td>' + HM.format.esc(userName) + '</td>' +
+              '<td class="text-xs">' + HM.format.esc(r.user_email || '—') + '</td>' +
+              '<td class="text-xs">' + HM.format.esc(refLabel) + '</td>' +
+              '<td>RM ' + parseFloat(r.discount_amount || 0).toFixed(2) + '</td>' +
+              '<td class="text-xs">' + HM.format.datetime(r.redeemed_at) + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>';
+      }
+      HM.ui.modal({
+        size: 'lg',
+        title: 'Used by · 使用記錄 — ' + v.code,
+        content: content,
+      });
+    } catch (e) {
+      HM.ui.toast(e.message || 'Failed to load redemptions', 'danger');
+    }
   }
 
   HM.adminPanels.vouchers = { render: render };
