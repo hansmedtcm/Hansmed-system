@@ -536,56 +536,6 @@
     return { en: s, zh: s };
   }
 
-  /**
-   * Brief #14a-fix-3: detect "(less)" / "(reduce)" / "(limit)" /
-   * "(avoid)" / "(no)" prefixes (and CJK equivalents 少 / 減 /
-   * 忌 / 避 / 限) on food / herb items so they can be routed to a
-   * "Limit" or "Use sparingly" bucket instead of being shown as
-   * recommended. Historical doctor_advice.foods arrays sometimes
-   * contain "(less) ice cream" entries — the renderer faithfully
-   * showed them as "Recommended foods: ice cream", which read
-   * the wrong way. Now they get a separate amber-tinted section.
-   *
-   *   "(less) ice cream"   → { isReduce: true,  cleaned: "ice cream" }
-   *   "(LESS) ice cream"   → { isReduce: true,  cleaned: "ice cream" }
-   *   "Balanced diet"      → { isReduce: false, cleaned: "Balanced diet" }
-   *   "(粳米、糯米)"       → { isReduce: false, cleaned: "(粳米、糯米)" }
-   *
-   * Object format ({en, zh}) is checked on both halves; if either
-   * carries the prefix, the item is treated as reduce and BOTH
-   * halves get cleaned. String format is processed directly.
-   * Non-matching items are returned unchanged so the caller can
-   * keep a stable reference for the regular bucket.
-   */
-  function detectReducePrefix(item) {
-    var REDUCE_PATTERNS = /^\s*\(\s*(less|reduce|limit|avoid|no|skip|moderate|少|減|忌|避|限)\s*\)\s*/i;
-
-    function process(str) {
-      var s = String(str == null ? '' : str);
-      var m = s.match(REDUCE_PATTERNS);
-      if (m) return { isReduce: true, cleaned: s.slice(m[0].length).trim() };
-      return { isReduce: false, cleaned: s };
-    }
-
-    if (item && typeof item === 'object' && (item.en || item.zh)) {
-      var en = process(item.en);
-      var zh = process(item.zh);
-      var isReduce = en.isReduce || zh.isReduce;
-      return {
-        isReduce: isReduce,
-        cleaned: isReduce
-          ? { en: en.cleaned, zh: zh.cleaned }
-          : item,
-      };
-    }
-
-    var r = process(item);
-    return {
-      isReduce: r.isReduce,
-      cleaned: r.isReduce ? r.cleaned : item,
-    };
-  }
-
   /** Find the question definition (with title/options) for a given q-id. */
   function findQuestion(qId) {
     return QS.find(function (q) { return q.id === qId; }) || null;
@@ -739,72 +689,32 @@
       }
     }
 
-    // Brief #14a-fix-3: split foods + herbs into REGULAR and REDUCE
-    // buckets so "(less) ice cream" doesn't read as a recommended
-    // food. Each item passes through detectReducePrefix; reduce
-    // items get a separate amber-tinted "Limit · 少量" section
-    // (or "Use sparingly · 慎用" for herbs) immediately after the
-    // recommended list. Sections render only when their bucket
-    // has items — empty buckets emit nothing.
-    function chipFor(item, extraClass, extraStyle) {
-      var parts = (item && typeof item === 'object' && (item.en || item.zh))
-        ? { en: item.en || item.zh || '', zh: item.zh || item.en || '' }
-        : splitBilingual(item);
-      return '<span class="chip' + (extraClass ? ' ' + extraClass : '') + '" style="' +
-        (extraStyle || 'background:var(--washi);border:1px solid var(--border);border-radius:12px;padding:3px 10px;') +
-        '">' + bilingual(parts.en, parts.zh) + '</span>';
-    }
-    var REDUCE_CHIP_STYLE = 'background:#FFF3CD;border:1px dashed #B5881A;border-radius:12px;padding:3px 10px;color:#6F5510;';
-
-    // ── Foods: split into regular vs reduce ────────────────────────
-    var regularFoods = [];
-    var reduceFoods  = [];
-    if (Array.isArray(adviceObj.foods)) {
-      adviceObj.foods.forEach(function (f) {
-        var d = detectReducePrefix(f);
-        if (d.isReduce) reduceFoods.push(d.cleaned);
-        else            regularFoods.push(f);
-      });
-    }
-    if (regularFoods.length) {
+    if (Array.isArray(adviceObj.foods) && adviceObj.foods.length) {
+      // Brief #14a-fix-2: handle BOTH new {en, zh} object format
+      // (from the restructured HERB_MAP — direct, no parsing) AND
+      // legacy concatenated strings ("山藥 Yam") via splitBilingual.
       sections.push('<div style="margin-bottom:12px;">' + head('Recommended foods', '建議食材') +
         '<div class="text-sm" style="display:flex;flex-wrap:wrap;gap:6px;">' +
-          regularFoods.map(function (f) { return chipFor(f); }).join('') +
-        '</div></div>');
-    }
-    if (reduceFoods.length) {
-      sections.push('<div style="margin-bottom:12px;">' + head('Limit · 少量', 'Limit · 少量') +
-        '<div class="text-xs" style="margin-bottom:6px;color:var(--muted);font-style:italic;">' +
-          bilingual('Consume in smaller amounts', '建議減量食用') +
-        '</div>' +
-        '<div class="text-sm" style="display:flex;flex-wrap:wrap;gap:6px;">' +
-          reduceFoods.map(function (f) { return chipFor(f, 'chip-reduce', REDUCE_CHIP_STYLE); }).join('') +
+          adviceObj.foods.map(function (f) {
+            var parts = (f && typeof f === 'object' && (f.en || f.zh))
+              ? { en: f.en || f.zh || '', zh: f.zh || f.en || '' }
+              : splitBilingual(f);
+            return '<span class="chip" style="background:var(--washi);border:1px solid var(--border);border-radius:12px;padding:3px 10px;">' +
+              bilingual(parts.en, parts.zh) + '</span>';
+          }).join('') +
         '</div></div>');
     }
 
-    // ── Herbs: same split (defensive for future data) ──────────────
-    var regularHerbs = [];
-    var reduceHerbs  = [];
-    if (Array.isArray(adviceObj.herbs)) {
-      adviceObj.herbs.forEach(function (h) {
-        var d = detectReducePrefix(h);
-        if (d.isReduce) reduceHerbs.push(d.cleaned);
-        else            regularHerbs.push(h);
-      });
-    }
-    if (regularHerbs.length) {
+    if (Array.isArray(adviceObj.herbs) && adviceObj.herbs.length) {
       sections.push('<div style="margin-bottom:12px;">' + head('Recommended herbs', '建議藥材') +
         '<div class="text-sm" style="display:flex;flex-wrap:wrap;gap:6px;">' +
-          regularHerbs.map(function (h) { return chipFor(h); }).join('') +
-        '</div></div>');
-    }
-    if (reduceHerbs.length) {
-      sections.push('<div style="margin-bottom:12px;">' + head('Use sparingly · 慎用', 'Use sparingly · 慎用') +
-        '<div class="text-xs" style="margin-bottom:6px;color:var(--muted);font-style:italic;">' +
-          bilingual('Use in smaller doses or under guidance', '建議少量或在指導下使用') +
-        '</div>' +
-        '<div class="text-sm" style="display:flex;flex-wrap:wrap;gap:6px;">' +
-          reduceHerbs.map(function (h) { return chipFor(h, 'chip-reduce', REDUCE_CHIP_STYLE); }).join('') +
+          adviceObj.herbs.map(function (h) {
+            var parts = (h && typeof h === 'object' && (h.en || h.zh))
+              ? { en: h.en || h.zh || '', zh: h.zh || h.en || '' }
+              : splitBilingual(h);
+            return '<span class="chip" style="background:var(--washi);border:1px solid var(--border);border-radius:12px;padding:3px 10px;">' +
+              bilingual(parts.en, parts.zh) + '</span>';
+          }).join('') +
         '</div></div>');
     }
 
