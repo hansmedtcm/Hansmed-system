@@ -21,6 +21,12 @@
 $frontend = env('APP_FRONTEND_ORIGIN');
 
 $allowed = array_values(array_filter([
+    // Brief #21: hansmedtcm.com is the new primary frontend host
+    // (apex + www both allowed). github.io kept as a transition
+    // fallback so any bookmarked /Hansmed-system/ links keep
+    // working; remove after 2-4 weeks of stable apex operation.
+    'https://hansmedtcm.com',
+    'https://www.hansmedtcm.com',
     'https://hansmedtcm.github.io',
     $frontend,
     // Local development

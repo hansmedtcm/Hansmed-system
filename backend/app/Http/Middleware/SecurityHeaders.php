@@ -14,7 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
  *       Stops browsers from MIME-sniffing JSON responses as HTML/JS.
  *   • X-Frame-Options: DENY
  *       Prevents the API from being framed (clickjacking defence).
- *       Frontend pages are on github.io and can frame normally.
+ *       Frontend pages are on hansmedtcm.com (custom domain via
+ *       GitHub Pages) and can frame normally.
  *   • Referrer-Policy: strict-origin-when-cross-origin
  *       Don't leak the full API URL to third parties.
  *   • Strict-Transport-Security: 1 year, subdomains, preload
@@ -28,9 +29,10 @@ use Symfony\Component\HttpFoundation\Response;
  *       script execution, no framing. The API never serves HTML so
  *       this is straightforward.
  *
- * Frontend pages on github.io get their own CSP via meta tags or
- * GitHub's own headers; this middleware deliberately doesn't try to
- * cover those because we don't serve them.
+ * Frontend pages on hansmedtcm.com (served by GitHub Pages with the
+ * github.io URL retained as a transition fallback) get their own CSP
+ * via meta tags or GitHub's own headers; this middleware deliberately
+ * doesn't try to cover those because we don't serve them.
  */
 class SecurityHeaders
 {
