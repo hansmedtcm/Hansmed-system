@@ -757,13 +757,34 @@
     var REDUCE_CHIP_STYLE = 'background:#FFF3CD;border:1px dashed #B5881A;border-radius:12px;padding:3px 10px;color:#6F5510;';
 
     // ── Foods: split into regular vs reduce ────────────────────────
+    // Brief #14a-fix-4: sticky reduce context. Once a reduce prefix
+    // is detected during iteration, ALL subsequent items in the same
+    // array inherit the reduce classification. Matches the real-world
+    // doctor data-entry pattern where comma-grouped reduce items get
+    // the prefix only on the first member, e.g.
+    //   ["Yam", "(less) ice cream", "cold drinks"]
+    //   → "Yam" recommended, "ice cream" + "cold drinks" both reduce.
+    // Trade-off: an interleaved "(less) X" + "Y recommended" array
+    // would mis-route Y to reduce, but that pattern is much rarer
+    // and far less harmful than the original bug (reduce items
+    // showing up as recommendations).
     var regularFoods = [];
     var reduceFoods  = [];
     if (Array.isArray(adviceObj.foods)) {
+      var stickyReduce = false;
       adviceObj.foods.forEach(function (f) {
         var d = detectReducePrefix(f);
-        if (d.isReduce) reduceFoods.push(d.cleaned);
-        else            regularFoods.push(f);
+        if (d.isReduce) {
+          stickyReduce = true;
+          reduceFoods.push(d.cleaned);
+        } else if (stickyReduce) {
+          // No explicit prefix on this item but we're in sticky-
+          // reduce mode — inherit the classification, push as-is
+          // (no cleaning needed since there was nothing to strip).
+          reduceFoods.push(f);
+        } else {
+          regularFoods.push(f);
+        }
       });
     }
     if (regularFoods.length) {
@@ -782,14 +803,21 @@
         '</div></div>');
     }
 
-    // ── Herbs: same split (defensive for future data) ──────────────
+    // ── Herbs: same split + same sticky logic (defensive) ──────────
     var regularHerbs = [];
     var reduceHerbs  = [];
     if (Array.isArray(adviceObj.herbs)) {
+      var stickyReduceH = false;
       adviceObj.herbs.forEach(function (h) {
         var d = detectReducePrefix(h);
-        if (d.isReduce) reduceHerbs.push(d.cleaned);
-        else            regularHerbs.push(h);
+        if (d.isReduce) {
+          stickyReduceH = true;
+          reduceHerbs.push(d.cleaned);
+        } else if (stickyReduceH) {
+          reduceHerbs.push(h);
+        } else {
+          regularHerbs.push(h);
+        }
       });
     }
     if (regularHerbs.length) {
