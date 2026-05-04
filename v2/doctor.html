@@ -189,6 +189,11 @@ html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
 <script src="assets/js/i18n.js"></script>
 <script src="assets/js/lang-switcher.js"></script>
 
+<!-- Brief #14a: shared Constitution Card component.
+     Used by both doctor and patient panels. Will eventually move to
+     v3/assets/js/components/ when v3 portal is built (Brief #15+).
+     MUST load before patients.js (which calls HM.constitutionCard.*). -->
+<script src="assets/js/components/constitution-card.js"></script>
 <script src="assets/js/panels/doctor/dashboard.js"></script>
 <script src="assets/js/panels/doctor/queue.js"></script>
 <script src="assets/js/panels/doctor/appointments.js"></script>

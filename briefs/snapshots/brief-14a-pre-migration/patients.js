@@ -1242,47 +1242,18 @@
         '<div>' + renderJsonAsRows(q.discomfort_areas) + '</div>' +
       '</div>';
 
-    // ── Constitution answers + dimensions + patterns + advice + tongue.
-    //     Rendered via the shared HM.constitutionCard component
-    //     (v2/assets/js/components/constitution-card.js — see Brief #14a).
-    //     The component knows the q1-q10 question text, dimension labels,
-    //     and herb/food/avoid mappings; previously this section dumped raw
-    //     JSON because the doctor module couldn't reach those dictionaries
-    //     (they were scoped to ai-diagnosis.js).
-    var META_KEYS = ['kind','review_status','reviewed_by','reviewed_at','review_note','chief_concern','lifestyle','diet','discomfort_areas','dimensions','patterns','doctor_advice','tongue_constitution','tongue_assessment_id','tongue_image_url'];
-    var qAnswers = {};
+    // ── 10-dimension constitution answers (everything in symptoms
+    //     except the metadata keys). ──
+    var META_KEYS = ['kind','review_status','reviewed_by','reviewed_at','review_note','chief_concern'];
+    var dims = {};
     Object.keys(sym).forEach(function (k) {
-      if (META_KEYS.indexOf(k) === -1) qAnswers[k] = sym[k];
+      if (META_KEYS.indexOf(k) === -1) dims[k] = sym[k];
     });
-
     var dimsBlock = '';
-    if (window.HM && HM.constitutionCard) {
-      var sections = '';
-      if (Object.keys(qAnswers).length) {
-        sections += '<div class="text-label mt-4 mb-2">🧭 Constitution answers · 體質問答</div>' +
-          '<div class="card" style="padding:var(--s-3);">' + HM.constitutionCard.renderAnswers(qAnswers) + '</div>';
-      }
-      if (sym.dimensions) {
-        sections += '<div class="text-label mt-4 mb-2">📊 Dimensions · 維度</div>' +
-          '<div class="card" style="padding:var(--s-3);">' + HM.constitutionCard.renderDimensions(sym.dimensions) + '</div>';
-      }
-      if (sym.patterns) {
-        sections += '<div class="text-label mt-4 mb-2">🎯 Patterns · 體質判定</div>' +
-          '<div class="card" style="padding:var(--s-3);">' + HM.constitutionCard.renderPatterns(sym.patterns) + '</div>';
-      }
-      if (sym.doctor_advice) {
-        sections += '<div class="text-label mt-4 mb-2">💡 Doctor\'s advice · 醫師建議</div>' +
-          '<div class="card" style="padding:var(--s-3);">' + HM.constitutionCard.renderAdvice(sym.doctor_advice) + '</div>';
-      }
-      if (sym.tongue_constitution) {
-        sections += '<div class="text-label mt-4 mb-2">👅 Tongue constitution · 舌診體質</div>' +
-          '<div class="card" style="padding:var(--s-3);">' + HM.constitutionCard.renderTongue(sym.tongue_constitution) + '</div>';
-      }
-      dimsBlock = sections;
-    } else {
-      // Fallback: component failed to load. Don't break the page.
-      dimsBlock = '<div class="text-label mt-4 mb-2">🧭 Constitution data · 體質資料</div>' +
-        '<div class="card" style="padding:var(--s-3);"><p class="text-xs text-muted">Constitution component failed to load. Please refresh the page.</p></div>';
+    if (Object.keys(dims).length) {
+      dimsBlock =
+        '<div class="text-label mt-4 mb-2">🧭 Constitution answers · 體質問答</div>' +
+        '<div class="card" style="padding:var(--s-3);">' + renderJsonAsRows(dims) + '</div>';
     }
 
     // ── Reviewing doctor's note (if any). ──

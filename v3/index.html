@@ -116,7 +116,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </div>
       </div>
       <a class="nl"     href="../v2/shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
-      <a class="nl"     href="../v2/portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
+      <a class="nl"     href="../portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
@@ -201,7 +201,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <span lang="en">Try AI Tongue Analysis · 試試 AI 舌診</span>
         <span lang="zh">試試 AI 舌診 · Try AI Tongue Analysis</span>
       </button>
-      <a class="hero-cta-secondary" href="../v2/portal.html#/book">
+      <a class="hero-cta-secondary" href="../portal.html#/book">
         <span lang="en">Or book a consultation →</span>
         <span lang="zh">或预约问诊 →</span>
       </a>
@@ -1550,8 +1550,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <div class="flbl">Platform · 平台</div>
       <a class="fl" href="../v2/services.html">Services · 服務</a>
       <a class="fl" href="../v2/shop.html">Shop · 商店</a>
-      <a class="fl" href="../v2/portal.html#/book">Book · 預約</a>
-      <a class="fl" href="../v2/portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
+      <a class="fl" href="../portal.html#/book">Book · 預約</a>
+      <a class="fl" href="../portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
       <a class="fl" href="../v2/contact.html">Contact · 聯絡</a>
     </div>
     <div>
@@ -1750,8 +1750,8 @@ var LANDING_ROUTES = {
   about:    function () { location.href = '../v2/about.html'; },
   services: function () { location.href = '../v2/services.html'; },
   shop:     function () { location.href = '../v2/shop.html'; },
-  book:     function () { location.href = '../v2/portal.html#/book'; },
-  wellness: function () { location.href = '../v2/portal.html#/wellness-assessment'; },
+  book:     function () { location.href = '../portal.html#/book'; },
+  wellness: function () { location.href = '../portal.html#/wellness-assessment'; },
   register: function () { location.hash = '#/register'; },
   login:    function () { location.hash = '#/login'; },
   contact:  function () { location.href = '../v2/contact.html'; },
@@ -2296,7 +2296,7 @@ function openOrganDetailModal(key) {
   // in-clock CTA was swapped from a booking link to 'View info'
   // per Brief #7 sub-task; education-led conversion).
   var organForCta = (CLOCK_ORGANS.filter(function (o) { return o.key === key; })[0] || {});
-  var ctaHref = '../v2/portal.html#/book?element=' + encodeURIComponent((data.element || '').split(' ')[0]) +
+  var ctaHref = '../portal.html#/book?element=' + encodeURIComponent((data.element || '').split(' ')[0]) +
                 '&organ=' + encodeURIComponent(data.enName);
 
   content.innerHTML =

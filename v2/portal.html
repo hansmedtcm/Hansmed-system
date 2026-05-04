@@ -295,6 +295,13 @@ html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
 <script src="assets/js/panels/patient/profile.js"></script>
 <script src="assets/js/panels/patient/health.js"></script>
 <script src="assets/js/panels/patient/booking.js"></script>
+<!-- Brief #14a: shared Constitution Card component.
+     Used by both doctor and patient panels. Will eventually move to
+     v3/assets/js/components/ when v3 portal is built (Brief #15+).
+     MUST load before ai-diagnosis.js (which pulls DIMS / QS /
+     FOLLOW_UPS / HERB_MAP / getConstitution / buildLifestyleTips
+     from HM.constitutionCard). -->
+<script src="assets/js/components/constitution-card.js"></script>
 <script src="assets/js/panels/patient/appointments.js"></script>
 <script src="assets/js/panels/patient/tongue.js"></script>
 <script src="assets/js/panels/patient/ai-diagnosis.js"></script>

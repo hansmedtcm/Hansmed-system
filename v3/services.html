@@ -106,7 +106,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </div>
       </div>
       <a class="nl"     href="../v2/shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
-      <a class="nl"     href="../v2/portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
+      <a class="nl"     href="../portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
@@ -332,7 +332,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </div>
       </details>
 
-      <a class="btn-v4 btn-dark service-cta" href="../v2/portal.html#/wellness-assessment">
+      <a class="btn-v4 btn-dark service-cta" href="../portal.html#/wellness-assessment">
         <span lang="en">Start free assessment</span>
         <span lang="zh">免費開始評估</span>
       </a>
@@ -421,7 +421,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </div>
       </details>
 
-      <a class="btn-v4 btn-dark service-cta" href="../v2/portal.html#/book">
+      <a class="btn-v4 btn-dark service-cta" href="../portal.html#/book">
         <span lang="en">Book a consultation</span>
         <span lang="zh">預約問診</span>
       </a>
@@ -575,11 +575,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <span lang="zh">立即預約您的首次問診，或先試試免費的體質評估。</span>
     </p>
     <div class="cta-row">
-      <a class="btn-v4 btn-dark" href="../v2/portal.html#/book">
+      <a class="btn-v4 btn-dark" href="../portal.html#/book">
         <span lang="en">Book a consultation · 預約問診</span>
         <span lang="zh">預約問診 · Book a consultation</span>
       </a>
-      <a class="btn-v4 btn-outline" href="../v2/portal.html#/wellness-assessment">
+      <a class="btn-v4 btn-outline" href="../portal.html#/wellness-assessment">
         <span lang="en">Try wellness assessment · 體質評估</span>
         <span lang="zh">體質評估 · Try wellness assessment</span>
       </a>
@@ -613,8 +613,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <div class="flbl">Platform · 平台</div>
       <a class="fl" href="services.html">Services · 服務</a>
       <a class="fl" href="../v2/shop.html">Shop · 商店</a>
-      <a class="fl" href="../v2/portal.html#/book">Book · 預約</a>
-      <a class="fl" href="../v2/portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
+      <a class="fl" href="../portal.html#/book">Book · 預約</a>
+      <a class="fl" href="../portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
       <a class="fl" href="../v2/contact.html">Contact · 聯絡</a>
     </div>
     <div>
@@ -705,7 +705,7 @@ function navMobSignin() {
   closeMob();
   if (window.HM && HM.auth && HM.auth.user && HM.auth.user()) {
     var role = HM.auth.user().role || 'patient';
-    location.href = ({patient:'../v2/portal.html',doctor:'../v2/doctor.html',pharmacy:'../v2/pharmacy.html',admin:'../v2/admin.html'})[role] || '../v2/portal.html';
+    location.href = ({patient:'../portal.html',doctor:'../doctor.html',pharmacy:'../pharmacy.html',admin:'../admin.html'})[role] || '../portal.html';
   } else {
     if (window.go) go('login');
   }
@@ -790,15 +790,15 @@ function setLang(l) {
 /* Sign In → My Portal swap (auth-aware nav). */
 (function () {
   var PORTAL_URL = {
-    patient:  '../v2/portal.html',
-    doctor:   '../v2/doctor.html',
-    pharmacy: '../v2/pharmacy.html',
-    admin:    '../v2/admin.html'
+    patient:  '../portal.html',
+    doctor:   '../doctor.html',
+    pharmacy: '../pharmacy.html',
+    admin:    '../admin.html'
   };
   function applySignInSwap() {
     var user = (window.HM && HM.auth && typeof HM.auth.user === 'function') ? HM.auth.user() : null;
     if (!user || !user.role) return;
-    var dest = PORTAL_URL[user.role] || '../v2/portal.html';
+    var dest = PORTAL_URL[user.role] || '../portal.html';
     document.querySelectorAll('.nav-signin').forEach(function (el) {
       el.setAttribute('onclick', "location.href='" + dest + "'");
     });
