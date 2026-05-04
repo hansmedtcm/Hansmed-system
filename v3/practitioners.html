@@ -22,6 +22,22 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <meta name="theme-color" content="#F5F0E8">
 <title>Our Practitioners · 醫師 · HansMed Modern TCM</title>
 
+<!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hansmedtcm.github.io/Hansmed-system/v3/practitioners.html">
+<meta property="og:title" content="Our Practitioners · Licensed by Malaysia's T&amp;CM Council">
+<meta property="og:description" content="Our TCM practitioners are licensed by Malaysia's T&amp;CM Council. Profiles coming soon — email us for matching and we'll introduce the right practitioner for your concern.">
+<meta property="og:image" content="https://hansmedtcm.github.io/Hansmed-system/v3/assets/img/hero-bg.webp">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta property="og:site_name" content="HansMed Modern TCM">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Our Practitioners · Licensed by Malaysia's T&amp;CM Council">
+<meta name="twitter:description" content="Our TCM practitioners are licensed by Malaysia's T&amp;CM Council. Profiles coming soon — email us for matching and we'll introduce the right practitioner for your concern.">
+<meta name="twitter:image" content="https://hansmedtcm.github.io/Hansmed-system/v3/assets/img/hero-bg.webp">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
@@ -43,15 +59,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <link rel="preload" as="image" href="assets/img/practitioner-placeholder.webp" fetchpriority="high">
 </head>
 <body class="landing-v4">
-<!-- Preview banner — Brief #11 v3/practitioners.html. -->
-<div id="preview-banner" style="position:sticky;top:0;left:0;right:0;z-index:10000;background:linear-gradient(90deg,#B5881A,#9A7A3E);color:#fff;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;text-align:center;letter-spacing:0.02em;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
-  <span lang="en">⚠️ Preview version — this is a draft of the new practitioners page. </span>
-  <span lang="zh">⚠️ 预览版 — 这是新版医师页面的草稿。</span>
-  <a href="../v2/practitioners.html" style="color:#fff;text-decoration:underline;margin-left:8px;font-weight:600;">
-    <span lang="en">View current live Practitioners page →</span>
-    <span lang="zh">查看现行医师页 →</span>
-  </a>
-</div>
+<!-- (Preview banner removed 2026-05-03 at v3 cutover. v3 is now
+     the live site; v2 stays at /v2/ as backup. To re-enable a
+     preview banner here for a future redesign, restore the
+     #preview-banner block from git history.) -->
 <a href="#main" class="skip-link" style="position:absolute;left:-9999px;">Skip to main content</a>
 
 <!-- ══════════════ NAV ══════════════ -->
@@ -629,6 +640,10 @@ function setLang(l) {
   window.addEventListener('storage', function (e) { if (e.key === 'hm_user') applySignInSwap(); });
 })();
 </script>
+
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "b22decee5e7940658a78263e5e8b9fb6"}'></script>
+<!-- End Cloudflare Web Analytics -->
 
 </body>
 </html>

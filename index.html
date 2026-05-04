@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- v3 cutover 2026-05-03: this file makes the bare repo URL
+     redirect to the v3 homepage. v2 stays accessible at /v2/ as
+     backup. To rollback, change "v3/index.html" below to
+     "v2/index.html" and re-deploy. See ROLLBACK.md for the full
+     5-minute revert procedure. -->
+<meta http-equiv="refresh" content="0; url=v3/index.html">
+<title>HansMed Modern TCM · 漢方現代中醫</title>
+<link rel="canonical" href="v3/index.html">
+<style>
+  body { font-family: 'DM Sans', sans-serif; padding: 40px 20px; text-align: center; color: #2C2620; background: #F5F1EA; }
+  a { color: #B5881A; }
+</style>
+</head>
+<body>
+<p>Redirecting to HansMed Modern TCM…</p>
+<p>If you are not redirected automatically, <a href="v3/index.html">click here</a>.</p>
+<p style="margin-top: 32px; font-size: 12px; color: #6B645C;">
+  Looking for the previous version?
+  <a href="v2/index.html">View v2 site →</a>
+</p>
+<script>
+  // JS fallback — fires before the meta-refresh in modern browsers.
+  location.replace('v3/index.html');
+</script>
+</body>
+</html>
