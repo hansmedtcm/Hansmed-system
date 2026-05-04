@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>try{var u=JSON.parse(localStorage.getItem("hm_user")||"null");if(u&&u.role){document.documentElement.classList.add("is-auth");document.documentElement.dataset.role=u.role;}}catch(_){}</script>
+<script>try{if(localStorage.getItem("hm-shop-enabled")==="0")document.documentElement.classList.add("shop-disabled");}catch(_){}</script>
+<script>try{var p=localStorage.getItem('hm-lang-pref');if(p==='zh')document.documentElement.setAttribute('lang','zh');else document.documentElement.setAttribute('lang','en');}catch(_){}</script>
+<style>
+/* Synchronous language hide — applies before lang-switcher.js runs. */
+html[lang="en"] [lang="zh"],
+html[lang="en"] .hm-lang-zh,
+html[lang="en"] .bi-zh { display: none !important; }
+html[lang="zh"] [lang="en"],
+html[lang="zh"] .hm-lang-en,
+html[lang="zh"] .bi-en { display: none !important; }
+html[lang="en"] .hm-lang-sep { display: none; }
+html[lang="zh"] .hm-lang-sep { display: none; }
+</style>
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
+<meta name="description" content="Our TCM practitioners are licensed by Malaysia's T&CM Council. Profiles coming soon — email us for matching and we'll introduce the right practitioner for your concern.">
+<meta name="theme-color" content="#F5F0E8">
+<title>Our Practitioners · 醫師 · HansMed Modern TCM</title>
+
+<!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hansmedtcm.github.io/Hansmed-system/v3/practitioners.html">
+<meta property="og:title" content="Our Practitioners · Licensed by Malaysia's T&amp;CM Council">
+<meta property="og:description" content="Our TCM practitioners are licensed by Malaysia's T&amp;CM Council. Profiles coming soon — email us for matching and we'll introduce the right practitioner for your concern.">
+<meta property="og:image" content="https://hansmedtcm.github.io/Hansmed-system/v3/assets/img/hero-bg.webp">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta property="og:site_name" content="HansMed Modern TCM">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Our Practitioners · Licensed by Malaysia's T&amp;CM Council">
+<meta name="twitter:description" content="Our TCM practitioners are licensed by Malaysia's T&amp;CM Council. Profiles coming soon — email us for matching and we'll introduce the right practitioner for your concern.">
+<meta name="twitter:image" content="https://hansmedtcm.github.io/Hansmed-system/v3/assets/img/hero-bg.webp">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'ZhengYanKaiTi';
+    src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+         local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
+    font-display: swap;
+  }
+</style>
+
+<link rel="stylesheet" href="../v2/assets/css/tokens.css">
+<link rel="stylesheet" href="../v2/assets/css/base.css">
+<link rel="stylesheet" href="../v2/assets/css/components.css">
+<link rel="stylesheet" href="../v2/assets/css/landing-v4.css">
+<link rel="stylesheet" href="../v2/assets/css/dropdown.css">
+<link rel="stylesheet" href="assets/css/visual-upgrade.css">
+<link rel="preload" as="image" href="assets/img/practitioner-placeholder.webp" fetchpriority="high">
+</head>
+<body class="landing-v4">
+<!-- (Preview banner removed 2026-05-03 at v3 cutover. v3 is now
+     the live site; v2 stays at /v2/ as backup. To re-enable a
+     preview banner here for a future redesign, restore the
+     #preview-banner block from git history.) -->
+<a href="#main" class="skip-link" style="position:absolute;left:-9999px;">Skip to main content</a>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav id="nav-v4">
+  <div class="nav-in">
+    <button class="nav-brand-v4" onclick="location.href='index.html'">
+      <img src="../v2/assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
+      <span lang="en" style="display:flex;align-items:baseline;">
+        <span class="nav-bn">HansMed</span>
+      </span>
+      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;">
+        <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span></span>
+    </button>
+    <div class="nav-links-v4">
+      <a class="nl" href="index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <!-- About dropdown wrapper. Practitioners is the active item
+           inside the dropdown on this page (dd-prac is-current). -->
+      <div style="position:relative;display:inline-block;" id="about-wrap">
+        <button id="about-trigger" type="button" class="nl act" onclick="toggleAboutMenu(event)">
+          <span lang="en">About</span><span lang="zh">關於</span>
+          <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none"
+            style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="about-dropdown"
+          style="display:none;position:absolute;top:calc(100% + 6px);left:0;
+                 min-width:190px;background:#FEFCF8;border:1px solid #D8C9AE;
+                 border-radius:10px;box-shadow:0 8px 32px rgba(36,22,8,0.12);
+                 z-index:9999;overflow:hidden;padding:4px 0;">
+          <div style="height:2px;background:linear-gradient(90deg,transparent,#B5881A,transparent);"></div>
+          <a id="dd-about"   href="about.html"                 class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
+          <a id="dd-prac"    href="practitioners.html"         class="dd-item is-current"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
+          <a id="dd-svc"     href="services.html"              class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a id="dd-blog"    href="../v2/blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
+          <a id="dd-faq"     href="../v2/faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
+          <a id="dd-contact" href="../v2/contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+        </div>
+      </div>
+      <a class="nl"     href="../v2/shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
+      <a class="nl"     href="../v2/portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
+      <div class="lang-wrap">
+        <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
+        <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
+      </div>
+      <button class="nl nav-signin" onclick="go('login')" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
+      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
+    </div>
+    <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-menu" id="mob-menu">
+  <div style="padding:20px 0;">
+    <button class="mob-nl" onclick="location.href='index.html'"><span lang="en">Home</span><span lang="zh">首頁</span></button>
+    <button class="mob-nl" onclick="location.href='about.html'"><span lang="en">About</span><span lang="zh">關於我們</span></button>
+    <button class="mob-nl" onclick="location.href='practitioners.html'"><span lang="en">Practitioners</span><span lang="zh">醫師</span></button>
+    <button class="mob-nl" onclick="location.href='services.html'"><span lang="en">Services</span><span lang="zh">服務項目</span></button>
+    <button class="mob-nl" onclick="go('shop');closeMob();"><span lang="en">Shop</span><span lang="zh">中藥商店</span></button>
+    <button class="mob-nl" onclick="go('wellness');closeMob();"><span lang="en">AI Wellness Assessment</span><span lang="zh">AI 健康評估</span></button>
+    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">聯絡我們</span></button>
+    <button class="mob-nl mob-nl-signin" onclick="navMobSignin()"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
+    <button class="mob-nl mob-nl-logout" onclick="navLogout()" style="display:none;color:#9a3a2a;"><span lang="en">Sign Out</span><span lang="zh">登出</span></button>
+    <div class="mob-lang">
+      <button id="mlen" class="mob-lb act" data-lang="en" onclick="setLang('en')">EN</button>
+      <button id="mlzh" class="mob-lb"     data-lang="zh" onclick="setLang('zh')">中</button>
+    </div>
+    <div class="mob-ctas">
+      <button class="btn-v4 btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">預約</span></button>
+      <button class="btn-v4 btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();"><span lang="en">Create Account</span><span lang="zh">建立帳號</span></button>
+      <a class="btn-v4 btn-wa" id="hm-wa-drawer" target="_blank" rel="noopener" style="width:100%;padding:15px;font-size:15px;justify-content:center;" href="https://wa.me/601165600393">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        WhatsApp Us
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY BOTTOM BAR (mobile) -->
+<div class="bottom-bar" id="bottom-bar">
+  <a class="bb-wa" id="hm-wa-bb" target="_blank" rel="noopener" href="https://wa.me/601165600393">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+    WhatsApp
+  </a>
+  <button class="bb-book" onclick="go('book')">📅 Book · 預約</button>
+</div>
+
+<!-- ══════════════ PRACTITIONERS PAGE ══════════════ -->
+<main id="main">
+
+<!-- Hero — image-led, honest about the placeholder state. The
+     trust signal lives in licensing + the matching process below,
+     not in faces we don't have yet. -->
+<section class="hero-v3 practitioners-hero" style="background-image: url('assets/img/practitioner-placeholder.webp');">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="eyebrow" style="margin-bottom:24px;">
+      <span lang="en">Our practitioners</span>
+      <span lang="zh">我們的醫師</span>
+    </div>
+    <h1 class="hero-h1">
+      <span lang="en">Licensed. Experienced. <em>Approachable.</em></span>
+      <span lang="zh">持牌 · 經驗 · <em>平易近人</em></span>
+    </h1>
+    <p class="hero-sub">
+      <span lang="en">Every TCM practitioner on HansMed is registered with Malaysia's T&amp;CM Council. Individual profiles are coming soon — for now, contact us and we'll match you with the right practitioner for your concern.</span>
+      <span lang="zh">HansMed 所有中醫師均於馬來西亞傳統與輔助醫藥局註冊。個人介紹即將推出 —— 目前請聯絡我們，我們會為您匹配適合的中醫師。</span>
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════ Trust + licensing ══════════════ -->
+<section class="sec sec-white practitioners-trust">
+  <div class="sh center reveal" style="margin-bottom:36px;">
+    <div class="eyebrow">
+      <span lang="en">Licensing &amp; standards</span>
+      <span lang="zh">執照與標準</span>
+    </div>
+    <h2>
+      <span lang="en">What "<em>licensed</em>" actually means</span>
+      <span lang="zh">"<em>持牌</em>" 究竟意味著什麼</span>
+    </h2>
+  </div>
+
+  <div class="trust-grid">
+    <div class="trust-item reveal">
+      <div class="trust-num">01</div>
+      <h3>
+        <span lang="en">T&amp;CM Council registration</span>
+        <span lang="zh">T&amp;CM 局註冊</span>
+      </h3>
+      <p>
+        <span lang="en">Every practitioner is registered with Malaysia's Traditional and Complementary Medicine Council under the T&amp;CM Act 2016. Their registration number is verifiable through the Council's public register.</span>
+        <span lang="zh">每位醫師均依 2016 年 T&amp;CM 法令於馬來西亞傳統與輔助醫藥局註冊，註冊號碼可於 T&amp;CM 局公開名冊查詢。</span>
+      </p>
+    </div>
+    <div class="trust-item reveal" style="transition-delay:0.04s;">
+      <div class="trust-num">02</div>
+      <h3>
+        <span lang="en">Verified credentials</span>
+        <span lang="zh">學歷驗證</span>
+      </h3>
+      <p>
+        <span lang="en">We check each practitioner's TCM degree (typically a 5-year programme from a recognised TCM university), clinical training records, and continuing professional development before they join the platform.</span>
+        <span lang="zh">每位醫師加入前，我們會驗證其中醫學歷（通常為認可中醫大學的五年制課程）、臨床訓練記錄、以及持續進修證明。</span>
+      </p>
+    </div>
+    <div class="trust-item reveal" style="transition-delay:0.08s;">
+      <div class="trust-num">03</div>
+      <h3>
+        <span lang="en">Annual re-verification</span>
+        <span lang="zh">每年複核</span>
+      </h3>
+      <p>
+        <span lang="en">Registration is re-checked annually. If a practitioner's registration lapses or is suspended, they are removed from HansMed immediately.</span>
+        <span lang="zh">註冊每年複核。若醫師註冊失效或被暫停，將立即從 HansMed 移除。</span>
+      </p>
+    </div>
+    <div class="trust-item reveal" style="transition-delay:0.12s;">
+      <div class="trust-num">04</div>
+      <h3>
+        <span lang="en">Professional indemnity</span>
+        <span lang="zh">專業責任保險</span>
+      </h3>
+      <p>
+        <span lang="en">All practising practitioners carry professional indemnity insurance, in line with T&amp;CM Council guidance and best practice for telemedicine.</span>
+        <span lang="zh">所有執業醫師均持有專業責任保險，符合 T&amp;CM 局指引與遠程醫療最佳做法。</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ Meet our team — placeholder cards ══════════════ -->
+<section class="sec sec-alt practitioners-grid-section has-rice-bg">
+  <div class="sh center reveal" style="margin-bottom:36px;">
+    <div class="eyebrow">
+      <span lang="en">Meet our team</span>
+      <span lang="zh">認識我們的團隊</span>
+    </div>
+    <h2>
+      <span lang="en">Profiles <em>coming soon</em></span>
+      <span lang="zh">醫師介紹 <em>即將推出</em></span>
+    </h2>
+    <p class="practitioners-intro">
+      <span lang="en">We're collecting permission and writing each practitioner's profile right now. In the meantime, the contact form below puts you in touch with our team — tell us your concern and we'll introduce you to the practitioner who fits best.</span>
+      <span lang="zh">我們正在收集授權並撰寫每位醫師的介紹。在此期間，下方的聯絡表格會將您與我們的團隊連繫 —— 告訴我們您的健康關注，我們會為您介紹最適合的醫師。</span>
+    </p>
+  </div>
+
+  <div class="practitioners-card-grid">
+    <div class="practitioner-card-placeholder reveal">
+      <div class="practitioner-card-img">
+        <img src="assets/img/practitioner-placeholder.webp" alt="" loading="lazy" class="fade-in-load">
+      </div>
+      <div class="practitioner-card-meta">
+        <div class="practitioner-card-tag">
+          <span lang="en">Practitioner profile</span>
+          <span lang="zh">醫師介紹</span>
+        </div>
+        <div class="practitioner-card-soon">
+          <span lang="en">Coming soon · 即將推出</span>
+          <span lang="zh">即將推出 · Coming soon</span>
+        </div>
+      </div>
+    </div>
+    <div class="practitioner-card-placeholder reveal" style="transition-delay:0.04s;">
+      <div class="practitioner-card-img">
+        <img src="assets/img/practitioner-placeholder.webp" alt="" loading="lazy" class="fade-in-load">
+      </div>
+      <div class="practitioner-card-meta">
+        <div class="practitioner-card-tag">
+          <span lang="en">Practitioner profile</span>
+          <span lang="zh">醫師介紹</span>
+        </div>
+        <div class="practitioner-card-soon">
+          <span lang="en">Coming soon · 即將推出</span>
+          <span lang="zh">即將推出 · Coming soon</span>
+        </div>
+      </div>
+    </div>
+    <div class="practitioner-card-placeholder reveal" style="transition-delay:0.08s;">
+      <div class="practitioner-card-img">
+        <img src="assets/img/practitioner-placeholder.webp" alt="" loading="lazy" class="fade-in-load">
+      </div>
+      <div class="practitioner-card-meta">
+        <div class="practitioner-card-tag">
+          <span lang="en">Practitioner profile</span>
+          <span lang="zh">醫師介紹</span>
+        </div>
+        <div class="practitioner-card-soon">
+          <span lang="en">Coming soon · 即將推出</span>
+          <span lang="zh">即將推出 · Coming soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ How we examine you — 四診合參 ══════════════ -->
+<section class="sec sec-white practitioners-method">
+  <div class="practitioners-method-inner">
+    <div class="practitioners-method-img reveal">
+      <img src="assets/img/brand-story.webp" alt="A practitioner taking a patient's pulse" loading="lazy" class="fade-in-load" width="1200" height="1500">
+    </div>
+    <div class="practitioners-method-text reveal">
+      <div class="eyebrow" style="margin-bottom:14px;">
+        <span lang="en">How we examine you</span>
+        <span lang="zh">如何為您診察</span>
+      </div>
+      <h2>
+        <span lang="en">The four classical methods, <em>still the foundation</em></span>
+        <span lang="zh">四診合參 · <em>始終是根本</em></span>
+      </h2>
+      <p class="practitioners-method-lead">
+        <span lang="en">No matter which HansMed practitioner you see, every consultation follows the four classical TCM methods of examination — refined over 2,000 years of clinical practice.</span>
+        <span lang="zh">無論您見的是哪位 HansMed 中醫師，每次問診都依循中醫四診合參 —— 經兩千年臨床實踐淬鍊而成。</span>
+      </p>
+
+      <ul class="four-methods">
+        <li>
+          <span class="fm-zh" aria-hidden="true">望</span>
+          <div>
+            <strong><span lang="en">Observe · 望</span><span lang="zh">望 · Observe</span></strong>
+            <p><span lang="en">The practitioner looks at your overall complexion, posture, demeanor, and tongue. Tongue observation alone reveals constitutional patterns and acute imbalances.</span><span lang="zh">醫師觀察您整體面色、神態、姿勢、舌象。單舌診即可反映體質傾向與當前失衡。</span></p>
+          </div>
+        </li>
+        <li>
+          <span class="fm-zh" aria-hidden="true">聞</span>
+          <div>
+            <strong><span lang="en">Listen + smell · 聞</span><span lang="zh">聞 · Listen &amp; smell</span></strong>
+            <p><span lang="en">Voice tone, breathing patterns, cough quality. In TCM "聞" covers both listening and (when relevant) smell — both reveal organ system imbalances.</span><span lang="zh">聲音、呼吸、咳嗽性質。中醫「聞」涵蓋聽聲與嗅味，皆反映臟腑失調。</span></p>
+          </div>
+        </li>
+        <li>
+          <span class="fm-zh" aria-hidden="true">問</span>
+          <div>
+            <strong><span lang="en">Ask · 問</span><span lang="zh">問 · Ask</span></strong>
+            <p><span lang="en">Detailed history-taking: chief complaint, symptom timing, sleep, appetite, digestion, energy, emotions, menstrual cycle (if applicable). The conversation is the longest part of any TCM consultation.</span><span lang="zh">詳細問診：主訴、症狀時程、睡眠、食慾、消化、體力、情志、月經（如適用）。對話是每次中醫問診中最長的部分。</span></p>
+          </div>
+        </li>
+        <li>
+          <span class="fm-zh" aria-hidden="true">切</span>
+          <div>
+            <strong><span lang="en">Palpate (pulse) · 切</span><span lang="zh">切 · Palpate</span></strong>
+            <p><span lang="en">Pulse-taking at the wrist (six positions, three depths). Each position reflects an organ system. For video consultations, the practitioner may ask you to describe pulse-related symptoms in lieu of physical palpation.</span><span lang="zh">寸口脈診（三部九候）。每個部位反映一個臟腑。視訊問診時，醫師可能會請您描述脈相相關症狀以代替親自切脈。</span></p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ Three ways to get matched ══════════════ -->
+<section class="sec sec-white practitioners-match">
+  <div class="match-inner">
+    <div class="eyebrow center reveal" style="display:inline-flex;">
+      <span lang="en">Find your practitioner</span>
+      <span lang="zh">為您匹配醫師</span>
+    </div>
+    <h2 class="match-h reveal">
+      <span lang="en">Three ways to <em>get matched today</em></span>
+      <span lang="zh">三種方式 <em>立即為您匹配</em></span>
+    </h2>
+
+    <div class="match-grid">
+      <div class="match-card reveal">
+        <div class="match-num">01</div>
+        <h3><span lang="en">Email us your concern</span><span lang="zh">將您的健康關注寄給我們</span></h3>
+        <p><span lang="en">Send us a brief note describing what brings you in. We respond within one business day with a practitioner suggestion and available consultation slots.</span><span lang="zh">簡短說明您的健康關注，我們會於一個工作日內回覆，並提供醫師建議與可預約時段。</span></p>
+        <a class="match-link" href="mailto:hansmed.moderntcm@gmail.com">hansmed.moderntcm@gmail.com →</a>
+      </div>
+      <div class="match-card reveal" style="transition-delay:0.04s;">
+        <div class="match-num">02</div>
+        <h3><span lang="en">Take the wellness assessment first</span><span lang="zh">先做體質評估</span></h3>
+        <p><span lang="en">If you're not sure where to start, complete the free AI Wellness Assessment. The reviewing practitioner can recommend whether to book a consultation and which type.</span><span lang="zh">若不確定從何開始，先完成免費 AI 體質評估。審核醫師可建議是否需要預約問診以及哪一種。</span></p>
+        <a class="match-link" href="../v2/portal.html#/wellness-assessment">
+          <span lang="en">Start free assessment →</span>
+          <span lang="zh">免費開始評估 →</span>
+        </a>
+      </div>
+      <div class="match-card reveal" style="transition-delay:0.08s;">
+        <div class="match-num">03</div>
+        <h3><span lang="en">Just book — we'll match</span><span lang="zh">直接預約 · 由我們匹配</span></h3>
+        <p><span lang="en">Skip the matching step and book directly. Tell us your concern in the booking form; we route you to the practitioner whose specialty fits.</span><span lang="zh">略過匹配步驟，直接預約。在預約表格中說明您的關注，我們會將您安排給最合適的醫師。</span></p>
+        <a class="match-link" href="../v2/portal.html#/book">
+          <span lang="en">Book a consultation →</span>
+          <span lang="zh">預約問診 →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA — dark band, two clear paths. -->
+<section class="sec about-cta reveal">
+  <div class="cta-inner">
+    <h2>
+      <span lang="en">Ready to begin?</span>
+      <span lang="zh">準備好了嗎？</span>
+    </h2>
+    <p>
+      <span lang="en">Book your first consultation, or try the free wellness assessment.</span>
+      <span lang="zh">立即預約您的首次問診，或先試試免費的體質評估。</span>
+    </p>
+    <div class="cta-row">
+      <a class="btn-v4 btn-dark" href="../v2/portal.html#/book">
+        <span lang="en">Book a consultation · 預約問診</span>
+        <span lang="zh">預約問診 · Book a consultation</span>
+      </a>
+      <a class="btn-v4 btn-outline" href="../v2/portal.html#/wellness-assessment">
+        <span lang="en">Try wellness assessment · 體質評估</span>
+        <span lang="zh">體質評估 · Try wellness assessment</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer-v4">
+  <div class="fg">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <svg viewBox="0 0 66 66" width="44" height="44" aria-hidden="true" style="opacity:0.95;flex-shrink:0;">
+          <rect x="1"  y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="1"  width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="10.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="23" width="20" height="20" fill="#B8965A"/><circle cx="33" cy="33" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
+          <rect x="1"  y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
+          <rect x="23" y="46" width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="55.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
+          <rect x="46" y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
+        </svg>
+        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+      </div>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+    </div>
+    <div>
+      <div class="flbl">Platform · 平台</div>
+      <a class="fl" href="services.html">Services · 服務</a>
+      <a class="fl" href="../v2/shop.html">Shop · 商店</a>
+      <a class="fl" href="../v2/portal.html#/book">Book · 預約</a>
+      <a class="fl" href="../v2/portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
+      <a class="fl" href="../v2/contact.html">Contact · 聯絡</a>
+    </div>
+    <div>
+      <div class="flbl">Account · 帳號</div>
+      <a class="fl" href="#/login">Sign In · 登入</a>
+      <a class="fl" href="#/register">Create Account · 註冊</a>
+      <a class="fl" href="#/login">Doctor Login · 醫師</a>
+      <a class="fl" href="#/login">Pharmacy Login · 藥房</a>
+    </div>
+    <div>
+      <div class="flbl">Compliance · 合規</div>
+      <a class="fl" href="../v2/privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <a class="fl" href="../v2/security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
+
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+    </div>
+  </div>
+  <div class="f-cert-row">
+    <div class="f-cert"><div class="f-cert-top">KKM</div><div class="f-cert-bot">Malaysia</div></div>
+    <div class="f-cert"><div class="f-cert-top">HALAL</div><div class="f-cert-bot">JAKIM</div></div>
+    <div class="f-cert"><div class="f-cert-top">NPRA</div><div class="f-cert-bot">Approved</div></div>
+    <div class="f-cert"><div class="f-cert-top">MOH</div><div class="f-cert-bot">Registered TCM</div></div>
+    <div class="f-cert"><div class="f-cert-top">T&amp;CM Act</div><div class="f-cert-bot">2016</div></div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心於馬來西亞</span>
+    <span>PDPA · T&amp;CM Act 2016</span>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp (desktop) -->
+<a class="wa-f" id="hm-wa-fab" target="_blank" rel="noopener" title="WhatsApp us" href="https://wa.me/601165600393">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+</a>
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<script src="../v2/assets/js/config.js"></script>
+<script src="../v2/assets/js/api.js"></script>
+<script src="../v2/assets/js/auth.js"></script>
+<script src="../v2/assets/js/bus.js"></script>
+<script src="../v2/assets/js/format.js"></script>
+<script src="../v2/assets/js/empty.js"></script>
+<script src="../v2/assets/js/ui.js"></script>
+<script src="../v2/assets/js/form.js"></script>
+<script src="../v2/assets/js/render.js"></script>
+<script src="../v2/assets/js/router.js"></script>
+<script src="../v2/assets/js/i18n.js"></script>
+<script src="../v2/assets/js/lang-switcher.js"></script>
+<script src="../v2/assets/js/pages/landing.js"></script>
+<!-- Shared About-dropdown toggle — required so the nav About button
+     opens the dropdown menu. Without this, the dropdown is dead. -->
+<script src="../v2/assets/js/about-dropdown.js"></script>
+
+<!-- ══════════════ INLINE BEHAVIOUR ══════════════ -->
+<script>
+/* WhatsApp link wiring — single-source from HM.config. */
+(function () {
+  var num = (window.HM && HM.config && HM.config.CLINIC && HM.config.CLINIC.whatsapp) || '601165600393';
+  var href = 'https://wa.me/' + num.replace(/^\+/, '').replace(/\D/g, '');
+  ['hm-wa-drawer','hm-wa-bb','hm-wa-fab'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.setAttribute('href', href);
+  });
+})();
+
+function toggleMob() {
+  var menu = document.getElementById('mob-menu');
+  var ham  = document.getElementById('ham');
+  if (!menu) return;
+  var open = menu.classList.toggle('is-open');
+  if (ham) ham.classList.toggle('is-open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeMob() {
+  var menu = document.getElementById('mob-menu');
+  var ham  = document.getElementById('ham');
+  if (menu) menu.classList.remove('is-open');
+  if (ham)  ham.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+function navMobSignin() {
+  closeMob();
+  if (window.HM && HM.auth && HM.auth.user && HM.auth.user()) {
+    var role = HM.auth.user().role || 'patient';
+    location.href = ({patient:'../v2/portal.html',doctor:'../v2/doctor.html',pharmacy:'../v2/pharmacy.html',admin:'../v2/admin.html'})[role] || '../v2/portal.html';
+  } else {
+    if (window.go) go('login');
+  }
+}
+function navLogout() {
+  if (window.HM && HM.auth && HM.auth.logout) HM.auth.logout();
+  closeMob();
+  location.reload();
+}
+function setLang(l) {
+  try { localStorage.setItem('hm-lang-pref', l); } catch (_) {}
+  document.documentElement.setAttribute('lang', l);
+  document.querySelectorAll('.lang-btn-v4, .mob-lb').forEach(function (b) {
+    b.classList.toggle('act', b.getAttribute('data-lang') === l);
+  });
+}
+</script>
+
+<!-- Lenis smooth scroll — desktop only. -->
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.0.42/dist/lenis.min.js" defer></script>
+<script>
+(function () {
+  function start() {
+    if (typeof Lenis === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if ('ontouchstart' in window || window.matchMedia('(max-width: 1024px)').matches) return;
+    var lenis = new Lenis({
+      duration: 1.05,
+      easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
+      smoothWheel: true
+    });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 0); });
+  } else {
+    setTimeout(start, 50);
+  }
+})();
+</script>
+
+<!-- Scroll-reveal observer. Reveals are currently neutralized via
+     CSS so they paint immediately; the observer + .reveal hooks
+     are kept on the markup so we can re-enable later. -->
+<script>
+(function () {
+  function reveal(el) { el.classList.add('is-visible'); }
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(reveal);
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        reveal(e.target);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0, rootMargin: '0px 0px 200px 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+<!-- Image fade-in on load. -->
+<script>
+(function () {
+  document.querySelectorAll('img.fade-in-load').forEach(function (img) {
+    if (img.complete && img.naturalWidth > 0) {
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load',  function () { img.classList.add('loaded'); }, { once: true });
+      img.addEventListener('error', function () { img.classList.add('loaded'); }, { once: true });
+    }
+  });
+})();
+</script>
+
+<script>
+/* Sign In → My Portal swap (auth-aware nav). */
+(function () {
+  var PORTAL_URL = {
+    patient:  '../v2/portal.html',
+    doctor:   '../v2/doctor.html',
+    pharmacy: '../v2/pharmacy.html',
+    admin:    '../v2/admin.html'
+  };
+  function applySignInSwap() {
+    var user = (window.HM && HM.auth && typeof HM.auth.user === 'function') ? HM.auth.user() : null;
+    if (!user || !user.role) return;
+    var dest = PORTAL_URL[user.role] || '../v2/portal.html';
+    document.querySelectorAll('.nav-signin').forEach(function (el) {
+      el.setAttribute('onclick', "location.href='" + dest + "'");
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySignInSwap);
+  } else {
+    applySignInSwap();
+  }
+  window.addEventListener('storage', function (e) { if (e.key === 'hm_user') applySignInSwap(); });
+})();
+</script>
+
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "b22decee5e7940658a78263e5e8b9fb6"}'></script>
+<!-- End Cloudflare Web Analytics -->
+
+</body>
+</html>

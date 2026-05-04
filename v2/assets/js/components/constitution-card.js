@@ -286,24 +286,27 @@
   // === RENDERERS (return HTML strings) ===
 
   function renderAnswers(symObj) {
-    if (!symObj || typeof symObj !== 'object') return '<p class="text-muted text-sm">No answers recorded · 無答案記錄</p>';
+    if (!symObj || typeof symObj !== 'object') return '<p class="text-muted text-sm"><span lang="en">No answers recorded</span><span lang="zh">無答案記錄</span></p>';
     var qIds = QS.map(function (q) { return q.id; });
     var rows = qIds.map(function (qId) {
       if (!(qId in symObj)) return '';
       var q = findQuestion(qId);
       var label = answerLabel(qId, symObj[qId]);
+      // Every EN block needs lang="en" so the ZH-mode lang-switcher
+      // CSS (html[lang="zh"] [lang="en"]{display:none}) hides it.
+      // Without the wrapper, both languages stack in ZH mode.
       return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">' +
-        '<div class="text-xs text-muted" style="margin-bottom:2px;">' + esc(qId.toUpperCase()) + ' · ' + esc(q ? q.titleEn : '') + '</div>' +
-        '<div class="text-xs text-muted" lang="zh" style="margin-bottom:4px;">' + esc(q ? q.titleZh : '') + '</div>' +
-        '<div class="text-sm" style="font-weight:600;color:var(--ink);">' + esc(label.en) + '</div>' +
-        '<div class="text-xs" lang="zh" style="color:var(--ink);">' + esc(label.zh) + '</div>' +
+        '<div class="text-xs text-muted" lang="en" style="margin-bottom:2px;">' + esc(qId.toUpperCase()) + ' · ' + esc(q ? q.titleEn : '') + '</div>' +
+        '<div class="text-xs text-muted" lang="zh" style="margin-bottom:4px;">' + esc(qId.toUpperCase()) + ' · ' + esc(q ? q.titleZh : '') + '</div>' +
+        '<div class="text-sm" lang="en" style="font-weight:600;color:var(--ink);">' + esc(label.en) + '</div>' +
+        '<div class="text-sm" lang="zh" style="font-weight:600;color:var(--ink);">' + esc(label.zh) + '</div>' +
         '</div>';
     }).filter(Boolean).join('');
-    return rows || '<p class="text-muted text-sm">No matching answers · 無對應答案</p>';
+    return rows || '<p class="text-muted text-sm"><span lang="en">No matching answers</span><span lang="zh">無對應答案</span></p>';
   }
 
   function renderDimensions(dimsObj) {
-    if (!dimsObj || typeof dimsObj !== 'object') return '<p class="text-muted text-sm">No dimensions recorded · 無維度資料</p>';
+    if (!dimsObj || typeof dimsObj !== 'object') return '<p class="text-muted text-sm"><span lang="en">No dimensions recorded</span><span lang="zh">無維度資料</span></p>';
     var keys = Object.keys(DIMS);
     var rows = keys.map(function (k) {
       if (!(k in dimsObj)) return '';
@@ -316,23 +319,23 @@
       if (pct > 100) pct = 100;
       return '<div style="display:flex;align-items:center;gap:12px;padding:6px 0;">' +
         '<div style="flex:0 0 180px;">' +
-          '<div class="text-xs" style="font-weight:600;">' + esc(dim.enShort) + '</div>' +
-          '<div class="text-xs text-muted" lang="zh">' + esc(dim.zhShort) + '</div>' +
+          '<div class="text-xs" lang="en" style="font-weight:600;">' + esc(dim.enShort) + '</div>' +
+          '<div class="text-xs" lang="zh" style="font-weight:600;">' + esc(dim.zhShort) + '</div>' +
         '</div>' +
         '<div style="flex:1;height:8px;background:var(--washi);border-radius:4px;overflow:hidden;">' +
           '<div style="width:' + pct + '%;height:100%;background:var(--gold,#B8965A);"></div>' +
         '</div>' +
         '<div style="flex:0 0 110px;text-align:right;">' +
-          '<div class="text-xs" style="font-weight:600;">' + esc(lbl.en) + '</div>' +
-          '<div class="text-xs text-muted" lang="zh">' + esc(lbl.zh) + '</div>' +
+          '<div class="text-xs" lang="en" style="font-weight:600;">' + esc(lbl.en) + '</div>' +
+          '<div class="text-xs" lang="zh" style="font-weight:600;">' + esc(lbl.zh) + '</div>' +
         '</div>' +
       '</div>';
     }).filter(Boolean).join('');
-    return rows || '<p class="text-muted text-sm">No matching dimensions · 無對應維度</p>';
+    return rows || '<p class="text-muted text-sm"><span lang="en">No matching dimensions</span><span lang="zh">無對應維度</span></p>';
   }
 
   function renderPatterns(patternsArr) {
-    if (!Array.isArray(patternsArr) || !patternsArr.length) return '<p class="text-muted text-sm">No patterns derived · 未判定體質</p>';
+    if (!Array.isArray(patternsArr) || !patternsArr.length) return '<p class="text-muted text-sm"><span lang="en">No patterns derived</span><span lang="zh">未判定體質</span></p>';
     return patternsArr.map(function (p) {
       // p is shape { l, c, col, d, dZh } as produced by getConstitution().
       var color = p.col === 'red'    ? '#c44a3e'
@@ -340,67 +343,94 @@
                 : p.col === 'yellow' ? '#b5881a'
                 : p.col === 'green'  ? '#5a8a5a'
                 : 'var(--ink)';
+      // Pattern title: EN + (optional) ZH char wrapped in lang spans
+      // so each language renders only in its own mode.
+      var titleEn = '<span lang="en">' + esc(p.l || '(pattern)') + '</span>';
+      var titleZh = p.c ? '<span lang="zh">' + esc(p.c) + '</span>' : '';
       return '<div style="padding:10px;border-left:3px solid ' + color + ';background:#fff;margin-bottom:8px;">' +
-        '<div class="text-sm" style="font-weight:600;color:' + color + ';">' + esc(p.l || '(pattern)') + (p.c ? ' · <span lang="zh">' + esc(p.c) + '</span>' : '') + '</div>' +
-        (p.d ? '<div class="text-xs" style="margin-top:4px;color:var(--ink);">' + esc(p.d) + '</div>' : '') +
+        '<div class="text-sm" style="font-weight:600;color:' + color + ';">' + titleEn + titleZh + '</div>' +
+        (p.d ? '<div class="text-xs" lang="en" style="margin-top:4px;color:var(--ink);">' + esc(p.d) + '</div>' : '') +
         (p.dZh ? '<div class="text-xs" lang="zh" style="margin-top:2px;color:var(--ink);">' + esc(p.dZh) + '</div>' : '') +
       '</div>';
     }).join('');
   }
 
   function renderAdvice(adviceObj) {
-    if (!adviceObj || typeof adviceObj !== 'object') return '<p class="text-muted text-sm">No advice recorded · 無建議</p>';
+    if (!adviceObj || typeof adviceObj !== 'object') return '<p class="text-muted text-sm"><span lang="en">No advice recorded</span><span lang="zh">無建議</span></p>';
     var sections = [];
 
+    // Section heading helper — emits EN + ZH spans so the lang-switcher
+    // CSS shows only one in each mode (no stacked-bilingual headings).
+    function head(en, zh) {
+      return '<div class="text-xs text-muted" style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">' +
+        '<span lang="en">' + esc(en) + '</span>' +
+        '<span lang="zh">' + esc(zh) + '</span>' +
+        '</div>';
+    }
+
     if (Array.isArray(adviceObj.tips) && adviceObj.tips.length) {
-      sections.push('<div style="margin-bottom:12px;"><div class="text-xs text-muted" style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Lifestyle tips · 生活建議</div>' +
+      sections.push('<div style="margin-bottom:12px;">' + head('Lifestyle tips', '生活建議') +
         adviceObj.tips.map(function (t) {
           return '<div style="padding:6px 0;display:flex;gap:8px;">' +
             '<span style="flex-shrink:0;">' + esc(t.icon || '·') + '</span>' +
-            '<div><div class="text-sm">' + esc(t.en || '') + '</div>' +
-              (t.zh ? '<div class="text-xs text-muted" lang="zh">' + esc(t.zh) + '</div>' : '') + '</div>' +
+            '<div>' +
+              '<div class="text-sm" lang="en">' + esc(t.en || '') + '</div>' +
+              (t.zh ? '<div class="text-sm" lang="zh">' + esc(t.zh) + '</div>' : '') +
+            '</div>' +
           '</div>';
         }).join('') + '</div>');
     }
 
     if (adviceObj.avoid) {
-      sections.push('<div style="margin-bottom:12px;"><div class="text-xs text-muted" style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Avoid · 忌</div>' +
+      // adviceObj.avoid is a free-form string (often already bilingual
+      // with a · separator); leave as-is — no good way to split here
+      // without breaking caller-supplied strings.
+      sections.push('<div style="margin-bottom:12px;">' + head('Avoid', '忌') +
         '<div class="text-sm">' + esc(adviceObj.avoid) + '</div></div>');
     }
 
     if (Array.isArray(adviceObj.foods) && adviceObj.foods.length) {
-      sections.push('<div style="margin-bottom:12px;"><div class="text-xs text-muted" style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Recommended foods · 建議食材</div>' +
+      // Food / herb names already carry their own bilingual form
+      // (e.g. '山藥 Yam'); render as-is in a single line, language-
+      // neutral so they show in both modes.
+      sections.push('<div style="margin-bottom:12px;">' + head('Recommended foods', '建議食材') +
         '<div class="text-sm">' + adviceObj.foods.map(esc).join(' · ') + '</div></div>');
     }
 
     if (Array.isArray(adviceObj.herbs) && adviceObj.herbs.length) {
-      sections.push('<div style="margin-bottom:12px;"><div class="text-xs text-muted" style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Recommended herbs · 建議藥材</div>' +
+      sections.push('<div style="margin-bottom:12px;">' + head('Recommended herbs', '建議藥材') +
         '<div class="text-sm">' + adviceObj.herbs.map(esc).join(' · ') + '</div></div>');
     }
 
-    return sections.length ? sections.join('') : '<p class="text-muted text-sm">No advice content · 無建議內容</p>';
+    return sections.length ? sections.join('') : '<p class="text-muted text-sm"><span lang="en">No advice content</span><span lang="zh">無建議內容</span></p>';
   }
 
   function renderTongue(tongueObj) {
-    if (!tongueObj || typeof tongueObj !== 'object') return '<p class="text-muted text-sm">No tongue assessment · 無舌診</p>';
+    if (!tongueObj || typeof tongueObj !== 'object') return '<p class="text-muted text-sm"><span lang="en">No tongue assessment</span><span lang="zh">無舌診</span></p>';
     var nameEn = tongueObj.name_en || '(unnamed)';
     var nameZh = tongueObj.name_zh || '';
     var conf = tongueObj.confidence != null ? Math.round(tongueObj.confidence * 100) + '%' : '—';
     return '<div style="padding:12px;background:var(--washi);border-radius:6px;">' +
-      '<div class="text-sm" style="font-weight:600;color:var(--ink);">' + esc(nameEn) + (nameZh ? ' · <span lang="zh">' + esc(nameZh) + '</span>' : '') + '</div>' +
-      '<div class="text-xs text-muted" style="margin-top:4px;">Confidence · 信心度: ' + esc(conf) + '</div>' +
+      '<div class="text-sm" style="font-weight:600;color:var(--ink);">' +
+        '<span lang="en">' + esc(nameEn) + '</span>' +
+        (nameZh ? '<span lang="zh">' + esc(nameZh) + '</span>' : '') +
+      '</div>' +
+      '<div class="text-xs text-muted" style="margin-top:4px;">' +
+        '<span lang="en">Confidence: ' + esc(conf) + '</span>' +
+        '<span lang="zh">信心度: ' + esc(conf) + '</span>' +
+      '</div>' +
       '</div>';
   }
 
   function renderFull(data) {
     data = data || {};
     var html = '';
-    if (data.symptoms)             html += '<div class="text-label mt-4 mb-2">🧭 Constitution answers · 體質問答</div>' + renderAnswers(data.symptoms);
-    if (data.dimensions)           html += '<div class="text-label mt-4 mb-2">📊 Dimensions · 維度</div>' + renderDimensions(data.dimensions);
-    if (data.patterns)             html += '<div class="text-label mt-4 mb-2">🎯 Patterns · 體質判定</div>' + renderPatterns(data.patterns);
-    if (data.doctor_advice)        html += '<div class="text-label mt-4 mb-2">💡 Doctor\'s advice · 醫師建議</div>' + renderAdvice(data.doctor_advice);
-    if (data.tongue_constitution)  html += '<div class="text-label mt-4 mb-2">👅 Tongue constitution · 舌診體質</div>' + renderTongue(data.tongue_constitution);
-    return html || '<p class="text-muted text-sm">No constitution data · 無體質資料</p>';
+    if (data.symptoms)             html += '<div class="text-label mt-4 mb-2">🧭 <span lang="en">Constitution answers</span><span lang="zh">體質問答</span></div>' + renderAnswers(data.symptoms);
+    if (data.dimensions)           html += '<div class="text-label mt-4 mb-2">📊 <span lang="en">Dimensions</span><span lang="zh">維度</span></div>' + renderDimensions(data.dimensions);
+    if (data.patterns)             html += '<div class="text-label mt-4 mb-2">🎯 <span lang="en">Patterns</span><span lang="zh">體質判定</span></div>' + renderPatterns(data.patterns);
+    if (data.doctor_advice)        html += '<div class="text-label mt-4 mb-2">💡 <span lang="en">Doctor\'s advice</span><span lang="zh">醫師建議</span></div>' + renderAdvice(data.doctor_advice);
+    if (data.tongue_constitution)  html += '<div class="text-label mt-4 mb-2">👅 <span lang="en">Tongue constitution</span><span lang="zh">舌診體質</span></div>' + renderTongue(data.tongue_constitution);
+    return html || '<p class="text-muted text-sm"><span lang="en">No constitution data</span><span lang="zh">無體質資料</span></p>';
   }
 
   // === EXPOSE PUBLIC API ===

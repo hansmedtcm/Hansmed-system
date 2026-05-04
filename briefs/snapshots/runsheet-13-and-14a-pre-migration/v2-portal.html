@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F5F0E8">
+<!-- Synchronous lang preference — runs before paint so the EN/ZH
+     spans show only the right language with no FOUC. -->
+<script>try{var p=localStorage.getItem('hm-lang-pref');document.documentElement.setAttribute('lang',p==='zh'?'zh':'en');}catch(_){}</script>
+<style>
+html[lang="en"] [lang="zh"] { display: none !important; }
+html[lang="zh"] [lang="en"] { display: none !important; }
+html[lang="en"] .portal-lang-btn[data-lang="en"],
+html[lang="zh"] .portal-lang-btn[data-lang="zh"] {
+  background: var(--ink, #1a1612) !important;
+  color: #fff !important;
+}
+</style>
+<title>My Portal · HansMed</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  @font-face { font-family: 'ZhengYanKaiTi'; src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'), local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai'); font-display: swap; }
+</style>
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/patterns.css">
+<link rel="stylesheet" href="assets/css/tcm.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html?stay=1" class="nav-brand">
+    <svg class="nav-brand-mark" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="1"  y="1"  width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
+      <rect x="23" y="1"  width="20" height="19" fill="#1a1612"/><circle cx="33" cy="10.5" r="3.5" fill="#fff"/>
+      <rect x="46" y="1"  width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
+      <rect x="1"  y="23" width="19" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
+      <rect x="23" y="23" width="20" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="33" cy="33" r="3.5" fill="#1a1612"/>
+      <rect x="46" y="23" width="19" height="20" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
+      <rect x="1"  y="46" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
+      <rect x="23" y="46" width="20" height="19" fill="#1a1612"/><circle cx="33" cy="55.5" r="3.5" fill="#fff"/>
+      <rect x="46" y="46" width="19" height="19" fill="#fff" stroke="#1a1612" stroke-width="1.5"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
+    </svg>
+    <span class="nav-brand-text">
+      漢方現代中醫
+      <span class="nav-brand-en">Patient Portal · 患者端</span>
+    </span>
+  </a>
+  <ul class="nav-menu" style="gap: 0.75rem;">
+    <li><a href="index.html?stay=1" class="nav-link" style="font-size: var(--text-sm);">🏠 <span lang="en">Home</span><span lang="zh">首頁</span></a></li>
+    <li data-portal-about-menu></li>
+    <li id="notif-bell" style="position:relative; cursor:pointer;" onclick="location.hash='#/notifications'">
+      <span style="font-size: 1.2rem;">🔔</span>
+      <span id="notif-count" class="sidebar-link-badge" style="position:absolute; top:-5px; right:-8px; display:none;">0</span>
+    </li>
+    <li style="color: var(--stone); font-size: var(--text-sm);" id="user-greeting">—</li>
+    <li>
+      <div class="portal-lang-toggle" style="display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+        <button type="button" class="portal-lang-btn" data-lang="en" onclick="setPortalLang('en')" style="background:none;border:none;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--stone);font-family:inherit;">EN</button>
+        <button type="button" class="portal-lang-btn" data-lang="zh" onclick="setPortalLang('zh')" style="background:none;border:none;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--stone);font-family:inherit;">中</button>
+      </div>
+    </li>
+    <li><button class="btn btn--ghost btn--sm" onclick="HM.auth.logout().then(function(){location.href='index.html';})"><span lang="en">Sign Out</span><span lang="zh">登出</span></button></li>
+  </ul>
+</nav>
+
+<!-- TWO-COLUMN LAYOUT -->
+<div class="portal-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sb-avatar">—</div>
+      <div class="sidebar-name" id="sb-name">Loading…</div>
+      <div class="sidebar-sub" id="sb-since">Member</div>
+    </div>
+    <div class="sidebar-section"><div class="sidebar-label">Main · 主要</div></div>
+    <a class="sidebar-link" data-route="#/" href="#/"><span class="sidebar-link-icon">📊</span><span class="sidebar-link-label">Overview · 總覽</span></a>
+    <a class="sidebar-link" data-route="#/profile" href="#/profile"><span class="sidebar-link-icon">👤</span><span class="sidebar-link-label">Profile · 個人資料</span></a>
+    <a class="sidebar-link" data-route="#/health" href="#/health"><span class="sidebar-link-icon">📋</span><span class="sidebar-link-label">Health Records · 健康檔案</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Consultations · 問診</div></div>
+    <a class="sidebar-link" data-route="#/book" href="#/book"><span class="sidebar-link-icon">📅</span><span class="sidebar-link-label">Book Appointment · 預約</span></a>
+    <a class="sidebar-link" data-route="#/appointments" href="#/appointments"><span class="sidebar-link-icon">🗓️</span><span class="sidebar-link-label">My Appointments · 預約記錄</span></a>
+    <a class="sidebar-link" data-route="#/wellness-assessment" href="#/wellness-assessment"><span class="sidebar-link-icon">🧭</span><span class="sidebar-link-label">AI Wellness Assessment · AI 健康評估</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Shop &amp; Medicine · 商店</div></div>
+    <a class="sidebar-link" data-route="#/shop" href="#/shop"><span class="sidebar-link-icon">🛍️</span><span class="sidebar-link-label">Shop · 商店</span></a>
+    <a class="sidebar-link" data-route="#/cart" href="#/cart"><span class="sidebar-link-icon">🛒</span><span class="sidebar-link-label">Cart · 購物車 <span id="sb-cart-count" class="sidebar-link-badge" style="display:none;">0</span></span></a>
+    <a class="sidebar-link" data-route="#/prescriptions" href="#/prescriptions"><span class="sidebar-link-icon">💊</span><span class="sidebar-link-label">Prescriptions · 處方</span></a>
+    <a class="sidebar-link" data-route="#/orders" href="#/orders"><span class="sidebar-link-icon">📦</span><span class="sidebar-link-label">Orders · 訂單</span></a>
+    <a class="sidebar-link" data-route="#/invoices" href="#/invoices"><span class="sidebar-link-icon">🧾</span><span class="sidebar-link-label">Invoices · 發票</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Communication · 溝通</div></div>
+    <a class="sidebar-link" data-route="#/messages" href="#/messages"><span class="sidebar-link-icon">💬</span><span class="sidebar-link-label">Messages · 訊息</span></a>
+    <a class="sidebar-link" data-route="#/notifications" href="#/notifications"><span class="sidebar-link-icon">🔔</span><span class="sidebar-link-label">Notifications · 通知</span></a>
+
+    <div class="sidebar-section"><div class="sidebar-label">Account · 帳號</div></div>
+    <a class="sidebar-link" data-route="#/settings" href="#/settings"><span class="sidebar-link-icon">⚙️</span><span class="sidebar-link-label">Settings · 設定</span></a>
+    <a class="sidebar-link" data-route="#/help" href="#/help"><span class="sidebar-link-icon">❓</span><span class="sidebar-link-label">Help · 幫助</span></a>
+    <!-- About group — mobile-only mirror of the top-nav About dropdown.
+         Auto-populated by portal-about-menu.js into a collapsible row
+         + 6 child links. -->
+    <div data-portal-about-mobile class="sidebar-mobile-only"></div>
+    <!-- Language toggle inside the drawer so mobile users can reach it.
+         data-keeps-drawer-open prevents portal-menu.js from collapsing
+         the drawer when EN/中 is tapped (otherwise the drawer slams
+         shut on every press, making the toggle look broken). -->
+    <div class="sidebar-link sidebar-mobile-only" data-keeps-drawer-open style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;cursor:default;">
+      <span class="sidebar-link-icon">🌐</span>
+      <span class="sidebar-link-label" style="display:flex;align-items:center;gap:6px;flex:1;">
+        <span lang="en">Language</span><span lang="zh">語言</span>
+        <span style="display:inline-flex;border:1px solid rgba(245,240,232,0.35);border-radius:8px;overflow:hidden;margin-left:auto;">
+          <button type="button" class="portal-lang-btn" data-lang="en" onclick="event.stopPropagation();setPortalLang('en');" style="background:none;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:inherit;font-family:inherit;min-width:48px;min-height:36px;">EN</button>
+          <button type="button" class="portal-lang-btn" data-lang="zh" onclick="event.stopPropagation();setPortalLang('zh');" style="background:none;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:inherit;font-family:inherit;min-width:48px;min-height:36px;">中</button>
+        </span>
+      </span>
+    </div>
+    <button class="sidebar-link sidebar-mobile-only" type="button" data-closes-drawer onclick="HM.auth.logout().then(function(){location.href='index.html';})" style="background:none;border:none;width:100%;cursor:pointer;text-align:left;color:#9a3a2a;font:inherit;margin-top:var(--s-2);"><span class="sidebar-link-icon">🚪</span><span class="sidebar-link-label"><span lang="en">Sign Out</span><span lang="zh">登出</span></span></button>
+  </aside>
+
+  <!-- MAIN PANEL AREA -->
+  <main class="main" id="main">
+    <div id="panel-container">
+      <div class="state state--loading">
+        <div class="state-icon"></div>
+        <div class="state-text">Loading…</div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- ══════════════ TEMPLATES ══════════════ -->
+
+<!-- Appointment card -->
+<template id="tpl-appt-card">
+  <div class="card mb-3" data-id="">
+    <div class="flex-between">
+      <div>
+        <div class="text-label text-gold mb-1" data-bind="scheduled_start" data-format="datetime"></div>
+        <div class="card-title" data-bind="doctor_name"></div>
+        <div class="text-muted text-sm mt-1" data-bind="notes"></div>
+      </div>
+      <div style="text-align: right;">
+        <div data-bind="status_badge" data-unsafe></div>
+        <div class="text-sm mt-2" data-bind="fee_formatted"></div>
+      </div>
+    </div>
+    <div class="flex flex-gap-2 mt-4" data-bind-show="can_act">
+      <button class="btn btn--outline btn--sm" data-action="view">View · 查看</button>
+      <button class="btn btn--outline btn--sm" data-action="video" data-bind-show="can_video">Join Video · 視訊</button>
+      <button class="btn btn--ghost btn--sm" data-action="cancel" data-bind-show="can_cancel">Cancel · 取消</button>
+    </div>
+  </div>
+</template>
+
+<!-- Prescription card -->
+<template id="tpl-rx-card">
+  <div class="card mb-3" data-id="">
+    <div class="flex-between">
+      <div>
+        <div class="text-label text-gold mb-1" data-bind="created_at" data-format="date"></div>
+        <div class="card-title" data-bind="diagnosis"></div>
+        <div class="text-muted text-sm mt-1" data-bind="items_summary"></div>
+      </div>
+      <div style="text-align: right;">
+        <div data-bind="status_badge" data-unsafe></div>
+      </div>
+    </div>
+    <div class="flex flex-gap-2 mt-4">
+      <button class="btn btn--outline btn--sm" data-action="view">View · 查看</button>
+      <button class="btn btn--outline btn--sm" data-action="order" data-bind-show="can_order">Order · 購藥</button>
+    </div>
+  </div>
+</template>
+
+<!-- Order card -->
+<template id="tpl-order-card">
+  <div class="card mb-3" data-id="">
+    <div class="flex-between">
+      <div>
+        <div class="text-label text-gold mb-1" data-bind="order_no"></div>
+        <div class="card-title" data-bind="item_summary"></div>
+        <div class="text-muted text-sm mt-1" data-bind="created_at" data-format="date"></div>
+      </div>
+      <div style="text-align: right;">
+        <div data-bind="status_badge" data-unsafe></div>
+        <div class="card-title mt-2" data-bind="total_formatted"></div>
+      </div>
+    </div>
+    <div class="flex flex-gap-2 mt-4">
+      <button class="btn btn--outline btn--sm" data-action="view">View · 查看</button>
+      <button class="btn btn--primary btn--sm" data-action="pay" data-bind-show="can_pay">💳 Pay · 付款</button>
+      <button class="btn btn--outline btn--sm" data-action="track" data-bind-show="has_shipment">Track · 追蹤</button>
+    </div>
+  </div>
+</template>
+
+<!-- Tongue scan card -->
+<template id="tpl-tongue-card">
+  <div class="card mb-3" data-id="">
+    <div class="flex flex-gap-4">
+      <img src="" alt="Tongue scan" data-bind-attr="src:image_url" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--r-md); border: 1px solid var(--border);">
+      <div style="flex: 1;">
+        <div class="text-label text-gold mb-1" data-bind="created_at" data-format="datetime"></div>
+        <div class="card-title" data-bind="constitution_name"></div>
+        <div class="text-muted text-sm mt-1" data-bind="features_summary"></div>
+      </div>
+      <div style="text-align: right;">
+        <div class="text-muted text-xs">Score · 評分</div>
+        <div style="font-family: var(--font-display); font-size: 1.5rem;" data-bind="health_score"></div>
+      </div>
+    </div>
+    <div class="flex flex-gap-2 mt-4">
+      <button class="btn btn--outline btn--sm" data-action="view">View Details · 詳情</button>
+    </div>
+  </div>
+</template>
+
+<!-- Shop product card -->
+<template id="tpl-product-card">
+  <div class="card product-card" data-id="">
+    <div class="product-card-img" data-bind="emoji" style="font-size: 3rem; text-align:center; padding: var(--s-5); background: var(--washi); border-radius: var(--r-md); margin-bottom: var(--s-3);"></div>
+    <div class="text-label text-gold mb-1" data-bind="category"></div>
+    <div class="card-title" data-bind="name"></div>
+    <div class="text-sm text-muted mt-1" data-bind="name_zh" style="font-family: var(--font-zh);"></div>
+    <div class="text-xs text-muted mt-2 mb-3" data-bind="description"></div>
+    <div class="flex-between" style="align-items:center;">
+      <div>
+        <div class="card-title" style="font-size: var(--text-lg); color: var(--gold);" data-bind="price_formatted"></div>
+        <div class="text-xs text-muted" data-bind="stock_label"></div>
+      </div>
+      <button class="btn btn--primary btn--sm" data-action="add">+ Cart · 加入</button>
+    </div>
+  </div>
+</template>
+
+<!-- Symptom concern card (for booking) -->
+<template id="tpl-concern-card">
+  <button class="card card--clickable concern-card" data-id="" style="text-align:left; padding: var(--s-5); border: 1px solid var(--border); background: var(--bg); cursor: pointer;">
+    <div style="font-size: 2rem; margin-bottom: var(--s-2);" data-bind="icon"></div>
+    <div class="card-title" data-bind="name"></div>
+    <div class="text-sm text-muted mt-1" data-bind="name_zh" style="font-family: var(--font-zh);"></div>
+    <div class="text-xs text-muted mt-2" data-bind="examples"></div>
+  </button>
+</template>
+
+<!-- Notification item -->
+<template id="tpl-notif-item">
+  <div class="card mb-2" data-id="" style="padding: var(--s-4);">
+    <div class="flex-between">
+      <div>
+        <div class="card-title" style="font-size: var(--text-base);" data-bind="title"></div>
+        <div class="text-muted text-sm mt-1" data-bind="body"></div>
+      </div>
+      <div class="text-xs text-muted" data-bind="created_at" data-format="relative"></div>
+    </div>
+  </div>
+</template>
+
+<!-- SCRIPTS -->
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/bus.js"></script>
+<script src="assets/js/format.js"></script>
+<script src="assets/js/empty.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/form.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/router.js"></script>
+<script src="assets/js/badges.js"></script>
+<script src="assets/js/portal-menu.js"></script>
+<script src="assets/js/portal-about-menu.js"></script>
+<script src="assets/js/tongue-capture.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/lang-switcher.js"></script>
+<script src="assets/js/components/simulated-payment-banner.js"></script>
+
+<!-- Panels -->
+<script src="assets/js/panels/patient/cart-store.js"></script>
+<script src="assets/js/panels/patient/registration-wall.js"></script>
+<script src="assets/js/panels/patient/overview.js"></script>
+<script src="assets/js/panels/patient/profile.js"></script>
+<script src="assets/js/panels/patient/health.js"></script>
+<script src="assets/js/panels/patient/booking.js"></script>
+<script src="assets/js/panels/patient/appointments.js"></script>
+<script src="assets/js/panels/patient/tongue.js"></script>
+<script src="assets/js/panels/patient/ai-diagnosis.js"></script>
+<script src="assets/js/panels/patient/shop.js"></script>
+<script src="assets/js/panels/patient/cart.js"></script>
+<script src="assets/js/panels/patient/prescriptions.js"></script>
+<script src="assets/js/panels/patient/orders.js"></script>
+<script src="assets/js/panels/patient/invoices.js"></script>
+<script src="assets/js/panels/patient/messages.js"></script>
+<script src="assets/js/panels/patient/notifications.js"></script>
+<script src="assets/js/panels/patient/settings.js"></script>
+<script src="assets/js/panels/patient/help.js"></script>
+<script src="assets/js/panels/patient/video.js"></script>
+
+<script src="assets/js/pages/patient.js"></script>
+
+<script>
+/* Portal nav language switcher — persists choice in localStorage so
+   it survives navigation across portal pages and reload.
+   Delegates to HM.langSwitch.set (lang-switcher.js) when available
+   so the DOM walker re-wraps bilingual strings — without this the
+   only effect was setting html[lang], which hid one half but never
+   triggered the walker that swaps 'Profile · 個人資料' style
+   markup into separate spans. */
+window.setPortalLang = function (lang) {
+  try { localStorage.setItem('hm-lang-pref', lang); } catch (_) {}
+  if (window.HM && HM.langSwitch && typeof HM.langSwitch.set === 'function') {
+    HM.langSwitch.set(lang);
+  } else {
+    document.documentElement.setAttribute('lang', lang);
+  }
+};
+</script>
+
+</body>
+</html>
