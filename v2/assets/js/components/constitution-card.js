@@ -38,6 +38,23 @@
   'use strict';
   window.HM = window.HM || {};
 
+  // === INJECT LANG-HIDING CSS (Brief #14a-fix) ===
+  // This component uses <span lang="en">/<span lang="zh"> spans for
+  // bilingual text. Without the corresponding CSS rule, BOTH languages
+  // render simultaneously. v3 pages have this rule inline; v2 pages
+  // (doctor.html, portal.html) don't, so we inject it from the
+  // component itself. Self-contained — when the component eventually
+  // moves to v3, this still works there too. Idempotent.
+  (function injectLangCSS() {
+    if (document.getElementById('hm-constitution-card-lang-css')) return;
+    var style = document.createElement('style');
+    style.id = 'hm-constitution-card-lang-css';
+    style.textContent =
+      'html[lang="en"] [lang="zh"] { display: none !important; }\n' +
+      'html[lang="zh"] [lang="en"] { display: none !important; }\n';
+    (document.head || document.documentElement).appendChild(style);
+  })();
+
   // === DICTIONARIES (moved verbatim from v2/assets/js/panels/patient/ai-diagnosis.js) ===
 
   var DIMS = {
@@ -257,6 +274,47 @@
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  /**
+   * Wrap an EN+ZH pair as paired lang spans. The lang-hiding CSS
+   * injected above shows only one of the two in any given mode.
+   */
+  function bilingual(en, zh) {
+    return '<span lang="en">' + esc(en) + '</span>' +
+           '<span lang="zh">' + esc(zh) + '</span>';
+  }
+
+  /**
+   * Split a pre-concatenated bilingual string into {en, zh} parts.
+   * Handles three formats commonly used in HansMed data:
+   *   "枸杞 Gou Qi"           → { zh: "枸杞", en: "Gou Qi" }
+   *   "Ginger tea 薑茶"        → { en: "Ginger tea", zh: "薑茶" }
+   *   "Polished rice (粳米)"   → { en: "Polished rice", zh: "粳米" }
+   * For strings that can't be cleanly split, returns the whole
+   * string for both languages — the entry then shows in both modes
+   * uncut, never garbled. Better to leak one language than show
+   * a mangled fragment.
+   */
+  function splitBilingual(str) {
+    var s = String(str || '').trim();
+    if (!s) return { en: '', zh: '' };
+    // CJK Unicode range — Chinese chars common in HansMed copy.
+    var CJK = '一-鿿';
+    // Pattern A: starts with CJK chars, ASCII text after a space.
+    //   "枸杞 Gou Qi"  /  "薑茶 Ginger tea"
+    var mA = s.match(new RegExp('^([' + CJK + '][' + CJK + '\\s、，。；：·]*?)\\s+([A-Za-z].+)$'));
+    if (mA) return { zh: mA[1].trim(), en: mA[2].trim() };
+    // Pattern B: starts with ASCII, ends with a CJK chunk.
+    //   "Ginger tea 薑茶"
+    var mB = s.match(new RegExp("^([A-Za-z][A-Za-z\\s\\.,&'-]+?)\\s+([" + CJK + '].+)$'));
+    if (mB) return { en: mB[1].trim(), zh: mB[2].trim() };
+    // Pattern C: ASCII with CJK in parens at the end.
+    //   "Polished rice & glutinous rice (粳米、糯米)"
+    var mC = s.match(new RegExp('^(.+?)\\s*\\(([' + CJK + '][^)]*)\\)\\s*$'));
+    if (mC) return { en: mC[1].trim(), zh: mC[2].trim() };
+    // Couldn't cleanly split — return the whole string for both modes.
+    return { en: s, zh: s };
+  }
+
   /** Find the question definition (with title/options) for a given q-id. */
   function findQuestion(qId) {
     return QS.find(function (q) { return q.id === qId; }) || null;
@@ -382,24 +440,50 @@
     }
 
     if (adviceObj.avoid) {
-      // adviceObj.avoid is a free-form string (often already bilingual
-      // with a · separator); leave as-is — no good way to split here
-      // without breaking caller-supplied strings.
+      // The avoid field can be a single phrase ("EN · ZH"), a single
+      // phrase that splitBilingual can parse (no · separator), OR a
+      // semicolon-joined list of either form. Split on ';' first,
+      // then per-phrase prefer the explicit ' · ' separator if
+      // present, else fall back to splitBilingual.
+      var phrases = String(adviceObj.avoid).split(';').map(function (p) { return p.trim(); }).filter(Boolean);
+      var rendered = phrases.map(function (phrase) {
+        var parts;
+        if (phrase.indexOf(' · ') > -1) {
+          var bits = phrase.split(' · ');
+          parts = { en: bits[0] || '', zh: bits[1] || bits[0] || '' };
+        } else {
+          parts = splitBilingual(phrase);
+        }
+        return '<div>' + bilingual(parts.en, parts.zh) + '</div>';
+      }).join('');
       sections.push('<div style="margin-bottom:12px;">' + head('Avoid', '忌') +
-        '<div class="text-sm">' + esc(adviceObj.avoid) + '</div></div>');
+        '<div class="text-sm">' + rendered + '</div></div>');
     }
 
     if (Array.isArray(adviceObj.foods) && adviceObj.foods.length) {
-      // Food / herb names already carry their own bilingual form
-      // (e.g. '山藥 Yam'); render as-is in a single line, language-
-      // neutral so they show in both modes.
+      // Food entries arrive as pre-concatenated bilingual strings
+      // (e.g. "山藥 Yam"). splitBilingual breaks them into {en, zh}
+      // and bilingual() emits paired lang spans — so EN-mode shows
+      // "Yam" and ZH-mode shows "山藥".
       sections.push('<div style="margin-bottom:12px;">' + head('Recommended foods', '建議食材') +
-        '<div class="text-sm">' + adviceObj.foods.map(esc).join(' · ') + '</div></div>');
+        '<div class="text-sm" style="display:flex;flex-wrap:wrap;gap:6px;">' +
+          adviceObj.foods.map(function (f) {
+            var parts = splitBilingual(f);
+            return '<span class="chip" style="background:var(--washi);border:1px solid var(--border);border-radius:12px;padding:3px 10px;">' +
+              bilingual(parts.en, parts.zh) + '</span>';
+          }).join('') +
+        '</div></div>');
     }
 
     if (Array.isArray(adviceObj.herbs) && adviceObj.herbs.length) {
       sections.push('<div style="margin-bottom:12px;">' + head('Recommended herbs', '建議藥材') +
-        '<div class="text-sm">' + adviceObj.herbs.map(esc).join(' · ') + '</div></div>');
+        '<div class="text-sm" style="display:flex;flex-wrap:wrap;gap:6px;">' +
+          adviceObj.herbs.map(function (h) {
+            var parts = splitBilingual(h);
+            return '<span class="chip" style="background:var(--washi);border:1px solid var(--border);border-radius:12px;padding:3px 10px;">' +
+              bilingual(parts.en, parts.zh) + '</span>';
+          }).join('') +
+        '</div></div>');
     }
 
     return sections.length ? sections.join('') : '<p class="text-muted text-sm"><span lang="en">No advice content</span><span lang="zh">無建議內容</span></p>';
