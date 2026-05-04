@@ -241,12 +241,18 @@
       var name = pp.full_name || pp.nickname || patient.email;
       var appts = consultRes.appointments || [];
       var tongues = tongueRes.data || [];
+      // Brief #5: AI Constitution Questionnaire history. Backend now
+      // returns a flat array on consultRes.questionnaires (mirrors
+      // ConstitutionReviewController shape — see PatientListController
+      // ::loadConstitutionQuestionnaires). Empty array on schema
+      // mismatch / decode failure rather than a hard error.
+      var questionnaires = consultRes.questionnaires || [];
 
       // Stash patient + appointments so the inline button handlers
       // (referral / MC) can read full objects back without round-tripping
       // the API. Keyed on patient id so multiple detail renders don't
       // clobber each other.
-      _ctx.byPatient[patient.id] = { patient: patient, appts: appts, tongues: tongues };
+      _ctx.byPatient[patient.id] = { patient: patient, appts: appts, tongues: tongues, questionnaires: questionnaires };
 
       var html = '<div class="page-header">' +
         '<button class="btn btn--ghost" onclick="location.hash=\'#/patients\'">← Back to Patients</button>' +
@@ -319,6 +325,44 @@
           titleZh: 'AI 健康評估記錄（' + tongues.length + ' 筆）',
           extras:  viewAllBtn,
           body:    tongueCards,
+        });
+      }
+
+      // Brief #5 — AI Constitution Questionnaire history. Parallel to
+      // the tongue section: collapsible (preference persists in
+      // localStorage like the others), 'View All' opens a full-history
+      // modal, individual cards open a detail modal. Independent of
+      // the tongue check — a patient with questionnaires but no
+      // tongues still sees this section.
+      if (questionnaires.length) {
+        var qCards = '<div class="grid-auto" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s-3);">';
+        questionnaires.slice(0, 3).forEach(function (q) {
+          var statusBadge = renderQuestionnaireStatus(q.review_status);
+          var summaryLine = (q.symptoms && q.symptoms.chief_concern) ||
+                            'Constitution submission';
+          qCards += '<div class="card" style="cursor:pointer;" ' +
+            'onclick="HM.doctorPanels.patients._viewQuestionnaire(' + patient.id + ',' + q.id + ')" ' +
+            'title="Click for full report">' +
+            '<div class="text-label">' + HM.format.date(q.created_at) + '</div>' +
+            statusBadge +
+            '<div class="text-sm mt-1">' + HM.format.esc(summaryLine) + '</div>' +
+            '</div>';
+        });
+        qCards += '</div>';
+
+        var qViewAllBtn = '<button class="btn btn--ghost btn--sm" ' +
+          'onclick="HM.doctorPanels.patients._viewAllQuestionnaires(' + patient.id + ')" ' +
+          'style="font-size:11px;padding:4px 10px;">' +
+          '📋 <span lang="en">View All</span><span lang="zh">查看全部</span>' +
+          '</button>';
+
+        html += collapsibleSection({
+          key:     'questionnaire',
+          icon:    '📋',
+          titleEn: 'Constitution Questionnaire · ' + questionnaires.length + ' submission' + (questionnaires.length === 1 ? '' : 's'),
+          titleZh: '體質問卷（' + questionnaires.length + ' 份）',
+          extras:  qViewAllBtn,
+          body:    qCards,
         });
       }
 
@@ -785,6 +829,22 @@
       if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
       openTongueHistoryModal(c.patient, c.tongues || []);
     },
+
+    /** Single constitution questionnaire detail modal. */
+    _viewQuestionnaire: function (patientId, qId) {
+      var c = _ctx.byPatient[patientId];
+      if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
+      var q = (c.questionnaires || []).find(function (x) { return x.id === qId; });
+      if (!q) { HM.ui.toast('Could not find that questionnaire', 'warn'); return; }
+      openQuestionnaireDetailModal(c.patient, q);
+    },
+
+    /** Full history of every constitution questionnaire submission. */
+    _viewAllQuestionnaires: function (patientId) {
+      var c = _ctx.byPatient[patientId];
+      if (!c) { HM.ui.toast('Patient context lost — please reopen this page', 'warn'); return; }
+      openQuestionnaireHistoryModal(c.patient, c.questionnaires || []);
+    },
   };
 
   // ── Modal: Full Case Record for a single consultation ──
@@ -1074,6 +1134,191 @@
       title:   '👅 AI Wellness History · 健康評估記錄 (' + tongues.length + ')',
       content:
         '<p class="text-xs text-muted mb-3">Click any row for the full AI report — constitution analysis, dimension scores, findings, recommendations.</p>' +
+        rows,
+    });
+  }
+
+  // ── Brief #5: Constitution Questionnaire helpers + modals ──
+  // Status badge for the questionnaire's review_status. Mirrors the
+  // visual register of other small inline badges in the patient
+  // panel — small pill, soft background, semantic color.
+  function renderQuestionnaireStatus(s) {
+    var palette = {
+      pending:  'background:#FFF7E6;color:#B5881A;',
+      approved: 'background:#E6F4EA;color:#1E7E34;',
+      rejected: 'background:#FCE8E6;color:#B71C1C;',
+    };
+    var labels = {
+      pending:  'Pending review',
+      approved: 'Reviewed',
+      rejected: 'Rejected',
+    };
+    var style = palette[s] || 'background:var(--washi);color:var(--mu);';
+    var label = labels[s] || (s || 'Unknown');
+    return '<div style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:6px;' + style + '">' +
+      HM.format.esc(label) +
+    '</div>';
+  }
+
+  // Render a JSON object as a list of label/value rows. Used by the
+  // "Patient's self-report" block in the detail modal for lifestyle /
+  // diet / discomfort_areas. Keys are humanised (snake_case → Title
+  // Case); values can be primitives or arrays. Returns a placeholder
+  // when the object is empty so the doctor can see the field exists
+  // but the patient didn't fill it.
+  function renderJsonAsRows(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+      // Allow arrays as a top-level value too (e.g. discomfort_areas
+      // sometimes ships as an array of body-part strings).
+      if (Array.isArray(obj) && obj.length) {
+        return '<div class="text-sm" style="line-height:1.6;">' +
+          obj.map(function (v) { return HM.format.esc(String(v)); }).join(', ') +
+        '</div>';
+      }
+      return '<div class="text-sm text-muted" style="font-style:italic;">— not provided · 未填寫 —</div>';
+    }
+    var keys = Object.keys(obj);
+    if (!keys.length) {
+      return '<div class="text-sm text-muted" style="font-style:italic;">— not provided · 未填寫 —</div>';
+    }
+    function humanise(k) {
+      return k.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    }
+    function renderVal(v) {
+      if (v == null || v === '') return '<span class="text-muted" style="font-style:italic;">—</span>';
+      if (Array.isArray(v))      return v.length ? v.map(function (x) { return HM.format.esc(String(x)); }).join(', ')
+                                                 : '<span class="text-muted" style="font-style:italic;">—</span>';
+      if (typeof v === 'object') return '<span class="text-muted">' + HM.format.esc(JSON.stringify(v)) + '</span>';
+      return HM.format.esc(String(v));
+    }
+    return keys.map(function (k) {
+      return '<div class="text-sm mt-1" style="line-height:1.6;">' +
+        '<strong style="color:var(--ink);">' + HM.format.esc(humanise(k)) + ':</strong> ' +
+        renderVal(obj[k]) +
+      '</div>';
+    }).join('');
+  }
+
+  // Detail modal for a single constitution questionnaire submission.
+  // Replaces the brief's "AI summary" section with a "Patient's
+  // self-report" block (per the user's instruction — there is no AI
+  // summary for constitution questionnaires, and showing the patient's
+  // own words is more useful for the doctor than a fabricated one).
+  function openQuestionnaireDetailModal(patient, q) {
+    var sym  = q.symptoms || {};
+    var when = HM.format.datetime(q.created_at);
+    var statusBadge = renderQuestionnaireStatus(q.review_status);
+
+    var reviewedLine = '';
+    if (q.reviewed_at || q.reviewed_by) {
+      var who = q.reviewed_by ? ('by reviewer #' + HM.format.esc(String(q.reviewed_by))) : '';
+      var ts  = q.reviewed_at ? HM.format.datetime(q.reviewed_at) : '';
+      reviewedLine = '<div class="text-xs text-muted mt-1">' +
+        'Reviewed' + (ts ? ' · ' + ts : '') + (who ? ' · ' + who : '') +
+      '</div>';
+    }
+
+    // ── Patient's self-report block (replaces the brief's "AI
+    //     summary" section per CEO direction). Four labelled
+    //     sub-blocks — chief concern, lifestyle, diet, discomfort
+    //     areas — each rendered as labelled key/value rows so the
+    //     doctor sees exactly what the patient submitted. ──
+    var chief = (sym.chief_concern || '').toString().trim();
+    var selfReport =
+      '<div class="text-label mt-4 mb-2">📝 Patient\'s self-report · 患者自述</div>' +
+      '<div class="card" style="background:var(--washi);padding:var(--s-3);">' +
+        '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;">Chief concern · 主訴</div>' +
+        '<div class="text-sm" style="line-height:1.6;margin-bottom:var(--s-3);">' +
+          (chief ? HM.format.esc(chief) : '<span class="text-muted" style="font-style:italic;">— not provided · 未填寫 —</span>') +
+        '</div>' +
+
+        '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;">Lifestyle · 生活方式</div>' +
+        '<div style="margin-bottom:var(--s-3);">' + renderJsonAsRows(q.lifestyle) + '</div>' +
+
+        '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;">Diet · 飲食習慣</div>' +
+        '<div style="margin-bottom:var(--s-3);">' + renderJsonAsRows(q.diet) + '</div>' +
+
+        '<div class="text-xs text-muted" style="font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;">Discomfort areas · 不適部位</div>' +
+        '<div>' + renderJsonAsRows(q.discomfort_areas) + '</div>' +
+      '</div>';
+
+    // ── 10-dimension constitution answers (everything in symptoms
+    //     except the metadata keys). ──
+    var META_KEYS = ['kind','review_status','reviewed_by','reviewed_at','review_note','chief_concern'];
+    var dims = {};
+    Object.keys(sym).forEach(function (k) {
+      if (META_KEYS.indexOf(k) === -1) dims[k] = sym[k];
+    });
+    var dimsBlock = '';
+    if (Object.keys(dims).length) {
+      dimsBlock =
+        '<div class="text-label mt-4 mb-2">🧭 Constitution answers · 體質問答</div>' +
+        '<div class="card" style="padding:var(--s-3);">' + renderJsonAsRows(dims) + '</div>';
+    }
+
+    // ── Reviewing doctor's note (if any). ──
+    var noteBlock = '';
+    if (q.review_note) {
+      noteBlock =
+        '<div class="text-label mt-4 mb-2">🩺 Doctor\'s review note · 醫師審核註記</div>' +
+        '<div class="card" style="padding:var(--s-3);background:#FFFDF6;border-left:3px solid var(--gold,#B8965A);">' +
+          '<div class="text-sm" style="line-height:1.7;white-space:pre-wrap;">' + HM.format.esc(q.review_note) + '</div>' +
+        '</div>';
+    }
+
+    var pp = patient.patient_profile || {};
+    var name = pp.full_name || pp.nickname || patient.email;
+
+    HM.ui.modal({
+      size:    'lg',
+      title:   '📋 Constitution Questionnaire · 體質問卷',
+      content:
+        '<div class="mb-3">' +
+          '<div class="text-sm" style="color:var(--ink);font-weight:600;">' + HM.format.esc(name) + '</div>' +
+          '<div class="text-xs text-muted">Submitted · 提交於 ' + when + '</div>' +
+          statusBadge +
+          reviewedLine +
+        '</div>' +
+        selfReport +
+        dimsBlock +
+        noteBlock,
+    });
+  }
+
+  // History modal — scrollable list, each row clickable to open the
+  // detail modal. Mirrors openTongueHistoryModal visually.
+  function openQuestionnaireHistoryModal(patient, questionnaires) {
+    if (!questionnaires.length) {
+      HM.ui.modal({
+        size:    'md',
+        title:   '📋 Constitution Questionnaire · 體質問卷',
+        content: '<p class="text-muted">No questionnaire submissions on file yet for this patient · 暫無問卷記錄</p>',
+      });
+      return;
+    }
+
+    var rows = questionnaires.map(function (q) {
+      var sym = q.symptoms || {};
+      var summary = (sym.chief_concern || '').toString().trim() || 'Constitution submission';
+      var statusBadge = renderQuestionnaireStatus(q.review_status);
+      return '<div onclick="HM.doctorPanels.patients._viewQuestionnaire(' + patient.id + ',' + q.id + ')" ' +
+        'style="display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:8px;cursor:pointer;transition:all 0.15s;background:#fff;" ' +
+        'onmouseenter="this.style.borderColor=\'var(--gold)\';this.style.transform=\'translateY(-1px)\';" ' +
+        'onmouseleave="this.style.borderColor=\'var(--border)\';this.style.transform=\'\';">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="text-xs text-muted">' + HM.format.datetime(q.created_at) + '</div>' +
+          '<div class="text-sm" style="font-weight:600;color:var(--ink);">' + HM.format.esc(summary) + '</div>' +
+          statusBadge +
+        '</div>' +
+        '<div class="text-xs text-muted">→</div>' +
+      '</div>';
+    }).join('');
+
+    HM.ui.modal({
+      size:    'lg',
+      title:   '📋 Constitution Questionnaire · 體質問卷 (' + questionnaires.length + ')',
+      content:
+        '<p class="text-xs text-muted mb-3">Click any row for the full submission — chief concern, lifestyle, diet, discomfort areas, doctor notes.</p>' +
         rows,
     });
   }
