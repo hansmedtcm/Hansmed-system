@@ -221,6 +221,13 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/tongue-assessments',        [TongueAssessmentController::class, 'store']);
             Route::get('/tongue-assessments/{id}',    [TongueAssessmentController::class, 'show']);
             Route::delete('/tongue-assessments/{id}', [TongueAssessmentController::class, 'destroy']);
+            // Brief 1A Phase 3 — direct-to-R2 upload flow (additive,
+            // legacy POST above stays for backward compat). Two-step:
+            // start-upload returns a presigned R2 PUT URL + pre-creates
+            // the assessment row; complete-upload verifies the PUT
+            // landed and runs analysis synchronously.
+            Route::post('/tongue-assessments/start-upload',              [TongueAssessmentController::class, 'startUpload']);
+            Route::post('/tongue-assessments/{id}/complete-upload',      [TongueAssessmentController::class, 'completeUpload']);
             // Deprecated legacy paths — kept alive for one release so any
             // bookmarks / cached frontend builds keep working. Remove
             // after all callers confirmed migrated.
