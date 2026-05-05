@@ -555,8 +555,9 @@
       '<textarea id="cr-foods-limit" class="field-input field-input--boxed" rows="3" style="background:#FFFAF0;">' + HM.format.esc(advice.foods_limit.join(', ')) + '</textarea>' +
       '<div class="text-xs text-muted">Items the patient should eat in smaller amounts. + Add buttons in the Eat Less column drop here.</div>' +
 
-      '<div class="text-label mt-4 mb-2">❌ Avoid</div>' +
-      '<input id="cr-avoid" class="field-input field-input--boxed" value="' + HM.format.esc(advice.avoid) + '">' +
+      '<div class="text-label mt-4 mb-2">❌ Avoid · 飲食禁忌</div>' +
+      '<textarea id="cr-avoid" class="field-input field-input--boxed" rows="3" placeholder="Lifestyle / dietary restrictions. + Add buttons in the Avoid column drop here.">' + HM.format.esc(advice.avoid) + '</textarea>' +
+      '<div class="text-xs text-muted">Each + Add appends with a semicolon. Edit freely.</div>' +
 
       '<div class="text-label mt-4 mb-2">💡 Lifestyle Tips</div>' +
       '<div id="cr-tips">' + advice.tips.map(tipRow).join('') + '</div>' +
