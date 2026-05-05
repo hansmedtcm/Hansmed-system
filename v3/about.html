@@ -518,7 +518,6 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <script src="../v2/assets/js/router.js"></script>
 <script src="../v2/assets/js/i18n.js"></script>
 <script src="../v2/assets/js/lang-switcher.js"></script>
-<script src="../v2/assets/js/pages/landing.js"></script>
 
 <!-- ══════════════ INLINE BEHAVIOUR ══════════════ -->
 <script>
@@ -593,6 +592,35 @@ function setLang(l) {
     b.classList.toggle('act', b.getAttribute('data-lang') === l);
   });
 }
+
+/* ── Brief #21b: v3 subpage navigation routes.
+      Mirrors v3/index.html lines 1748-1764 so onclick="go('login')"
+      and onclick="go('book')" buttons work on subpages too.
+      Subpage-specific tweaks vs index.html:
+        - home  → navigate to index.html (subpages can't scroll-to-top
+                  to reach the homepage, they need a real navigation)
+        - login/register → navigate to index.html with hash so the
+                  homepage's hash handler picks it up. Otherwise the
+                  hash would just stick to the current subpage URL
+                  and nothing would happen.
+      All other routes match index.html exactly. ── */
+var LANDING_ROUTES = {
+  home:     function () { location.href = 'index.html'; },
+  about:    function () { location.href = 'about.html'; },
+  services: function () { location.href = 'services.html'; },
+  shop:     function () { location.href = '../v2/shop.html'; },
+  book:     function () { location.href = '../portal.html#/book'; },
+  wellness: function () { location.href = '../portal.html#/wellness-assessment'; },
+  register: function () { location.href = 'index.html#/register'; },
+  login:    function () { location.href = 'index.html#/login'; },
+  contact:  function () { location.href = '../v2/contact.html'; },
+};
+function go(id) {
+  var fn = LANDING_ROUTES[id] || LANDING_ROUTES.home;
+  closeMob();
+  fn();
+}
+window.go = go;
 </script>
 
 <!-- ══════════════ Visual-upgrade JS layer (Brief #8 reused) ══════════════
