@@ -6,6 +6,7 @@ use App\Services\TongueAssessment\AnalysisReport;
 use App\Services\TongueAssessment\KnowledgeBase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Anthropic Claude Vision adapter for tongue diagnosis.
@@ -208,6 +209,38 @@ class AnthropicTongueClient
 
     private function fetchImage(string $imageUrl): ?array
     {
+        // ── 0. R2 short-circuit ─────────────────────────────────────
+        // Brief 1A Phase 4 — r2:// URLs read directly from the Cloudflare R2
+        // disk. Only the Anthropic provider supports this scheme; third-party
+        // TONGUE_API_URL endpoints can't dereference our internal r2:// values.
+        // Production runs on TONGUE_API_URL=anthropic so this is the live path.
+        // On any R2 fetch failure we return null immediately — falling through
+        // to the filesystem/HTTP tiers below can't recover an r2:// URL.
+        if (str_starts_with($imageUrl, 'r2://')) {
+            $r2Key = substr($imageUrl, 5);
+            try {
+                $bytes = Storage::disk('r2')->get($r2Key);
+                $mime  = Storage::disk('r2')->mimeType($r2Key) ?: 'image/jpeg';
+            } catch (\Throwable $e) {
+                Log::warning('anthropic_tongue_r2_fetch_failed', [
+                    'r2_key' => $r2Key,
+                    'err'    => $e->getMessage(),
+                ]);
+                return null;
+            }
+            // Same MIME clamp as the bottom of the function — Storage's
+            // mimeType() can return whatever Content-Type was set at PUT
+            // time (or null), and Claude Vision only accepts these four.
+            $mime = strtolower(explode(';', (string) $mime)[0]);
+            if (! in_array($mime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true)) {
+                $mime = 'image/jpeg';
+            }
+            return [
+                'media_type' => $mime,
+                'base64'     => base64_encode($bytes),
+            ];
+        }
+
         try {
             $bytes = null;
             $mime  = 'image/jpeg';
