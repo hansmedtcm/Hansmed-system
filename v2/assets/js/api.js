@@ -171,13 +171,100 @@
     listDiagnoses: function (page) { return api.get('/patient/tongue-assessments?page=' + (page || 1)); },
     getDiagnosis:  function (id) { return api.get('/patient/tongue-assessments/' + id); },
     deleteDiagnosis: function (id) { return api.delete('/patient/tongue-assessments/' + id); },
-    uploadTongue: function (file) {
-      var fd = new FormData();
-      fd.append('image', file);
-      // Backend runs the Claude Vision call inline in this request, so allow
-      // up to 90s — image fetch + AI round-trip usually lands in 10–20s but
-      // slow mobile uploads + cold-start backends can occasionally stretch.
-      return api.post('/patient/tongue-assessments', fd, { timeout: 90000 });
+    uploadTongue: async function (file) {
+      // Brief 1A Phase 6 — direct browser-to-R2 upload.
+      // Three steps: (1) ask backend for a presigned R2 PUT URL,
+      // (2) PUT the image bytes directly to R2 (bypasses Railway entirely),
+      // (3) tell backend "upload finished" so it verifies + runs Claude
+      // Vision sync. Net result: Railway sees only two small JSON requests
+      // instead of a multipart upload, and the response shape is identical
+      // to the legacy POST so handleTongueFile()/pollTongueAnalysis() stay
+      // unchanged.
+      //
+      // Legacy POST /patient/tongue-assessments still works on the backend
+      // — we can fall back by reverting THIS function only.
+      if (!file || !file.name) {
+        var err = new Error('No file provided');
+        err.status = 0;
+        throw err;
+      }
+
+      // Validate MIME — backend regex accepts jpg/jpeg/png only. Catch
+      // unsupported types here so the user gets a clear error before any
+      // network call.
+      var ext = (file.name.split('.').pop() || '').toLowerCase();
+      if (ext === 'jpeg') ext = 'jpg';
+      if (ext !== 'jpg' && ext !== 'png') {
+        var et = new Error('Only JPG/PNG photos supported. · 僅支援 JPG/PNG 圖片。');
+        et.status = 422;
+        throw et;
+      }
+
+      // Step 1 — request presigned URL. 10s timeout because the backend
+      // does a tiny DB insert + a few crypto ops.
+      var sign = await api.post('/patient/tongue-assessments/start-upload', {
+        filename:  file.name,
+        file_size: file.size,
+        // consent_text omitted in Phase 6 — Phase 8 wires the consent UI.
+        // Backend column is nullable; it'll just store NULL for these uploads.
+      }, { timeout: 10000 });
+
+      if (!sign || !sign.upload_url || !sign.assessment_id) {
+        var es = new Error('start-upload response missing fields');
+        es.status = 502;
+        throw es;
+      }
+
+      // Step 2 — PUT to R2. R2 enforces the Content-Type from the signed
+      // request, so we MUST send exactly sign.content_type back. 60s
+      // timeout — generous for slow mobile networks; the file size is
+      // already capped at 10 MB by start-upload validation.
+      //
+      // We DO NOT use api.post/put here because the request goes to R2's
+      // domain (not our backend), so the auth header / API_BASE prefix
+      // would be wrong. Use plain fetch with our own AbortController.
+      var putController = new AbortController();
+      var putTimeout    = setTimeout(function () { putController.abort(); }, 60000);
+      var putRes;
+      try {
+        putRes = await fetch(sign.upload_url, {
+          method: 'PUT',
+          headers: { 'Content-Type': sign.content_type },
+          body:    file,
+          signal:  putController.signal,
+        });
+        clearTimeout(putTimeout);
+      } catch (e) {
+        clearTimeout(putTimeout);
+        var ep = new Error(
+          e.name === 'AbortError'
+            ? 'Upload to storage timed out. Please retry on a stable network.'
+            : 'Upload to storage failed: ' + (e.message || 'network error')
+        );
+        ep.status = 0;
+        throw ep;
+      }
+      if (!putRes.ok) {
+        var er = new Error('R2 PUT rejected with HTTP ' + putRes.status);
+        er.status = putRes.status;
+        throw er;
+      }
+
+      // Step 3 — tell backend the PUT landed. Backend verifies in R2,
+      // flips image_url to the real key, runs Claude Vision sync, and
+      // returns the full diagnosis. Same 90s ceiling as the legacy path
+      // because this is where the AI call happens.
+      var done = await api.post(
+        '/patient/tongue-assessments/' + sign.assessment_id + '/complete-upload',
+        {},
+        { timeout: 90000 }
+      );
+
+      // Match the legacy response shape that the call sites expect:
+      //   { diagnosis: <full row> }
+      // The new endpoint returns { status, assessment_id, diagnosis }.
+      // Wrap so handleTongueFile/tongue.js see the exact same envelope.
+      return { diagnosis: done.diagnosis };
     },
 
     saveQuestionnaire:  function (d)  { return api.post('/patient/questionnaires', d); },
