@@ -1032,6 +1032,33 @@
     var avoid = advice.avoid || '';
     var tips  = advice.tips  || [];
 
+    // Brief #14a-fix-5 - prefer explicit beneficial / limit fields if
+    // present (new doctor UI sends them). Fall back to sticky-reduce
+    // parsing on the legacy combined `foods` array for older reviews.
+    var REDUCE_PATTERNS = /^\s*\(\s*(less|reduce|limit|avoid|no|skip|moderate|少|減|忌|避|限)\s*\)\s*/i;
+    function splitReduce(arr) {
+      var regular = [], reduce = [];
+      var sticky = false;
+      (arr || []).forEach(function (item) {
+        var s = String(item == null ? '' : item);
+        var m = s.match(REDUCE_PATTERNS);
+        if (m) { sticky = true; reduce.push(s.slice(m[0].length).trim()); }
+        else if (sticky) { reduce.push(s); }
+        else { regular.push(s); }
+      });
+      return { regular: regular, reduce: reduce };
+    }
+    var splitFoods = (advice.foods_beneficial || advice.foods_limit)
+      ? { regular: (advice.foods_beneficial || []).slice(),
+          reduce:  (advice.foods_limit      || []).slice() }
+      : splitReduce(foods);
+    var splitHerbs = (advice.herbs_beneficial || advice.herbs_limit)
+      ? { regular: (advice.herbs_beneficial || []).slice(),
+          reduce:  (advice.herbs_limit      || []).slice() }
+      : splitReduce(herbs);
+
+    var REDUCE_CHIP_STYLE = 'background:#FFF3CD;border:1px dashed #B5881A;border-radius:12px;padding:3px 10px;color:#6F5510;display:inline-block;margin-right:6px;margin-bottom:6px;';
+
     var out = '<div class="card card--pad-lg mb-4" style="border-left: 3px solid var(--sage);">' +
       '<div class="text-label mb-3">💬 Doctor\'s Plan · 醫師審核建議</div>';
 
@@ -1039,16 +1066,28 @@
       out += '<p style="white-space: pre-wrap; margin-bottom: var(--s-4); line-height: var(--leading-relaxed);">' + HM.format.esc(comment) + '</p>';
     }
 
-    if (herbs.length) {
+    if (splitHerbs.regular.length) {
       out += '<div class="text-label mb-2">🌿 Herbs · 建議草藥</div>' +
         '<div class="flex gap-2 flex-wrap mb-4">' +
-        herbs.map(function (h) { return '<span class="aid-tag aid-tag--sage">' + HM.format.esc(h) + '</span>'; }).join('') +
+        splitHerbs.regular.map(function (h) { return '<span class="aid-tag aid-tag--sage">' + HM.format.esc(h) + '</span>'; }).join('') +
         '</div>';
     }
-    if (foods.length) {
+    if (splitHerbs.reduce.length) {
+      out += '<div class="text-label mb-2" style="color:#6F5510;">⚠️ Use Sparingly · 慎用</div>' +
+        '<div class="mb-4">' +
+        splitHerbs.reduce.map(function (h) { return '<span style="' + REDUCE_CHIP_STYLE + '">' + HM.format.esc(h) + '</span>'; }).join('') +
+        '</div>';
+    }
+    if (splitFoods.regular.length) {
       out += '<div class="text-label mb-2">🍱 Beneficial Foods · 有益食療</div>' +
         '<div class="flex gap-2 flex-wrap mb-4">' +
-        foods.map(function (f) { return '<span class="aid-tag aid-tag--gold">' + HM.format.esc(f) + '</span>'; }).join('') +
+        splitFoods.regular.map(function (f) { return '<span class="aid-tag aid-tag--gold">' + HM.format.esc(f) + '</span>'; }).join('') +
+        '</div>';
+    }
+    if (splitFoods.reduce.length) {
+      out += '<div class="text-label mb-2" style="color:#6F5510;">⚠️ Limit · 少量 <span style="font-weight:normal;font-size:var(--text-xs);color:var(--stone);">— consume in smaller amounts</span></div>' +
+        '<div class="mb-4">' +
+        splitFoods.reduce.map(function (f) { return '<span style="' + REDUCE_CHIP_STYLE + '">' + HM.format.esc(f) + '</span>'; }).join('') +
         '</div>';
     }
     if (avoid) {

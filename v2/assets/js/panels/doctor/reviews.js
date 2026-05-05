@@ -348,9 +348,41 @@
     var existingAdvice = report.doctor_advice || {};
     var template = HERB_MAP[primaryType] || HERB_MAP['Balanced Constitution'];
 
+    // Brief #14a-fix-5 helper - sticky-reduce splitter for legacy
+    // single-array advice.foods. Comma-grouped (less) tails inherit
+    // reduce; explicit per-item (less) entries are also caught.
+    var REDUCE_PATTERNS = /^\s*\(\s*(less|reduce|limit|avoid|no|skip|moderate|少|減|忌|避|限)\s*\)\s*/i;
+    function splitLegacyArr(arr) {
+      var beneficial = [], limit = [];
+      var sticky = false;
+      (arr || []).forEach(function (item) {
+        var s = String(item == null ? '' : item);
+        var m = s.match(REDUCE_PATTERNS);
+        if (m) { sticky = true; limit.push(s.slice(m[0].length).trim()); }
+        else if (sticky) { limit.push(s); }
+        else { beneficial.push(s); }
+      });
+      return { beneficial: beneficial, limit: limit };
+    }
+
+    // Brief #14a-fix-5 - explicit beneficial vs limit fields. Backwards
+    // compat: if review has new foods_beneficial/foods_limit fields, use
+    // them. Otherwise split legacy single foods array via sticky-reduce.
+    var foodsRaw = existingAdvice.foods && existingAdvice.foods.length
+      ? existingAdvice.foods
+      : template.foods.slice();
+    var foodsBeneficial = (existingAdvice.foods_beneficial && existingAdvice.foods_beneficial.length)
+      ? existingAdvice.foods_beneficial.slice()
+      : splitLegacyArr(foodsRaw).beneficial;
+    var foodsLimit = (existingAdvice.foods_limit && existingAdvice.foods_limit.length)
+      ? existingAdvice.foods_limit.slice()
+      : splitLegacyArr(foodsRaw).limit;
+
     var advice = {
       herbs: existingAdvice.herbs && existingAdvice.herbs.length ? existingAdvice.herbs : template.herbs.slice(),
-      foods: existingAdvice.foods && existingAdvice.foods.length ? existingAdvice.foods : template.foods.slice(),
+      foods: foodsRaw,
+      foods_beneficial: foodsBeneficial,
+      foods_limit:      foodsLimit,
       avoid: existingAdvice.avoid || template.avoid,
       tips:  existingAdvice.tips && existingAdvice.tips.length ? existingAdvice.tips : defaultTips(dims),
     };
@@ -515,8 +547,13 @@
       '<textarea id="cr-herbs" class="field-input field-input--boxed" rows="3">' + HM.format.esc(advice.herbs.join(', ')) + '</textarea>' +
       '<div class="text-xs text-muted">Comma-separated. Edit freely — patient only sees what you leave here.</div>' +
 
-      '<div class="text-label mt-4 mb-2">🍱 Beneficial Foods</div>' +
-      '<textarea id="cr-foods" class="field-input field-input--boxed" rows="3">' + HM.format.esc(advice.foods.join(', ')) + '</textarea>' +
+      '<div class="text-label mt-4 mb-2">🍱 Beneficial Foods · 有益食療</div>' +
+      '<textarea id="cr-foods-beneficial" class="field-input field-input--boxed" rows="3">' + HM.format.esc(advice.foods_beneficial.join(', ')) + '</textarea>' +
+      '<div class="text-xs text-muted">Comma-separated. + Add buttons in the Eat More column drop here.</div>' +
+
+      '<div class="text-label mt-4 mb-2" style="color:#6F5510;">⚠️ Limit / Eat Less · 少量 / 宜少食</div>' +
+      '<textarea id="cr-foods-limit" class="field-input field-input--boxed" rows="3" style="background:#FFFAF0;">' + HM.format.esc(advice.foods_limit.join(', ')) + '</textarea>' +
+      '<div class="text-xs text-muted">Items the patient should eat in smaller amounts. + Add buttons in the Eat Less column drop here.</div>' +
 
       '<div class="text-label mt-4 mb-2">❌ Avoid</div>' +
       '<input id="cr-avoid" class="field-input field-input--boxed" value="' + HM.format.esc(advice.avoid) + '">' +
@@ -1042,11 +1079,14 @@
       if (target === 'herb') {
         added = appendCSV(modalEl.querySelector('#cr-herbs'), payload.name);
       } else if (target === 'food-more') {
+        // Brief #14a-fix-5 - route to the explicit beneficial textarea.
         var label = payload.zh ? (payload.en + ' ' + payload.zh) : payload.en;
-        added = appendCSV(modalEl.querySelector('#cr-foods'), label);
+        added = appendCSV(modalEl.querySelector('#cr-foods-beneficial'), label);
       } else if (target === 'food-less') {
-        var label2 = '(less) ' + (payload.zh ? (payload.en + ' ' + payload.zh) : payload.en);
-        added = appendCSV(modalEl.querySelector('#cr-foods'), label2);
+        // Brief #14a-fix-5 - route to the explicit limit textarea. No
+        // more "(less)" string prefix; the textarea IS the limit category.
+        var label2 = payload.zh ? (payload.en + ' ' + payload.zh) : payload.en;
+        added = appendCSV(modalEl.querySelector('#cr-foods-limit'), label2);
       } else if (target === 'avoid') {
         var avoidEl = modalEl.querySelector('#cr-avoid');
         var avoidLabel = payload.zh ? (payload.en + ' ' + payload.zh) : payload.en;
@@ -1068,8 +1108,8 @@
         // Brief flash on the target field so the doctor sees where it landed.
         var flashTarget =
           target === 'herb'      ? modalEl.querySelector('#cr-herbs') :
-          target === 'food-more' ? modalEl.querySelector('#cr-foods') :
-          target === 'food-less' ? modalEl.querySelector('#cr-foods') :
+          target === 'food-more' ? modalEl.querySelector('#cr-foods-beneficial') :
+          target === 'food-less' ? modalEl.querySelector('#cr-foods-limit') :
           target === 'avoid'     ? modalEl.querySelector('#cr-avoid') :
           target === 'tip'       ? modalEl.querySelector('#cr-tips').lastElementChild : null;
         if (flashTarget) {
@@ -1759,12 +1799,24 @@
 
   // ── Submit handlers ───────────────────────────────────────
   async function submitConstitution(form, m, id, decision) {
+    // Brief #14a-fix-5 - read both new explicit textareas; build the
+    // legacy `foods` array for backwards compatibility.
+    var foodsBeneficial = form.querySelector('#cr-foods-beneficial').value
+      .split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var foodsLimit = form.querySelector('#cr-foods-limit').value
+      .split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var foodsLegacy = foodsBeneficial.concat(
+      foodsLimit.map(function (x) { return '(less) ' + x; })
+    );
+
     var data = {
       decision: decision,
       doctor_comment: form.querySelector('[name="doctor_comment"]').value.trim(),
       advice: {
         herbs: form.querySelector('#cr-herbs').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
-        foods: form.querySelector('#cr-foods').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
+        foods:            foodsLegacy,
+        foods_beneficial: foodsBeneficial,
+        foods_limit:      foodsLimit,
         avoid: form.querySelector('#cr-avoid').value.trim(),
         tips:  collectTips(form),
       },
