@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * TongueAssessment — patient-uploaded tongue photo + AI analysis +
@@ -16,6 +17,17 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TongueAssessment extends Model
 {
+    /*
+     * Brief 1A Phase 2 — SoftDeletes for PDPA right-of-erasure flow.
+     * `delete()` now sets deleted_at instead of hard-removing the row,
+     * so the audit trail (consent_text, consented_at, reviewed_by)
+     * survives the patient's deletion request. Sensitive fields
+     * (image_url, raw_response, constitution_report, r2_key) are
+     * scrubbed in TongueAssessmentController::destroy() before the
+     * soft-delete fires — see Brief 1A Phase 5.
+     */
+    use SoftDeletes;
+
     protected $table = 'tongue_assessments';
 
     protected $fillable = [
@@ -26,6 +38,8 @@ class TongueAssessment extends Model
         // Practitioner review
         'review_status', 'doctor_comment', 'reviewed_by', 'reviewed_at',
         'medicine_suggestions',
+        // Brief 1A Phase 2 — R2 key + PDPA consent capture
+        'r2_key', 'consent_text', 'consented_at',
     ];
 
     protected $casts = [
@@ -35,6 +49,7 @@ class TongueAssessment extends Model
         'teeth_marks'          => 'boolean',
         'cracks'               => 'boolean',
         'reviewed_at'          => 'datetime',
+        'consented_at'         => 'datetime',
     ];
 
     public function patient()  { return $this->belongsTo(User::class, 'patient_id'); }
