@@ -682,6 +682,18 @@ function go(id) {
   fn();
 }
 window.go = go;
+
+/* ── Brief #21d: initial language reflection.
+      lang-switcher.js handles body class + DOM walking on init,
+      but the v3-specific .lang-btn-v4 and .mob-lb button highlights
+      need a call to our local setLang() to reflect the stored
+      preference. Without this, a user landing directly on this
+      subpage with stored pref=zh sees Chinese content but EN
+      button highlighted. Mirrors v3/index.html lines 1812-1816. ── */
+(function () {
+  var stored = (window.HM && HM.langSwitch && HM.langSwitch.get) ? HM.langSwitch.get() : 'en';
+  setLang(stored);
+})();
 </script>
 
 <!-- Lenis smooth scroll — desktop only. -->
