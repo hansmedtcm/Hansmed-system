@@ -819,14 +819,23 @@
       var tongueReport = tFull ? (tFull.constitution_report || {}) : {};
       var isReviewed = (status === 'approved' || status === 'needs_changes');
 
+      // Brief #14a-fix-7 — prefer the fresh signed R2 URL from
+      // the live tongue assessment fetch (always valid for 1hr from
+      // now), not the cached URL inside the questionnaire JSON
+      // which was signed at submission time and may have expired.
+      // Fall back to the cached tongue_image_url for legacy records
+      // (pre-Phase 6 the URL was permanent /api/uploads/... so it
+      // still works).
+      var tongueImgUrl = (tFull && tFull.image_url) || report.tongue_image_url || null;
+
       tongueSection =
         '<div class="card card--pad-lg mb-4" style="border-left:3px solid var(--gold);">' +
         '<div class="text-label mb-3">👅 Tongue Diagnosis · 舌診結果</div>' +
 
         // Header summary — photo + constitution + score
         '<div class="flex gap-4 mb-3" style="align-items:center;flex-wrap:wrap;">' +
-        (report.tongue_image_url
-          ? HM.format.img(report.tongue_image_url, {
+        (tongueImgUrl
+          ? HM.format.img(tongueImgUrl, {
               style: 'width:110px;height:110px;border-radius:var(--r-md);border:1px solid var(--border);',
               icon: '👅', title: 'Photo unavailable · 圖片已不存在',
             })
