@@ -418,6 +418,54 @@ class TongueAssessmentController extends Controller
             ], 422);
         }
 
+        // Brief 1A Phase 9 — ContentLength enforcement.
+        // The presigned PUT URL doesn't enforce content-length-range,
+        // so verify the actual stored object size BEFORE running the
+        // AI call. 10 MB hard cap = 10 * 1024 * 1024 = 10485760 bytes
+        // (matches the max in startUpload's validation rule).
+        //
+        // Defends against a client that declares file_size=1024 in
+        // start-upload (passes server validation), receives the
+        // presigned URL, then PUTs a 1 GB file. Without this check
+        // we'd happily run AI on the oversize image and pay for the
+        // R2 storage indefinitely.
+        try {
+            $actualSize = Storage::disk('r2')->size($assessment->r2_key);
+        } catch (\Throwable $e) {
+            // Size lookup failed despite exists() succeeding above —
+            // very rare R2 hiccup. Log and fall through to AI rather
+            // than blocking the upload on a transient error.
+            Log::warning('tongue_size_check_failed', [
+                'r2_key'        => $assessment->r2_key,
+                'assessment_id' => $assessment->id,
+                'err'           => $e->getMessage(),
+            ]);
+            $actualSize = null;
+        }
+        if ($actualSize !== null && $actualSize > 10485760) {
+            // Purge the oversize object — patient declared a smaller
+            // size and uploaded a larger one. Don't bill for AI
+            // processing or keep paying R2 storage costs.
+            try {
+                Storage::disk('r2')->delete($assessment->r2_key);
+            } catch (\Throwable $e) {
+                Log::warning('tongue_oversize_purge_failed', [
+                    'r2_key'        => $assessment->r2_key,
+                    'assessment_id' => $assessment->id,
+                    'size'          => $actualSize,
+                    'err'           => $e->getMessage(),
+                ]);
+            }
+            // Leave image_url as 'r2://pending' (don't flip to the
+            // real key). The Phase 9 Item 3 orphan cleanup will
+            // soft-delete this row 24h from now.
+            $assessment->update(['status' => 'failed']);
+            return response()->json([
+                'message'     => 'Uploaded image exceeds 10 MB limit. Please retry with a smaller image.',
+                'actual_size' => $actualSize,
+            ], 422);
+        }
+
         // Flip placeholder → real key; AnthropicTongueClient (Phase 4)
         // will recognise the r2:// prefix and fetch from R2 instead of
         // trying to download an HTTP URL.
