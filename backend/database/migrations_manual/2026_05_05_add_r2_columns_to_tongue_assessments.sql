@@ -23,16 +23,21 @@
 -- key lookup. Non-unique because legacy rows have null (multiple nulls
 -- are valid in MySQL non-unique indexes).
 --
--- Re-runnable: each ALTER uses IF NOT EXISTS where MySQL 8.0+ supports
--- it. CREATE INDEX uses a guarded approach.
+-- NOT idempotent on this stack. Production MySQL is 9.4.0, which
+-- (despite docs) rejects `ADD COLUMN IF NOT EXISTS` with a syntax
+-- error — empirically observed during initial apply on 2026-05-05.
+-- So statements below are plain ADD COLUMN / CREATE INDEX. Re-running
+-- on a DB that already has the columns will throw "Duplicate column
+-- name" or "Duplicate key name" — harmless, but you'll need to skip
+-- past the failures or DROP first.
+--
+-- For fresh installs, the columns are defined in database/schema.sql
+-- already (kept in sync as part of this brief), so this file is only
+-- for upgrading an existing database.
 
-ALTER TABLE tongue_assessments
-  ADD COLUMN IF NOT EXISTS r2_key VARCHAR(500) NULL AFTER image_url,
-  ADD COLUMN IF NOT EXISTS consent_text TEXT NULL AFTER r2_key,
-  ADD COLUMN IF NOT EXISTS consented_at TIMESTAMP NULL AFTER consent_text,
-  ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL AFTER updated_at;
+ALTER TABLE tongue_assessments ADD COLUMN r2_key       VARCHAR(500) NULL AFTER image_url;
+ALTER TABLE tongue_assessments ADD COLUMN consent_text TEXT         NULL AFTER r2_key;
+ALTER TABLE tongue_assessments ADD COLUMN consented_at TIMESTAMP    NULL AFTER consent_text;
+ALTER TABLE tongue_assessments ADD COLUMN deleted_at   TIMESTAMP    NULL AFTER updated_at;
 
--- MySQL doesn't support CREATE INDEX IF NOT EXISTS in all versions;
--- the duplicate-key error on re-run is harmless. If you need a clean
--- re-run, DROP INDEX idx_ta_r2_key ON tongue_assessments; first.
 CREATE INDEX idx_ta_r2_key ON tongue_assessments (r2_key);

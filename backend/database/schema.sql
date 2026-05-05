@@ -132,6 +132,13 @@ CREATE TABLE tongue_assessments (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   patient_id      BIGINT UNSIGNED NOT NULL,
   image_url       VARCHAR(500) NOT NULL,
+  -- Brief 1A Phase 2 — R2 object key for the new direct-upload flow.
+  -- NULL on legacy rows (those continue to resolve via image_url).
+  r2_key          VARCHAR(500) NULL,
+  -- Brief 1A Phase 2 — PDPA Section 8 cross-border-transfer consent
+  -- captured verbatim at upload time. Consented_at marks when ticked.
+  consent_text    TEXT NULL,
+  consented_at    TIMESTAMP NULL,
   thumbnail_url   VARCHAR(500) NULL,
   third_party_request_id VARCHAR(120) NULL,
   status          ENUM('uploaded','processing','completed','failed') NOT NULL DEFAULT 'uploaded',
@@ -147,8 +154,11 @@ CREATE TABLE tongue_assessments (
   health_score    SMALLINT NULL,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  -- Brief 1A Phase 2 — SoftDeletes for PDPA right-of-erasure flow.
+  deleted_at      TIMESTAMP NULL,
   CONSTRAINT fk_ta_patient FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
-  KEY idx_ta_patient_created (patient_id, created_at)
+  KEY idx_ta_patient_created (patient_id, created_at),
+  KEY idx_ta_r2_key (r2_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE questionnaires (
