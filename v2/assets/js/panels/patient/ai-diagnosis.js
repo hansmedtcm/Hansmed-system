@@ -301,6 +301,16 @@
       ]);
       var items = [];
 
+      // Brief #14a-fix-7 — collect tongue ids referenced by
+      // constitution questionnaires submitted as part of a combined
+      // session, so we can hide the duplicate standalone tongue card
+      // from the list. The detail view (renderApprovedReport) already
+      // inlines the tongue analysis into the constitution report, so
+      // showing both as separate cards just confuses the patient.
+      // Standalone tongue scans (no paired questionnaire) are NOT
+      // affected and continue to render as their own card.
+      var linkedTongueIds = new Set();
+
       // Constitution questionnaires
       var qRows = (results[0] && results[0].data) || [];
       qRows.forEach(function (row) {
@@ -308,6 +318,12 @@
         if (typeof s === 'string') { try { s = JSON.parse(s); } catch (_) { s = {}; } }
         s = s || {};
         if (s.kind !== 'ai_constitution_v2') return;
+        // Capture the linked tongue id (if this was a combined session).
+        // Coerce via Number(...) so the later .has() check matches whether
+        // the backend serialised the id as int or string.
+        if (s.tongue_assessment_id) {
+          linkedTongueIds.add(Number(s.tongue_assessment_id));
+        }
         items.push({
           kind: 'constitution',
           id: row.id,
@@ -323,6 +339,11 @@
       // Tongue scans
       var tRows = (results[1] && results[1].data) || [];
       tRows.forEach(function (t) {
+        // Brief #14a-fix-7 — hide tongue scans that are already
+        // represented by a paired constitution questionnaire above.
+        // The patient's combined-detail view (renderApprovedReport)
+        // inlines the tongue image + deep analysis into that card.
+        if (linkedTongueIds.has(Number(t.id))) return;
         var report = t.constitution_report || {};
         var c = report.constitution || {};
         items.push({
