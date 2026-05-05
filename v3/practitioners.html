@@ -630,8 +630,25 @@ function navLogout() {
   location.reload();
 }
 function setLang(l) {
-  try { localStorage.setItem('hm-lang-pref', l); } catch (_) {}
-  document.documentElement.setAttribute('lang', l);
+  if (l !== 'en' && l !== 'zh') return;
+  /* Brief #21c: delegate canonical state to HM.langSwitch.set(), which
+     (a) writes localStorage hm-lang-pref, (b) sets <html lang>, AND
+     (c) updates the body.lang-en / body.lang-zh class that the injected
+     bilingual-toggle CSS depends on. Without this delegation, body class
+     stays stale and EN/中 swap visually hides EVERYTHING. Mirrors
+     v3/index.html's setLang pattern. */
+  if (window.HM && HM.langSwitch && HM.langSwitch.set) {
+    HM.langSwitch.set(l);
+  } else {
+    /* Fallback if lang-switcher.js failed to load: at least flip the
+       html lang attribute and persist the preference, so the next
+       page-load re-init picks it up correctly. */
+    try { localStorage.setItem('hm-lang-pref', l); } catch (_) {}
+    document.documentElement.setAttribute('lang', l);
+  }
+  /* Always reflect active state on this page's specific .lang-btn-v4
+     and .mob-lb buttons — lang-switcher.js's reflect helper only knows
+     about the older .lang-btn class, not v4 styling. */
   document.querySelectorAll('.lang-btn-v4, .mob-lb').forEach(function (b) {
     b.classList.toggle('act', b.getAttribute('data-lang') === l);
   });
