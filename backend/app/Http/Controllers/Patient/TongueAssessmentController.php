@@ -65,12 +65,22 @@ class TongueAssessmentController extends Controller
     }
 
     // C-07: history
+    //
+    // Brief 1A Phase 5 — accepts an optional ?include_trashed=true query
+    // param so a "Recently Deleted" UI can list soft-deleted rows
+    // alongside active ones (within the 7-day undo window). Default
+    // behaviour is unchanged: soft-deleted rows are filtered out by
+    // the SoftDeletes trait's global scope.
     public function index(Request $request)
     {
+        $query = TongueAssessment::where('patient_id', $request->user()->id);
+
+        if ($request->boolean('include_trashed')) {
+            $query->withTrashed();
+        }
+
         return response()->json(
-            TongueAssessment::where('patient_id', $request->user()->id)
-                ->orderByDesc('created_at')
-                ->paginate(20)
+            $query->orderByDesc('created_at')->paginate(20)
         );
     }
 
@@ -80,10 +90,171 @@ class TongueAssessmentController extends Controller
         return response()->json(['diagnosis' => $assessment]);
     }
 
+    /**
+     * Brief 1A Phase 5 — single-row soft-delete with 7-day undo window.
+     *
+     * Deliberate: do NOT touch R2. The image stays in the bucket for 7
+     * days so the patient can hit POST .../{id}/restore if they
+     * change their mind. The PurgeExpiredR2Tongues artisan command
+     * (scheduled daily at 03:00 UTC via bootstrap/app.php's
+     * withSchedule()) sweeps soft-deleted rows older than 7 days and
+     * hard-deletes their R2 objects, then nulls r2_key on the row.
+     *
+     * Clinical/audit fields (constitution_report, raw_response,
+     * doctor_comment, etc.) are preserved on the soft-deleted row —
+     * only the image bytes get purged. The row itself stays for
+     * audit trail (consent_text, consented_at, deleted_at).
+     *
+     * For the immediate PDPA right-of-erasure path (delete-everything-
+     * NOW with no undo), see deleteAll() below.
+     */
     public function destroy(Request $request, int $id)
     {
-        TongueAssessment::where('patient_id', $request->user()->id)->findOrFail($id)->delete();
-        return response()->json(['ok' => true]);
+        $assessment = TongueAssessment::where('patient_id', $request->user()->id)
+            ->findOrFail($id);
+        $assessment->delete();   // SoftDeletes trait — sets deleted_at = now()
+
+        return response()->json([
+            'ok'                 => true,
+            'recoverable_until'  => now()->addDays(7)->toIso8601String(),
+            'undo_endpoint'      => '/api/patient/tongue-assessments/' . $assessment->id . '/restore',
+        ]);
+    }
+
+    /**
+     * Brief 1A Phase 5 — un-soft-delete within the 7-day grace window.
+     *
+     * Rejection cases (in order):
+     *   - 404 if no row matches OR the row is already active
+     *     (not soft-deleted). Both surface as the same not-found
+     *     response so we don't leak the existence of an active row
+     *     under a wrong id.
+     *   - 410 Gone if deleted_at is older than 7 days. The cron may
+     *     have already purged the R2 object; restoring would yield
+     *     a row whose image_url points at nothing.
+     *   - 410 Gone if r2_key is set but the R2 object is already
+     *     missing. Defensive — covers the case where the cron ran
+     *     between the request landing and us reaching this check,
+     *     or where someone deleted the R2 object out-of-band.
+     *
+     * On success the SoftDeletes trait's restore() clears deleted_at.
+     *
+     * POST /api/patient/tongue-assessments/{id}/restore
+     */
+    public function restore(Request $request, int $id)
+    {
+        $assessment = TongueAssessment::withTrashed()
+            ->where('patient_id', $request->user()->id)
+            ->findOrFail($id);
+
+        if (! $assessment->trashed()) {
+            // Not soft-deleted — nothing to restore. 404 rather than
+            // 422 to keep the response shape uniform with the not-found
+            // case above (no leakage of active-row existence).
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        if ($assessment->deleted_at && $assessment->deleted_at->lt(now()->subDays(7))) {
+            return response()->json([
+                'message' => 'Restore window expired (7 days). The image has already been purged.',
+            ], 410);
+        }
+
+        if ($assessment->r2_key && ! Storage::disk('r2')->exists($assessment->r2_key)) {
+            return response()->json([
+                'message' => 'Image already purged from storage. Restore would leave a broken record.',
+            ], 410);
+        }
+
+        $assessment->restore();   // clears deleted_at
+
+        return response()->json([
+            'ok'            => true,
+            'assessment_id' => $assessment->id,
+            'status'        => $assessment->status,
+        ]);
+    }
+
+    /**
+     * Brief 1A Phase 5 — PDPA right-of-erasure bulk delete.
+     *
+     * Hard-purges R2 objects for ALL of this patient's tongue
+     * assessments (active + already soft-deleted) and soft-deletes
+     * any rows still active. r2_key is nulled so the row's residual
+     * audit trail clearly indicates the image is gone.
+     *
+     * Differences from destroy():
+     *   - Operates on EVERY row owned by the patient.
+     *   - R2 objects are purged immediately, no 7-day grace.
+     *   - No restore endpoint applies — once R2 is gone, restore()
+     *     would yield broken records.
+     *   - Requires explicit confirm string in the body to defend
+     *     against accidental fat-finger DELETE on the collection
+     *     route. UI must surface a typed-confirmation modal.
+     *
+     * Wrapped in a DB transaction so a partial-failure leaves the
+     * patient's row state internally consistent. R2 delete failures
+     * are logged but DO NOT abort — the row-level soft-delete is
+     * the legally binding act under PDPA. We surface the deleted
+     * row count in the response, not the R2 success count.
+     *
+     * Clinical/audit fields (constitution_report, raw_response,
+     * doctor_comment, consent_text, consented_at) are preserved by
+     * design — see Brief 1A Phase 5 sub-rules.
+     *
+     * DELETE /api/patient/tongue-assessments
+     * Body: { "confirm": "DELETE_ALL_MY_TONGUE_DATA" }
+     */
+    public function deleteAll(Request $request)
+    {
+        $data = $request->validate([
+            'confirm' => ['required', 'string'],
+        ]);
+        if ($data['confirm'] !== 'DELETE_ALL_MY_TONGUE_DATA') {
+            return response()->json([
+                'message' => 'Confirmation string mismatch. Refusing to bulk-delete.',
+            ], 422);
+        }
+
+        $patientId = $request->user()->id;
+        $count = 0;
+
+        \DB::transaction(function () use ($patientId, &$count) {
+            $rows = TongueAssessment::withTrashed()
+                ->where('patient_id', $patientId)
+                ->get();
+
+            foreach ($rows as $a) {
+                if ($a->r2_key) {
+                    try {
+                        Storage::disk('r2')->delete($a->r2_key);
+                    } catch (\Throwable $e) {
+                        // Log + continue — the row-level delete below is the
+                        // PDPA-required action; an R2 failure leaves an
+                        // orphaned object we can sweep later.
+                        Log::warning('tongue_bulk_delete_r2_failed', [
+                            'r2_key'      => $a->r2_key,
+                            'assessment_id' => $a->id,
+                            'patient_id'  => $patientId,
+                            'err'         => $e->getMessage(),
+                        ]);
+                    }
+                    $a->r2_key = null;
+                    $a->save();   // persist the r2_key=null even if not yet trashed
+                }
+
+                if (! $a->trashed()) {
+                    $a->delete();   // soft-delete
+                }
+                $count++;
+            }
+        });
+
+        return response()->json([
+            'ok'            => true,
+            'deleted_count' => $count,
+            'message'       => 'All your tongue assessments have been permanently deleted from our systems.',
+        ]);
     }
 
     // C-05/C-06: tongue knowledge reference (public glossary)

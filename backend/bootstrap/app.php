@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,6 +23,18 @@ return Application::configure(basePath: dirname(__DIR__))
         // Referrer-Policy, Permissions-Policy. See the middleware
         // file for what each one does and why.
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        // Brief 1A Phase 5 — daily R2 cleanup of soft-deleted tongue
+        // images older than 7 days. 03:00 UTC = 11:00 KL time, sits in
+        // the low-traffic window for Malaysian patients.
+        //
+        // Cron registration on Railway is deferred to Phase 9 — until
+        // then this only fires when something invokes
+        // `php artisan schedule:run` (which Railway's web container
+        // does NOT do today). Run manually if needed:
+        //   railway ssh "php artisan tongue:purge-expired-r2"
+        $schedule->command('tongue:purge-expired-r2')->dailyAt('03:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // BUG-011 — Unauthenticated API requests should return HTTP 401,

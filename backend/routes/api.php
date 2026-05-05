@@ -228,6 +228,13 @@ Route::middleware('auth:sanctum')->group(function () {
             // landed and runs analysis synchronously.
             Route::post('/tongue-assessments/start-upload',              [TongueAssessmentController::class, 'startUpload']);
             Route::post('/tongue-assessments/{id}/complete-upload',      [TongueAssessmentController::class, 'completeUpload']);
+            // Brief 1A Phase 5 — soft-delete recovery + PDPA bulk purge.
+            // - destroy() above now soft-deletes (R2 stays for 7 days).
+            // - restore reverses a soft-delete within the 7-day window.
+            // - deleteAll requires a typed confirm string and immediately
+            //   purges R2 for ALL of this patient's assessments.
+            Route::post('/tongue-assessments/{id}/restore',              [TongueAssessmentController::class, 'restore']);
+            Route::delete('/tongue-assessments',                         [TongueAssessmentController::class, 'deleteAll']);
             // Deprecated legacy paths — kept alive for one release so any
             // bookmarks / cached frontend builds keep working. Remove
             // after all callers confirmed migrated.

@@ -95,6 +95,14 @@ class BadgeController extends Controller
                 return DB::table('tongue_assessments')
                     ->where('review_status', 'pending')
                     ->whereIn('status', ['completed', 'uploaded'])
+                    // Brief 1A Phase 5 — raw query bypasses Eloquent's
+                    // SoftDeletes default scope. Without this filter the
+                    // badge would count patient-deleted rows, leaving
+                    // the doctor with a "1 to review" badge that opens
+                    // an empty list (TongueReviewController uses Eloquent
+                    // and correctly hides trashed rows). Lightweight
+                    // patch; full Eloquent rewrite is a separate brief.
+                    ->whereNull('deleted_at')
                     ->count();
             }),
             // Pending constitution questionnaires (kind = ai_constitution_v2 + status = pending)
