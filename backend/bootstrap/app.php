@@ -38,10 +38,18 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Brief 1A Phase 9 (Item 3) — orphan-row cleanup. Soft-deletes
         // tongue rows stuck in image_url='r2://pending' state for >24h
-        // (start-upload happened, complete-upload never came). Runs
-        // 30 min after the expired-R2 purge so they never overlap.
+        // (start-upload happened, complete-upload never came).
+        //
+        // Scheduled at 03:00 UTC (same as the expired-R2 purge above).
+        // Laravel's scheduler runs due commands sequentially in a single
+        // schedule:run invocation, so packing both at 03:00 means the
+        // Railway cron service only needs to fire ONCE per day instead
+        // of twice — saves container-minute cost on the hobby plan.
+        // The two commands touch disjoint row sets (this one targets
+        // r2://pending rows; the other targets soft-deleted rows), so
+        // running back-to-back has no race condition.
         // Manual: railway ssh "php artisan tongue:purge-orphans"
-        $schedule->command('tongue:purge-orphans')->dailyAt('03:30');
+        $schedule->command('tongue:purge-orphans')->dailyAt('03:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // BUG-011 — Unauthenticated API requests should return HTTP 401,
