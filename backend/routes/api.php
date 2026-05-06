@@ -53,6 +53,20 @@ Route::middleware('throttle:5,1')->group(function () {
     Route::post('/auth/forgot-password',  [AuthController::class, 'forgotPassword']);
     Route::post('/auth/reset-password',   [AuthController::class, 'resetPassword']);
 });
+
+// Brief #15 — Google OAuth login. Three endpoints:
+//   GET  /auth/google/redirect  → 302 to Google's consent screen
+//   GET  /auth/google/callback  → Google posts back with auth code; we
+//                                  create/find the user and stash a one-time
+//                                  exchange code → Sanctum token mapping
+//   POST /auth/google/exchange  → frontend POSTs the code, gets token + user
+//
+// Throttle on /exchange specifically (30/min/IP) to defend against scraping
+// the cache for tokens. The 40-char random code makes brute force impractical
+// regardless, but the throttle is a cheap defence-in-depth.
+Route::get ('/auth/google/redirect', [\App\Http\Controllers\Auth\AuthGoogleController::class, 'redirect']);
+Route::get ('/auth/google/callback', [\App\Http\Controllers\Auth\AuthGoogleController::class, 'callback']);
+Route::middleware('throttle:30,1')->post('/auth/google/exchange', [\App\Http\Controllers\Auth\AuthGoogleController::class, 'exchange']);
 Route::post('/webhooks/stripe',       [StripeWebhookController::class, 'handle']);
 
 // Emergency admin bootstrap — gated by ADMIN_BOOTSTRAP_SECRET env var.

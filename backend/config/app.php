@@ -5,6 +5,10 @@ return [
     'env' => env('APP_ENV', 'production'),
     'debug' => (bool) env('APP_DEBUG', false),
     'url' => env('APP_URL', 'http://localhost'),
+    // Brief #15 — public-facing frontend origin for OAuth post-callback
+    // redirects, password-reset links, etc. APP_URL is the BACKEND, this
+    // is the static-hosted GitHub Pages site at hansmedtcm.com.
+    'frontend_url' => env('FRONTEND_URL', 'https://hansmedtcm.com'),
     // Application timezone — used by Carbon::now(), DB datetime casts,
     // job scheduling, audit_logs.created_at, etc. Set to GMT+8 because
     // HansMed currently operates only in Malaysia and patients book

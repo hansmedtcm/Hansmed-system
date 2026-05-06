@@ -31,4 +31,14 @@ return [
         'key'      => env('TONGUE_API_KEY'),
     ],
 
+    // Brief #15 — Google OAuth login via Laravel Socialite. Patients
+    // can register / sign in with one click. Backend exchanges the
+    // OAuth callback for a Sanctum token via a one-time exchange code
+    // (token never appears in URL). See AuthGoogleController.
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];
