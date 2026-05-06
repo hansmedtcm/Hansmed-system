@@ -395,9 +395,18 @@ select.field-input {
   backdrop-filter: blur(2px);
   z-index: var(--z-overlay);
   display: flex;
-  align-items: center;
+  /* Brief #14a-fix-10 — was 'align-items: center' which combined with
+     the modal's max-height: 90vh broke scroll on small viewports
+     (modal taller than 90vh got truncated with no way to reach the
+     bottom). Switching to flex-start + overflow-y on the backdrop
+     means the WHOLE backdrop scrolls when the modal exceeds the
+     viewport, so any modal content is reachable on any screen size.
+     The 'margin: auto' on .modal preserves vertical centering when
+     the modal is shorter than the viewport. */
+  align-items: flex-start;
   justify-content: center;
   padding: var(--s-4);
+  overflow-y: auto;
   opacity: 0;
   animation: modal-fade var(--dur-base) var(--ease-out) forwards;
 }
@@ -412,8 +421,13 @@ select.field-input {
   padding: var(--s-8) var(--s-6);
   max-width: 500px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+  /* Brief #14a-fix-10 — let the modal grow naturally; the backdrop
+     handles scroll for tall content. 'margin: auto' centers the
+     modal vertically WITHIN the available backdrop space when there
+     IS extra space (i.e., on desktop with short content). When the
+     modal is taller than the viewport, auto margins collapse to 0
+     and the backdrop scrolls. */
+  margin: auto;
   z-index: var(--z-modal);
   box-shadow: var(--shadow-xl);
   animation: modal-slide var(--dur-base) var(--ease-out) forwards;
