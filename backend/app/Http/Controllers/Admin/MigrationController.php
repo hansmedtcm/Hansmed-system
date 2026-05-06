@@ -48,7 +48,9 @@ class MigrationController extends Controller
         $orphans = 0;
         $rowsInDb = 0;
         try {
-            $rows = DB::table('tongue_assessments')->whereNotNull('image_url')->pluck('image_url');
+            // Brief 1A Phase 9 (Item 5) — scope to non-trashed rows so
+            // soft-deleted assessments don't inflate the orphan count.
+            $rows = DB::table('tongue_assessments')->whereNull('deleted_at')->whereNotNull('image_url')->pluck('image_url');
             $rowsInDb = $rows->count();
             foreach ($rows as $url) {
                 // Expected URL shape is `{APP_URL}/api/uploads/tongue/xxx.jpg`.
@@ -285,7 +287,8 @@ class MigrationController extends Controller
     public function fixTongueImageUrls(Request $request)
     {
         $log = [];
-        $rows = DB::table('tongue_assessments')->select('id', 'image_url')->get();
+        // Brief 1A Phase 9 (Item 5) — scope to non-trashed rows.
+        $rows = DB::table('tongue_assessments')->whereNull('deleted_at')->select('id', 'image_url')->get();
         $base = rtrim(url('/api/uploads'), '/');
         $updated = 0;
         foreach ($rows as $r) {
@@ -298,7 +301,11 @@ class MigrationController extends Controller
             elseif (strpos($u, 'tongue/') === 0)       $path = $u;
             elseif (preg_match('#^https?://[^/]+/storage/(.+)$#', $u, $m)) $path = $m[1];
             if (! $path) continue;
-            DB::table('tongue_assessments')->where('id', $r->id)->update([
+            // Brief 1A Phase 9 (Item 5) — guard against writing to
+            // soft-deleted rows even though the SELECT above already
+            // excludes them; defence-in-depth in case someone calls
+            // this controller method on a single-id basis later.
+            DB::table('tongue_assessments')->where('id', $r->id)->whereNull('deleted_at')->update([
                 'image_url'  => $base . '/' . ltrim($path, '/'),
                 'updated_at' => now(),
             ]);
@@ -344,7 +351,9 @@ class MigrationController extends Controller
     public function clearTongueOrphans(Request $request)
     {
         $publicDir = storage_path('app/public');
+        // Brief 1A Phase 9 (Item 5) — scope to non-trashed rows.
         $rows = \DB::table('tongue_assessments')
+            ->whereNull('deleted_at')
             ->whereNotNull('image_url')
             ->select('id', 'patient_id', 'image_url', 'created_at')
             ->orderByDesc('id')
@@ -377,8 +386,10 @@ class MigrationController extends Controller
                 continue;
             }
 
+            // Brief 1A Phase 9 (Item 5) — defence-in-depth.
             \DB::table('tongue_assessments')
                 ->where('id', $r->id)
+                ->whereNull('deleted_at')
                 ->update(['image_url' => null, 'updated_at' => now()]);
             $cleared++;
             $details[] = [
