@@ -326,6 +326,11 @@
         }
         items.push({
           kind: 'constitution',
+          // Brief #14a-fix-8 — flag combined sessions so the list card
+          // can label them "Tongue + Constitution" rather than just
+          // "Constitution". Detail view already inlines the tongue
+          // analysis; this just makes the list reflect that.
+          has_tongue: !!s.tongue_assessment_id,
           id: row.id,
           created_at: row.created_at,
           review_status: s.review_status || 'pending',
@@ -384,9 +389,16 @@
       needs_changes: '<span class="badge badge--danger">⚠ Needs follow-up · 需跟進</span>',
     }[it.review_status] || '';
 
-    var typeBadge = it.kind === 'tongue'
-      ? '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);">👅 Tongue · 舌診</span>'
-      : '<span class="badge" style="background:rgba(122,140,114,.15);color:var(--sage);">🧭 Constitution · 體質</span>';
+    var typeBadge;
+    if (it.kind === 'tongue') {
+      typeBadge = '<span class="badge" style="background:rgba(184,150,90,.15);color:var(--gold);">👅 Tongue · 舌診</span>';
+    } else if (it.has_tongue) {
+      // Brief #14a-fix-8 — combined session: one card holds both the
+      // tongue scan and the constitution quiz, so name both in the badge.
+      typeBadge = '<span class="badge" style="background:rgba(122,140,114,.15);color:var(--sage);">👅🧭 Tongue + Constitution · 舌診 + 體質</span>';
+    } else {
+      typeBadge = '<span class="badge" style="background:rgba(122,140,114,.15);color:var(--sage);">🧭 Constitution · 體質</span>';
+    }
 
     var imgHtml = (it.kind === 'tongue' && it.image_url)
       ? HM.format.img(it.image_url, {
