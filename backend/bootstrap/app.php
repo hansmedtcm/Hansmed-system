@@ -35,6 +35,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // does NOT do today). Run manually if needed:
         //   railway ssh "php artisan tongue:purge-expired-r2"
         $schedule->command('tongue:purge-expired-r2')->dailyAt('03:00');
+
+        // Brief 1A Phase 9 (Item 3) — orphan-row cleanup. Soft-deletes
+        // tongue rows stuck in image_url='r2://pending' state for >24h
+        // (start-upload happened, complete-upload never came). Runs
+        // 30 min after the expired-R2 purge so they never overlap.
+        // Manual: railway ssh "php artisan tongue:purge-orphans"
+        $schedule->command('tongue:purge-orphans')->dailyAt('03:30');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // BUG-011 — Unauthenticated API requests should return HTTP 401,
