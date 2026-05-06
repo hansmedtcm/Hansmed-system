@@ -195,6 +195,19 @@
     });
     showTab(initialTab || 'login');
 
+    // Brief #15 — Google OAuth button. The buttons live on the login
+    // and register tabs (skipped on the professional tab — doctor and
+    // pharmacy accounts are admin-created, not self-service Google).
+    // Clicking redirects to the backend's /auth/google/redirect, which
+    // bounces to Google's consent screen and eventually returns the
+    // user to index.html#/google-exchange?code=… (handled by the
+    // router above).
+    activeModal.element.querySelectorAll('[data-action="google-oauth"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        window.location.href = HM.config.API_BASE + '/auth/google/redirect';
+      });
+    });
+
     // Shared password-complexity check: ≥8, ≥1 uppercase, ≥1 number.
     function passwordOk(pw) {
       return typeof pw === 'string' && pw.length >= 8 && /[A-Z]/.test(pw) && /\d/.test(pw);
@@ -330,6 +343,40 @@
   router.on('#/register', function () { openAuthModal('register'); });
   router.on('#/professional', function () { openAuthModal('professional'); });
   router.on('#/reset-password', function () { openResetPasswordModal(); });
+
+  // Brief #15 — Google OAuth exchange handler.
+  // The backend redirects here after a successful Google OAuth callback
+  // with #/google-exchange?code=<40-char-random>. We POST that code to
+  // /auth/google/exchange to get the Sanctum token + user payload, then
+  // store both via the existing api.setToken / api.setUser pattern (so
+  // any future requests to portal.html find the auth state) and bounce
+  // the user into their portal.
+  router.on('#/google-exchange', async function () {
+    var hashQuery = (location.hash.split('?')[1] || '');
+    var code = (new URLSearchParams(hashQuery)).get('code');
+    if (!code) { location.hash = '#/login?err=no_code'; return; }
+
+    try {
+      var res = await fetch(HM.config.API_BASE + '/auth/google/exchange', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body:    JSON.stringify({ code: code }),
+      });
+      if (!res.ok) throw new Error('exchange_failed_' + res.status);
+      var data = await res.json();
+      api.setToken(data.token);
+      api.setUser(data.user);
+      // Strip the code from the URL bar before redirect (defence in depth).
+      history.replaceState(null, '', location.pathname);
+      // Land them in their portal.
+      window.location.href = 'portal.html';
+    } catch (e) {
+      // Show the auth modal again with an error hint. The code was
+      // already consumed (single-use) so user has to re-do Google sign-in.
+      location.hash = '#/login?err=google_exchange_failed';
+    }
+  });
+
   router.start();
 
   // ── Auto-popup sign-in on FRESH entry to landing ──

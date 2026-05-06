@@ -178,7 +178,12 @@ class AuthGoogleController extends Controller
         // Hash fragment, NOT query string — the fragment is never sent to
         // the server, so it can't end up in our access logs (defence in
         // depth on top of single-use + 60s TTL).
-        return redirect($this->frontend() . '/v2/portal.html#/google-exchange?code=' . $code);
+        //
+        // Land on index.html (PUBLIC, no auth guard) so landing.js can
+        // exchange the code for a token. patient.js's requireAuth() at
+        // the top of portal.html would otherwise bounce us to login
+        // before the exchange runs.
+        return redirect($this->frontend() . '/v2/index.html#/google-exchange?code=' . $code);
     }
 
     /**
