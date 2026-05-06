@@ -332,34 +332,40 @@
   router.on('#/reset-password', function () { openResetPasswordModal(); });
   router.start();
 
-  // ── Auto-popup sign-in on landing ──
-  // First-time visitors (not logged in, no deep link) see the sign-in
-  // modal automatically to encourage account creation. We remember
-  // the dismissal in sessionStorage so it doesn't pop back up while
-  // the user is browsing the site.
+  // ── Auto-popup sign-in on FRESH entry to landing ──
+  // Brief #14a-fix-9 — open the sign-in modal automatically only when
+  // a not-logged-in visitor arrives FRESH on the home page, to nudge
+  // account creation without spamming users who are just navigating
+  // within the site.
+  //
+  // "Fresh entry" rules (per user spec):
+  //   - Logged in           → never popup
+  //   - Internal navigation → skip (clicked About/Services and came back)
+  //   - Browser refresh     → skip (user already on this page)
+  //   - Direct URL / new tab / external referrer → show
+  //   - Deep-link hash (#/login, etc.) → skip (already targeting that)
+  //
+  // No persistent dismissal storage — once per page-load is the natural
+  // behavior of an IIFE running once per script load. If the user
+  // re-enters from outside the site again, they get the popup again.
   (function autoPopup() {
-    if (auth.isAuthenticated()) return;           // already signed in
-    if (location.hash && location.hash !== '#/' && location.hash !== '') return;  // deep-linked elsewhere
-    if (sessionStorage.getItem('hm_auth_dismissed') === '1') return;  // already closed it this session
+    if (auth.isAuthenticated()) return;
+    if (location.hash && location.hash !== '#/' && location.hash !== '') return;
 
-    // Small delay so the page has painted first
+    // Same-origin referrer = internal nav. Skip — page switching
+    // shouldn't keep re-popping the modal at users who've already seen
+    // it on the home page.
+    var ref = document.referrer || '';
+    if (ref && ref.indexOf(location.origin) === 0) return;
+
+    // Browser refresh = user has already been here. Skip.
+    var navEntries = performance.getEntriesByType && performance.getEntriesByType('navigation');
+    if (navEntries && navEntries[0] && navEntries[0].type === 'reload') return;
+
+    // Small delay so the page has painted first.
     setTimeout(function () {
       if (activeModal) return;
       openAuthModal('login');
-      // Mark dismissed as soon as it's closed so we don't re-popup
-      var prevOnClose = activeModal && activeModal.element && activeModal.element._onClose;
-      // The modal API already tracks onClose; we piggy-back via DOM event
-      activeModal.element.addEventListener('hm-modal-close', function () {
-        sessionStorage.setItem('hm_auth_dismissed', '1');
-      }, { once: true });
-      // Fallback — observe removal from DOM
-      var mo = new MutationObserver(function () {
-        if (!document.body.contains(activeModal && activeModal.element)) {
-          sessionStorage.setItem('hm_auth_dismissed', '1');
-          mo.disconnect();
-        }
-      });
-      mo.observe(document.body, { childList: true, subtree: false });
     }, 600);
   })();
 
