@@ -11,6 +11,33 @@
   // objects back to the modal openers without re-fetching.
   var _ctx = { byPatient: {} };
 
+  // ── Brief #14a-fix-13 — defensive normaliser for treatment.points ──
+  // Treatments are stored in a JSON column on consultations; the outer
+  // load layer parses that column into an array of treatment objects.
+  // BUT the inner `points` field of each treatment can drift in shape
+  // depending on which doctor wrote the record:
+  //   • plain array       ['GB20','LI4']                  ← the contract
+  //   • JSON string       '["GB20","LI4"]'                ← double-encoded
+  //   • CSV string        'GB20, LI4'                     ← legacy free-text
+  //   • Chinese punct CSV 'GB20、LI4，ST36；'              ← bilingual entry
+  //   • null / undefined  (no points recorded)
+  //
+  // The render code does `t.points.map(...)` which throws TypeError on
+  // a string. Normalise at load time so the render layer can trust
+  // the contract. If it's an unrecognised shape, return [] (renders nothing).
+  function _parsePoints(p) {
+    if (Array.isArray(p)) return p;
+    if (typeof p !== 'string') return [];
+    var s = p.trim();
+    if (!s) return [];
+    if (s.charAt(0) === '[') {
+      try { var arr = JSON.parse(s); return Array.isArray(arr) ? arr : []; }
+      catch (_) { /* fall through to CSV path */ }
+    }
+    // CSV: split on Western + CJK comma/semicolon variants.
+    return s.split(/[,;、，；]/).map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+
   // ── Collapsible-section preferences ──
   // Persisted per-doctor in localStorage so once a user collapses a
   // section it stays collapsed across reloads. Keys are short, the
@@ -422,6 +449,8 @@
               try { var parsed = JSON.parse(c.treatments); if (Array.isArray(parsed)) treatments = parsed; } catch (_) {}
             }
           }
+          // Brief #14a-fix-13: normalise points field on each treatment.
+          treatments.forEach(function (t) { t.points = _parsePoints(t.points); });
           var bodyMarks  = Array.isArray(cr.body_marks) ? cr.body_marks : [];
           var rxItems    = Array.isArray(rx.items) ? rx.items : [];
           var visitBadge = (a.visit_type === 'walk_in')
@@ -869,6 +898,8 @@
         try { var p = JSON.parse(c.treatments); if (Array.isArray(p)) treatments = p; } catch (_) {}
       }
     }
+    // Brief #14a-fix-13: normalise points field on each treatment.
+    treatments.forEach(function (t) { t.points = _parsePoints(t.points); });
     var rx = a.prescription || {};
     var rxItems = Array.isArray(rx.items) ? rx.items : [];
     var bodyMarks = Array.isArray(cr.body_marks) ? cr.body_marks : [];
