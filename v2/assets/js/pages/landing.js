@@ -16,8 +16,16 @@
   // Logged-in users should be able to browse the public home page.
   // They can click "My Portal" in the nav to enter their portal.
   // (Only auto-redirect immediately after login — see landing.js login handler.)
+  //
+  // Brief #14a-fix-12: we used to call auth.refresh() here to keep
+  // user data fresh, but the api.js auto-logout interceptor would
+  // clear the token if /auth/me happened to 401, which then bounced
+  // the user to the login modal when they clicked "My Portal". The
+  // landing page is public — it has no need to validate the token
+  // proactively. Portal entry (patient.js loadUserInfo) still calls
+  // auth.refresh() to freshen user data inside the protected area.
   if (auth.isAuthenticated()) {
-    auth.refresh().catch(function () { /* token invalid: ignore, nav will show Sign In */ });
+    /* intentionally a no-op now — see comment above */
   }
 
   // ── Build WhatsApp URL from config ──
