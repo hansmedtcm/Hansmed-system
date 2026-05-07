@@ -5,7 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Brief #14a 2026-05-04: clean URL for the patient portal.
      Currently redirects to v2/portal.html. When v3 portal is built,
-     change the redirect target below to v3/portal.html. -->
+     change the redirect target below to v3/portal.html.
+
+     Brief #14a-fix-11 (2026-05-06): preserve hash + query in the JS
+     redirect. Without this, links like /portal.html#/book and
+     /portal.html#/wellness-assessment lost their hash on the way
+     through this redirect and patient.js's router fell through to the
+     default (dashboard). Meta-refresh fallback can't preserve the hash
+     so it still strips, but JS runs first in 99.9% of browsers. -->
 <meta http-equiv="refresh" content="0; url=v2/portal.html">
 <title>Patient Portal · HansMed Modern TCM</title>
 <link rel="canonical" href="v2/portal.html">
@@ -18,7 +25,9 @@
 <p>Opening your patient portal…</p>
 <p>If you are not redirected automatically, <a href="v2/portal.html">click here</a>.</p>
 <script>
-  location.replace('v2/portal.html');
+  // Preserve search + hash so deep-links like #/book, #/wellness-assessment
+  // arrive intact at v2/portal.html.
+  location.replace('v2/portal.html' + location.search + location.hash);
 </script>
 </body>
 </html>
