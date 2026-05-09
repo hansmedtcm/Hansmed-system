@@ -17,6 +17,16 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    /** 6-digit codes — verification + password-reset both use this length. */
+    private const CODE_LENGTH        = 6;
+    /** 15 minutes. Codes are easier to brute-force than 64-char tokens, so
+     *  the window is shorter. */
+    private const CODE_TTL_MINUTES   = 15;
+    /** Max enter attempts per code before it's invalidated. */
+    private const CODE_MAX_ATTEMPTS  = 5;
+    /** Max code re-issues per email per 15 min window (resend limit). */
+    private const CODE_MAX_REISSUES  = 3;
+
     /**
      * Shared password complexity rule — enforced everywhere that accepts
      * a new password (register, forgot-password reset, admin reset).
@@ -35,6 +45,18 @@ class AuthController extends Controller
         ];
     }
 
+    /**
+     * Step 1 of registration: create the account, mint a 6-digit code,
+     * email it. User must POST it back to /auth/verify-email before
+     * they can log in.
+     *
+     * Brief #16e — login() now refuses unverified accounts. Patient
+     * accounts created here have status='active' but email_verified_at
+     * is NULL until the user enters the code.
+     *
+     * Doctor / pharmacy accounts still get status='pending' for admin
+     * review — verification doesn't replace admin approval.
+     */
     public function register(Request $request)
     {
         $data = $request->validate([
@@ -43,11 +65,7 @@ class AuthController extends Controller
             'role'     => ['required', Rule::in([
                 User::ROLE_PATIENT, User::ROLE_DOCTOR, User::ROLE_PHARMACY,
             ])],
-            // Phone is MANDATORY for patient self-registration so we can
-            // contact them on WhatsApp / call. Optional for doctor/pharmacy
-            // since those are typically admin-created. Format: Malaysian
-            // mobile — accepts +60xxxxxxxxx, 60xxxxxxxxx, 0xxxxxxxxx with
-            // 9–11 digits after the country/area code.
+            // Phone is MANDATORY for patient self-registration.
             'phone'     => ['nullable', 'string', 'max:40', 'regex:/^(\+?60|0)[0-9]{8,11}$/'],
             'nickname'  => ['nullable', 'string', 'max:80'],     // patient
             'full_name' => ['nullable', 'string', 'max:120'],    // doctor
@@ -100,18 +118,148 @@ class AuthController extends Controller
             ]),
         };
 
-        $token = $user->createToken('api', [$user->role])->plainTextToken;
+        // Brief #16e — issue + send a verification code. Note we do NOT
+        // issue a Sanctum token yet — the user must verify their email
+        // first via /auth/verify-email.
+        $code = $this->issueVerificationCode($user->email);
+        $this->sendVerificationEmail($user->email, $code);
 
         return response()->json([
             'user'  => $user->load($data['role'] . 'Profile'),
-            'token' => $token,
+            'requires_verification' => true,
+            'email' => $user->email,
+            'message' => 'We have sent a 6-digit verification code to your email. Please enter it on the next screen to complete registration. · 我們已將6位數驗證碼寄到您的電郵，請於下一畫面輸入完成註冊。',
         ], 201);
+    }
+
+    /**
+     * Brief #16e — verify the 6-digit code and finalize registration.
+     * On success: marks email_verified_at = NOW(), deletes the code,
+     * issues a Sanctum token, and returns the same shape as login().
+     *
+     * Per-code attempts are capped at 5 (CODE_MAX_ATTEMPTS) to defend
+     * against brute force. With a 6-digit space (1M codes) and 5
+     * attempts per code, the chance of guessing within the window is
+     * 5e-6 — acceptable for transactional verification.
+     */
+    public function verifyEmail(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:190'],
+            'code'  => ['required', 'string', 'regex:/^\d{6}$/'],
+        ], [
+            'code.regex' => 'Please enter the 6-digit code from your email. · 請輸入電郵中的6位數驗證碼。',
+        ]);
+
+        $row = DB::table('email_verification_codes')->where('email', $data['email'])->first();
+        if (! $row) {
+            throw ValidationException::withMessages([
+                'code' => ['No verification code on file for this email. Please request a new code. · 請重新申請驗證碼。'],
+            ]);
+        }
+
+        // Window expired
+        if (now()->greaterThan($row->expires_at)) {
+            DB::table('email_verification_codes')->where('email', $data['email'])->delete();
+            throw ValidationException::withMessages([
+                'code' => ['Code has expired. Please request a new code. · 驗證碼已過期，請重新申請。'],
+            ]);
+        }
+
+        // Attempts cap
+        if ((int) $row->attempts >= self::CODE_MAX_ATTEMPTS) {
+            DB::table('email_verification_codes')->where('email', $data['email'])->delete();
+            throw ValidationException::withMessages([
+                'code' => ['Too many incorrect attempts. Please request a new code. · 嘗試次數過多，請重新申請驗證碼。'],
+            ]);
+        }
+
+        // Validate
+        if (! Hash::check($data['code'], $row->code_hash)) {
+            DB::table('email_verification_codes')
+                ->where('email', $data['email'])
+                ->update(['attempts' => DB::raw('attempts + 1')]);
+            throw ValidationException::withMessages([
+                'code' => ['Incorrect code. Please try again. · 驗證碼錯誤，請再試。'],
+            ]);
+        }
+
+        // Success — clear code, mark user verified, issue token.
+        DB::table('email_verification_codes')->where('email', $data['email'])->delete();
+
+        $user = User::where('email', $data['email'])->first();
+        if (! $user) {
+            // Race condition: account was deleted between code issue and verify.
+            throw ValidationException::withMessages(['email' => ['Account not found.']]);
+        }
+
+        $user->forceFill(['email_verified_at' => now()])->save();
+        $user->forceFill(['last_login_at' => now()])->save();
+
+        $token = $user->createToken('api', [$user->role])->plainTextToken;
+
+        try {
+            DB::table('audit_logs')->insert([
+                'user_id'     => $user->id,
+                'action'      => 'auth.email_verified',
+                'target_type' => 'user',
+                'target_id'   => $user->id,
+                'created_at'  => now(),
+            ]);
+        } catch (\Throwable $e) { /* audit_logs missing? ignore */ }
+
+        $relation = $user->role . 'Profile';
+        if (method_exists($user, $relation)) {
+            $user->load($relation);
+        }
+
+        return response()->json([
+            'user'  => $user,
+            'token' => $token,
+            'must_change_password' => (bool) $user->must_change_password,
+        ]);
+    }
+
+    /**
+     * Brief #16e — re-issue a verification code. Rate-limited via
+     * Cache to prevent abuse (max 3 reissues per 15 min per email).
+     * Always returns 200 to avoid email-enumeration.
+     */
+    public function resendVerificationCode(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:190'],
+        ]);
+
+        $rateKey = 'verify_resend:' . strtolower($data['email']);
+        $count = (int) Cache::get($rateKey, 0);
+        if ($count >= self::CODE_MAX_REISSUES) {
+            return response()->json([
+                'message' => 'Too many code requests. Please wait 15 minutes before requesting another. · 申請次數過多，請等候15分鐘再試。',
+            ], 429);
+        }
+
+        $user = User::where('email', $data['email'])->first();
+        if ($user && ! $user->email_verified_at) {
+            $code = $this->issueVerificationCode($user->email);
+            $this->sendVerificationEmail($user->email, $code);
+            Cache::put($rateKey, $count + 1, now()->addMinutes(self::CODE_TTL_MINUTES));
+        }
+
+        return response()->json([
+            'message' => 'If an unverified account exists for that email, a new code has been sent. · 若該電郵存在未驗證帳戶，新驗證碼已寄出。',
+        ]);
     }
 
     /**
      * Login — accepts either an email address OR a phone number in the
      * "identifier" field. The frontend submits a single field so the
      * user doesn't have to pick which method they used to sign up.
+     *
+     * Brief #16e — refuses to log in unverified email accounts. Returns
+     * a 403 with {requires_verification: true, email} so the frontend
+     * can route to the verify-code screen instead of just showing
+     * "invalid credentials".
      */
     public function login(Request $request)
     {
@@ -130,10 +278,7 @@ class AuthController extends Controller
         }
 
         // Account lockout — after 5 failed attempts in 15 minutes,
-        // refuse any further attempts for that ip+identifier pair
-        // until the window expires. Defends against credential
-        // stuffing without needing CAPTCHA. Locked accounts can
-        // still self-recover via the forgot-password flow.
+        // refuse any further attempts for that ip+identifier pair.
         $lockoutKey = 'login_lockout:' . $request->ip() . ':' . strtolower($identifier);
         $attempts = (int) Cache::get($lockoutKey, 0);
         if ($attempts >= 5) {
@@ -143,7 +288,6 @@ class AuthController extends Controller
         }
 
         // Detect whether the identifier looks like an email vs a phone number.
-        // Phone numbers get normalised to digits-only before lookup.
         $user = null;
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
             $user = User::where('email', $identifier)->first();
@@ -156,9 +300,6 @@ class AuthController extends Controller
         }
 
         if (! $user || ! Hash::check($data['password'], $user->password_hash)) {
-            // Record the failed attempt — both the rolling Cache
-            // counter (for the lockout above) and a permanent audit
-            // trail row that ops can review for unusual patterns.
             Cache::put($lockoutKey, $attempts + 1, now()->addMinutes(15));
             Log::warning('failed_login', [
                 'identifier' => $identifier,
@@ -186,8 +327,22 @@ class AuthController extends Controller
             ]);
         }
 
-        // Success — clear the lockout counter so a returning user
-        // doesn't get blocked next time after a few typos.
+        // Brief #16e — block unverified accounts. Re-issue a fresh
+        // code so the user has something usable when they switch to
+        // the verify panel. Existing users (created before this brief
+        // shipped) were grandfathered to email_verified_at = created_at
+        // by the migration, so this only blocks NEW registrations.
+        if (! $user->email_verified_at) {
+            $code = $this->issueVerificationCode($user->email);
+            $this->sendVerificationEmail($user->email, $code);
+            return response()->json([
+                'message'              => 'Please verify your email first. We just sent a new 6-digit code. · 請先驗證電郵，新驗證碼已寄出。',
+                'requires_verification' => true,
+                'email'                => $user->email,
+            ], 403);
+        }
+
+        // Success — clear lockout
         Cache::forget($lockoutKey);
 
         if ($user->status === 'suspended' || $user->status === 'deleted') {
@@ -200,7 +355,6 @@ class AuthController extends Controller
 
         $token = $user->createToken('api', [$user->role])->plainTextToken;
 
-        // Admin has no profile table — only load relation if it exists
         $relation = $user->role . 'Profile';
         if (method_exists($user, $relation)) {
             $user->load($relation);
@@ -208,21 +362,20 @@ class AuthController extends Controller
         return response()->json([
             'user'  => $user,
             'token' => $token,
-            // BUG-015 — surface the flag explicitly at the top level so the
-            // frontend can gate the session and route straight to a
-            // mandatory password-change screen without digging into $user.
             'must_change_password' => (bool) $user->must_change_password,
         ]);
     }
 
     /**
-     * Step 1 of forgot-password flow: user submits their email; we
-     * generate a one-time token, stash it in password_resets (keyed
-     * by email), and email them a link like:
-     *     https://hansmedtcm.com/reset-password?email=…&token=…
+     * Step 1 of forgot-password: user submits their email; we mint a
+     * 6-digit code, hash it into password_resets, and email it.
      *
-     * Always returns a generic 200 OK so the endpoint can't be used
-     * to enumerate which emails have accounts.
+     * Brief #16f — replaces the previous magic-link flow. Codes are
+     * better mobile UX than reset URLs because the user stays on the
+     * same browser/page.
+     *
+     * Always returns a generic 200 so the endpoint can't enumerate
+     * which emails have accounts.
      */
     public function forgotPassword(Request $request)
     {
@@ -234,76 +387,86 @@ class AuthController extends Controller
 
         $user = User::where('email', $data['email'])->first();
         if ($user) {
-            $token = Str::random(64);
+            $code = $this->generateNumericCode(self::CODE_LENGTH);
+
             DB::table('password_resets')->where('email', $user->email)->delete();
             DB::table('password_resets')->insert([
                 'email'      => $user->email,
-                'token'      => Hash::make($token),
+                'token'      => Hash::make($code),
                 'created_at' => now(),
             ]);
-
-            $resetBase = rtrim(config('app.reset_url') ?: env('RESET_URL', 'https://hansmedtcm.com/reset-password'), '/');
-            $resetUrl = $resetBase . '?email=' . urlencode($user->email) . '&token=' . urlencode($token);
 
             try {
                 Mail::raw(
                     "Hello,\n\n" .
-                    "We received a request to reset your HansMed password. If this was you, click the link below to set a new password. The link expires in 60 minutes.\n\n" .
-                    $resetUrl . "\n\n" .
-                    "If you did not request this, you can ignore this message — your password will remain unchanged.\n\n" .
-                    "HansMed Modern TCM",
+                    "Your HansMed password reset code is: " . $code . "\n\n" .
+                    "Enter this code along with your new password on the reset screen. The code expires in " . self::CODE_TTL_MINUTES . " minutes.\n\n" .
+                    "If you did not request a password reset, you can safely ignore this email — your password will remain unchanged.\n\n" .
+                    "HansMed Modern TCM\nsupport@hansmedtcm.com",
                     function ($m) use ($user) {
-                        $m->to($user->email)->subject('Reset your HansMed password');
+                        $m->to($user->email)->subject('Your HansMed password reset code');
                     }
                 );
             } catch (\Throwable $e) {
-                // Mailer not configured? Still return success to avoid
-                // leaking account existence, but log for admin inspection.
-                \Log::warning('Password reset email failed: ' . $e->getMessage());
+                Log::warning('password_reset_email_failed', ['email' => $user->email, 'err' => $e->getMessage()]);
             }
 
-            DB::table('audit_logs')->insert([
-                'user_id'     => $user->id,
-                'action'      => 'auth.forgot_password.requested',
-                'target_type' => 'user',
-                'target_id'   => $user->id,
-                'created_at'  => now(),
-            ]);
+            try {
+                DB::table('audit_logs')->insert([
+                    'user_id'     => $user->id,
+                    'action'      => 'auth.forgot_password.requested',
+                    'target_type' => 'user',
+                    'target_id'   => $user->id,
+                    'created_at'  => now(),
+                ]);
+            } catch (\Throwable $e) { /* fine */ }
         }
 
         return response()->json([
-            'message' => 'If that email is registered, we have sent a reset link. Check your inbox (and spam).',
+            'message' => 'If that email is registered, a 6-digit reset code has been sent. Check your inbox (and spam folder). · 如該電郵已註冊，6位數重設碼已寄出，請查收（亦請檢查垃圾郵件夾）。',
         ]);
     }
 
     /**
-     * Step 2 of forgot-password flow: user submits the token + new
-     * password. Token is validated against the hashed copy, expires
-     * after 60 minutes, and all tokens for that user are revoked on
-     * success.
+     * Step 2 of forgot-password: user submits email + 6-digit code +
+     * new password. Code is validated against the hashed copy, expires
+     * after CODE_TTL_MINUTES, and all Sanctum tokens for that user are
+     * revoked on success (forces re-login from every device).
+     *
+     * Brief #16f — accepts a 'code' field instead of 'token'. The
+     * password_resets row schema is unchanged; the column 'token'
+     * just stores a bcrypt hash of a 6-digit string now instead of
+     * a 64-char token.
      */
     public function resetPassword(Request $request)
     {
         $data = $request->validate([
             'email'    => ['required', 'email', 'max:190'],
-            'token'    => ['required', 'string'],
+            'code'     => ['required', 'string', 'regex:/^\d{' . self::CODE_LENGTH . '}$/'],
             'password' => self::passwordRules(),
         ], [
-            'password.regex' => 'Password must contain at least one uppercase letter and one number.',
+            'code.regex'     => 'Please enter the 6-digit code from your email. · 請輸入電郵中的6位數驗證碼。',
+            'password.regex' => 'Password must contain at least one uppercase letter, one number, and one symbol. · 密碼必須包含大寫字母、數字及符號。',
         ]);
 
         $this->ensurePasswordResetsTable();
 
         $row = DB::table('password_resets')->where('email', $data['email'])->first();
         if (! $row) {
-            throw ValidationException::withMessages(['token' => ['Reset link is invalid or has expired.']]);
+            throw ValidationException::withMessages([
+                'code' => ['Reset code is invalid or has expired. Please request a new one. · 重設碼無效或已過期，請重新申請。'],
+            ]);
         }
-        if (now()->diffInMinutes($row->created_at) > 60) {
+        if (now()->diffInMinutes($row->created_at) > self::CODE_TTL_MINUTES) {
             DB::table('password_resets')->where('email', $data['email'])->delete();
-            throw ValidationException::withMessages(['token' => ['Reset link has expired. Please request a new one.']]);
+            throw ValidationException::withMessages([
+                'code' => ['Reset code has expired. Please request a new one. · 重設碼已過期，請重新申請。'],
+            ]);
         }
-        if (! Hash::check($data['token'], $row->token)) {
-            throw ValidationException::withMessages(['token' => ['Reset link is invalid.']]);
+        if (! Hash::check($data['code'], $row->token)) {
+            throw ValidationException::withMessages([
+                'code' => ['Reset code is incorrect. · 重設碼不正確。'],
+            ]);
         }
 
         $user = User::where('email', $data['email'])->first();
@@ -312,19 +475,47 @@ class AuthController extends Controller
         }
 
         $user->update(['password_hash' => Hash::make($data['password'])]);
+        // Resetting password also verifies the email — they proved access.
+        if (! $user->email_verified_at) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
         try { $user->tokens()->delete(); } catch (\Throwable $e) { /* fine */ }
 
         DB::table('password_resets')->where('email', $data['email'])->delete();
-        DB::table('audit_logs')->insert([
-            'user_id'     => $user->id,
-            'action'      => 'auth.password_reset.completed',
-            'target_type' => 'user',
-            'target_id'   => $user->id,
-            'created_at'  => now(),
-        ]);
+        try {
+            DB::table('audit_logs')->insert([
+                'user_id'     => $user->id,
+                'action'      => 'auth.password_reset.completed',
+                'target_type' => 'user',
+                'target_id'   => $user->id,
+                'created_at'  => now(),
+            ]);
+        } catch (\Throwable $e) { /* fine */ }
 
-        return response()->json(['message' => 'Password reset. You can now sign in.']);
+        return response()->json([
+            'message' => 'Password reset. You can now sign in with your new password. · 密碼已重設，現在可使用新密碼登入。',
+        ]);
     }
+
+    public function me(Request $request)
+    {
+        $user = $request->user();
+        $relation = $user->role . 'Profile';
+        if (method_exists($user, $relation)) {
+            $user->load($relation);
+        }
+        return response()->json(['user' => $user]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['ok' => true]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────
 
     /** Strip formatting so "+60 12-345 6789" matches "+60123456789". */
     private function normalizePhone(string $phone): string
@@ -347,19 +538,62 @@ class AuthController extends Controller
         } catch (\Throwable $e) { /* another thread raced us — fine */ }
     }
 
-    public function me(Request $request)
+    /**
+     * Generate a fresh N-digit numeric code and stash a bcrypt'd copy
+     * in email_verification_codes for the given email. Overwrites any
+     * existing row. Returns the plaintext code so the caller can email
+     * it.
+     */
+    private function issueVerificationCode(string $email): string
     {
-        $user = $request->user();
-        $relation = $user->role . 'Profile';
-        if (method_exists($user, $relation)) {
-            $user->load($relation);
-        }
-        return response()->json(['user' => $user]);
+        $code = $this->generateNumericCode(self::CODE_LENGTH);
+        DB::table('email_verification_codes')->updateOrInsert(
+            ['email' => $email],
+            [
+                'code_hash'  => Hash::make($code),
+                'attempts'   => 0,
+                'expires_at' => now()->addMinutes(self::CODE_TTL_MINUTES),
+                'created_at' => now(),
+            ]
+        );
+        return $code;
     }
 
-    public function logout(Request $request)
+    /**
+     * Cryptographically strong random N-digit numeric string. Uses
+     * random_int (CSPRNG-backed) — never use rand() for credentials.
+     */
+    private function generateNumericCode(int $length): string
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['ok' => true]);
+        $out = '';
+        for ($i = 0; $i < $length; $i++) {
+            $out .= (string) random_int(0, 9);
+        }
+        return $out;
+    }
+
+    /**
+     * Send the verification code email via the configured mailer
+     * (Resend in production via Brief #16d). Best-effort: on send
+     * failure, log + swallow so the registration response still
+     * returns 201. Caller can re-issue via /auth/resend-verification.
+     */
+    private function sendVerificationEmail(string $email, string $code): void
+    {
+        try {
+            Mail::raw(
+                "Hello,\n\n" .
+                "Welcome to HansMed Modern TCM. Your verification code is:\n\n" .
+                "    " . $code . "\n\n" .
+                "Enter this 6-digit code on the verification screen to complete your registration. The code expires in " . self::CODE_TTL_MINUTES . " minutes.\n\n" .
+                "If you didn't sign up for HansMed, you can safely ignore this email — your address won't be used again.\n\n" .
+                "HansMed Modern TCM\nsupport@hansmedtcm.com",
+                function ($m) use ($email) {
+                    $m->to($email)->subject('Your HansMed verification code');
+                }
+            );
+        } catch (\Throwable $e) {
+            Log::warning('verification_email_failed', ['email' => $email, 'err' => $e->getMessage()]);
+        }
     }
 }

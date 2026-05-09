@@ -1686,7 +1686,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 
     <form class="tab-panel" data-panel="forgot">
       <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Enter your email and we'll send a reset link · 輸入電郵以接收重設連結</p>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Enter your email and we'll send a 6-digit code · 輸入電郵以接收6位數驗證碼</p>
       <div class="field">
         <label class="field-label" data-required>Email · 電郵</label>
         <input type="email" name="email" class="field-input" required autocomplete="email">
@@ -1694,7 +1694,60 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Send Reset Link · 寄送連結</button>
+      <button type="submit" class="btn btn--primary btn--block">Send Code · 寄送驗證碼</button>
+      <div style="text-align:center; margin-top: var(--s-4);">
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+      </div>
+    </form>
+
+    <!-- Brief #16e — 6-digit email verification on signup. Reached via:
+         (1) successful registration (auto-switch to this panel),
+         (2) failed login when email_verified_at is null. -->
+    <form class="tab-panel" data-panel="verify">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Verify Your Email · 驗證電郵</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">
+        Enter the 6-digit code we sent to <strong data-verify-email-display>your email</strong>.<br>
+        <span style="font-family: var(--font-zh);">輸入我們寄到您電郵的6位數驗證碼</span>
+      </p>
+      <input type="hidden" name="email">
+      <div class="field">
+        <label class="field-label" data-required>6-digit code · 驗證碼</label>
+        <input type="text" name="code" class="field-input" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="123456" style="font-size: 1.6rem; letter-spacing: 0.4em; text-align: center; font-weight: 600;">
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Verify · 驗證</button>
+      <div style="text-align:center; margin-top: var(--s-4);">
+        <a href="#" data-action="resend-code" style="font-size: var(--text-xs); color: var(--stone);">Didn't receive the code? Resend · 沒收到？重新寄送</a>
+      </div>
+      <div style="text-align:center; margin-top: var(--s-2);">
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+      </div>
+    </form>
+
+    <!-- Brief #16f — Step 2 of forgot-password flow. User arrives here
+         after submitting their email on the "forgot" panel above. -->
+    <form class="tab-panel" data-panel="reset">
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">
+        Enter the 6-digit code from your email and choose a new password.<br>
+        <span style="font-family: var(--font-zh);">輸入電郵中的6位數驗證碼及新密碼</span>
+      </p>
+      <input type="hidden" name="email">
+      <div class="field">
+        <label class="field-label" data-required>6-digit code · 驗證碼</label>
+        <input type="text" name="code" class="field-input" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="123456" style="font-size: 1.6rem; letter-spacing: 0.4em; text-align: center; font-weight: 600;">
+        <div class="field-error"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" data-required>New Password · 新密碼</label>
+        <input type="password" name="password" class="field-input" required minlength="8" autocomplete="new-password">
+        <div class="field-hint">Min 8 characters with one uppercase, one number, one symbol · 至少8字元，包含大寫、數字、符號</div>
+        <div class="field-error"></div>
+      </div>
+      <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
+      <button type="submit" class="btn btn--primary btn--block">Reset Password · 重設密碼</button>
       <div style="text-align:center; margin-top: var(--s-4);">
         <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
       </div>
@@ -1741,7 +1794,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 
 <!-- ══════════════ SCRIPTS — portal integration preserved ══════════════ -->
 <script src="assets/js/config.js"></script>
-<script src="assets/js/api.js?v=14a-fix-12"></script>
+<script src="assets/js/api.js?v=16-email-verify"></script>
 <script src="assets/js/nav-auth.js?v=14a-fix-14"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/bus.js"></script>
@@ -1753,7 +1806,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <script src="assets/js/router.js"></script>
 <script src="assets/js/i18n.js"></script>
 <script src="assets/js/lang-switcher.js"></script>
-<script src="assets/js/pages/landing.js?v=14a-fix-12"></script>
+<script src="assets/js/pages/landing.js?v=16-email-verify"></script>
 <!-- Bug-fix 2026-05-03: v3/index.html was missing about-dropdown.js,
      so clicking the "About" nav button did nothing (toggleAboutMenu
      undefined). Pulled in from v2 alongside the other shared scripts. -->

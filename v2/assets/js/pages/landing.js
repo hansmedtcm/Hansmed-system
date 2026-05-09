@@ -203,6 +203,30 @@
     });
     showTab(initialTab || 'login');
 
+    // Brief #16e/16f — switch to a panel + prefill email field. Used by:
+    //   • register success → verify panel
+    //   • login fail with requires_verification → verify panel
+    //   • forgot-password success → reset panel
+    //   • login fail with locked + suggested reset → reset panel
+    function gotoPanel(name, email) {
+      showTab(name);
+      if (email) {
+        var emailInput = activeModal.element.querySelector(
+          '[data-panel="' + name + '"] input[name="email"]'
+        );
+        if (emailInput) emailInput.value = email;
+        var displayEl = activeModal.element.querySelector(
+          '[data-panel="' + name + '"] [data-verify-email-display]'
+        );
+        if (displayEl) displayEl.textContent = email;
+        // Auto-focus the code field — saves the user a tap on mobile.
+        var codeInput = activeModal.element.querySelector(
+          '[data-panel="' + name + '"] input[name="code"]'
+        );
+        if (codeInput) setTimeout(function () { codeInput.focus(); }, 50);
+      }
+    }
+
     // Brief #15 — Google OAuth button. The buttons live on the login
     // and register tabs (skipped on the professional tab — doctor and
     // pharmacy accounts are admin-created, not self-service Google).
@@ -235,6 +259,15 @@
         setTimeout(function () { auth.redirectToPortal(); }, 500);
       } catch (err) {
         form.setLoading(formEl, false);
+        // Brief #16e — backend returns 403 with requires_verification
+        // when the account exists, password is correct, but email
+        // hasn't been verified yet. Switch to the verify panel with
+        // the email prefilled (backend just resent the code).
+        if (err.data && err.data.requires_verification && err.data.email) {
+          ui.toast('Check your email for the 6-digit code · 請查收驗證碼', 'info');
+          gotoPanel('verify', err.data.email);
+          return;
+        }
         if (err.data && err.data.errors) {
           form.showErrors(formEl, err.data.errors);
         } else {
@@ -261,7 +294,9 @@
     var backLink = activeModal.element.querySelector('[data-action="back-to-login"]');
     if (backLink) backLink.addEventListener('click', function (e) { e.preventDefault(); showTab('login'); });
 
-    // Forgot-password submit
+    // Forgot-password submit — Brief #16f sends 6-digit code via email,
+    // then auto-switches to the reset panel where user enters code +
+    // new password.
     var forgotPanel = activeModal.element.querySelector('[data-panel="forgot"]');
     if (forgotPanel) forgotPanel.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -273,16 +308,92 @@
       if (successEl) successEl.style.display = 'none';
       try {
         var data = form.serialize(formEl);
-        var res = await HM.api.authForgotPassword(data.email);
+        await HM.api.authForgotPassword(data.email);
         form.setLoading(formEl, false);
-        if (successEl) {
-          successEl.textContent = res.message || 'If that email is registered, a reset link has been sent.';
-          successEl.style.display = 'block';
-        }
-        formEl.querySelector('input[name="email"]').value = '';
+        ui.toast('Check your email for the 6-digit code · 請查收6位數驗證碼', 'info');
+        gotoPanel('reset', data.email);
       } catch (err) {
         form.setLoading(formEl, false);
-        form.showGeneralError(formEl, (err && err.message) || 'Could not send reset link.');
+        form.showGeneralError(formEl, (err && err.message) || 'Could not send code. Please try again.');
+      }
+    });
+
+    // Brief #16e — Verify-email panel submit. Backend validates the
+    // 6-digit code, marks email_verified_at = NOW(), issues a Sanctum
+    // token, and we land in the portal.
+    var verifyPanel = activeModal.element.querySelector('[data-panel="verify"]');
+    if (verifyPanel) verifyPanel.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var formEl = e.target;
+      if (!form.validate(formEl, { email: ['required', 'email'], code: ['required'] })) return;
+      form.setLoading(formEl, true);
+      form.clearGeneralError(formEl);
+      try {
+        var data = form.serialize(formEl);
+        await HM.api.authVerifyEmail(data.email, data.code);
+        ui.toast('Verified! Welcome to HansMed · 已驗證，歡迎', 'success');
+        setTimeout(function () { auth.redirectToPortal(); }, 500);
+      } catch (err) {
+        form.setLoading(formEl, false);
+        if (err.data && err.data.errors) {
+          form.showErrors(formEl, err.data.errors);
+        } else {
+          form.showGeneralError(formEl, (err && err.message) || 'Verification failed. Please try again.');
+        }
+      }
+    });
+
+    // Brief #16e — Resend code link inside the verify panel.
+    var resendLink = activeModal.element.querySelector('[data-panel="verify"] [data-action="resend-code"]');
+    if (resendLink) resendLink.addEventListener('click', async function (e) {
+      e.preventDefault();
+      var emailInput = activeModal.element.querySelector('[data-panel="verify"] input[name="email"]');
+      var email = emailInput ? emailInput.value : '';
+      if (!email) {
+        ui.toast('No email on file — please sign in or register first', 'warn');
+        return;
+      }
+      try {
+        await HM.api.authResendVerification(email);
+        ui.toast('A new code has been sent · 新驗證碼已寄出', 'success');
+      } catch (err) {
+        if (err.status === 429) {
+          ui.toast('Too many requests — please wait 15 min before retrying', 'warn');
+        } else {
+          ui.toast('Could not resend code. Please try again later.', 'warn');
+        }
+      }
+    });
+
+    // Brief #16f — Reset-password panel submit. Validates the 6-digit
+    // code from the user's email + new password meets complexity rules.
+    var resetPanel = activeModal.element.querySelector('[data-panel="reset"]');
+    if (resetPanel) resetPanel.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var formEl = e.target;
+      if (!form.validate(formEl, {
+        email:    ['required', 'email'],
+        code:     ['required'],
+        password: ['required', 'min:8'],
+      })) return;
+      var data = form.serialize(formEl);
+      if (!passwordOk(data.password)) {
+        form.showErrors(formEl, { password: ['Password must be at least 8 characters and include 1 uppercase letter and 1 number.'] });
+        return;
+      }
+      form.setLoading(formEl, true);
+      form.clearGeneralError(formEl);
+      try {
+        await HM.api.authResetPassword(data.email, data.code, data.password);
+        ui.toast('Password reset — please sign in with your new password · 密碼已重設', 'success');
+        gotoPanel('login');
+      } catch (err) {
+        form.setLoading(formEl, false);
+        if (err.data && err.data.errors) {
+          form.showErrors(formEl, err.data.errors);
+        } else {
+          form.showGeneralError(formEl, (err && err.message) || 'Password reset failed. Please try again.');
+        }
       }
     });
 
@@ -305,7 +416,16 @@
       form.clearGeneralError(formEl);
       try {
         data.role = 'patient';
-        await auth.register(data);
+        var res = await auth.register(data);
+        // Brief #16e — register no longer auto-issues a token. Backend
+        // returns {requires_verification: true, email}. Switch to the
+        // verify-code panel and prefill the email.
+        if (res && res.requires_verification && res.email) {
+          ui.toast('Account created — check your email for a 6-digit code · 已寄出驗證碼', 'success');
+          gotoPanel('verify', res.email);
+          return;
+        }
+        // Legacy path (shouldn't hit anymore): auto-portal-redirect.
         ui.toast('Account created · 帳號已建立', 'success');
         setTimeout(function () { auth.redirectToPortal(); }, 500);
       } catch (err) {

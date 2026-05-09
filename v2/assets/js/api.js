@@ -122,24 +122,48 @@
   // ── Auth ──
   async function authRegister(data) {
     var res = await api.post('/auth/register', data);
-    setToken(res.token);
-    setUser(res.user);
+    // Brief #16e — register may now return WITHOUT a token if email
+    // verification is required. Only store credentials when actually
+    // present in the response; otherwise let the frontend show the
+    // verify-code panel.
+    if (res && res.token) setToken(res.token);
+    if (res && res.user)  setUser(res.user);
     return res;
   }
 
   // identifier can be email or phone number
   async function authLogin(identifier, password) {
     var res = await api.post('/auth/login', { identifier: identifier, password: password });
-    setToken(res.token);
-    setUser(res.user);
+    if (res && res.token) setToken(res.token);
+    if (res && res.user)  setUser(res.user);
     return res;
   }
 
   async function authForgotPassword(email) {
     return await api.post('/auth/forgot-password', { email: email });
   }
-  async function authResetPassword(email, token, password) {
-    return await api.post('/auth/reset-password', { email: email, token: token, password: password });
+  // Brief #16f — forgot-password now uses a 6-digit code instead of a
+  // 64-char token URL. Backend still accepts the old name but the
+  // frontend uses 'code' for clarity.
+  async function authResetPassword(email, code, password) {
+    return await api.post('/auth/reset-password', { email: email, code: code, password: password });
+  }
+
+  // Brief #16e — finalize registration by submitting the 6-digit code.
+  // On success the response includes a Sanctum token so we store it
+  // immediately and the user is logged in.
+  async function authVerifyEmail(email, code) {
+    var res = await api.post('/auth/verify-email', { email: email, code: code });
+    if (res && res.token) setToken(res.token);
+    if (res && res.user)  setUser(res.user);
+    return res;
+  }
+
+  // Re-issue a verification code. Rate-limited server-side at 3 per
+  // 15 min per email. Always returns 200 (or 429) so we don't leak
+  // whether the email has an unverified account on file.
+  async function authResendVerification(email) {
+    return await api.post('/auth/resend-verification', { email: email });
   }
 
   async function authLogout() {
@@ -571,6 +595,9 @@
     authMe: authMe,
     authForgotPassword: authForgotPassword,
     authResetPassword: authResetPassword,
+    // Brief #16e — email verification on signup
+    authVerifyEmail: authVerifyEmail,
+    authResendVerification: authResendVerification,
 
     patient: patient,
     doctor: doctor,

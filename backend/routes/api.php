@@ -52,6 +52,9 @@ Route::middleware('throttle:5,1')->group(function () {
     Route::post('/auth/login',            [AuthController::class, 'login']);
     Route::post('/auth/forgot-password',  [AuthController::class, 'forgotPassword']);
     Route::post('/auth/reset-password',   [AuthController::class, 'resetPassword']);
+    // Brief #16e — 6-digit email verification on signup.
+    Route::post('/auth/verify-email',          [AuthController::class, 'verifyEmail']);
+    Route::post('/auth/resend-verification',   [AuthController::class, 'resendVerificationCode']);
 });
 
 // Brief #15 — Google OAuth login. Three endpoints:

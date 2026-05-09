@@ -41,4 +41,19 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    // Brief #16 — Resend transactional email API. Used for 6-digit
+    // verification codes on signup + 6-digit password-reset codes.
+    // FROM address must match a verified domain on Resend
+    // (hansmedtcm.com is verified — see resend.com/domains dashboard).
+    // Settle the API key in Railway Shared Variables, NOT in the repo.
+    //
+    // Env vars on Railway:
+    //   RESEND_API_KEY=re_xxx
+    //   MAIL_MAILER=resend
+    //   MAIL_FROM_ADDRESS=support@hansmedtcm.com
+    //   MAIL_FROM_NAME="HansMed Modern TCM"
+    'resend' => [
+        'api_key' => env('RESEND_API_KEY'),
+    ],
+
 ];
