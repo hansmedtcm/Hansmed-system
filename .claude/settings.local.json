@@ -178,7 +178,9 @@
       "Bash(node E:/Hansmed-system/.tmp-blog-footer.mjs)",
       "Bash(git commit -m 'Blog article footer: match index.html footer style \\(4 cols + cert pills\\) *)",
       "Bash(git commit -m 'Blog feature — Phase 1: schema + models + migration SQL *)",
-      "Bash(git commit -m 'Blog feature — Phase 2: backend controllers + routes *)"
+      "Bash(git commit -m 'Blog feature — Phase 2: backend controllers + routes *)",
+      "PowerShell(Start-Process \"C:\\\\Users\\\\limgh\\\\Projects\\\\Hansmed-system\\\\v2\\\\index.html\")",
+      "PowerShell(Remove-Item *)"
     ]
   }
 }

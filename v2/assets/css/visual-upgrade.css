@@ -1,1575 +1,208 @@
 /* ====================================================================
-   v3 visual upgrade — Brief #8
-   Imagery, scroll reveals, parallax, tilt, spacing, textures.
-   All rules scoped under .landing-v4 (the body class) or under
-   v3-only selectors so nothing leaks into v2 pages that share
-   landing-v4.css.
-   ====================================================================
-   MANDATORY SAFEGUARDS HONORED:
-   · prefers-reduced-motion respected on every transition / animation.
-   · Mobile parallax + tilt explicitly disabled in media queries.
-   · Every image wrapper sets aspect-ratio so the browser reserves
-     space before the image loads (no CLS).
-   · Image fade-in is a CSS-only opacity transition driven by a
-     'loaded' class added by tiny inline JS — no library, no FOUC
-     because reduced-motion users get opacity:1 immediately.
+   HansMed v2 — Visual Upgrade
+   Tokens + components for the marketing site. Single source of truth.
    ==================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap');
 
-/* ════════════ TASK A1 — Hero background image + gradient ═════════ */
+:root {
+  /* Brand */
+  --color-primary:        #0F4C3A;
+  --color-primary-hover:  #0A3A2C;
+  --color-primary-soft:   #E7EFEC;
+  --color-accent:         #7B1F2D;
+  --color-accent-hover:   #5E1722;
+  --color-accent-soft:    #F1E4E6;
 
-/* Layer the new background photo onto the section, then layer the
-   readability gradient onto the existing .hero-bg overlay div (which
-   already carries landing-v4's decorative radial gradients). This
-   preserves landing-v4's gold-strip ::before, bottom-border ::after,
-   and the radial ambient warmth — the brief was clear: ADD, don't
-   replace. */
-body.landing-v4 .hero-v3 {
-  background-image: url('../img/hero-bg.webp');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  overflow: hidden;
-}
-body.landing-v4 .hero-v3 .hero-bg {
-  /* Bug-fix 2026-05-03: previous left-to-right gradient was tuned for
-     left-aligned text. The Brief #4 hero is centered, so the centered
-     text was landing in the faint (right-side) part of the overlay,
-     making it hard to read against the tea-ceremony image. Switch to
-     a centered radial: opaque cream behind the text block, fading
-     outward so the image still shows around the edges (vignette in
-     reverse). */
-  background:
-    radial-gradient(
-      ellipse 75% 65% at 50% 50%,
-      rgba(245, 241, 234, 0.94) 0%,
-      rgba(245, 241, 234, 0.86) 35%,
-      rgba(245, 241, 234, 0.55) 75%,
-      rgba(245, 241, 234, 0.30) 100%
-    ),
-    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.45) 0%, transparent 55%),
-    radial-gradient(ellipse 45% 55% at 5% 95%, rgba(155,114,72,0.05) 0%, transparent 60%);
-}
-@media (max-width: 768px) {
-  body.landing-v4 .hero-v3 .hero-bg {
-    /* Mobile: text stack is tall and narrow, so use a slightly more
-       opaque radial that covers more vertical area. */
-    background:
-      radial-gradient(
-        ellipse 90% 75% at 50% 50%,
-        rgba(245, 241, 234, 0.94) 0%,
-        rgba(245, 241, 234, 0.82) 60%,
-        rgba(245, 241, 234, 0.45) 100%
-      ),
-      radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.45) 0%, transparent 55%);
-  }
-}
+  /* Surfaces */
+  --color-bg:             #FAFAF7;
+  --color-surface:        #FFFFFF;
+  --color-surface-alt:    #F3F4F1;
+  --color-surface-ink:    #1A1F2E;
 
-/* Brief #4 brand spine — give it a hint of text-shadow so it stays
-   crisp against the tea-ceremony image even where the radial overlay
-   is at 86% rather than 94%. Subtle: 1px soft cream shadow, not a
-   drop-shadow look. */
-body.landing-v4 .hero-spine span {
-  text-shadow: 0 1px 0 rgba(245, 241, 234, 0.9), 0 0 18px rgba(245, 241, 234, 0.4);
-}
+  /* Text */
+  --color-text:           #1A1F2E;
+  --color-text-secondary: #5A6275;
+  --color-text-tertiary:  #9CA3AF;
+  --color-text-inverse:   #FFFFFF;
+  --color-text-on-ink:    rgba(255, 255, 255, 0.78);
 
+  /* Borders */
+  --color-border:         #E5E7EB;
+  --color-border-strong:  #9CA3AF;
 
-/* ════════════ TASK A2 — Brand story 2-column with image ══════════ */
+  /* Status */
+  --color-success:        #0F4C3A;
+  --color-success-bg:     #E7EFEC;
+  --color-warning:        #B8860B;
+  --color-warning-bg:     #FAF3E0;
+  --color-danger:         #991B1B;
+  --color-danger-bg:      #FBEAEA;
+  --color-info:           #1E3A5F;
+  --color-info-bg:        #E5ECF3;
 
-body.landing-v4 .brand-story-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
-  align-items: center;
-  max-width: 1100px;
-  margin: 0 auto;
-  text-align: left;
-}
-body.landing-v4 .brand-story-img {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: 16px;
-  overflow: hidden;
-  background: var(--v4-bg-3);
-}
-body.landing-v4 .brand-story-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-body.landing-v4 .brand-story-text {
-  text-align: left;
-}
-/* The original .brand-story-inner was centered; inside the grid we
-   left-align it because the image carries the visual weight. */
-body.landing-v4 .brand-story-grid .brand-story-h,
-body.landing-v4 .brand-story-grid .eyebrow {
-  text-align: left;
-}
-body.landing-v4 .brand-story-grid .eyebrow {
-  display: inline-flex;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .brand-story-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-    text-align: center;
-  }
-  body.landing-v4 .brand-story-img { aspect-ratio: 4 / 3; }
-  body.landing-v4 .brand-story-grid .brand-story-h,
-  body.landing-v4 .brand-story-grid .eyebrow,
-  body.landing-v4 .brand-story-grid .brand-story-text { text-align: center; }
+  /* Type stack */
+  --font-heading-en: 'Fraunces', 'Source Serif 4', Georgia, serif;
+  --font-body-en:    'IBM Plex Sans', 'Söhne', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:       'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading-zh: 'Noto Serif SC', 'Source Han Serif SC', serif;
+  --font-body-zh:    'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+
+  /* Spacing — 8px grid */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+
+  /* Radius / shadow / motion */
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; --radius-full: 999px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow:    0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --duration-fast: 120ms; --duration: 150ms; --duration-slow: 240ms;
+  --ease: cubic-bezier(.4, 0, .2, 1);
 }
 
-
-/* ════════════ TASK A3 — Service card images (bleed top) ══════════ */
-
-body.landing-v4 .card-v4-img {
-  /* card-v4 already has padding: 22px (approx); bleed image to edges. */
-  margin: -22px -22px 18px;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: 12px 12px 0 0;
-  background: var(--v4-bg-3);
-}
-body.landing-v4 .card-v4-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.6s ease;
-}
-body.landing-v4 .card-v4:hover .card-v4-img img {
-  transform: scale(1.04);
-}
-@media (prefers-reduced-motion: reduce) {
-  body.landing-v4 .card-v4:hover .card-v4-img img { transform: none; }
-}
-
-
-/* ════════════ TASK A4 — How-it-works step images ═════════════════ */
-
-body.landing-v4 .step-card-img {
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  background: var(--v4-bg-3);
-}
-body.landing-v4 .step-card-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-
-/* ════════════ TASK A5 — Practitioner placeholder image ═══════════ */
-
-body.landing-v4 .practitioner-card-img {
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  background: var(--v4-bg-3);
-}
-body.landing-v4 .practitioner-card-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  filter: grayscale(20%);
-  transition: filter 0.4s ease;
-}
-body.landing-v4 .practitioner-card:hover .practitioner-card-img img {
-  filter: grayscale(0%);
-}
-@media (prefers-reduced-motion: reduce) {
-  body.landing-v4 .practitioner-card-img img { transition: none; }
-}
-
-
-/* ════════════ TASK A6 — Patient stories full-width bg + overlay ══ */
-
-body.landing-v4 .patient-stories-section {
-  position: relative;
-  min-height: 360px;
-  overflow: hidden;
-  margin: 64px 0;
-}
-body.landing-v4 .patient-stories-bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-}
-body.landing-v4 .patient-stories-overlay {
-  position: relative;
-  background: rgba(245, 241, 234, 0.78);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  padding: 64px 8vw;
-  text-align: center;
-}
-
-
-/* ════════════ TASK C — Scroll reveal base classes ════════════════ */
-
-.reveal {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
-  will-change: opacity, transform;
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
-}
-
-
-/* ════════════ TASK E — Subtle 3D card tilt on hover ══════════════ */
-
-body.landing-v4 .card-v4,
-body.landing-v4 .step-card,
-body.landing-v4 .practitioner-card {
-  transform-style: preserve-3d;
-  transform: perspective(1000px) rotateX(0) rotateY(0);
-  transition: transform 0.5s ease, box-shadow 0.4s ease;
-}
-@media (hover: hover) and (min-width: 769px) {
-  body.landing-v4 .card-v4:hover,
-  body.landing-v4 .step-card:hover,
-  body.landing-v4 .practitioner-card:hover {
-    transform: perspective(1000px) translateY(-6px) rotateX(1.5deg) rotateY(-1.5deg);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  body.landing-v4 .card-v4:hover,
-  body.landing-v4 .step-card:hover,
-  body.landing-v4 .practitioner-card:hover {
-    transform: translateY(-6px);   /* keep the lift, drop the tilt */
-  }
-}
-
-
-/* ════════════ TASK F — Image fade-in on load ═════════════════════ */
-
-/* Bug-fix 2026-05-03: previous spec set opacity:0 by default and
-   waited for the JS load-handler to add .loaded. With lazy-loading,
-   the browser defers the image download until near-viewport — meaning
-   the user could see an EMPTY card (opacity:0 image inside) before
-   the image finished downloading and the fade-in started. Steps 2/3
-   on the homepage were silently invisible after Brief #8 shipped.
-   Default opacity to 1 so images appear naturally as they download.
-   .loaded class is now harmless (kept so old JS handler doesn't
-   throw if anything still references it). No fade-in animation —
-   trade polish for reliability. WebP files are ~50KB and load in
-   under 100ms, so the fade was doing more harm than good. */
-img.fade-in-load {
-  opacity: 1;
-}
-img.fade-in-load.loaded {
-  opacity: 1;
-}
-
-
-/* ════════════ "Or book a consultation" — boost contrast ══════════ */
-
-/* CEO 2026-05-03: secondary hero link was barely visible against the
-   tea-ceremony background — gold on cream blended in. Override the
-   v2 base style with a much higher-contrast variant. */
-body.landing-v4 .hero-cta-secondary {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--v4-ink) !important;          /* was --v4-wd-md (faint gold) */
-  text-decoration: none;
-  border-bottom: 1.5px solid var(--v4-go) !important;
-  padding-bottom: 3px;
-  letter-spacing: 0.01em;
-  transition: color .2s, border-color .2s, transform .2s;
-}
-body.landing-v4 .hero-cta-secondary:hover {
-  color: var(--v4-wd-dk) !important;
-  border-color: var(--v4-wd-dk) !important;
-  transform: translateY(-1px);
-}
-
-
-/* ════════════ Reveals — neutralized for "smoother than v2" feel ═══ */
-
-/* CEO 2026-05-03 follow-up: even at snappy timing (0.45s, 10px),
-   the cumulative effect of reveals firing across many sections
-   made v3 feel less smooth than v2 (which has no animations at
-   all). Neutralize the .reveal class — keep it on elements so
-   any future animation work has a hook, but make the default
-   state visible. Page now renders content as it loads, matching
-   v2's natural feel. The IntersectionObserver still runs but its
-   class additions are visually no-ops. */
-.reveal,
-.reveal.is-visible {
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
-}
-
-
-/* ════════════ TASK G — Spacing reverence ═════════════════════════ */
-
-body.landing-v4 .brand-story            { padding: clamp(48px, 7vw, 96px) 0; }
-body.landing-v4 .sec.sec-alt.dot-tex    { padding: clamp(48px, 7vw, 96px) 0; }
-body.landing-v4 .sec.sec-white          { /* default — left to existing rules */ }
-body.landing-v4 section.how-it-works-sec{ padding: clamp(40px, 6vw, 80px) 0; }
-body.landing-v4 section.practitioners   { padding: clamp(40px, 6vw, 80px) 0; }
-body.landing-v4 section.patient-stories { padding: clamp(48px, 7vw, 96px) 0; }
-body.landing-v4 .organ-clock-section    { padding: clamp(40px, 6vw, 80px) 0 !important; }
-body.landing-v4 .tongue-widget          { padding: clamp(40px, 6vw, 80px) max(1.5rem, calc(50% - 540px)) !important; }
-
-
-/* ════════════ TASK H1 — Rice-paper subtle background texture ═════ */
-
-.has-rice-bg {
-  position: relative;
-}
-.has-rice-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('../img/texture-rice-paper.webp');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.08;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 0;
-}
-.has-rice-bg > * {
-  position: relative;
-  z-index: 1;
-}
-
-
-/* ════════════ TASK H2 — Ink-wash horizontal section divider ══════ */
-
-.ink-divider {
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-.ink-divider img {
-  max-width: 280px;
-  width: 50%;
-  height: auto;
-  /* Original ink stroke is a strong dark mark — at high opacity it
-     reads as a heavy black band. Drop opacity hard and use brightness
-     >1 to wash the ink out to a soft gray hint, not a hard line.
-     Goal: subtle visual punctuation, not a divider bar that grabs
-     the eye away from the photography. */
-  opacity: 0.10;
-  filter: grayscale(100%) brightness(1.4);
-  display: block;
-}
-@media (max-width: 768px) {
-  .ink-divider { height: 32px; }
-  .ink-divider img { max-width: 180px; width: 55%; opacity: 0.07; }
-}
-
-
-/* ════════════ Brief #9 — About page ═══════════════════════════════
-   Scoped to body.landing-v4 so nothing leaks into v2. The about
-   page reuses .hero-v3 / .has-rice-bg / .reveal / .fade-in-load /
-   .card-v4 from earlier briefs; rules below add only what's
-   about-specific. */
-
-body.landing-v4 .about-hero {
-  min-height: 60vh;            /* shorter than home hero (88vh) */
-  display: flex;
-  align-items: center;
-  padding: 0 8vw;
-}
-body.landing-v4 .about-hero .hero-content {
-  max-width: 760px;
-  margin: 0 auto;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-body.landing-v4 .about-hero .hero-h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(36px, 5.5vw, 64px);
-  font-weight: 400;
-  line-height: 1.08;
-  letter-spacing: -0.025em;
-  color: var(--v4-ink);
-  margin: 0 0 20px;
-}
-body.landing-v4 .about-hero .hero-h1 em {
-  font-style: italic;
-  color: var(--v4-wd-md);
-}
-body.landing-v4 .about-hero .hero-h1 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.65em;
-  font-weight: 400;
-  margin-top: 10px;
-  color: var(--v4-wd-md);
-  letter-spacing: 0.04em;
-}
-body.landing-v4 .about-hero .hero-sub {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  color: var(--v4-mu);
-  font-weight: 300;
-  line-height: 1.7;
-  max-width: 600px;
-  margin: 0 auto;
-}
-body.landing-v4 .about-hero .hero-sub span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 6px;
-}
-
-/* Origin section — 2-col text + stats. */
-body.landing-v4 .about-origin {
-  padding: clamp(56px, 7vw, 96px) 0;
-}
-body.landing-v4 .origin-grid {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 64px;
-  align-items: center;
-  max-width: 1100px;
-  margin: 0 auto;
-  /* Bug-fix 2026-05-03: previous padding used calc(50% - 540px)
-     which scales with VIEWPORT width, not container width. On
-     wider screens it consumed ~200px each side INSIDE the already
-     1100px-max container, squeezing the text column to ~180px wide
-     and breaking the heading into one-word-per-line. Use a flat
-     responsive padding instead. */
-  padding: 0 24px;
-  box-sizing: border-box;
-}
-body.landing-v4 .origin-h {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 3.8vw, 42px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--v4-ink);
-  margin: 0 0 22px;
-}
-body.landing-v4 .origin-h em { font-style: italic; color: var(--v4-wd-md); }
-body.landing-v4 .origin-h span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.62em;
-  color: var(--v4-wd-md);
-  margin-top: 6px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-}
-body.landing-v4 .origin-body {
-  font-size: 15px;
-  line-height: 1.8;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0 0 18px;
-}
-body.landing-v4 .origin-body span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 10px;
-  letter-spacing: 0.01em;
-}
-body.landing-v4 .origin-spine {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 19px;
-  color: var(--v4-tc);
-  border-left: 2px solid var(--v4-go);
-  padding-left: 16px;
-  margin: 18px 0 0;
-  line-height: 1.5;
-}
-body.landing-v4 .origin-spine span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-style: normal;
-  font-size: 16px;
-  color: var(--v4-wd-md);
-  margin-top: 8px;
-  letter-spacing: 0.02em;
-}
-body.landing-v4 .origin-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-body.landing-v4 .stat-b {
-  background: var(--v4-bg-3);
-  border: 1px solid var(--v4-bdr-l);
-  border-radius: 12px;
-  padding: 22px 18px;
-  text-align: center;
-}
-body.landing-v4 .stat-n {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(26px, 3vw, 34px);
-  font-weight: 500;
-  color: var(--v4-go);
-  line-height: 1.1;
-  margin-bottom: 6px;
-}
-body.landing-v4 .stat-n span[lang="zh"] {
-  display: inline;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.85em;
-}
-body.landing-v4 .stat-l {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--v4-mu);
-  font-weight: 500;
-}
-body.landing-v4 .stat-l span[lang="zh"] {
-  font-family: 'Noto Serif SC', serif;
-  text-transform: none;
-  letter-spacing: 0.04em;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .origin-grid {
-    grid-template-columns: 1fr;
-    gap: 36px;
-  }
-}
-
-/* Practice space section — 2-col image + text. */
-body.landing-v4 .about-space {
-  padding: clamp(56px, 7vw, 96px) 0;
-}
-body.landing-v4 .about-space-inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
-  align-items: center;
-  max-width: 1100px;
-  margin: 0 auto;
-  /* Same calc-padding bug fix as .origin-grid above. */
-  padding: 0 24px;
-  box-sizing: border-box;
-}
-body.landing-v4 .about-space-img {
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: 16px;
-  background: var(--v4-bg-3);
-}
-body.landing-v4 .about-space-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-body.landing-v4 .about-space-text h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(26px, 3.6vw, 38px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--v4-ink);
-  margin: 0 0 18px;
-}
-body.landing-v4 .about-space-text h2 em { font-style: italic; color: var(--v4-wd-md); }
-body.landing-v4 .about-space-text h2 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.62em;
-  color: var(--v4-wd-md);
-  margin-top: 6px;
-  font-weight: 400;
-}
-body.landing-v4 .about-space-text p {
-  font-size: 15px;
-  line-height: 1.8;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0;
-}
-body.landing-v4 .about-space-text p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 10px;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .about-space-inner {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-}
-
-/* Three-principles section. */
-body.landing-v4 .about-principles {
-  padding: clamp(56px, 7vw, 96px) 0;
-}
-body.landing-v4 .about-principles .principles-grid {
-  margin-top: 40px;
-}
-body.landing-v4 .principle-card {
-  text-align: left;
-  padding: 32px;
-}
-body.landing-v4 .principle-card h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--v4-ink);
-  margin: 0 0 12px;
-}
-body.landing-v4 .principle-card h3 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  color: var(--v4-wd-md);
-  margin-top: 4px;
-  font-weight: 400;
-}
-body.landing-v4 .principle-card p {
-  font-size: 14px;
-  line-height: 1.78;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0;
-}
-body.landing-v4 .principle-card p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 10px;
-}
-/* Calligraphic seal — typographic, NOT emoji. Single Chinese
-   character on a soft gold-tinted square that recalls a Chinese
-   chop without being literal. */
-body.landing-v4 .principle-seal {
-  display: inline-block;
-  width: 56px;
-  height: 56px;
-  line-height: 56px;
-  text-align: center;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 32px;
-  font-weight: 500;
-  color: var(--v4-go);
-  background: rgba(181, 136, 26, 0.08);
-  border: 1px solid rgba(181, 136, 26, 0.25);
-  border-radius: 6px;
-  margin-bottom: 18px;
-}
-
-/* Closing CTA band — dark ink background, two clear paths. */
-body.landing-v4 .about-cta {
-  background: var(--v4-ink);
-  text-align: center;
-  padding: clamp(56px, 7vw, 96px) 8vw;
-  color: #fff;
-}
-body.landing-v4 .about-cta .cta-inner {
-  max-width: 680px;
-  margin: 0 auto;
-}
-body.landing-v4 .about-cta h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 400;
-  margin: 0 0 14px;
-  color: #fff;
-  letter-spacing: -0.02em;
-}
-body.landing-v4 .about-cta h2 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.7em;
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.78);
-}
-body.landing-v4 .about-cta p {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 30px;
-  font-weight: 300;
-  line-height: 1.7;
-}
-body.landing-v4 .about-cta p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 6px;
-}
-body.landing-v4 .cta-row {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-
-/* ════════════ Brief #10 — Services page ═══════════════════════════
-   Scoped under body.landing-v4 so nothing leaks into v2. Reuses
-   .hero-v3, .has-rice-bg, .reveal, .fade-in-load, .home-shop-cta,
-   .about-cta from earlier briefs; rules below add only what's
-   services-specific. */
-
-/* ════════════════════════════════════════════════════════════════
-   UNIVERSAL v3 SUB-PAGE HERO TREATMENT — applies to ANY .hero-v3
-   that uses the .hero-content text-block pattern (which all
-   non-home v3 pages use: about, services, practitioners, and any
-   future page like contact, blog, faq, etc). Any new sub-page
-   hero just needs <section class="hero-v3 SOMETHING-hero"> with a
-   .hero-bg overlay div and .hero-content text — NO additional CSS
-   needed per page.
-
-   Why it's universal: previously each page (services, about,
-   practitioners) needed its own selector added to this CSS. New
-   pages were silently broken until someone remembered to add
-   them. This rule targets .hero-v3 .hero-content directly so
-   future v3 sub-pages inherit the treatment automatically.
-
-   Home page hero uses .hero-spine (not .hero-h1) and .hero-story
-   (not .hero-content), so it has its own dedicated treatment
-   above and is not affected by these rules.
-   ════════════════════════════════════════════════════════════════ */
-
-body.landing-v4 .services-hero,
-body.landing-v4 .about-hero,
-body.landing-v4 .practitioners-hero { min-height: 60vh; }
-
-/* Center the .hero-content text block in any v3 sub-page hero. */
-body.landing-v4 .hero-v3 .hero-content {
-  max-width: 760px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 0 24px;
-  position: relative;
-  z-index: 2;
-}
-body.landing-v4 .hero-v3 .hero-content .eyebrow {
-  display: inline-flex;
-  color: var(--v4-tc) !important;
-}
-body.landing-v4 .hero-v3 .hero-content .hero-h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(36px, 5vw, 56px);
-  font-weight: 500 !important;
-  letter-spacing: -0.02em;
-  color: var(--v4-ink) !important;
-  line-height: 1.15;
-  margin: 18px 0 22px;
-  /* Cream-tone text-shadow — keeps headline crisp against any
-     portion of the hero background image that bleeds through the
-     overlay. */
-  text-shadow:
-    0 1px 0 rgba(245, 241, 234, 0.95),
-    0 0 24px rgba(245, 241, 234, 0.85),
-    0 0 48px rgba(245, 241, 234, 0.55);
-}
-body.landing-v4 .hero-v3 .hero-content .hero-h1 em {
-  font-style: italic;
-  color: var(--v4-wd-dk) !important;
-}
-body.landing-v4 .hero-v3 .hero-content .hero-sub {
-  max-width: 560px;
-  margin: 0 auto;
+/* Reset & base */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body-en);
   font-size: 16px;
   line-height: 1.7;
-  color: var(--v4-ink) !important;
-  font-weight: 400 !important;
-  text-shadow:
-    0 1px 0 rgba(245, 241, 234, 0.95),
-    0 0 18px rgba(245, 241, 234, 0.7);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
 }
+body :lang(zh) { font-family: var(--font-body-zh); }
+img { max-width: 100%; display: block; }
 
-/* Strong centered radial overlay so text sits on near-opaque cream
-   even though the background image is still visible at the edges.
-   Universal: any .hero-v3 that has a .hero-bg child + uses the
-   .hero-content pattern (i.e. all sub-pages) gets this. */
-body.landing-v4 .hero-v3:not(.hero-v4--story) .hero-bg {
-  background:
-    radial-gradient(
-      ellipse 70% 60% at 50% 50%,
-      rgba(245, 241, 234, 0.97) 0%,
-      rgba(245, 241, 234, 0.92) 45%,
-      rgba(245, 241, 234, 0.65) 80%,
-      rgba(245, 241, 234, 0.35) 100%
-    ),
-    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(250,240,220,0.45) 0%, transparent 55%) !important;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .hero-v3:not(.hero-v4--story) .hero-bg {
-    background:
-      radial-gradient(
-        ellipse 95% 80% at 50% 50%,
-        rgba(245, 241, 234, 0.96) 0%,
-        rgba(245, 241, 234, 0.88) 65%,
-        rgba(245, 241, 234, 0.55) 100%
-      ) !important;
-  }
-}
-/* The :not(.hero-v4--story) excludes the home hero, which uses
-   its own brand-spine treatment with a different overlay tuned
-   for the 3-line stack. */
+/* Layout */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.container-narrow { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+section.section { padding: clamp(48px, 7vw, 96px) 0; }
+section.section-alt { background: var(--color-surface-alt); }
+section.section-ink { background: var(--color-surface-ink); color: #fff; }
+section.section-ink h1, section.section-ink h2, section.section-ink h3 { color: #fff; }
+section.section-ink p { color: var(--color-text-on-ink); }
 
-/* ── Comparison table ──────────────────────────────────────────── */
-body.landing-v4 .services-compare {
-  padding: clamp(56px, 7vw, 96px) 24px;
-}
-body.landing-v4 .compare-table-wrap {
-  max-width: 1100px;
-  margin: 0 auto;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-body.landing-v4 .compare-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  background: var(--v4-bg-2);
-  border-radius: 14px;
-  overflow: hidden;
-  min-width: 720px;     /* forces horizontal scroll on narrow screens */
-}
-body.landing-v4 .compare-table th,
-body.landing-v4 .compare-table td {
-  padding: 18px 16px;
-  text-align: left;
-  vertical-align: top;
-  border-bottom: 1px solid var(--v4-bdr-l);
-  line-height: 1.55;
-}
-body.landing-v4 .compare-table thead th {
-  background: var(--v4-bg-3);
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--v4-ink);
-}
-body.landing-v4 .compare-table thead th span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-style: normal;
-  font-size: 13px;
-  color: var(--v4-wd-md);
-  margin-top: 4px;
-  font-weight: 400;
-}
-body.landing-v4 .compare-table tbody th {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 11px;
-  color: var(--v4-mu);
-  width: 22%;
-  background: rgba(245, 241, 234, 0.4);
-}
-body.landing-v4 .compare-table tbody th span[lang="zh"] {
-  font-family: 'Noto Serif SC', serif;
-  text-transform: none;
-  letter-spacing: 0.04em;
-}
-body.landing-v4 .compare-table tbody td {
-  color: var(--v4-mu);
-  font-weight: 300;
-}
-body.landing-v4 .compare-table tbody td span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 6px;
-}
-body.landing-v4 .compare-table tbody tr:last-child th,
-body.landing-v4 .compare-table tbody tr:last-child td {
-  border-bottom: none;
-}
-body.landing-v4 .compare-note {
-  max-width: 680px;
-  margin: 28px auto 0;
-  text-align: center;
-  font-size: 14px;
-  color: var(--v4-mu);
-  font-style: italic;
-  font-weight: 300;
-}
-body.landing-v4 .compare-note span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-style: normal;
-  font-size: 13px;
-  margin-top: 6px;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .compare-table { font-size: 12px; }
-  body.landing-v4 .compare-table th,
-  body.landing-v4 .compare-table td { padding: 12px 10px; }
-  body.landing-v4 .compare-table thead th { font-size: 15px; }
-}
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 16px; }
+.heading-h1 { font-family: var(--font-heading-en); font-weight: 500; font-size: clamp(40px, 5vw, 56px); letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 20px; color: var(--color-text); }
+.heading-h2 { font-family: var(--font-heading-en); font-weight: 500; font-size: clamp(30px, 4vw, 40px); letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 16px; color: var(--color-text); }
+.heading-h3 { font-family: var(--font-heading-en); font-weight: 500; font-size: 24px; letter-spacing: -0.015em; line-height: 1.25; margin: 0 0 12px; color: var(--color-text); }
+.lead { font-size: 18px; line-height: 1.7; color: var(--color-text-secondary); max-width: 60ch; margin: 0 0 24px; }
+.muted { color: var(--color-text-secondary); }
 
-/* ── Service detail sections (alternating image side) ──────────── */
-body.landing-v4 .service-detail {
-  padding: clamp(64px, 8vw, 112px) 24px;
-}
-body.landing-v4 .service-detail-inner {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 64px;
-  align-items: start;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-/* Even-indexed service-detail sections get the image on the right
-   for visual rhythm. nth-of-type counts only .service-detail
-   sections (the comparison and CTA sections aren't .service-detail). */
-body.landing-v4 .service-detail:nth-of-type(even) .service-detail-inner {
-  grid-template-columns: 1.1fr 1fr;
-}
-body.landing-v4 .service-detail:nth-of-type(even) .service-detail-img { order: 2; }
-body.landing-v4 .service-detail:nth-of-type(even) .service-detail-text { order: 1; }
-body.landing-v4 .service-detail-img {
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: 16px;
-  background: var(--v4-bg-3);
-  position: sticky;
-  top: 96px;
-}
-body.landing-v4 .service-detail-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-body.landing-v4 .service-detail-text h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 3.5vw, 38px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--v4-ink);
-  margin: 0 0 18px;
-}
-body.landing-v4 .service-detail-text h2 em { font-style: italic; color: var(--v4-wd-md); }
-body.landing-v4 .service-detail-text h2 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.62em;
-  margin-top: 6px;
-  color: var(--v4-wd-md);
-  font-weight: 400;
-}
-body.landing-v4 .service-lead {
-  font-size: 16px;
-  line-height: 1.78;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0 0 32px;
-}
-body.landing-v4 .service-lead span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 10px;
-}
-body.landing-v4 .service-detail .how-h,
-body.landing-v4 .service-detail .pricing-h {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--v4-tc);
-  margin: 28px 0 14px;
-}
-body.landing-v4 .service-detail .how-h span[lang="zh"],
-body.landing-v4 .service-detail .pricing-h span[lang="zh"] {
-  font-family: 'Noto Serif SC', serif;
-  text-transform: none;
-  letter-spacing: 0.04em;
-}
-body.landing-v4 .how-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 28px;
-  counter-reset: how-step;
-}
-body.landing-v4 .how-list li {
-  counter-increment: how-step;
-  padding: 14px 0 14px 44px;
-  position: relative;
-  border-top: 1px solid var(--v4-bdr-l);
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--v4-mu);
-  font-weight: 300;
-}
-body.landing-v4 .how-list li:last-child {
-  border-bottom: 1px solid var(--v4-bdr-l);
-}
-body.landing-v4 .how-list li::before {
-  content: counter(how-step, decimal-leading-zero);
-  position: absolute;
-  left: 0;
-  top: 14px;
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 18px;
-  color: var(--v4-go);
-  font-weight: 500;
-}
-body.landing-v4 .how-list li span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 8px;
-}
-body.landing-v4 .pricing-line {
-  font-size: 15px;
-  color: var(--v4-ink);
-  margin: 0 0 28px;
-  font-weight: 400;
-  line-height: 1.6;
-}
-body.landing-v4 .pricing-line .pricing-note {
-  display: block;
-  font-size: 12px;
-  color: var(--v4-mu);
-  margin-top: 4px;
-  font-weight: 300;
-  font-style: italic;
-}
-body.landing-v4 .pricing-line span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 8px;
-}
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font-body-en); font-size: 16px; font-weight: 600; padding: 12px 24px; border-radius: 6px; border: 1.5px solid transparent; cursor: pointer; transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease); text-decoration: none; line-height: 1; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-secondary { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+.btn-secondary:hover { background: var(--color-primary); color: #fff; }
+.btn-tertiary { background: transparent; color: var(--color-primary); padding: 8px 0; border: 0; border-bottom: 1px solid currentColor; border-radius: 0; font-weight: 500; font-size: 15px; }
+.btn-tertiary:hover { color: var(--color-primary-hover); }
+.btn-accent { background: var(--color-accent); color: #fff; }
+.btn-accent:hover { background: var(--color-accent-hover); }
+.btn-sm { font-size: 14px; padding: 8px 16px; }
+.btn-on-ink { background: #fff; color: var(--color-primary); }
+.btn-on-ink:hover { background: var(--color-bg); }
 
-/* Per-service expandable FAQ. */
-body.landing-v4 .service-faq { margin-bottom: 28px; }
-body.landing-v4 .service-faq summary {
-  cursor: pointer;
-  padding: 14px 0;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--v4-tc);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border-top: 1px solid var(--v4-bdr-l);
-  border-bottom: 1px solid var(--v4-bdr-l);
-  list-style: none;
-}
-body.landing-v4 .service-faq summary::-webkit-details-marker { display: none; }
-body.landing-v4 .service-faq summary span[lang="zh"] {
-  font-family: 'Noto Serif SC', serif;
-  text-transform: none;
-  letter-spacing: 0.04em;
-}
-body.landing-v4 .service-faq summary::after {
-  content: '+';
-  float: right;
-  font-size: 18px;
-  color: var(--v4-go);
-  transition: transform 0.2s;
-}
-body.landing-v4 .service-faq[open] summary { border-bottom: none; }
-body.landing-v4 .service-faq[open] summary::after { content: '−'; }
-body.landing-v4 .faq-item {
-  padding: 16px 0;
-  border-top: 1px solid var(--v4-bdr-l);
-}
-body.landing-v4 .service-faq[open] .faq-item:last-child {
-  border-bottom: 1px solid var(--v4-bdr-l);
-}
-body.landing-v4 .faq-item h4 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--v4-ink);
-  margin: 0 0 6px;
-  letter-spacing: -0.005em;
-}
-body.landing-v4 .faq-item h4 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  color: var(--v4-wd-md);
-  margin-top: 2px;
-  font-weight: 400;
-}
-body.landing-v4 .faq-item p {
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0;
-}
-body.landing-v4 .faq-item p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 8px;
-}
-body.landing-v4 .service-cta { margin-top: 8px; }
+/* Top nav */
+.nav { position: sticky; top: 0; height: 72px; background: rgba(250, 250, 247, 0.86); -webkit-backdrop-filter: saturate(140%) blur(10px); backdrop-filter: saturate(140%) blur(10px); border-bottom: 1px solid var(--color-border); z-index: 50; }
+.nav-inner { display: flex; align-items: center; gap: 40px; height: 100%; }
+.nav-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.nav-brand .nav-mark { width: 30px; height: 30px; display: block; }
+.nav-brand .en { font-family: var(--font-heading-en); font-weight: 500; font-size: 22px; letter-spacing: -0.015em; color: var(--color-text); line-height: 1; }
+.nav-links { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.nav-link { position: relative; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-body-en); font-size: 14px; font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: 10px 14px; border: 0; background: transparent; cursor: pointer; line-height: 1; border-radius: 6px; transition: color var(--duration) var(--ease); }
+.nav-link:hover { color: var(--color-text); }
+.nav-link.active { color: var(--color-text); }
+.nav-link.active::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 1.5px; background: var(--color-primary); border-radius: 2px; }
+.nav-link .caret { opacity: .55; transition: transform var(--duration) var(--ease); }
+.nav-dropdown { position: relative; }
+.nav-dropdown:hover > .nav-link, .nav-dropdown:focus-within > .nav-link { color: var(--color-text); }
+.nav-dropdown:hover .caret, .nav-dropdown:focus-within .caret { transform: rotate(180deg); }
+.nav-menu { position: absolute; top: calc(100% + 6px); left: 0; min-width: 220px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity var(--duration) var(--ease), transform var(--duration) var(--ease), visibility var(--duration) var(--ease); z-index: 60; }
+.nav-dropdown:hover .nav-menu, .nav-dropdown:focus-within .nav-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+.nav-menu a { font-family: var(--font-body-en); font-size: 14px; font-weight: 500; color: var(--color-text); text-decoration: none; padding: 10px 12px; border-radius: 4px; line-height: 1.3; transition: background var(--duration) var(--ease), color var(--duration) var(--ease); }
+.nav-menu a:hover { background: var(--color-primary-soft); color: var(--color-primary); }
+.nav-right { display: flex; align-items: center; gap: 18px; }
+.nav-divider { width: 1px; height: 20px; background: var(--color-border); }
+.lang-toggle { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-body-en); font-size: 13px; font-weight: 500; }
+.lang-toggle button { border: 0; background: transparent; padding: 4px 2px; cursor: pointer; color: var(--color-text-tertiary); font-weight: 500; font-family: inherit; font-size: inherit; line-height: 1; transition: color var(--duration) var(--ease); }
+.lang-toggle button:hover { color: var(--color-text-secondary); }
+.lang-toggle button.active { color: var(--color-text); font-weight: 600; }
+.lang-toggle .lang-sep { color: var(--color-text-tertiary); opacity: .6; }
+.nav-signin { color: var(--color-text-secondary); font-size: 14px; font-weight: 500; text-decoration: none; }
+.nav-signin:hover { color: var(--color-text); }
 
-@media (max-width: 768px) {
-  body.landing-v4 .service-detail-inner,
-  body.landing-v4 .service-detail:nth-of-type(even) .service-detail-inner {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  body.landing-v4 .service-detail-img { position: static; }
-  body.landing-v4 .service-detail:nth-of-type(even) .service-detail-img { order: 1; }
-  body.landing-v4 .service-detail:nth-of-type(even) .service-detail-text { order: 2; }
-}
+/* Hero */
+.hero { position: relative; min-height: 78vh; display: flex; align-items: center; padding: 80px 24px 64px; overflow: hidden; }
+.hero-bg-img { position: absolute; inset: 0; background: url('../img/hero-bg.webp') center/cover; }
+.hero-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(250,250,247,0.96) 0%, rgba(250,250,247,0.88) 45%, rgba(250,250,247,0.55) 80%, rgba(250,250,247,0.35) 100%); }
+.hero-content { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; text-align: center; }
+.hero-h1 { font-family: var(--font-heading-en); font-weight: 500; font-size: clamp(40px, 5.5vw, 56px); letter-spacing: -0.025em; line-height: 1.08; color: var(--color-text); margin: 14px 0 18px; text-shadow: 0 1px 0 rgba(250,250,247,.95), 0 0 18px rgba(250,250,247,.6); }
+.hero-sub { font-size: 18px; line-height: 1.65; color: var(--color-text); max-width: 560px; margin: 0 auto 28px; text-shadow: 0 1px 0 rgba(250,250,247,.9); }
+.hero-actions { display: inline-flex; gap: 18px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.hero-mini-trust { margin-top: 40px; display: inline-flex; }
 
-/* ── Cross-service FAQ ─────────────────────────────────────────── */
-body.landing-v4 .services-cross-faq {
-  padding: clamp(56px, 7vw, 96px) 24px;
-}
-body.landing-v4 .cross-faq-list {
-  max-width: 800px;
-  margin: 0 auto;
-}
-body.landing-v4 .cross-faq-list details {
-  border-top: 1px solid var(--v4-bdr-l);
-  padding: 18px 0;
-}
-body.landing-v4 .cross-faq-list details:last-child {
-  border-bottom: 1px solid var(--v4-bdr-l);
-}
-body.landing-v4 .cross-faq-list summary {
-  cursor: pointer;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 19px;
-  font-weight: 500;
-  color: var(--v4-ink);
-  list-style: none;
-  padding-right: 32px;
-  position: relative;
-  letter-spacing: -0.005em;
-}
-body.landing-v4 .cross-faq-list summary::-webkit-details-marker { display: none; }
-body.landing-v4 .cross-faq-list summary span[lang="zh"] {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 16px;
-  color: var(--v4-wd-md);
-  font-weight: 400;
-}
-body.landing-v4 .cross-faq-list summary::after {
-  content: '+';
-  position: absolute;
-  right: 0;
-  top: 0;
-  font-size: 22px;
-  color: var(--v4-go);
-  transition: transform 0.2s;
-  line-height: 1;
-}
-body.landing-v4 .cross-faq-list details[open] summary::after { content: '−'; }
-body.landing-v4 .cross-faq-list details p {
-  font-size: 14px;
-  line-height: 1.78;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 12px 0 0;
-}
-body.landing-v4 .cross-faq-list details p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 8px;
-}
-body.landing-v4 .cross-faq-list details p a {
-  color: var(--v4-wd-md);
-  text-decoration: underline;
-  text-decoration-color: var(--v4-bdr-l);
-}
+/* Card */
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 24px; box-shadow: var(--shadow-sm); transition: transform var(--duration-slow) var(--ease), box-shadow var(--duration-slow) var(--ease); }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.card-img-card { padding: 0; overflow: hidden; }
+.card-img-card .img { aspect-ratio: 4/3; background-size: cover; background-position: center; }
+.card-img-card .body { padding: 22px; }
+.card h3 { margin-top: 0; }
+.card-meta { font-size: 13px; color: var(--color-text-secondary); }
 
+/* Form */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 14px; font-weight: 500; color: var(--color-text); }
+.field input, .field select, .field textarea { height: 44px; padding: 0 14px; border: 1.5px solid var(--color-border); border-radius: 6px; font-family: var(--font-body-en); font-size: 15px; color: var(--color-text); background: #fff; }
+.field textarea { padding: 12px 14px; height: auto; min-height: 96px; line-height: 1.55; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 4px rgba(15,76,58,.18); }
+.field .helper { font-size: 13px; color: var(--color-text-secondary); }
+.field.has-error input { border-color: var(--color-danger); }
+.field.has-error .helper { color: var(--color-danger); }
 
-/* ════════════ Brief #11 — Practitioners page ══════════════════════
-   Scoped under body.landing-v4. Reuses .hero-v3, .has-rice-bg,
-   .reveal, .fade-in-load, .about-cta from earlier briefs. */
+/* Badges & compliance */
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.4; }
+.badge-success { background: var(--color-success-bg); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-bg); color: var(--color-warning); }
+.badge-danger  { background: var(--color-danger-bg);  color: var(--color-danger); }
+.badge-info    { background: var(--color-info-bg);    color: var(--color-info); }
+.compliance-strip { display: inline-flex; align-items: center; gap: 14px; padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 6px; background: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-secondary); }
+.compliance-strip .div { color: var(--color-border-strong); }
 
-body.landing-v4 .practitioners-hero { min-height: 60vh; }
+/* Steps */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.step { display: flex; flex-direction: column; gap: 14px; }
+.step-img { aspect-ratio: 1/1; background-size: cover; background-position: center; border-radius: 8px; }
+.step-num { font-family: var(--font-heading-en); font-style: italic; font-weight: 500; font-size: 18px; color: var(--color-primary); }
+.step h3 { margin: 0; font-size: 22px; }
 
-/* ── Trust + licensing 4-card grid ─────────────────────────────── */
-body.landing-v4 .practitioners-trust {
-  padding: clamp(56px, 7vw, 96px) 24px;
-}
-body.landing-v4 .trust-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-body.landing-v4 .trust-item {
-  background: var(--v4-bg-2);
-  border: 1px solid var(--v4-bdr-l);
-  border-radius: 14px;
-  padding: 32px;
-}
-body.landing-v4 .trust-num {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 22px;
-  font-weight: 500;
-  color: var(--v4-go);
-  margin-bottom: 12px;
-}
-body.landing-v4 .trust-item h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 500;
-  color: var(--v4-ink);
-  margin: 0 0 10px;
-  letter-spacing: -0.005em;
-}
-body.landing-v4 .trust-item h3 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  color: var(--v4-wd-md);
-  margin-top: 4px;
-  font-weight: 400;
-}
-body.landing-v4 .trust-item p {
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0;
-}
-body.landing-v4 .trust-item p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 8px;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .trust-grid { grid-template-columns: 1fr; }
-}
+/* Practitioners */
+.practitioner { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; }
+.practitioner-img { aspect-ratio: 4/5; background-size: cover; background-position: center; filter: grayscale(20%); transition: filter var(--duration-slow); }
+.practitioner:hover .practitioner-img { filter: grayscale(0%); }
+.practitioner-meta { padding: 18px 22px; }
+.practitioner-meta .name { font-family: var(--font-heading-en); font-weight: 500; font-size: 19px; letter-spacing: -0.005em; margin: 0 0 4px; color: var(--color-text); }
+.practitioner-meta .creds { font-size: 13px; color: var(--color-text-secondary); }
 
-/* ── Meet our team — placeholder cards ─────────────────────────── */
-body.landing-v4 .practitioners-grid-section {
-  padding: clamp(56px, 7vw, 96px) 24px;
-}
-body.landing-v4 .practitioners-intro {
-  max-width: 680px;
-  margin: 18px auto 0;
-  text-align: center;
-  font-size: 15px;
-  line-height: 1.78;
-  color: var(--v4-mu);
-  font-weight: 300;
-}
-body.landing-v4 .practitioners-intro span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 10px;
-}
-body.landing-v4 .practitioners-card-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-body.landing-v4 .practitioner-card-placeholder {
-  background: var(--v4-bg-2);
-  border: 1px solid var(--v4-bdr-l);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-body.landing-v4 .practitioner-card-placeholder .practitioner-card-img {
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  background: var(--v4-bg-3);
-}
-body.landing-v4 .practitioner-card-placeholder .practitioner-card-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  filter: grayscale(35%) brightness(1.02);
-  transition: filter 0.4s ease;
-}
-body.landing-v4 .practitioner-card-placeholder:hover .practitioner-card-img img {
-  filter: grayscale(0%) brightness(1);
-}
-body.landing-v4 .practitioner-card-meta {
-  padding: 22px;
-}
-body.landing-v4 .practitioner-card-tag {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 18px;
-  color: var(--v4-ink);
-  margin-bottom: 6px;
-}
-body.landing-v4 .practitioner-card-tag span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-style: normal;
-  font-size: 13px;
-  color: var(--v4-wd-md);
-  margin-top: 2px;
-}
-body.landing-v4 .practitioner-card-soon {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--v4-go);
-  font-weight: 500;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .practitioners-card-grid {
-    grid-template-columns: 1fr;
-    max-width: 380px;
-  }
-}
+/* Footer */
+.footer { background: var(--color-surface-ink); color: rgba(255,255,255,.72); padding: 64px 24px 32px; }
+.footer a { color: rgba(255,255,255,.72); text-decoration: none; }
+.footer a:hover { color: #fff; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; max-width: 1200px; margin: 0 auto 48px; }
+.footer-grid h4 { font-family: var(--font-body-en); font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,.5); margin: 0 0 14px; }
+.footer-grid ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+.footer-bottom { max-width: 1200px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,.1); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: rgba(255,255,255,.45); }
 
-/* ── How we examine you — 四診合參 ──────────────────────────────── */
-body.landing-v4 .practitioners-method {
-  padding: clamp(56px, 7vw, 96px) 24px;
-}
-body.landing-v4 .practitioners-method-inner {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 64px;
-  align-items: start;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-body.landing-v4 .practitioners-method-img {
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border-radius: 16px;
-  position: sticky;
-  top: 96px;
-  background: var(--v4-bg-3);
-}
-body.landing-v4 .practitioners-method-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-body.landing-v4 .practitioners-method-text h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 3.6vw, 38px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--v4-ink);
-  margin: 14px 0 18px;
-}
-body.landing-v4 .practitioners-method-text h2 em { font-style: italic; color: var(--v4-wd-md); }
-body.landing-v4 .practitioners-method-text h2 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.62em;
-  color: var(--v4-wd-md);
-  margin-top: 6px;
-  font-weight: 400;
-}
-body.landing-v4 .practitioners-method-lead {
-  font-size: 15px;
-  line-height: 1.78;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0 0 28px;
-}
-body.landing-v4 .practitioners-method-lead span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  margin-top: 10px;
-}
-body.landing-v4 .four-methods {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-body.landing-v4 .four-methods li {
-  display: grid;
-  grid-template-columns: 60px 1fr;
-  gap: 20px;
-  padding: 22px 0;
-  border-top: 1px solid var(--v4-bdr-l);
-  align-items: start;
-}
-body.landing-v4 .four-methods li:last-child { border-bottom: 1px solid var(--v4-bdr-l); }
-body.landing-v4 .fm-zh {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 38px;
-  font-weight: 400;
-  color: var(--v4-go);
-  text-align: center;
-  line-height: 1;
-}
-body.landing-v4 .four-methods li strong {
-  display: block;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--v4-ink);
-  margin-bottom: 6px;
-  letter-spacing: -0.005em;
-}
-body.landing-v4 .four-methods li p {
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0;
-}
-body.landing-v4 .four-methods li p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 8px;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .practitioners-method-inner {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  body.landing-v4 .practitioners-method-img {
-    position: static;
-    aspect-ratio: 4 / 3;
-  }
-  body.landing-v4 .four-methods li {
-    grid-template-columns: 48px 1fr;
-    gap: 14px;
-  }
-  body.landing-v4 .fm-zh { font-size: 30px; }
-}
+/* Misc */
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
 
-/* ── Three ways to get matched ─────────────────────────────────── */
-body.landing-v4 .practitioners-match {
-  padding: clamp(56px, 7vw, 96px) 24px;
-  background: var(--v4-bg-2);
-}
-body.landing-v4 .match-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  text-align: center;
-}
-body.landing-v4 .match-h {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(26px, 3.4vw, 36px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--v4-ink);
-  margin: 14px 0 36px;
-}
-body.landing-v4 .match-h em { font-style: italic; color: var(--v4-wd-md); }
-body.landing-v4 .match-h span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.65em;
-  color: var(--v4-wd-md);
-  margin-top: 6px;
-  font-weight: 400;
-}
-body.landing-v4 .match-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  text-align: left;
-}
-body.landing-v4 .match-card {
-  background: #fff;
-  border: 1px solid var(--v4-bdr-l);
-  border-radius: 14px;
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-}
-body.landing-v4 .match-num {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 22px;
-  font-weight: 500;
-  color: var(--v4-go);
-  margin-bottom: 10px;
-}
-body.landing-v4 .match-card h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 19px;
-  font-weight: 500;
-  color: var(--v4-ink);
-  margin: 0 0 10px;
-  letter-spacing: -0.005em;
-}
-body.landing-v4 .match-card h3 span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 14px;
-  color: var(--v4-wd-md);
-  margin-top: 2px;
-  font-weight: 400;
-}
-body.landing-v4 .match-card p {
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--v4-mu);
-  font-weight: 300;
-  margin: 0 0 16px;
-  flex: 1;
-}
-body.landing-v4 .match-card p span[lang="zh"] {
-  display: block;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 13px;
-  margin-top: 8px;
-}
-body.landing-v4 .match-link {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--v4-ink);
-  text-decoration: none;
-  border-bottom: 1.5px solid var(--v4-go);
-  padding-bottom: 2px;
-  transition: color 0.2s, border-color 0.2s;
-  align-self: flex-start;
-}
-body.landing-v4 .match-link:hover {
-  color: var(--v4-wd-dk);
-  border-color: var(--v4-wd-dk);
-}
-body.landing-v4 .match-link span[lang="zh"] {
-  font-family: 'Noto Serif SC', serif;
-}
-@media (max-width: 768px) {
-  body.landing-v4 .match-grid { grid-template-columns: 1fr; }
+@media (max-width: 800px) {
+  .steps, .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
 }
