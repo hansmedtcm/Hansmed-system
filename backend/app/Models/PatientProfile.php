@@ -29,14 +29,61 @@ class PatientProfile extends Model
 
     /**
      * Sensitive PII never returned in API responses by default.
-     * NRIC / IC is the primary identifier of a Malaysian citizen and
-     * a key vector for identity-theft fraud. Patients can still see
-     * their own number on the profile screen by querying it
-     * explicitly via getAttributes(); admins via the audit-trail
-     * endpoint. Default JSON serialization (and the data-export
-     * endpoint, which uses toArray) omit it.
+     *
+     * Brief #20 — privacy hardening for doctor-side endpoints. The
+     * doctor-patient relationship is mediated by the platform; doctors
+     * should NOT see direct contact info (phone, postal address,
+     * emergency contact details). They communicate with patients via
+     * platform messaging + video and never need to call/visit them
+     * directly.
+     *
+     * Hidden by default:
+     *   • ic_number — Malaysian NRIC, primary identity-theft vector
+     *   • phone, address_*, country — direct contact info
+     *   • emergency_contact_* — the emergency contact's PII (a
+     *     SECOND data subject's PDPA rights)
+     *
+     * Visible contexts (must call ->makeVisible([...])):
+     *   • Patient viewing OWN profile (Patient/ProfileController)
+     *   • Patient exporting OWN data (Patient/DataExportController)
+     *   • Admin viewing patient detail (Admin/PatientController etc.)
+     *
+     * Doctor and pharmacy contexts inherit the default hidden state —
+     * these fields don't leak into JSON responses.
+     *
+     * Note on email (on User model, not here): doctor controllers
+     * additionally constrain the User selection via
+     * ->with(['patient' => fn($q) => $q->select('id', 'role'), ...])
+     * to keep email out of doctor-side responses.
      */
-    protected $hidden = ['ic_number'];
+    protected $hidden = [
+        'ic_number',
+        'phone',
+        'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country',
+        'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation',
+    ];
 
     public function user() { return $this->belongsTo(User::class, 'user_id'); }
+
+    /**
+     * Brief #20 — opt back into showing all the contact-info fields
+     * we hide by default (phone, address, emergency contact, IC).
+     * Call this in controllers where the requesting party is allowed
+     * to see them: the patient looking at their own profile, or
+     * admins reviewing patient detail.
+     *
+     * Doctor controllers MUST NOT call this — it would leak the
+     * exact contact data we just hid.
+     *
+     *   $user->patientProfile->revealContactInfo();
+     */
+    public function revealContactInfo(): self
+    {
+        return $this->makeVisible([
+            'ic_number',
+            'phone',
+            'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country',
+            'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation',
+        ]);
+    }
 }

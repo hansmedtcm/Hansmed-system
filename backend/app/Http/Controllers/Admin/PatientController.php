@@ -21,12 +21,21 @@ class PatientController extends Controller
                     ->orWhere('phone', 'like', "%{$s}%"));
             });
         }
-        return response()->json($q->orderByDesc('id')->paginate(30));
+        $page = $q->orderByDesc('id')->paginate(30);
+        // Brief #20 — admin context: reveal the contact-info fields on
+        // each patient profile so the admin patient list shows phone,
+        // IC etc. (Without this, $hidden would strip them from JSON.)
+        foreach ($page->items() as $u) {
+            if ($u->patientProfile) $u->patientProfile->revealContactInfo();
+        }
+        return response()->json($page);
     }
 
     public function show(int $id)
     {
         $user = User::where('role', 'patient')->with('patientProfile')->findOrFail($id);
+        // Brief #20 — admin context, expose contact info.
+        if ($user->patientProfile) $user->patientProfile->revealContactInfo();
         return response()->json(['user' => $user]);
     }
 
@@ -75,6 +84,9 @@ class PatientController extends Controller
             'created_at'  => now(),
         ]);
 
+        // Brief #20 — admin context, expose contact info on the
+        // returned profile so admin sees what they just saved.
+        $profile->revealContactInfo();
         return response()->json(['profile' => $profile]);
     }
 }

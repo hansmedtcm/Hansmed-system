@@ -126,7 +126,7 @@
       '</div>' +
       '<div class="card-title">' + HM.format.esc(
         ((a.patient && a.patient.patient_profile && a.patient.patient_profile.full_name) ||
-         (a.patient && a.patient.email) ||
+         /* Brief #20 — email no longer exposed to doctor */ null ||
          ('Patient #' + a.patient_id))
       ) + '</div>' +
       '<div class="text-xs text-muted">Patient #' + a.patient_id + '</div>' +

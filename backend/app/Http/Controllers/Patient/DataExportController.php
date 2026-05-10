@@ -51,7 +51,10 @@ class DataExportController extends Controller
         if (method_exists($user, 'patientProfile')) {
             $pp = $user->patientProfile;
             if ($pp) {
-                $profile['patient_profile'] = $pp->makeHidden([])->toArray();
+                // Brief #20 — patient exporting their OWN data: reveal
+                // every contact-info field hidden by default. (The
+                // model's $hidden strips them otherwise.)
+                $profile['patient_profile'] = $pp->revealContactInfo()->toArray();
             }
         }
 

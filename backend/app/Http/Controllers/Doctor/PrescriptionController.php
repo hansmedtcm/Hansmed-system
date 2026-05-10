@@ -127,8 +127,13 @@ class PrescriptionController extends Controller
 
     public function index(Request $request)
     {
+        // Brief #20 — drop email from patient User payload.
         $q = Prescription::where('doctor_id', $request->user()->id)
-            ->with(['items', 'patient.patientProfile'])
+            ->with([
+                'items',
+                'patient' => fn($q) => $q->select('id', 'role'),
+                'patient.patientProfile',
+            ])
             ->orderByDesc('created_at');
 
         // Optional filter — used by the consult view to pre-fill the Rx
@@ -144,8 +149,13 @@ class PrescriptionController extends Controller
 
     public function show(Request $request, int $id)
     {
+        // Brief #20 — drop email from patient User payload.
         $rx = Prescription::where('doctor_id', $request->user()->id)
-            ->with(['items', 'patient.patientProfile'])
+            ->with([
+                'items',
+                'patient' => fn($q) => $q->select('id', 'role'),
+                'patient.patientProfile',
+            ])
             ->findOrFail($id);
         return response()->json(['prescription' => $rx]);
     }

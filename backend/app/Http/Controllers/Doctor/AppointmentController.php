@@ -14,7 +14,13 @@ class AppointmentController extends Controller
         // Appointments tab shows ONLY what this doctor has already taken.
         // Unclaimed pool bookings live in the separate Queue/Pool view;
         // the doctor must explicitly pick them up before they appear here.
-        $q = Appointment::with(['patient.patientProfile'])
+        // Brief #20 — limit User column selection so email doesn't
+        // appear in JSON. Doctor doesn't need patient email; doctor-
+        // patient communication happens through the platform.
+        $q = Appointment::with([
+                'patient' => fn($q) => $q->select('id', 'role'),
+                'patient.patientProfile',
+            ])
             ->where('doctor_id', $request->user()->id);
 
         if ($status = $request->query('status')) {
@@ -112,7 +118,11 @@ class AppointmentController extends Controller
     public function show(Request $request, int $id)
     {
         $appt = Appointment::where('doctor_id', $request->user()->id)
-            ->with(['patient.patientProfile'])
+            // Brief #20 — drop email from patient User payload.
+            ->with([
+                'patient' => fn($q) => $q->select('id', 'role'),
+                'patient.patientProfile',
+            ])
             ->findOrFail($id);
 
         $tongue = $appt->tongue_assessment_id

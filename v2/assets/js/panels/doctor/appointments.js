@@ -144,7 +144,7 @@
         // patient hasn't completed their profile yet (should be rare
         // after registration-wall enforces it).
         var pp = (a.patient && a.patient.patient_profile) || {};
-        var realName = pp.full_name || (a.patient && a.patient.email) || ('Patient #' + a.patient_id);
+        var realName = pp.full_name || /* Brief #20 — email no longer exposed to doctor */ null || ('Patient #' + a.patient_id);
         // Combined fee = consultation + treatments + paid Rx orders.
         // Backend computes total_billed; fall back to bare fee on
         // older payloads.
@@ -197,7 +197,7 @@
       var a = res.appointment;
       var tongue = res.tongue_diagnosis;
       var pp = (a.patient && a.patient.patient_profile) || {};
-      var pname = pp.full_name || (a.patient && a.patient.email) || ('Patient #' + a.patient_id);
+      var pname = pp.full_name || /* Brief #20 — email no longer exposed to doctor */ null || ('Patient #' + a.patient_id);
 
       // Fee breakdown card — consult + treatments + each Rx order line.
       var fb = res.fee_breakdown || {};

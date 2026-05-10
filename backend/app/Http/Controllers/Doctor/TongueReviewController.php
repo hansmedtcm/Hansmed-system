@@ -27,8 +27,9 @@ class TongueReviewController extends Controller
     public function index(Request $request)
     {
         $filter = $request->query('filter', 'pending');
+        // Brief #20 — drop email from patient User payload.
         $q = TongueAssessment::query()
-            ->with(['patient:id,email,role', 'patient.patientProfile'])
+            ->with(['patient:id,role', 'patient.patientProfile'])
             ->orderByDesc('created_at');
 
         if ($filter === 'pending') {

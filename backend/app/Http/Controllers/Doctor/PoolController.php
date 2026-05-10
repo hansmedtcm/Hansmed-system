@@ -24,8 +24,12 @@ class PoolController extends Controller
     public function index(Request $request)
     {
         $date = $request->query('date');
+        // Brief #20 — drop email from patient User payload.
         $q = Appointment::query()
-            ->with(['patient.patientProfile'])
+            ->with([
+                'patient' => fn($q) => $q->select('id', 'role'),
+                'patient.patientProfile',
+            ])
             ->whereNull('doctor_id')
             ->where('is_pool', 1)
             ->whereNotIn('status', ['cancelled', 'completed', 'no_show'])

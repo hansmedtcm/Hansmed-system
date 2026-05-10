@@ -206,7 +206,7 @@
       '<h1 class="page-title">Patient List</h1></div>' +
       '<button class="btn btn--primary" id="pt-book-any">+ New Appointment · 新建預約</button>' +
       '</div>' +
-      '<input id="pt-search" type="text" class="field-input field-input--boxed mb-4" placeholder="Search by name, IC, phone… · 搜尋" style="max-width: 400px;">' +
+      '<input id="pt-search" type="text" class="field-input field-input--boxed mb-4" placeholder="Search by name · 搜尋姓名" style="max-width: 400px;">' +
       '<div id="pt-list"></div>';
 
     document.getElementById('pt-book-any').addEventListener('click', function () { showBookModal(null, null); });
@@ -235,12 +235,18 @@
       container.innerHTML = '';
       items.forEach(function (p) {
         var pp = p.patient_profile || {};
-        var name = pp.full_name || pp.nickname || p.email;
+        // Brief #20 — doctor never sees patient email/phone/IC; fall
+        // back to a generic 'Patient #ID' label if name fields missing
+        // rather than leaking the email address.
+        var name = pp.full_name || pp.nickname || ('Patient #' + p.id);
         var data = {
           id: p.id,
           initial: name.charAt(0).toUpperCase(),
           name: name,
-          contact: [pp.ic_number, pp.phone].filter(Boolean).join(' · '),
+          // Was: ic_number · phone (now hidden by backend). Keep an
+          // empty contact slot so the patient-card template doesn't
+          // break; populate with non-sensitive identifiers if needed.
+          contact: '',
           visits_text: (p.appointment_count || 0) + ' visits',
           last_visit_text: p.last_visit ? 'Last: ' + HM.format.date(p.last_visit) : '',
         };
@@ -265,7 +271,7 @@
 
       var patient = consultRes.patient || {};
       var pp = patient.patient_profile || {};
-      var name = pp.full_name || pp.nickname || patient.email;
+      var name = pp.full_name || pp.nickname || ('Patient #' + patient.id);
       var appts = consultRes.appointments || [];
       var tongues = tongueRes.data || [];
       // Brief #5: AI Constitution Questionnaire history. Backend now
@@ -289,7 +295,10 @@
         '<div class="avatar avatar--lg" style="background: var(--ink); color: var(--gold);">' + name.charAt(0).toUpperCase() + '</div>' +
         '<div style="flex:1;">' +
         '<h2>' + HM.format.esc(name) + '</h2>' +
-        '<p class="text-muted">' + (pp.ic_number || '') + ' · ' + (pp.phone || '') + ' · ' + (pp.gender || '') + '</p>' +
+        // Brief #20 — only show non-contact identifiers (gender,
+        // birth_date if present). IC + phone are PDPA-protected and
+        // hidden from doctor side at the backend.
+        '<p class="text-muted">' + (pp.gender || '') + (pp.birth_date ? ' · ' + HM.format.esc(pp.birth_date) : '') + '</p>' +
         '</div>' +
         '<div class="flex gap-2" style="flex-wrap:wrap;">' +
         '<button class="btn btn--primary btn--sm" onclick="HM.doctorPanels.patients._book(' + patient.id + ', \'' + HM.format.esc(name).replace(/'/g, "\\'") + '\')">+ Book Appointment · 預約</button>' +
@@ -761,7 +770,7 @@
         select.innerHTML = '<option value="">— Select a patient —</option>' +
           items.map(function (p) {
             var pp = p.patient_profile || {};
-            var name = pp.full_name || pp.nickname || p.email;
+            var name = pp.full_name || pp.nickname || ('Patient #' + p.id);
             return '<option value="' + p.id + '">' + HM.format.esc(name) + ' (#' + p.id + ')</option>';
           }).join('');
       }).catch(function () {
@@ -930,7 +939,7 @@
     function esc(s) { return HM.format.esc(s); }
 
     var pp = patient.patient_profile || {};
-    var name = pp.full_name || pp.nickname || patient.email;
+    var name = pp.full_name || pp.nickname || ('Patient #' + patient.id);
 
     var content =
       '<div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);">' +
@@ -1327,7 +1336,7 @@
     }
 
     var pp = patient.patient_profile || {};
-    var name = pp.full_name || pp.nickname || patient.email;
+    var name = pp.full_name || pp.nickname || ('Patient #' + patient.id);
 
     HM.ui.modal({
       size:    'lg',

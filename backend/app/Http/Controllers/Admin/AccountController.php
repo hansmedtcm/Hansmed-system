@@ -384,9 +384,12 @@ class AccountController extends Controller
                 'created_at'  => now(),
             ]);
 
+            $fresh = $user->fresh()->load(['doctorProfile', 'pharmacyProfile', 'patientProfile']);
+            // Brief #20 — admin context, expose contact info if patient.
+            if ($fresh->patientProfile) $fresh->patientProfile->revealContactInfo();
             return response()->json([
                 'message' => 'Account updated',
-                'user'    => $user->fresh()->load(['doctorProfile', 'pharmacyProfile', 'patientProfile']),
+                'user'    => $fresh,
             ]);
         });
     }

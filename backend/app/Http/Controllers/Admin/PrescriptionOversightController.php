@@ -21,13 +21,24 @@ class PrescriptionOversightController extends Controller
             $q->whereHas('items', fn($w) => $w->where('drug_name', 'like', "%{$drug}%"));
         }
 
-        return response()->json($q->orderByDesc('created_at')->paginate(30));
+        $page = $q->orderByDesc('created_at')->paginate(30);
+        // Brief #20 — admin context, expose patient contact info on each row.
+        foreach ($page->items() as $rx) {
+            if ($rx->patient && $rx->patient->patientProfile) {
+                $rx->patient->patientProfile->revealContactInfo();
+            }
+        }
+        return response()->json($page);
     }
 
     public function show(int $id)
     {
         $rx = Prescription::with(['items', 'doctor.doctorProfile', 'patient.patientProfile', 'parent'])
             ->findOrFail($id);
+        // Brief #20 — admin context.
+        if ($rx->patient && $rx->patient->patientProfile) {
+            $rx->patient->patientProfile->revealContactInfo();
+        }
         return response()->json(['prescription' => $rx]);
     }
 

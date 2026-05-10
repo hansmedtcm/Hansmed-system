@@ -157,7 +157,7 @@
           id: t.id,
           patient_id: t.patient_id,
           patient_name: pp.full_name || null,
-          patient_email: patient.email || null,
+          patient_email: null, // Brief #20 — hidden from doctor
           created_at: t.created_at,
           review_status: t.review_status,
           extra: {

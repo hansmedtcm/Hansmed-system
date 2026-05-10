@@ -46,6 +46,10 @@ class PatientListController extends Controller
                 ->where('status', 'completed')
                 ->orderByDesc('scheduled_start')
                 ->value('scheduled_start');
+            // Brief #20 — drop email from JSON output. We needed the
+            // column loaded so the search query (above) could match
+            // on it, but the doctor doesn't get to see the address.
+            $p->makeHidden('email');
         }
 
         return response()->json($patients);
@@ -141,7 +145,10 @@ class PatientListController extends Controller
                 : null;
         }
 
-        $patient = User::with('patientProfile')->find($patientId);
+        // Brief #20 — drop email from patient User payload. Doctor
+        // sees patient identity via PatientProfile.full_name +
+        // nickname, never directly via email/phone/address.
+        $patient = User::select('id', 'role')->with('patientProfile')->find($patientId);
 
         // Brief #5 Task A — surface this patient's AI Constitution
         // Questionnaire history alongside the consultation list so the

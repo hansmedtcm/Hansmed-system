@@ -10,6 +10,9 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $user = $request->user()->load('patientProfile');
+        // Brief #20 — patient looking at their OWN profile, expose
+        // the contact-info fields hidden by default on PatientProfile.
+        if ($user->patientProfile) $user->patientProfile->revealContactInfo();
         return response()->json(['user' => $user]);
     }
 
@@ -31,6 +34,8 @@ class ProfileController extends Controller
             ['user_id' => $request->user()->id],
             $data
         );
+        // Brief #20 — owner-context, return full profile.
+        $profile->revealContactInfo();
         return response()->json(['profile' => $profile]);
     }
 
@@ -80,6 +85,8 @@ class ProfileController extends Controller
             ['user_id' => $request->user()->id],
             $data
         );
+        // Brief #20 — owner-context.
+        $profile->revealContactInfo();
 
         return response()->json([
             'message' => 'Registration completed! · 註冊完成！',
