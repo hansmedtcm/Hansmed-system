@@ -214,7 +214,7 @@ php artisan queue:work --tries=3
 
 ## What's not built (known gaps)
 
-- **Frontend wiring.** The HTML prototype at the repo root is untouched — integrating it with this API is the next piece of work.
+- **Frontend wiring.** The HTML prototype (`HansMed_Modern_TCM_3.html`) is untouched — integrating it with this API is the next piece of work.
 - **Doctor schedule UI** (backend supports `doctor_schedules` but there are no CRUD endpoints for it yet — booking currently just checks conflicts against existing appointments).
 - **Prescription PDF export** — schema supports it, rendering not wired.
 - **Real-time push** (WebSocket/SSE) — notifications persist to DB only; polling is expected.
