@@ -62,9 +62,14 @@ class AuthController extends Controller
         $data = $request->validate([
             'email'    => ['required', 'email', 'max:190', 'unique:users,email'],
             'password' => self::passwordRules(),
-            'role'     => ['required', Rule::in([
-                User::ROLE_PATIENT, User::ROLE_DOCTOR, User::ROLE_PHARMACY,
-            ])],
+            // Brief #17 hardening — public self-registration is restricted
+            // to patient role only. Doctor and pharmacy accounts are
+            // created exclusively by admins via /api/admin/doctors and
+            // /api/admin/pharmacies after offline verification (interview,
+            // license check, etc.). Without this restriction, any caller
+            // with curl could create a doctor/pharmacy account by passing
+            // role=doctor on the public endpoint — privilege escalation.
+            'role'     => ['required', Rule::in([User::ROLE_PATIENT])],
             // Phone is MANDATORY for patient self-registration.
             'phone'     => ['nullable', 'string', 'max:40', 'regex:/^(\+?60|0)[0-9]{8,11}$/'],
             'nickname'  => ['nullable', 'string', 'max:80'],     // patient

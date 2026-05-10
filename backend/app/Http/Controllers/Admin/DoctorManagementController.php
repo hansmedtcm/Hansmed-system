@@ -44,7 +44,19 @@ class DoctorManagementController extends Controller
                 'password_hash' => Hash::make($data['password']),
                 'role'          => 'doctor',
                 'status'        => $data['status'] ?? 'active',
+                // Brief #17 — admin-typed password is single-use. Doctor
+                // is forced to set their own password on first login via
+                // the existing must_change_password flow. Prevents the
+                // admin from retaining knowledge of the doctor's
+                // long-term credentials.
+                'must_change_password' => true,
             ]);
+
+            // email_verified_at isn't in $fillable so mass-assign skips it.
+            // Doctors created by admins are pre-verified (admin confirmed
+            // the email out-of-band during the interview). This skips the
+            // email-verification gate on first login.
+            $user->forceFill(['email_verified_at' => now()])->save();
 
             $user->doctorProfile()->create([
                 'full_name'              => $data['full_name'],
