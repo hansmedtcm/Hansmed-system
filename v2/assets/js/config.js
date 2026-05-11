@@ -22,8 +22,16 @@
     // Notification polling interval (ms)
     NOTIF_POLL_INTERVAL: 60000,
 
-    // API request timeout (ms)
-    API_TIMEOUT: 15000,
+    // API request timeout (ms).
+    // Raised 15000 → 45000 on 2026-05-11 after diagnosing repeat
+    // "Couldn't load this page — Request timed out" errors on the
+    // admin/doctor portals. Root cause was Railway redeploys (which
+    // give the new container ~30-60s to boot), not idle scale-to-zero
+    // (Serverless is OFF on the Hobby plan). Path-filter on
+    // /backend/** added in Railway dashboard so frontend-only commits
+    // stop triggering backend redeploys — this 45s ceiling is the
+    // safety net for the legitimate backend deploys that remain.
+    API_TIMEOUT: 45000,
 
     // Default language
     DEFAULT_LANG: 'en',
