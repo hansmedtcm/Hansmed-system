@@ -178,7 +178,21 @@
       "Bash(node E:/Hansmed-system/.tmp-blog-footer.mjs)",
       "Bash(git commit -m 'Blog article footer: match index.html footer style \\(4 cols + cert pills\\) *)",
       "Bash(git commit -m 'Blog feature — Phase 1: schema + models + migration SQL *)",
-      "Bash(git commit -m 'Blog feature — Phase 2: backend controllers + routes *)"
+      "Bash(git commit -m 'Blog feature — Phase 2: backend controllers + routes *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(railway whoami *)",
+      "Bash(railway status *)",
+      "Bash(railway link *)",
+      "Bash(railway list *)",
+      "Bash(railway --help)",
+      "Bash(railway deployment *)",
+      "Bash(mkdir -p ~/.ssh)",
+      "Bash(ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N \"\" -C \"claude-code@hansmed-railway\")",
+      "Bash(ssh-keyscan -H ssh.railway.app)",
+      "Bash(railway ssh *)",
+      "Bash(cat)",
+      "Bash(chmod 600 ~/.ssh/config)"
     ]
   }
 }

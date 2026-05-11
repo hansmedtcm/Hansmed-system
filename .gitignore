@@ -13,3 +13,10 @@ Thumbs.db
 .claude/worktrees/
 .design-pkg/
 v2/index.pre-v4-backup.html
+
+# Brief 1A / Brief #14a ¡X large agent artifacts and reference PDFs
+claude-code-session.jsonl
+claude-code-handoff.md
+claude-code-transcript.md
+reference/*.pdf
+*.bak-*

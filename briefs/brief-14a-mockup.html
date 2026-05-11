@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brief #14a Mockup · Doctor view (after)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --washi: #F5F1EA;
+    --cream: #FEFCF8;
+    --ink: #2C2620;
+    --muted: #6B645C;
+    --border: #D8C9AE;
+    --gold: #B5881A;
+    --gold-soft: #B8965A;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+  }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--washi);
+    color: var(--ink);
+    margin: 0;
+    padding: 24px;
+    line-height: 1.55;
+  }
+  /* === LANGUAGE SWITCHER PATTERN ===
+     This mirrors v2/v3 base CSS. The <html lang> attribute decides
+     which spans show. Default is EN; click the toggle to flip to ZH. */
+  html[lang="en"] [lang="zh"] { display: none !important; }
+  html[lang="zh"] [lang="en"] { display: none !important; }
+  /* When ZH is active, switch to a serif font for Chinese */
+  html[lang="zh"] body {
+    font-family: 'Noto Serif SC', 'DM Sans', serif;
+  }
+
+  .page-wrap {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .preview-banner {
+    background: #FFF8E1;
+    border: 1px solid var(--gold);
+    border-radius: var(--r-md);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    color: #6F5510;
+    font-size: 13px;
+  }
+  .preview-banner strong { color: #4A3A09; }
+  .compare-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .toggle-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    align-self: center;
+    margin-right: 4px;
+  }
+  .toggle-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .toggle-btn:hover { border-color: var(--gold); }
+  .toggle-btn.active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  /* Modal */
+  .modal-shell {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: 0 12px 48px rgba(36, 22, 8, 0.08);
+    overflow: hidden;
+  }
+  .modal-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #FFFDF6 0%, var(--cream) 100%);
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+  }
+  .modal-body { padding: 20px 24px 28px; }
+  .text-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 18px 0 10px;
+  }
+  .text-label:first-child { margin-top: 4px; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+  }
+  .card-washi {
+    background: var(--washi);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+  }
+  .text-xs { font-size: 11px; }
+  .text-sm { font-size: 13px; }
+  .text-muted { color: var(--muted); }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-pending {
+    background: #FFF3CD;
+    color: #6F5510;
+    border: 1px solid #FFD966;
+  }
+  /* Q rows */
+  .q-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .q-row:last-child { border-bottom: none; }
+  .q-id-line {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .q-id-line strong {
+    color: var(--gold);
+    margin-right: 6px;
+  }
+  .q-answer {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  /* Dimensions */
+  .dim-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #EEE5D0;
+  }
+  .dim-row:last-child { border-bottom: none; }
+  .dim-label { flex: 0 0 200px; font-size: 12px; font-weight: 600; }
+  .dim-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: var(--washi);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .dim-bar-mid {
+    position: absolute;
+    left: 50%;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(0,0,0,0.15);
+  }
+  .dim-bar-fill {
+    height: 100%;
+    background: var(--gold-soft);
+  }
+  .dim-value { flex: 0 0 130px; text-align: right; font-size: 12px; font-weight: 600; }
+  /* Patterns */
+  .pattern-card {
+    padding: 12px 14px;
+    border-radius: var(--r-sm);
+    background: #fff;
+    margin-bottom: 8px;
+    border-left: 3px solid;
+  }
+  .pattern-card.col-blue { border-left-color: #3a6e9b; }
+  .pattern-card.col-blue .pattern-name { color: #3a6e9b; }
+  .pattern-card.col-yellow { border-left-color: #B5881A; }
+  .pattern-card.col-yellow .pattern-name { color: #B5881A; }
+  .pattern-card.col-red { border-left-color: #c44a3e; }
+  .pattern-card.col-red .pattern-name { color: #c44a3e; }
+  .pattern-name { font-size: 13px; font-weight: 600; }
+  .pattern-desc { font-size: 12px; margin-top: 4px; color: var(--ink); }
+  /* Advice */
+  .advice-section { margin-bottom: 14px; }
+  .advice-section:last-child { margin-bottom: 0; }
+  .advice-heading {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .tip-row {
+    padding: 6px 0;
+    display: flex;
+    gap: 10px;
+  }
+  .tip-icon { flex-shrink: 0; font-size: 16px; }
+  .tip-text { font-size: 13px; }
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: var(--washi);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 12px;
+  }
+  /* Tongue */
+  .tongue-card {
+    background: var(--washi);
+    padding: 14px 16px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+  }
+  .tongue-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .tongue-conf { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  /* Review note */
+  .review-note {
+    background: #FFFDF6;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: var(--r-sm);
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="preview-banner">
+    <strong>Brief #14a Preview</strong> · Static mockup of the doctor's "Constitution Questionnaire" detail modal AFTER Brief #14a runs. Uses your existing language-switcher pattern: <code>&lt;span lang="en"&gt;</code> + <code>&lt;span lang="zh"&gt;</code> with CSS that hides one based on the active <code>&lt;html lang&gt;</code> attribute. Click EN/中 below to toggle — same behavior as your real nav switcher.
+  </div>
+
+  <div class="compare-row">
+    <span class="toggle-label">Language:</span>
+    <button class="toggle-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+    <button class="toggle-btn" id="btn-zh" onclick="setLang('zh')">中</button>
+  </div>
+
+  <!-- ════════════ MODAL ════════════ -->
+  <div class="modal-shell">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span lang="en">📋 Constitution Questionnaire</span>
+        <span lang="zh">📋 體質問卷</span>
+      </div>
+    </div>
+    <div class="modal-body">
+
+      <!-- Patient header -->
+      <div class="text-sm" style="font-weight:600;">
+        <span lang="en">Patient Name (placeholder)</span>
+        <span lang="zh">患者姓名（範例）</span>
+      </div>
+      <div class="text-xs text-muted">
+        <span lang="en">Submitted · 2026-04-18 23:38</span>
+        <span lang="zh">提交於 · 2026-04-18 23:38</span>
+      </div>
+      <span class="badge badge-pending" style="margin-top:6px;">
+        <span lang="en">Pending Review</span>
+        <span lang="zh">待審核</span>
+      </span>
+
+      <!-- Self-report -->
+      <div class="text-label">
+        <span lang="en">📝 Patient's self-report</span>
+        <span lang="zh">📝 患者自述</span>
+      </div>
+      <div class="card-washi">
+        <div class="text-xs text-muted" style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">
+          <span lang="en">Discomfort areas</span>
+          <span lang="zh">不適部位</span>
+        </div>
+        <div class="text-sm" style="font-style:italic;color:var(--muted);">
+          <span lang="en">— not provided —</span>
+          <span lang="zh">— 未填寫 —</span>
+        </div>
+      </div>
+
+      <!-- Constitution answers -->
+      <div class="text-label">
+        <span lang="en">🧭 Constitution answers</span>
+        <span lang="zh">🧭 體質問答</span>
+      </div>
+      <div class="card">
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q1</strong>
+            <span lang="en">How often do you feel fatigued, weak-voiced, or breathless?</span>
+            <span lang="zh">你常覺得疲勞、說話沒力氣、爬樓梯容易喘嗎？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">Full of energy, calm and breathing smoothly</span>
+            <span lang="zh">體力充沛，心平氣和</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q2</strong>
+            <span lang="en">Do you often feel chest tightness, high stress, or urge to sigh?</span>
+            <span lang="zh">你常覺得胸口悶、壓力大，或常常想嘆氣？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">No chest tightness at all — completely relaxed</span>
+            <span lang="zh">完全不會悶</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q3</strong>
+            <span lang="en">How is your appetite and digestion?</span>
+            <span lang="zh">你常覺得胃口不好、吃一點就飽、飯後容易脹氣嗎？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">Good appetite, smooth digestion</span>
+            <span lang="zh">胃口好，消化順暢</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q4</strong>
+            <span lang="en">Do you experience dizziness or changes in complexion?</span>
+            <span lang="zh">你常覺得頭暈、臉色蒼白，或常臉紅流鼻血？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">Rarely dizzy, healthy rosy complexion</span>
+            <span lang="zh">很少頭暈，氣色紅潤</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q5</strong>
+            <span lang="en">Numbness, painful periods with clots, or fixed stabbing pain?</span>
+            <span lang="zh">您常覺得手腳發麻、生理期痛經有血塊，或身上固定位置刺痛？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">None of these — circulation feels smooth</span>
+            <span lang="zh">完全沒有（順暢）</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q6</strong>
+            <span lang="en">Do you feel palm/sole heat, night sweats, or internal heat?</span>
+            <span lang="zh">你常手腳心發熱、夜間盜汗，或口臭、便秘、紅腫痘痘？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">No heat sensations at all</span>
+            <span lang="zh">完全沒有燥熱感</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q7</strong>
+            <span lang="en">Are you sensitive to cold? Does cold food cause discomfort?</span>
+            <span lang="zh">你是不是特別怕冷、手腳冰冷，或一吃冰就不適？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">Slightly cold-sensitive, prone to colds</span>
+            <span lang="zh">稍微怕冷，容易感冒</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q8</strong>
+            <span lang="en">How would you describe your skin and body moisture?</span>
+            <span lang="zh">你的身體皮膚與水分狀況如何？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">Often thirsty, skin tends to be dry</span>
+            <span lang="zh">常口渴、皮膚偏乾</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q9</strong>
+            <span lang="en">How is your sleep quality and emotional well-being?</span>
+            <span lang="zh">您的睡眠品質和情緒狀況如何？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">Light sleeper, often disturbed; frequently stressed, irritable or melancholic</span>
+            <span lang="zh">睡眠淺、易驚醒、常感壓力大、煩躁或悶悶不樂</span>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-id-line">
+            <strong>Q10</strong>
+            <span lang="en">Do you have allergies, sensitivities, or low immunity?</span>
+            <span lang="zh">您有過敏反應、敏感體質或免疫力偏低的問題嗎？</span>
+          </div>
+          <div class="q-answer">
+            <span lang="en">No allergies — rarely fall sick, good immune resilience</span>
+            <span lang="zh">沒有過敏，很少生病，免疫力良好</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dimensions -->
+      <div class="text-label">
+        <span lang="en">📊 Dimensions</span>
+        <span lang="zh">📊 維度</span>
+      </div>
+      <div class="card">
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Qi Level</span><span lang="zh">氣之盈虧</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-mid"></div><div class="dim-bar-fill" style="width:50%;"></div></div>
+          <div class="dim-value"><span lang="en">Balanced</span><span lang="zh">平衡</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Qi Stagnation</span><span lang="zh">氣滯度</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-fill" style="width:0%;"></div></div>
+          <div class="dim-value"><span lang="en">Smooth</span><span lang="zh">流暢</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Digestion</span><span lang="zh">脾胃虛實</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-mid"></div><div class="dim-bar-fill" style="width:50%;"></div></div>
+          <div class="dim-value"><span lang="en">Balanced</span><span lang="zh">平衡</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Blood Level</span><span lang="zh">血之盈虧</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-mid"></div><div class="dim-bar-fill" style="width:50%;"></div></div>
+          <div class="dim-value"><span lang="en">Balanced</span><span lang="zh">平衡</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Blood Stasis</span><span lang="zh">血瘀度</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-fill" style="width:0%;"></div></div>
+          <div class="dim-value"><span lang="en">Smooth</span><span lang="zh">流暢</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Heat</span><span lang="zh">體熱虛實</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-mid"></div><div class="dim-bar-fill" style="width:50%;"></div></div>
+          <div class="dim-value"><span lang="en">Balanced</span><span lang="zh">平衡</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Cold</span><span lang="zh">體寒虛實</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-mid"></div><div class="dim-bar-fill" style="width:25%;"></div></div>
+          <div class="dim-value"><span lang="en">Tends toward Def. Cold</span><span lang="zh">偏 虛寒</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Moisture</span><span lang="zh">濕氣度</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-mid"></div><div class="dim-bar-fill" style="width:25%;"></div></div>
+          <div class="dim-value"><span lang="en">Tends toward Dry</span><span lang="zh">偏 乾燥</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Sleep</span><span lang="zh">睡眠品質</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-fill" style="width:50%;"></div></div>
+          <div class="dim-value"><span lang="en">Restful</span><span lang="zh">安穩</span></div>
+        </div>
+        <div class="dim-row">
+          <div class="dim-label"><span lang="en">Immunity</span><span lang="zh">免疫敏感</span></div>
+          <div class="dim-bar-wrap"><div class="dim-bar-fill" style="width:0%;"></div></div>
+          <div class="dim-value"><span lang="en">Normal</span><span lang="zh">正常</span></div>
+        </div>
+      </div>
+
+      <!-- Patterns -->
+      <div class="text-label">
+        <span lang="en">🎯 Patterns</span>
+        <span lang="zh">🎯 體質判定</span>
+      </div>
+      <div>
+        <div class="pattern-card col-blue">
+          <div class="pattern-name">
+            <span lang="en">Deficiency Cold (Yang Xu)</span>
+            <span lang="zh">陽虛虛寒</span>
+          </div>
+          <div class="pattern-desc">
+            <span lang="en">Cold extremities, loose stools, low metabolism.</span>
+            <span lang="zh">四季手腳冰冷、大便偏軟、代謝偏低。</span>
+          </div>
+        </div>
+        <div class="pattern-card col-yellow">
+          <div class="pattern-name">
+            <span lang="en">Yin Dryness</span>
+            <span lang="zh">陰燥質</span>
+          </div>
+          <div class="pattern-desc">
+            <span lang="en">Dry skin, persistent thirst, dryness unrelieved by water.</span>
+            <span lang="zh">皮膚乾燥、持續口渴、津液虧損。</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor's advice -->
+      <div class="text-label">
+        <span lang="en">💡 Doctor's advice</span>
+        <span lang="zh">💡 醫師建議</span>
+      </div>
+      <div class="card">
+        <div class="advice-section">
+          <div class="advice-heading">
+            <span lang="en">Lifestyle tips</span>
+            <span lang="zh">生活建議</span>
+          </div>
+          <div class="tip-row">
+            <span class="tip-icon">🧣</span>
+            <div class="tip-text">
+              <span lang="en">Keep waist and knees warm. Ginger tea helps.</span>
+              <span lang="zh">保暖，多飲薑茶。</span>
+            </div>
+          </div>
+          <div class="tip-row">
+            <span class="tip-icon">🍌</span>
+            <div class="tip-text">
+              <span lang="en">Consistent sleep schedule. No screens 1hr before bed.</span>
+              <span lang="zh">固定作息，睡前遠離螢幕。</span>
+            </div>
+          </div>
+        </div>
+        <div class="advice-section">
+          <div class="advice-heading">
+            <span lang="en">Avoid</span>
+            <span lang="zh">忌</span>
+          </div>
+          <div class="text-sm">
+            <span lang="en">Cold environments &amp; raw foods</span>
+            <span lang="zh">忌受寒及生冷食物</span>
+          </div>
+        </div>
+        <div class="advice-section">
+          <div class="advice-heading">
+            <span lang="en">Recommended foods</span>
+            <span lang="zh">建議食材</span>
+          </div>
+          <div class="chip-list">
+            <span class="chip"><span lang="en">Ginger tea</span><span lang="zh">薑茶</span></span>
+            <span class="chip"><span lang="en">Walnut</span><span lang="zh">核桃</span></span>
+            <span class="chip"><span lang="en">Chives</span><span lang="zh">韭菜</span></span>
+            <span class="chip"><span lang="en">Lamb</span><span lang="zh">羊肉</span></span>
+          </div>
+        </div>
+        <div class="advice-section">
+          <div class="advice-heading">
+            <span lang="en">Recommended herbs</span>
+            <span lang="zh">建議藥材</span>
+          </div>
+          <div class="chip-list">
+            <span class="chip"><span lang="en">Fu Zi</span><span lang="zh">附子</span></span>
+            <span class="chip"><span lang="en">Rou Gui</span><span lang="zh">肉桂</span></span>
+            <span class="chip"><span lang="en">Gan Jiang</span><span lang="zh">乾薑</span></span>
+            <span class="chip"><span lang="en">Du Zhong</span><span lang="zh">杜仲</span></span>
+            <span class="chip"><span lang="en">Yin Yang Huo</span><span lang="zh">淫羊藿</span></span>
+            <span class="chip"><span lang="en">Huang Qi</span><span lang="zh">黃耆</span></span>
+            <span class="chip"><span lang="en">Dang Shen</span><span lang="zh">黨參</span></span>
+            <span class="chip"><span lang="en">Bai Zhu</span><span lang="zh">白朮</span></span>
+            <span class="chip"><span lang="en">Zhi Gan Cao</span><span lang="zh">炙甘草</span></span>
+            <span class="chip"><span lang="en">Da Zao</span><span lang="zh">大棗</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tongue constitution -->
+      <div class="text-label">
+        <span lang="en">👅 Tongue constitution</span>
+        <span lang="zh">👅 舌診體質</span>
+      </div>
+      <div class="tongue-card">
+        <div class="tongue-name">
+          <span lang="en">Balanced constitution</span>
+          <span lang="zh">平和體質</span>
+        </div>
+        <div class="tongue-conf">
+          <span lang="en">Confidence: 50%</span>
+          <span lang="zh">信心度：50%</span>
+        </div>
+      </div>
+
+      <!-- Doctor's review note -->
+      <div class="text-label">
+        <span lang="en">🩺 Doctor's review note</span>
+        <span lang="zh">🩺 醫師審核註記</span>
+      </div>
+      <div class="review-note">
+        <span lang="en">(Empty in this example — this section only appears when the reviewing doctor adds a note)</span>
+        <span lang="zh">（範例中為空 — 此區僅在醫師留下註記時顯示）</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:32px;padding-top:24px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;">
+    <span lang="en">Static mockup · Brief #14a · Real implementation lives in <code>v2/assets/js/components/constitution-card.js</code></span>
+    <span lang="zh">靜態示意 · Brief #14a · 實際元件位於 <code>v2/assets/js/components/constitution-card.js</code></span>
+  </div>
+</div>
+
+<script>
+  function setLang(l) {
+    document.documentElement.setAttribute('lang', l);
+    document.getElementById('btn-en').classList.toggle('active', l === 'en');
+    document.getElementById('btn-zh').classList.toggle('active', l === 'zh');
+  }
+</script>
+</body>
+</html>
