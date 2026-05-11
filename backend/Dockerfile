@@ -39,12 +39,21 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
-# `composer update laravel/octane` (not `install`): laravel/octane
-# was added to composer.json but composer.lock wasn't regenerated
-# locally because the dev machine has no PHP. update <package> only
-# refreshes octane + its direct deps and regenerates the lockfile;
-# safer than a blanket `composer update`.
-RUN composer update laravel/octane --with-all-dependencies --no-dev --optimize-autoloader --no-interaction --no-scripts \
+# `composer update` (full, not partial): the repo has historically
+# never committed a composer.lock file, so `composer update <pkg>`
+# fails with "Cannot update only a partial set of packages without
+# a lock file present" (caught in the first Octane deploy attempt
+# 2026-05-11). A full update resolves composer.json fresh, generates
+# the lockfile, and installs laravel/octane along with everything
+# else. Version constraints in composer.json (^11.0, ^4.0 etc.) keep
+# this from pulling in unexpected major-version drift.
+#
+# --no-plugins suppresses the "Composer plugins disabled" warning
+# in non-interactive root-user installs (we have no plugins anyway).
+# COMPOSER_ALLOW_SUPERUSER=1 silences the root-user warning that
+# Composer otherwise prints to stderr (the image runs as root).
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer update --no-dev --optimize-autoloader --no-interaction --no-scripts --no-plugins \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
