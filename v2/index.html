@@ -45,6 +45,9 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<!-- PREVIEW · Palette B (Forest Medical) + Fonts Y (Fraunces + Public Sans + Noto Sans SC).
+     Added 2026-05-11 for index-only design review. If approved, fold into tokens.css. -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;500&family=Public+Sans:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   /* 正顏楷體 — system fallback chain */
   @font-face {
@@ -70,6 +73,447 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <link rel="stylesheet" href="assets/css/visual-upgrade.css">
 <!-- Preload the hero PNG so the LCP element paints immediately. -->
 <link rel="preload" as="image" href="assets/img/hero-bg.webp" fetchpriority="high">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PREVIEW · DESIGN REFRESH v2 (index.html ONLY, 2026-05-11)
+     Direction reset: stays in the original cream/gold/wood family,
+     just refined variations (deeper gold, warmer cream, muted clay).
+     Fonts: Fraunces / Public Sans / Noto Serif SC (kept from v1).
+     Heading scale collapsed from ~7 tiers to 4: hero / section /
+     subsection / body. Auth modal converted to single-language via
+     existing lang=en|zh span pairs (lang-switcher hides the inactive
+     one — much cleaner than the bilingual walls).
+     If approved, promote to tokens.css and remove this block.
+     ══════════════════════════════════════════════════════════════════ -->
+<style id="preview-design-bxy">
+  :root {
+    /* ── Refined cream/gold family (within original DNA) ──────── */
+    --cream:           #F4EDE0;   /* was #F5F1EA — hair warmer       */
+    --cream-raised:    #FBF6EC;   /* was #FAF7F2                     */
+    --washi:           #EDE4D3;   /* was washi — same family         */
+    --washi-soft:      #F4ECDC;
+    --mist:            #E5DDC9;   /* hairlines, dividers             */
+    --stone:           #5F4A33;   /* keep — warm secondary text      */
+    --stone-soft:      #7A6248;
+    --ink:             #1A1612;   /* keep — primary text             */
+    --ink-soft:        #2A211A;
+    --gold:            #7C5E2A;   /* was #9A7A3E — deeper, dignified */
+    --gold-deep:       #5A4115;   /* was #6E4F10 — pressed states    */
+    --gold-soft:       #E8D9B5;   /* new — muted gold tint for chips */
+    --gold-whisper:    #F6EFDC;   /* very soft gold wash             */
+    --terracotta:      #B07A52;   /* was #C97A4C — muted clay        */
+    --terracotta-dk:   #8A5C3A;
+    --terracotta-lt:   #E8D2C0;
+    --sage:            #6F8A6A;   /* keep sage — herbal accent       */
+    --sage-light:      #C8D6BE;
+    --jade:            #0F6E56;   /* keep jade for links             */
+    --danger:          #B91C1C;
+    --success:         #5F8055;
+
+    /* ── v4 inline tokens used directly in index.html markup ──── */
+    --v4-ink:          #1A1612;
+    --v4-ink-m:        #2A211A;
+    --v4-bg:           #F4EDE0;
+    --v4-bg-1:         #FBF6EC;
+    --v4-bg-2:         #FFFFFF;
+    --v4-bg-3:         #EDE4D3;
+    --v4-bdr:          #E5DDC9;
+    --v4-bdr-l:        #EDE4D3;
+    --v4-bdr-m:        #D6CBB0;
+    --v4-mu:           #5F4A33;
+    /* Wood / terracotta / gold remap to refined values (no more
+       wood-medium clashing with anything). */
+    --v4-wd:           #5F4A33;
+    --v4-wd-md:        #8B6F3E;
+    --v4-wd-lt:        #B8895A;
+    --v4-wd-pl:        #EDE4D3;
+    --v4-tc:           #B07A52;
+    --v4-tc-dk:        #8A5C3A;
+    --v4-tc-lt:        #E8D2C0;
+    --v4-tc-xl:        #F6EFDC;
+    --v4-go:           #7C5E2A;
+    --v4-go-d:         #5A4115;
+    --v4-go-dk:        #5A4115;
+    --v4-go-lt:        #E8D9B5;
+    --v4-go-xl:        #F6EFDC;
+    --v4-sage:         #6F8A6A;
+    --v4-sage-lt:      #C8D6BE;
+    /* Shorthand aliases used elsewhere in landing-v4.css. */
+    --wd:              #5F4A33;
+    --wd-md:           #8B6F3E;
+    --wd-lt:           #B8895A;
+    --wd-pl:           #EDE4D3;
+    --tc:              #B07A52;
+    --tc-dk:           #8A5C3A;
+    --tc-lt:           #E8D2C0;
+    --tc-xl:           #F6EFDC;
+    --go:              #7C5E2A;
+    --go-dk:           #5A4115;
+    --go-lt:           #E8D9B5;
+    --go-xl:           #F6EFDC;
+    --wood:            #5F4A33;
+    --wood-mid:        #8B6F3E;
+    --wood-pale:       #EDE4D3;
+
+    /* ── Typography ───────────────────────────────────────────── */
+    --font-display:    'Fraunces', 'Cormorant Garamond', Georgia, serif;
+    --font-body:       'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-zh-display: 'Noto Serif SC', 'Source Han Serif SC', 'PingFang SC', serif;
+    --font-zh:         'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+    /* ── 4-tier heading scale (was ~7 tiers). Clamp values mean
+         these auto-scale across viewports without media queries
+         for type alone. */
+    --t-hero:          clamp(28px, 6vw, 44px);
+    --t-section:       clamp(22px, 4vw, 30px);
+    --t-subsection:    19px;
+    --t-body:          17px;
+    --t-small:         13px;
+    --t-tiny:          11.5px;
+
+    /* ── Radius + soft shadows (kept from v1 — these worked) ─── */
+    --r-sm:            8px;
+    --r-md:            14px;
+    --r-lg:            14px;
+    --r-xl:            18px;
+    --r-2xl:           22px;
+    --shadow-xs:       0 1px 2px rgba(26,22,18,0.04);
+    --shadow-card:     0 1px 2px rgba(26,22,18,0.04), 0 2px 8px rgba(26,22,18,0.06);
+    --shadow-raised:   0 2px 4px rgba(26,22,18,0.05), 0 8px 24px rgba(26,22,18,0.08);
+    --shadow-floating: 0 4px 12px rgba(26,22,18,0.08), 0 16px 40px rgba(26,22,18,0.10);
+  }
+
+  /* ── Body type + colour ──────────────────────────────────────── */
+  body.landing-v4 {
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--cream);
+    font-size: var(--t-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Heading scale (only 4 tiers exist now) ─────────────────── */
+  body.landing-v4 h1,
+  body.landing-v4 .hero-title {
+    font-family: var(--font-display) !important;
+    font-size: var(--t-hero) !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+  }
+  body.landing-v4 h2,
+  body.landing-v4 .section-title {
+    font-family: var(--font-display) !important;
+    font-size: var(--t-section) !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em;
+    line-height: 1.18;
+  }
+  body.landing-v4 h3,
+  body.landing-v4 .subsection-title {
+    font-family: var(--font-body) !important;
+    font-size: var(--t-subsection) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+  }
+  body.landing-v4 h4,
+  body.landing-v4 h5,
+  body.landing-v4 h6 {
+    /* Collapse h4/h5/h6 into subsection — these were the "too many
+       sizes" offenders. They all render at the same scale now. */
+    font-family: var(--font-body) !important;
+    font-size: var(--t-subsection) !important;
+    font-weight: 600 !important;
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+  body.landing-v4 .eyebrow,
+  body.landing-v4 .text-label {
+    font-family: var(--font-body) !important;
+    font-size: var(--t-tiny) !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  /* Any inline style="font-family:'Cormorant Garamond'…" or
+     style="font-family:'DM Sans'…" gets redirected. */
+  body.landing-v4 [style*="Cormorant Garamond"] {
+    font-family: var(--font-display) !important;
+  }
+  body.landing-v4 [style*="DM Sans"] {
+    font-family: var(--font-body) !important;
+  }
+
+  /* ── Chinese type pairing ───────────────────────────────────── */
+  body.landing-v4 [lang="zh"]:not(.nav-brand-v4 [lang="zh"] span):not([style*="ZhengYanKaiTi"]) {
+    font-family: var(--font-zh) !important;
+  }
+  body.landing-v4 h1 [lang="zh"],
+  body.landing-v4 h2 [lang="zh"],
+  body.landing-v4 h3 [lang="zh"],
+  body.landing-v4 .hero-title [lang="zh"],
+  body.landing-v4 .section-title [lang="zh"] {
+    font-family: var(--font-zh-display) !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.01em;
+  }
+  html[lang="zh"] body.landing-v4 h1,
+  html[lang="zh"] body.landing-v4 h2,
+  html[lang="zh"] body.landing-v4 h3,
+  html[lang="zh"] body.landing-v4 .hero-title,
+  html[lang="zh"] body.landing-v4 .section-title {
+    font-family: var(--font-zh-display) !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.01em;
+  }
+  html[lang="zh"] body.landing-v4 {
+    font-family: var(--font-zh) !important;
+  }
+  body.landing-v4 [style*="Noto Serif SC"]:not([style*="ZhengYanKaiTi"]) {
+    font-family: var(--font-zh-display) !important;
+  }
+
+  /* ── Buttons + cards (radius + shadow) ──────────────────────── */
+  body.landing-v4 .btn,
+  body.landing-v4 .btn-v4,
+  body.landing-v4 button.cta,
+  body.landing-v4 .cta-primary,
+  body.landing-v4 .cta-secondary {
+    border-radius: var(--r-md) !important;
+    font-family: var(--font-body) !important;
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 15px;
+  }
+  body.landing-v4 .btn-v4.btn-dark,
+  body.landing-v4 .cta-primary {
+    background: var(--gold) !important;
+    color: #FBF6EC !important;
+    box-shadow: var(--shadow-xs);
+  }
+  body.landing-v4 .btn-v4.btn-dark:hover,
+  body.landing-v4 .cta-primary:hover {
+    background: var(--gold-deep) !important;
+    box-shadow: var(--shadow-card);
+  }
+  body.landing-v4 .card-v4,
+  body.landing-v4 .card,
+  body.landing-v4 .feature-card,
+  body.landing-v4 .testimonial-card,
+  body.landing-v4 .pillar-card {
+    border-radius: var(--r-md) !important;
+    box-shadow: var(--shadow-card);
+    border-color: var(--mist);
+  }
+
+  /* ── Links default to gold ──────────────────────────────────── */
+  body.landing-v4 a:not(.btn):not(.btn-v4):not(.nl):not(.nav-brand-v4):not([class*="cta"]) {
+    color: var(--gold);
+  }
+  body.landing-v4 a:not(.btn):not(.btn-v4):not(.nl):not(.nav-brand-v4):not([class*="cta"]):hover {
+    color: var(--gold-deep);
+  }
+
+  /* ── Nav ─────────────────────────────────────────────────────── */
+  body.landing-v4 #nav-v4 {
+    background: rgba(251,246,236,0.92);
+    backdrop-filter: saturate(140%) blur(8px);
+    border-bottom: 1px solid var(--mist);
+  }
+  body.landing-v4 .nav-bn {
+    font-family: var(--font-display) !important;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Preview ribbon ─────────────────────────────────────────── */
+  body.landing-v4::before {
+    content: "PREVIEW · refined cream/gold · 4-tier headings · single-lang popup";
+    position: fixed;
+    left: 12px; bottom: 12px;
+    z-index: 9999;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--cream);
+    background: var(--ink);
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow-card);
+    pointer-events: none;
+    opacity: 0.78;
+  }
+  @media (max-width: 640px) {
+    body.landing-v4::before { font-size: 10px; padding: 4px 8px; }
+  }
+
+  /* ── Mobile polish (≤ 768 px) ───────────────────────────────── */
+  @media (max-width: 768px) {
+    body.landing-v4 { font-size: 16px; line-height: 1.55; }
+    body.landing-v4 .hero-v4,
+    body.landing-v4 .hero,
+    body.landing-v4 section.hero-section {
+      padding-top: 28px !important;
+      padding-bottom: 36px !important;
+    }
+    body.landing-v4 section,
+    body.landing-v4 .section {
+      padding-top: 40px !important;
+      padding-bottom: 40px !important;
+    }
+    body.landing-v4 .container,
+    body.landing-v4 .nav-in {
+      padding-left: 18px !important;
+      padding-right: 18px !important;
+    }
+    body.landing-v4 .btn,
+    body.landing-v4 .btn-v4,
+    body.landing-v4 .cta-primary,
+    body.landing-v4 .cta-secondary {
+      min-height: 44px;
+      padding: 12px 18px !important;
+      font-size: 15px !important;
+    }
+    body.landing-v4 .hero-ctas,
+    body.landing-v4 .hero-v4 .ctas,
+    body.landing-v4 .hero__ctas {
+      flex-direction: column !important;
+      gap: 10px !important;
+      width: 100%;
+    }
+    body.landing-v4 .hero-ctas > .btn,
+    body.landing-v4 .hero-ctas > .btn-v4,
+    body.landing-v4 .hero-v4 .ctas > .btn,
+    body.landing-v4 .hero-v4 .ctas > .btn-v4,
+    body.landing-v4 .hero__ctas > .btn,
+    body.landing-v4 .hero__ctas > .btn-v4 {
+      width: 100%;
+    }
+    body.landing-v4 .card-v4,
+    body.landing-v4 .card,
+    body.landing-v4 .feature-card,
+    body.landing-v4 .pillar-card,
+    body.landing-v4 .testimonial-card {
+      padding: 18px !important;
+      box-shadow: 0 1px 2px rgba(26,22,18,0.04), 0 1px 6px rgba(26,22,18,0.05) !important;
+    }
+    body.landing-v4 #nav-v4 .nav-in {
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+    }
+    body.landing-v4 .nav-bn { font-size: 19px !important; }
+    body.landing-v4 .nav-logo-v4 { width: 26px; height: 26px; }
+  }
+  @media (max-width: 380px) {
+    body.landing-v4 .container,
+    body.landing-v4 .nav-in {
+      padding-left: 14px !important;
+      padding-right: 14px !important;
+    }
+  }
+
+  /* ── FOOTER (warm-dark, in the gold/wood family) ────────────── */
+  body.landing-v4 .footer-v4 {
+    background: #1F1812 !important;   /* warm dark — matches ink/wood */
+    color: #E5DDC9 !important;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  body.landing-v4 .footer-v4 .fn {
+    color: #FBF6EC !important;
+    font-family: var(--font-display) !important;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  body.landing-v4 .footer-v4 .fzh {
+    color: rgba(251,246,236,0.55) !important;
+    font-family: var(--font-zh-display) !important;
+    font-weight: 400;
+  }
+  body.landing-v4 .footer-v4 .fp {
+    color: rgba(229,221,201,0.72) !important;
+  }
+  body.landing-v4 .footer-v4 .flbl {
+    color: var(--gold-soft) !important;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  body.landing-v4 .footer-v4 .fl {
+    color: #E5DDC9 !important;
+    transition: color 0.15s ease;
+  }
+  body.landing-v4 .footer-v4 .fl:hover {
+    color: var(--gold-soft) !important;
+  }
+  body.landing-v4 .footer-v4 .fbot {
+    color: rgba(229,221,201,0.5) !important;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  body.landing-v4 .footer-v4 .f-cert {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    color: #E5DDC9 !important;
+  }
+  body.landing-v4 .footer-v4 .f-cert-top {
+    color: var(--gold-soft) !important;
+  }
+  /* Footer logo SVG — match header structure, footer-appropriate
+     contrast. The brown #B8965A center tile becomes muted gold. */
+  body.landing-v4 .footer-v4 svg rect[fill="rgba(254,252,248,0.95)"],
+  body.landing-v4 .footer-v4 svg rect[fill="rgba(254,252,248,0.18)"] {
+    fill: #FBF6EC !important;
+    stroke: rgba(31,24,18,0.65) !important;
+    stroke-width: 1 !important;
+  }
+  body.landing-v4 .footer-v4 svg rect[fill="#B8965A"] {
+    fill: var(--gold) !important;
+  }
+  body.landing-v4 .footer-v4 svg circle[fill="#1a1612"] {
+    fill: var(--gold) !important;
+  }
+  body.landing-v4 .footer-v4 svg circle[fill="rgba(254,252,248,0.95)"] {
+    fill: #FBF6EC !important;
+  }
+
+  /* ── REGISTER POPUP — single-language ───────────────────────── */
+  /* No more "EN · 中文" walls. Every bilingual chunk is wrapped in
+     lang=en|zh spans (markup edit below) and the global lang-switcher
+     rules at the top of the document already hide the inactive lang.
+     This block just polishes the consent paragraphs.  */
+  body.landing-v4 .auth-modal .consent-text {
+    display: block;
+    width: 100%;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    line-height: 1.55;
+    color: var(--stone);
+  }
+  body.landing-v4 .auth-modal .consent-text a {
+    margin-right: 0.25em;
+    color: var(--jade);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  body.landing-v4 .auth-modal .consent-text .gap {
+    display: inline-block;
+    width: 0.25em;
+  }
+  /* When ZH is active, ZH consent gets the editorial serif treatment
+     and text-align-last:left so the last line doesn't get justified-
+     spread (a CJK justify artefact). */
+  html[lang="zh"] body.landing-v4 .auth-modal .consent-text {
+    font-family: var(--font-zh) !important;
+    text-align-last: left;
+    font-size: 0.95em;
+  }
+</style>
 </head>
 <body class="landing-v4">
 <!-- (Preview banner removed 2026-05-03 at v3 cutover. v3 is now
@@ -90,11 +534,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span></span>
     </button>
     <div class="nav-links-v4">
-      <a class="nl act" href="index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <a class="nl act" href="index.html"><span lang="en">Home</span><span lang="zh">首页</span></a>
       <!-- About dropdown wrapper -->
       <div style="position:relative;display:inline-block;" id="about-wrap">
         <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
-          <span lang="en">About</span><span lang="zh">關於</span>
+          <span lang="en">About</span><span lang="zh">关于</span>
           <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none"
             style="transition:transform 0.2s;flex-shrink:0;">
             <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5"
@@ -107,22 +551,22 @@ html[lang="zh"] .hm-lang-sep { display: none; }
                  border-radius:10px;box-shadow:0 8px 32px rgba(36,22,8,0.12);
                  z-index:9999;overflow:hidden;padding:4px 0;">
           <div style="height:2px;background:linear-gradient(90deg,transparent,#B5881A,transparent);"></div>
-          <a id="dd-about"   href="about.html"                 class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
-          <a id="dd-prac"    href="practitioners.html"         class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
-          <a id="dd-svc"     href="services.html"              class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a id="dd-about"   href="about.html"                 class="dd-item"><span lang="en">About HansMed</span><span lang="zh">关于我们</span></a>
+          <a id="dd-prac"    href="practitioners.html"         class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">医师</span></a>
+          <a id="dd-svc"     href="services.html"              class="dd-item"><span lang="en">Our Services</span><span lang="zh">服务</span></a>
           <a id="dd-blog"    href="blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
-          <a id="dd-faq"     href="faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
-          <a id="dd-contact" href="contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+          <a id="dd-faq"     href="faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常见问题</span></a>
+          <a id="dd-contact" href="contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">联络</span></a>
         </div>
       </div>
       <a class="nl"     href="shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
-      <a class="nl"     href="../portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
+      <a class="nl"     href="../portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康评估</span></a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
       </div>
       <button class="nl nav-signin" onclick="go('login')" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
-      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
+      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">预约</span></button>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -133,12 +577,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <!-- MOBILE DRAWER -->
 <div class="mobile-menu" id="mob-menu">
   <div style="padding:20px 0;">
-    <button class="mob-nl" onclick="go('home');closeMob();"><span lang="en">Home</span><span lang="zh">首頁</span></button>
-    <button class="mob-nl" onclick="go('about');closeMob();"><span lang="en">About</span><span lang="zh">關於我們</span></button>
-    <button class="mob-nl" onclick="go('services');closeMob();"><span lang="en">Services</span><span lang="zh">服務項目</span></button>
-    <button class="mob-nl" onclick="go('shop');closeMob();"><span lang="en">Shop</span><span lang="zh">中藥商店</span></button>
-    <button class="mob-nl" onclick="go('wellness');closeMob();"><span lang="en">AI Wellness Assessment</span><span lang="zh">AI 健康評估</span></button>
-    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">聯絡我們</span></button>
+    <button class="mob-nl" onclick="go('home');closeMob();"><span lang="en">Home</span><span lang="zh">首页</span></button>
+    <button class="mob-nl" onclick="go('about');closeMob();"><span lang="en">About</span><span lang="zh">关于我们</span></button>
+    <button class="mob-nl" onclick="go('services');closeMob();"><span lang="en">Services</span><span lang="zh">服务项目</span></button>
+    <button class="mob-nl" onclick="go('shop');closeMob();"><span lang="en">Shop</span><span lang="zh">中药商店</span></button>
+    <button class="mob-nl" onclick="go('wellness');closeMob();"><span lang="en">AI Wellness Assessment</span><span lang="zh">AI 健康评估</span></button>
+    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">联络我们</span></button>
     <button class="mob-nl mob-nl-signin" onclick="navMobSignin()"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
     <button class="mob-nl mob-nl-logout" onclick="navLogout()" style="display:none;color:#9a3a2a;"><span lang="en">Sign Out</span><span lang="zh">登出</span></button>
     <div class="mob-lang">
@@ -146,8 +590,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <button id="mlzh" class="mob-lb"     data-lang="zh" onclick="setLang('zh')">中</button>
     </div>
     <div class="mob-ctas">
-      <button class="btn-v4 btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">預約</span></button>
-      <button class="btn-v4 btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();"><span lang="en">Create Account</span><span lang="zh">建立帳號</span></button>
+      <button class="btn-v4 btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">预约</span></button>
+      <button class="btn-v4 btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();"><span lang="en">Create Account</span><span lang="zh">建立帐号</span></button>
       <a class="btn-v4 btn-wa" id="hm-wa-drawer" target="_blank" rel="noopener" style="width:100%;padding:15px;font-size:15px;justify-content:center;" href="https://wa.me/601165600393">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
         WhatsApp Us
@@ -162,7 +606,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
     WhatsApp
   </a>
-  <button class="bb-book" onclick="go('book')">📅 Book · 預約</button>
+  <button class="bb-book" onclick="go('book')">📅 Book · 预约</button>
 </div>
 
 <!-- ══════════════ HOME ══════════════ -->
@@ -194,12 +638,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     </h1>
     <p class="hero-sub-story">
       <span lang="en">AI tongue analysis, reviewed by licensed practitioners. The first step to understanding your TCM constitution.</span>
-      <span lang="zh">AI 舌診 + 持牌中醫師審核 —— 了解您體質的第一步。</span>
+      <span lang="zh">AI 舌诊 + 持牌中医师审核 —— 了解您体质的第一步。</span>
     </p>
     <div class="hero-ctas-story">
       <button class="btn-v4 btn-dark hero-cta-primary" onclick="go('wellness')">
-        <span lang="en">Try AI Tongue Analysis · 試試 AI 舌診</span>
-        <span lang="zh">試試 AI 舌診 · Try AI Tongue Analysis</span>
+        <span lang="en">Try AI Tongue Analysis · 试试 AI 舌诊</span>
+        <span lang="zh">试试 AI 舌诊 · Try AI Tongue Analysis</span>
       </button>
       <a class="hero-cta-secondary" href="../portal.html#/book">
         <span lang="en">Or book a consultation →</span>
@@ -215,10 +659,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
      spine: licensed doctors, AI+human review, support, compliance. -->
 <div class="trust">
   <div class="trust-in">
-    <div class="ti"><div class="ti-n">2</div><div class="ti-l">Licensed Doctors · 持證醫師</div></div>
-    <div class="ti"><div class="ti-n">AI +</div><div class="ti-l">Doctor Reviewed · 醫師審核報告</div></div>
-    <div class="ti"><div class="ti-n">24/7</div><div class="ti-l">Chat Support · 線上支援</div></div>
-    <div class="ti"><div class="ti-n">PDPA</div><div class="ti-l">Data Compliant · 資料保護</div></div>
+    <div class="ti"><div class="ti-n">2</div><div class="ti-l">Licensed Doctors · 持证医师</div></div>
+    <div class="ti"><div class="ti-n">AI +</div><div class="ti-l">Doctor Reviewed · 医师审核报告</div></div>
+    <div class="ti"><div class="ti-n">24/7</div><div class="ti-l">Chat Support · 线上支援</div></div>
+    <div class="ti"><div class="ti-n">PDPA</div><div class="ti-l">Data Compliant · 资料保护</div></div>
   </div>
 </div>
 
@@ -444,26 +888,26 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="tw-head reveal">
       <div class="tw-eyebrow">
         <span lang="en">AI Tongue Analysis</span>
-        <span lang="zh">AI 舌診</span>
+        <span lang="zh">AI 舌诊</span>
       </div>
       <h2>
         <span lang="en">Your tongue tells a story</span>
-        <span lang="zh">舌頭 · 內在的訊號</span>
+        <span lang="zh">舌头 · 内在的讯号</span>
       </h2>
       <p class="tw-lead">
         <span lang="en">Modern AI meets a 2,000-year-old diagnostic tradition. Explore how TCM reads the tongue, then try yours.</span>
-        <span lang="zh">現代 AI 結合兩千年中醫舌診智慧。先了解中醫如何看舌，再體驗您自己的。</span>
+        <span lang="zh">现代 AI 结合两千年中医舌诊智慧。先了解中医如何看舌，再体验您自己的。</span>
       </p>
     </div>
 
     <div class="tongue-tabs" role="tablist">
       <button class="tongue-tab active" data-tab="map" type="button" role="tab" aria-selected="true">
-        <span lang="en">Tongue Map · 舌診地圖</span>
-        <span lang="zh">舌診地圖 · Tongue Map</span>
+        <span lang="en">Tongue Map · 舌诊地图</span>
+        <span lang="zh">舌诊地图 · Tongue Map</span>
       </button>
       <button class="tongue-tab" data-tab="types" type="button" role="tab" aria-selected="false">
-        <span lang="en">Common Tongue Types · 常見舌象</span>
-        <span lang="zh">常見舌象 · Common Types</span>
+        <span lang="en">Common Tongue Types · 常见舌象</span>
+        <span lang="zh">常见舌象 · Common Types</span>
       </button>
     </div>
 
@@ -513,11 +957,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <!-- Default state — JS swaps innerHTML on hover/click. -->
           <div class="tw-info-eyebrow">
             <span lang="en">Hover any region</span>
-            <span lang="zh">將鼠標移到任意區域</span>
+            <span lang="zh">将鼠标移到任意区域</span>
           </div>
           <h3 class="tw-info-h">
             <span lang="en">Each zone of your tongue reveals a different organ system.</span>
-            <span lang="zh">舌頭的每個部位反映不同的臟腑狀態。</span>
+            <span lang="zh">舌头的每个部位反映不同的脏腑状态。</span>
           </h3>
         </div>
       </div>
@@ -525,11 +969,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <div class="tw-cta-tail">
         <p class="tw-cta-tail-line">
           <span lang="en">Want a real analysis of your tongue?</span>
-          <span lang="zh">想體驗 AI 分析您的舌頭？</span>
+          <span lang="zh">想体验 AI 分析您的舌头？</span>
         </p>
         <button class="btn-v4 btn-dark tw-cta-btn" onclick="go('wellness')">
-          <span lang="en">Try AI Tongue Analysis · 試試 AI 舌診</span>
-          <span lang="zh">試試 AI 舌診 · Try AI Tongue Analysis</span>
+          <span lang="en">Try AI Tongue Analysis · 试试 AI 舌诊</span>
+          <span lang="zh">试试 AI 舌诊 · Try AI Tongue Analysis</span>
         </button>
       </div>
     </div>
@@ -541,11 +985,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <div class="tw-cta-tail">
         <p class="tw-cta-tail-line">
           <span lang="en">Ready to see what YOUR tongue says?</span>
-          <span lang="zh">想知道您的舌頭告訴我們什麼？</span>
+          <span lang="zh">想知道您的舌头告诉我们什么？</span>
         </p>
         <button class="btn-v4 btn-dark tw-cta-btn" onclick="go('wellness')">
-          <span lang="en">Try AI Tongue Analysis · 試試 AI 舌診</span>
-          <span lang="zh">試試 AI 舌診 · Try AI Tongue Analysis</span>
+          <span lang="en">Try AI Tongue Analysis · 试试 AI 舌诊</span>
+          <span lang="zh">试试 AI 舌诊 · Try AI Tongue Analysis</span>
         </button>
       </div>
     </div>
@@ -591,47 +1035,47 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         eb_en:'Tip · 前端', eb_zh:'前端 · Tip',
         h_en:'Heart · Lung', h_zh:'心 · 肺',
         b_en:'A red or purple tip can suggest heart heat or stress. Cracks here may relate to emotional strain.',
-        b_zh:'舌尖偏紅或偏紫，可能反映心火或情志壓力。裂紋常與情志有關。'
+        b_zh:'舌尖偏红或偏紫，可能反映心火或情志压力。裂纹常与情志有关。'
       },
       'front': {
         eb_en:'Front-center · 前部', eb_zh:'前部 · Front-center',
         h_en:'Lung', h_zh:'肺',
         b_en:'A pale or coated front-center area can suggest lung qi weakness or recent respiratory strain.',
-        b_zh:'舌前中部偏白或苔厚，可能反映肺氣虛弱或近期呼吸系統不適。'
+        b_zh:'舌前中部偏白或苔厚，可能反映肺气虚弱或近期呼吸系统不适。'
       },
       'left-side': {
-        eb_en:'Left side · 左側', eb_zh:'左側 · Left side',
+        eb_en:'Left side · 左侧', eb_zh:'左侧 · Left side',
         h_en:'Liver', h_zh:'肝',
         b_en:'Swelling or red edges on the left can suggest liver qi stagnation — often linked to stress or sleep disturbance.',
-        b_zh:'舌左側腫脹或邊緣偏紅，可能反映肝氣鬱結 —— 多與壓力或睡眠不安有關。'
+        b_zh:'舌左侧肿胀或边缘偏红，可能反映肝气郁结 —— 多与压力或睡眠不安有关。'
       },
       'right-side': {
-        eb_en:'Right side · 右側', eb_zh:'右側 · Right side',
-        h_en:'Gallbladder', h_zh:'膽',
+        eb_en:'Right side · 右侧', eb_zh:'右侧 · Right side',
+        h_en:'Gallbladder', h_zh:'胆',
         b_en:'Yellow coating on the right can indicate damp-heat in the gallbladder — common with rich diets.',
-        b_zh:'舌右側苔黃，可能反映膽腑濕熱 —— 多與飲食肥膩有關。'
+        b_zh:'舌右侧苔黄，可能反映胆腑湿热 —— 多与饮食肥腻有关。'
       },
       'center': {
         eb_en:'Center · 中部', eb_zh:'中部 · Center',
         h_en:'Stomach · Spleen', h_zh:'胃 · 脾',
         b_en:'This is the digestion zone. A thick coating, scalloped edges, or pale color can indicate spleen qi deficiency or damp accumulation.',
-        b_zh:'此為消化中樞。苔厚、齒痕、或舌色偏白，常反映脾氣虛或濕氣滯留。'
+        b_zh:'此为消化中枢。苔厚、齿痕、或舌色偏白，常反映脾气虚或湿气滞留。'
       },
       'root': {
         eb_en:'Root · 根部', eb_zh:'根部 · Root',
-        h_en:'Kidney · Bladder · Intestines', h_zh:'腎 · 膀胱 · 腸',
+        h_en:'Kidney · Bladder · Intestines', h_zh:'肾 · 膀胱 · 肠',
         b_en:'A thick coating at the back can reflect lower jiao dampness. A peeled root may suggest kidney yin deficiency.',
-        b_zh:'舌根苔厚，常反映下焦濕滯。舌根剝落可能反映腎陰不足。'
+        b_zh:'舌根苔厚，常反映下焦湿滞。舌根剥落可能反映肾阴不足。'
       }
     };
     var DEFAULT_INFO_HTML =
       '<div class="tw-info-eyebrow">' +
         '<span lang="en">Hover any region</span>' +
-        '<span lang="zh">將鼠標移到任意區域</span>' +
+        '<span lang="zh">将鼠标移到任意区域</span>' +
       '</div>' +
       '<h3 class="tw-info-h">' +
         '<span lang="en">Each zone of your tongue reveals a different organ system.</span>' +
-        '<span lang="zh">舌頭的每個部位反映不同的臟腑狀態。</span>' +
+        '<span lang="zh">舌头的每个部位反映不同的脏腑状态。</span>' +
       '</h3>';
     function zoneHtml(z){
       return '<div class="tw-info-eyebrow">' +
@@ -746,51 +1190,51 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     var TYPES = [
       { key:'pale', name_en:'Pale tongue', name_zh:'淡白舌',
         teaser_en:'May indicate Qi or Blood deficiency',
-        teaser_zh:'可能反映氣虛或血虛',
+        teaser_zh:'可能反映气虚或血虚',
         full_en:'A pale tongue often suggests insufficient Qi (vital energy) or blood. People with this presentation may feel tired easily, have a soft voice, or feel cold often. Diet and gentle herbal support can help build reserves.',
-        full_zh:'淡白舌常見於氣血不足。多有疲倦、聲音低弱、畏寒等表現。可透過飲食調理與溫補中藥幫助身體建立儲備。',
+        full_zh:'淡白舌常见于气血不足。多有疲倦、声音低弱、畏寒等表现。可透过饮食调理与温补中药帮助身体建立储备。',
         svg:{ fill:'#F8DDD8', stroke:'#B07873' } },
-      { key:'red', name_en:'Red tongue', name_zh:'紅舌',
+      { key:'red', name_en:'Red tongue', name_zh:'红舌',
         teaser_en:'Heat in the body',
-        teaser_zh:'體內有熱',
+        teaser_zh:'体内有热',
         full_en:'A red tongue without coating typically signals internal heat — often from stress, spicy foods, or insufficient sleep. Cooling foods and stress reduction are common recommendations.',
-        full_zh:'紅舌少苔常反映體內陰虛火旺，多與壓力大、嗜辣、熬夜有關。飲食宜清涼，作息應調整。',
+        full_zh:'红舌少苔常反映体内阴虚火旺，多与压力大、嗜辣、熬夜有关。饮食宜清凉，作息应调整。',
         svg:{ fill:'#E25656', stroke:'#7A2A2A' } },
       { key:'purple', name_en:'Purple tongue', name_zh:'紫舌',
         teaser_en:'Blood circulation may be sluggish',
-        teaser_zh:'可能血液循環不暢',
+        teaser_zh:'可能血液循环不畅',
         full_en:'A purple tongue often indicates blood stasis — sluggish circulation that may correlate with cold extremities, chronic pain, or menstrual irregularities. Movement and warming herbs are commonly used to support flow.',
-        full_zh:'紫舌常反映血瘀，多與手足冰冷、慢性疼痛、月經不調相關。適度運動與活血溫經中藥有助改善。',
+        full_zh:'紫舌常反映血瘀，多与手足冰冷、慢性疼痛、月经不调相关。适度运动与活血温经中药有助改善。',
         svg:{ fill:'#8A4060', stroke:'#4A1E32' } },
-      { key:'fissured', name_en:'Fissured tongue', name_zh:'裂紋舌',
+      { key:'fissured', name_en:'Fissured tongue', name_zh:'裂纹舌',
         teaser_en:'Possible Yin deficiency',
-        teaser_zh:'可能陰虛',
+        teaser_zh:'可能阴虚',
         full_en:'Cracks or fissures often suggest Yin (the body\'s cooling, moistening fluids) is depleted. Common with long-term stress, dehydration, or aging. Hydration and Yin-nourishing foods are typical first steps.',
-        full_zh:'裂紋舌常反映陰液虧虛，多見於長期壓力、脫水、年長者。充足飲水與滋陰食物是基本調理方向。',
+        full_zh:'裂纹舌常反映阴液亏虚，多见于长期压力、脱水、年长者。充足饮水与滋阴食物是基本调理方向。',
         svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', fissures:true } },
-      { key:'scalloped', name_en:'Scalloped tongue', name_zh:'齒痕舌',
+      { key:'scalloped', name_en:'Scalloped tongue', name_zh:'齿痕舌',
         teaser_en:'Spleen Qi may be weak',
-        teaser_zh:'可能脾氣虛弱',
+        teaser_zh:'可能脾气虚弱',
         full_en:'Teeth marks on the sides of the tongue typically signal spleen Qi deficiency — the spleen in TCM governs digestion. Bloating, fatigue after meals, and loose stools are common companions.',
-        full_zh:'舌邊齒痕常反映脾氣虛弱。脾主運化，多伴有飯後易倦、腹脹、便溏等。',
+        full_zh:'舌边齿痕常反映脾气虚弱。脾主运化，多伴有饭后易倦、腹胀、便溏等。',
         svg:{ fill:'#F5D2CB', stroke:'#9E5E5E', edge:'scalloped' } },
       { key:'white', name_en:'White coating', name_zh:'白苔',
         teaser_en:'Cold or damp accumulation',
-        teaser_zh:'寒象或濕氣積聚',
+        teaser_zh:'寒象或湿气积聚',
         full_en:'A thin white coating is normal. A thick white coating often suggests cold or damp accumulation, common in humid weather or after heavy meals. Light, warming foods help disperse it.',
-        full_zh:'薄白苔屬正常。厚白苔常反映寒濕積聚，多見於潮濕氣候或飲食肥膩後。清淡溫熱飲食有助化解。',
+        full_zh:'薄白苔属正常。厚白苔常反映寒湿积聚，多见于潮湿气候或饮食肥腻后。清淡温热饮食有助化解。',
         svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', coating:{ color:'#FFFFFF', opacity:0.55 } } },
-      { key:'yellow', name_en:'Yellow coating', name_zh:'黃苔',
+      { key:'yellow', name_en:'Yellow coating', name_zh:'黄苔',
         teaser_en:'Heat, often in the digestive system',
-        teaser_zh:'多反映胃熱',
+        teaser_zh:'多反映胃热',
         full_en:'Yellow coating typically indicates heat — often in the stomach. Common with acid reflux, bad breath, or irritability. Cooling, light foods are commonly recommended; reduce fried and spicy intake.',
-        full_zh:'黃苔多反映胃中有熱。常見胃酸、口臭、易煩躁。飲食宜清涼，減少油炸與辛辣。',
+        full_zh:'黄苔多反映胃中有热。常见胃酸、口臭、易烦躁。饮食宜清凉，减少油炸与辛辣。',
         svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', coating:{ color:'#E8C24A', opacity:0.55 } } },
-      { key:'geographic', name_en:'Geographic tongue', name_zh:'地圖舌',
+      { key:'geographic', name_en:'Geographic tongue', name_zh:'地图舌',
         teaser_en:'Stomach Yin deficiency',
-        teaser_zh:'胃陰不足',
+        teaser_zh:'胃阴不足',
         full_en:'Patchy "geographic" patterns often signal stomach Yin deficiency. May correlate with hunger pains, dry mouth, or trouble gaining weight. Yin-nourishing diet plus avoiding very hot foods can help.',
-        full_zh:'舌面地圖樣剝落常反映胃陰不足。多伴飢餓痛、口乾、體重難增。滋陰飲食、避免過燙食物有助改善。',
+        full_zh:'舌面地图样剥落常反映胃阴不足。多伴饥饿痛、口干、体重难增。滋阴饮食、避免过烫食物有助改善。',
         svg:{ fill:'#F5C6C6', stroke:'#9E5E5E', patches:true } }
     ];
 
@@ -997,11 +1441,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="sh center reveal" style="margin-bottom:32px;">
     <div class="eyebrow">
       <span lang="en">Body wisdom</span>
-      <span lang="zh">身體智慧</span>
+      <span lang="zh">身体智慧</span>
     </div>
     <p class="organ-clock-question">
       <span lang="en">Did you know your liver peaks at 2 AM?</span>
-      <span lang="zh">您知道您的肝經高峰是凌晨兩點嗎？</span>
+      <span lang="zh">您知道您的肝经高峰是凌晨两点吗？</span>
     </p>
     <!-- "Your body has a 24-hour rhythm" — moved here 2026-05-03
          (CEO request) so the explanation reads BEFORE the clock,
@@ -1009,11 +1453,11 @@ html[lang="zh"] .hm-lang-sep { display: none; }
          below the clock so its "above" reference still resolves. -->
     <h3 class="organ-clock-h" style="text-align:center;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(22px,3vw,30px);color:var(--v4-ink);letter-spacing:-0.01em;margin:24px auto 14px;max-width:680px;">
       <span lang="en">Your body has a <em>24-hour rhythm</em></span>
-      <span lang="zh">您的身體有 <em>24小時的節律</em></span>
+      <span lang="zh">您的身体有 <em>24小时的节律</em></span>
     </h3>
     <p style="font-size:15px;line-height:1.78;color:var(--v4-mu);font-weight:300;margin:0 auto;max-width:680px;padding:0 var(--s-3);">
       <span lang="en">For 2,000 years, TCM has mapped how vital energy flows through 12 organ meridians — each with a 2-hour peak window. Knowing which organ is at its strongest right now helps you read your symptoms, plan your day, and time your care.</span>
-      <span lang="zh">兩千年來，中醫觀察到生命能量在十二經絡間循環流動，每個臟腑都有兩小時的高峰時段。了解此刻哪個臟腑最活躍，有助於理解身體訊號、安排作息、規劃調理。</span>
+      <span lang="zh">两千年来，中医观察到生命能量在十二经络间循环流动，每个脏腑都有两小时的高峰时段。了解此刻哪个脏腑最活跃，有助于理解身体讯号、安排作息、规划调理。</span>
     </p>
   </div>
 
@@ -1027,12 +1471,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <label>
             <input type="checkbox" id="organ-explore-all" style="cursor:pointer;">
             <span>
-              <span lang="en">Explore all organs</span><span lang="zh">探索所有臟腑</span>
+              <span lang="en">Explore all organs</span><span lang="zh">探索所有脏腑</span>
             </span>
           </label>
           <span id="organ-explore-hint">
             <span lang="en">(default: only the active organ is clickable)</span>
-            <span lang="zh">（預設：只可點擊正在當令的臟腑）</span>
+            <span lang="zh">（预设：只可点击正在当令的脏腑）</span>
           </span>
         </div>
         <!-- Clock SVG -->
@@ -1053,12 +1497,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <!-- Row 2: 3 pills -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
             <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Element</span><span lang="zh">元素</span></div><div class="cert-bot">—</div></span>
-            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top"><span lang="en">Peak window</span><span lang="zh">當令時段</span></div><div class="cert-bot">--:-- – --:--</div></span>
-            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Next</span><span lang="zh">下一個</span></div><div class="cert-bot">—</div></span>
+            <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top"><span lang="en">Peak window</span><span lang="zh">当令时段</span></div><div class="cert-bot">--:-- – --:--</div></span>
+            <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top"><span lang="en">Next</span><span lang="zh">下一个</span></div><div class="cert-bot">—</div></span>
           </div>
           <!-- Tip -->
           <div id="hm-tip" style="font-size:13px;color:var(--v4-mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--v4-go);padding-left:12px;margin-bottom:12px;">
-            <span lang="en">Reading your local time…</span><span lang="zh">讀取本地時間…</span>
+            <span lang="en">Reading your local time…</span><span lang="zh">读取本地时间…</span>
           </div>
           <!-- Progress bar -->
           <div style="height:2px;background:var(--v4-bdr-l);border-radius:2px;overflow:hidden;margin-bottom:5px;">
@@ -1066,7 +1510,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
             <span id="hm-ps" style="font-size:10px;color:var(--v4-mu);">--:--</span>
-            <span style="font-size:10px;color:var(--v4-mu);"><span lang="en">window progress</span><span lang="zh">時段進度</span></span>
+            <span style="font-size:10px;color:var(--v4-mu);"><span lang="en">window progress</span><span lang="zh">时段进度</span></span>
             <span id="hm-pe" style="font-size:10px;color:var(--v4-mu);">--:--</span>
           </div>
           <!-- CTA — BUG-013: label and target update dynamically with the
@@ -1082,7 +1526,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
           <button id="hm-info-cta" class="btn-v4 btn-dark" type="button"
                   style="width:100%;padding:14px;font-size:13px;font-weight:500;border-radius:10px;justify-content:center;cursor:pointer;border:none;font-family:inherit;">
             <span lang="en" id="hm-info-cta-en">View organ info →</span>
-            <span lang="zh" id="hm-info-cta-zh">了解臟腑詳情 →</span>
+            <span lang="zh" id="hm-info-cta-zh">了解脏腑详情 →</span>
           </button>
           <p style="font-size:10px;color:var(--v4-bdr);text-align:center;margin-top:9px;font-family:'Noto Serif SC',serif;font-weight:300;letter-spacing:0.04em;">子午流注 · Updates with your local time</p>
         </div>
@@ -1095,7 +1539,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="organ-clock-context reveal" style="max-width:680px;margin:24px auto 0;padding:0 var(--s-3);">
     <p style="font-size:14px;line-height:1.78;color:var(--v4-mu);font-weight:300;font-style:italic;text-align:center;">
       <span lang="en">Click the active organ above to learn its TCM theory, modern function, and what symptoms might suggest care during its window.</span>
-      <span lang="zh">點擊上方正在當令的臟腑，了解它的中醫理論、現代生理功能、以及在它當令時可能需要關注的症狀。</span>
+      <span lang="zh">点击上方正在当令的脏腑，了解它的中医理论、现代生理功能、以及在它当令时可能需要关注的症状。</span>
     </p>
   </div>
 
@@ -1149,9 +1593,9 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <section class="sec sec-alt">
   <div class="sh center">
     <div class="eyebrow">使用流程 · How it works</div>
-    <h2>HansMed 123 · <span style="font-family:'Noto Serif SC',serif;font-weight:300;">簡單三步</span> <em>Easy Steps</em></h2>
+    <h2>HansMed 123 · <span style="font-family:'Noto Serif SC',serif;font-weight:300;">简单三步</span> <em>Easy Steps</em></h2>
     <p style="margin:0 auto;">From the first tap to the herbs at your door — three steps, one trusted practitioner.</p>
-    <p class="sh-zh">從預約到送藥，三個步驟，一次信任。</p>
+    <p class="sh-zh">从预约到送药，三个步骤，一次信任。</p>
   </div>
   <div class="g3" style="margin-bottom:28px;padding-top:22px;">
     <div class="step-card">
@@ -1176,10 +1620,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </svg>
       </div>
       <div style="padding:0 22px;text-align:center;">
-        <div class="step-zh" lang="zh">預約</div>
+        <div class="step-zh" lang="zh">预约</div>
         <div class="step-en">Book Appointment</div>
         <p class="step-desc">Pick your concern and a convenient time.</p>
-        <p class="step-desc2" lang="zh">選擇症狀與時段。</p>
+        <p class="step-desc2" lang="zh">选择症状与时段。</p>
       </div>
     </div>
     <div class="step-card">
@@ -1200,10 +1644,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </svg>
       </div>
       <div style="padding:0 22px;text-align:center;">
-        <div class="step-zh" lang="zh">問診</div>
+        <div class="step-zh" lang="zh">问诊</div>
         <div class="step-en">Online Consultation</div>
         <p class="step-desc">Licensed TCM doctor sees you by video.</p>
-        <p class="step-desc2" lang="zh">持證中醫師視訊問診。</p>
+        <p class="step-desc2" lang="zh">持证中医师视讯问诊。</p>
       </div>
     </div>
     <div class="step-card">
@@ -1226,10 +1670,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </svg>
       </div>
       <div style="padding:0 22px;text-align:center;">
-        <div class="step-zh" lang="zh">送藥 / 上門</div>
+        <div class="step-zh" lang="zh">送药 / 上门</div>
         <div class="step-en">Delivery / Home Visit</div>
         <p class="step-desc">Herbs delivered to your door, or a home visit.</p>
-        <p class="step-desc2" lang="zh">送藥到府，或上門服務。</p>
+        <p class="step-desc2" lang="zh">送药到府，或上门服务。</p>
       </div>
     </div>
   </div>
@@ -1249,7 +1693,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <path d="M57 9 Q61 0 55 0 Q51 7 57 9Z" fill="rgba(196,154,42,0.3)"/>
     </svg>
     <p class="qt-text">"Every AI output is reviewed by a licensed TCM practitioner before it reaches you. Our technology assists. Your doctor decides."</p>
-    <p class="qt-zh">每份 AI 報告皆由持證中醫師審核後才發送 · 科技輔助，醫師決策</p>
+    <p class="qt-zh">每份 AI 报告皆由持证中医师审核后才发送 · 科技辅助，医师决策</p>
     <p class="qt-attr">HansMed · PDPA Compliant · T&amp;CM Act 2016 · MOH Registered</p>
     <button class="btn-v4 btn-ghost" onclick="go('about')">About our approach →</button>
   </div>
@@ -1258,14 +1702,14 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <!-- Certifications -->
 <section class="sec sec-white" style="padding-top:56px;padding-bottom:56px;">
   <div class="sh center" style="margin-bottom:28px;">
-    <div class="eyebrow">認證與監管 · Certified &amp; Regulated</div>
+    <div class="eyebrow">认证与监管 · Certified &amp; Regulated</div>
     <h2 style="font-size:clamp(22px,3.5vw,32px);">Practising with full <em>regulatory compliance</em></h2>
   </div>
   <div class="cert-strip">
     <div class="cert-pill"><div class="cert-top">KKM Malaysia</div><div class="cert-bot">Ministry of Health</div></div>
     <div class="cert-pill"><div class="cert-top">HALAL</div><div class="cert-bot">JAKIM Certified</div></div>
     <div class="cert-pill"><div class="cert-top">NPRA</div><div class="cert-bot">Approved Products</div></div>
-    <div class="cert-pill"><div class="cert-top">MOH Registered</div><div class="cert-bot">TCM Clinic · 登記中醫診所</div></div>
+    <div class="cert-pill"><div class="cert-top">MOH Registered</div><div class="cert-bot">TCM Clinic · 登记中医诊所</div></div>
     <div class="cert-pill"><div class="cert-top">T&amp;CM Act 2016</div><div class="cert-bot">Licensed Practitioners</div></div>
   </div>
 </section>
@@ -1341,7 +1785,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <div class="home-shop-cta" data-home-shop-cta>
         <button class="btn-v4 btn-outline btn-sm home-shop-cta__live" onclick="go('shop')">
           <span lang="en">Browse herbs →</span>
-          <span lang="zh">瀏覽藥材 →</span>
+          <span lang="zh">浏览药材 →</span>
         </button>
         <span class="btn-v4 btn-outline btn-sm home-shop-cta__soon" hidden aria-disabled="true"
               style="opacity:0.55;cursor:not-allowed;pointer-events:none;">
@@ -1438,7 +1882,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="g3 practitioners-grid">
     <div class="practitioner-card reveal">
       <div class="practitioner-card-img"><img src="assets/img/practitioner-placeholder.webp" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
-      <div class="seal seal-go practitioner-seal">醫</div>
+      <div class="seal seal-go practitioner-seal">医</div>
       <div class="practitioner-line">
         <span lang="en">Practitioner profile</span>
         <span lang="zh">医师介绍</span>
@@ -1450,7 +1894,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     </div>
     <div class="practitioner-card reveal" style="transition-delay:0.04s;">
       <div class="practitioner-card-img"><img src="assets/img/practitioner-placeholder.webp" alt="" loading="lazy" class="fade-in-load" width="600" height="600"></div>
-      <div class="seal seal-go practitioner-seal">師</div>
+      <div class="seal seal-go practitioner-seal">师</div>
       <div class="practitioner-line">
         <span lang="en">Practitioner profile</span>
         <span lang="zh">医师介绍</span>
@@ -1507,9 +1951,9 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <section class="sec sec-white">
   <div class="sh"><div class="eyebrow">Explore · 了解更多</div><h2>Want to know more?</h2></div>
   <div class="pnav">
-    <button class="pnav-card" onclick="go('about')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">關</div><div><div class="pnc-t">About HansMed · 關於我們</div><div class="pnc-s">Our story, approach and team</div></div></button>
-    <button class="pnav-card" onclick="go('services')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">醫</div><div><div class="pnc-t">Our Services · 服務項目</div><div class="pnc-s">Consultations, AI wellness, herbs</div></div></button>
-    <button class="pnav-card" onclick="go('contact')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">聯</div><div><div class="pnc-t">Get in Touch · 聯絡我們</div><div class="pnc-s">WhatsApp, location, hours</div></div></button>
+    <button class="pnav-card" onclick="go('about')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">关</div><div><div class="pnc-t">About HansMed · 关于我们</div><div class="pnc-s">Our story, approach and team</div></div></button>
+    <button class="pnav-card" onclick="go('services')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">医</div><div><div class="pnc-t">Our Services · 服务项目</div><div class="pnc-s">Consultations, AI wellness, herbs</div></div></button>
+    <button class="pnav-card" onclick="go('contact')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">联</div><div><div class="pnc-t">Get in Touch · 联络我们</div><div class="pnc-s">WhatsApp, location, hours</div></div></button>
   </div>
 </section>
 
@@ -1519,7 +1963,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="emergency-title">⚠ Medical Emergency Notice</div>
     <div class="emergency-text">
       HansMed is designed for non-emergency consultations. If you are experiencing chest pain, difficulty breathing, severe bleeding, or other life-threatening symptoms, please call <strong>999</strong> immediately or visit the nearest emergency department.
-      <span class="emergency-zh">漢方現代中醫僅提供非緊急醫療諮詢。如遇胸痛、呼吸困難、嚴重出血等緊急情況，請立即撥打 999 或前往急診。</span>
+      <span class="emergency-zh">漢方現代中醫仅提供非紧急医疗咨询。如遇胸痛、呼吸困难、严重出血等紧急情况，请立即拨打 999 或前往急诊。</span>
     </div>
   </div>
 </section>
@@ -1544,29 +1988,29 @@ html[lang="zh"] .hm-lang-sep { display: none; }
         </svg>
         <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
       </div>
-      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持证中医师 · 马来西亚各地皆可问诊</span></p>
     </div>
     <div>
       <div class="flbl">Platform · 平台</div>
-      <a class="fl" href="services.html">Services · 服務</a>
+      <a class="fl" href="services.html">Services · 服务</a>
       <a class="fl" href="shop.html">Shop · 商店</a>
-      <a class="fl" href="../portal.html#/book">Book · 預約</a>
-      <a class="fl" href="../portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
-      <a class="fl" href="contact.html">Contact · 聯絡</a>
+      <a class="fl" href="../portal.html#/book">Book · 预约</a>
+      <a class="fl" href="../portal.html#/wellness-assessment">AI Wellness · AI 健康评估</a>
+      <a class="fl" href="contact.html">Contact · 联络</a>
     </div>
     <div>
-      <div class="flbl">Account · 帳號</div>
+      <div class="flbl">Account · 帐号</div>
       <a class="fl" href="#/login">Sign In · 登入</a>
-      <a class="fl" href="#/register">Create Account · 註冊</a>
-      <a class="fl" href="#/login">Doctor Login · 醫師</a>
-      <a class="fl" href="#/login">Pharmacy Login · 藥房</a>
+      <a class="fl" href="#/register">Create Account · 注册</a>
+      <a class="fl" href="#/login">Doctor Login · 医师</a>
+      <a class="fl" href="#/login">Pharmacy Login · 药房</a>
     </div>
     <div>
-      <div class="flbl">Compliance · 合規</div>
-      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <div class="flbl">Compliance · 合规</div>
+      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隐政策</span></a>
       <a class="fl" href="security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
       
-      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 评估非医疗诊断 · 所有医师皆持证</span></p>
     </div>
   </div>
   <div class="f-cert-row">
@@ -1577,7 +2021,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="f-cert"><div class="f-cert-top">T&amp;CM Act</div><div class="f-cert-bot">2016</div></div>
   </div>
   <div class="fbot">
-    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心於馬來西亞</span>
+    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心于马来西亚</span>
     <span>PDPA · T&amp;CM Act 2016</span>
   </div>
 </footer>
@@ -1591,112 +2035,118 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <template id="tpl-auth-modal">
   <div class="auth-modal">
     <div class="tabs" style="margin-bottom: var(--s-5);">
-      <button class="tab" data-tab="login">Sign In · 登入</button>
-      <button class="tab" data-tab="register">Register · 註冊</button>
-      <button class="tab" data-tab="professional">Doctor/Pharmacy · 專業</button>
+      <button class="tab" data-tab="login"><span lang="en">Sign In</span><span lang="zh">登入</span></button>
+      <button class="tab" data-tab="register"><span lang="en">Register</span><span lang="zh">注册</span></button>
+      <button class="tab" data-tab="professional"><span lang="en">Doctor / Pharmacy</span><span lang="zh">专业</span></button>
     </div>
 
     <form class="tab-panel" data-panel="login">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Welcome Back · 歡迎回來</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in with your email or phone · 以電郵或手機號碼登入</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);"><span lang="en">Welcome Back</span><span lang="zh">欢迎回来</span></h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);"><span lang="en">Sign in with your email or phone</span><span lang="zh">以电邮或手机号码登入</span></p>
       <div class="field">
-        <label class="field-label" data-required>Email or Phone · 電郵或手機</label>
-        <input type="text" name="identifier" class="field-input" required autocomplete="username" placeholder="you@example.com  或  +60 12-345 6789">
+        <label class="field-label" data-required><span lang="en">Email or Phone</span><span lang="zh">电邮或手机</span></label>
+        <input type="text" name="identifier" class="field-input" required autocomplete="username" placeholder="you@example.com   /   +60 12-345 6789">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Password · 密碼</label>
+        <label class="field-label" data-required><span lang="en">Password</span><span lang="zh">密码</span></label>
         <input type="password" name="password" class="field-input" required autocomplete="current-password">
         <div class="field-error"></div>
       </div>
       <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
-        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);"><span lang="en">Forgot password?</span><span lang="zh">忘记密码？</span></a>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+      <button type="submit" class="btn btn--primary btn--block"><span lang="en">Sign In</span><span lang="zh">登入</span></button>
 
       <!-- Brief #15 — Google OAuth sign-in -->
       <div style="display:flex;align-items:center;gap:12px;margin:18px 0;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
-        <span style="font-size:12px;color:var(--stone);text-transform:uppercase;letter-spacing:0.08em;">or · 或</span>
+        <span style="font-size:12px;color:var(--stone);text-transform:uppercase;letter-spacing:0.08em;"><span lang="en">or</span><span lang="zh">或</span></span>
         <div style="flex:1;height:1px;background:var(--border);"></div>
       </div>
       <button type="button" class="btn btn--block" data-action="google-oauth"
               style="background:#fff;border:1px solid var(--border);color:#3c4043;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500;">
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        <span lang="en">Continue with Google</span><span lang="zh">使用 Google 繼續</span>
+        <span lang="en">Continue with Google</span><span lang="zh">使用 Google 继续</span>
       </button>
     </form>
 
     <form class="tab-panel" data-panel="register">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Create Account · 建立帳號</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Free — takes less than a minute · 免費建立 · 不需一分鐘</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);"><span lang="en">Create Account</span><span lang="zh">建立帐号</span></h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);"><span lang="en">Free — takes less than a minute</span><span lang="zh">免费建立 · 不需一分钟</span></p>
       <div class="field">
-        <label class="field-label" data-required>Full Name · 姓名</label>
+        <label class="field-label" data-required><span lang="en">Full Name</span><span lang="zh">姓名</span></label>
         <input type="text" name="name" class="field-input" required autocomplete="name">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Email · 電郵</label>
+        <label class="field-label" data-required><span lang="en">Email</span><span lang="zh">电邮</span></label>
         <input type="email" name="email" class="field-input" required autocomplete="email">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label">Phone · 電話</label>
+        <label class="field-label"><span lang="en">Phone</span><span lang="zh">电话</span></label>
         <input type="tel" name="phone" class="field-input" autocomplete="tel" placeholder="+60 12-345 6789">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Password · 密碼</label>
+        <label class="field-label" data-required><span lang="en">Password</span><span lang="zh">密码</span></label>
         <input type="password" name="password" class="field-input" required minlength="8" autocomplete="new-password">
-        <div class="field-hint">Min 8 characters · 至少8字元</div>
+        <div class="field-hint"><span lang="en">Min 8 characters</span><span lang="zh">至少8字元</span></div>
         <div class="field-error"></div>
       </div>
       <div class="field" style="margin-bottom: var(--s-3);">
         <label class="consent-row">
           <input type="checkbox" name="consent_pdpa" required>
-          <span class="consent-text">I consent to HansMed processing my personal data (name, email, phone, health information) in accordance with the <a href="privacy-policy.html" target="_blank">Privacy Policy</a> and Malaysia's PDPA 2010. · 本人同意依據私隱政策及《2010年個人資料保護法》處理個人資料。</span>
+          <span class="consent-text">
+            <span class="consent-en">I consent to HansMed processing my personal data (name, email, phone, health information) in accordance with the <a href="privacy-policy.html" target="_blank">Privacy Policy</a><span class="gap">&nbsp;</span>and Malaysia's PDPA 2010.</span>
+            <span class="consent-zh">本人同意依据<a href="privacy-policy.html" target="_blank">隐私政策</a>及《2010年个人资料保护法》处理个人资料。</span>
+          </span>
         </label>
       </div>
       <div class="field" style="margin-bottom: var(--s-4);">
         <label class="consent-row">
           <input type="checkbox" name="consent_ai" required>
-          <span class="consent-text">I understand that HansMed uses AI-assisted wellness tools (tongue image analysis, constitution questionnaires) which are <strong>not medical diagnoses</strong>. Licensed practitioners review all AI-generated suggestions. · 本人知悉 AI 輔助工具並非醫療診斷，所有結果均由持牌中醫師審核。</span>
+          <span class="consent-text">
+            <span class="consent-en">I understand that HansMed uses AI-assisted wellness tools (tongue image analysis, constitution questionnaires) which are <strong>not medical diagnoses</strong>. Licensed practitioners review all AI-generated suggestions.</span>
+            <span class="consent-zh">本人知悉 AI 辅助工具并非医疗诊断，所有结果均由持牌中医师审核。</span>
+          </span>
         </label>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Create Account · 建立帳號</button>
+      <button type="submit" class="btn btn--primary btn--block"><span lang="en">Create Account</span><span lang="zh">建立帐号</span></button>
 
       <!-- Brief #15 — Google OAuth sign-up. PDPA + AI consent above
            still apply to Google-registered users — those are clinic
            policies, not OAuth-flow specific. -->
       <div style="display:flex;align-items:center;gap:12px;margin:18px 0;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
-        <span style="font-size:12px;color:var(--stone);text-transform:uppercase;letter-spacing:0.08em;">or · 或</span>
+        <span style="font-size:12px;color:var(--stone);text-transform:uppercase;letter-spacing:0.08em;"><span lang="en">or</span><span lang="zh">或</span></span>
         <div style="flex:1;height:1px;background:var(--border);"></div>
       </div>
       <button type="button" class="btn btn--block" data-action="google-oauth"
               style="background:#fff;border:1px solid var(--border);color:#3c4043;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500;">
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        <span lang="en">Sign up with Google</span><span lang="zh">使用 Google 註冊</span>
+        <span lang="en">Sign up with Google</span><span lang="zh">使用 Google 注册</span>
       </button>
 
-      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">Both consents are required by Malaysian law and T&amp;CM Act 2016. · 兩項同意均為法例要求。</p>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);"><span lang="en">Both consents are required by Malaysian law and T&amp;CM Act 2016.</span><span lang="zh">两项同意均为法例要求。</span></p>
     </form>
 
     <form class="tab-panel" data-panel="forgot">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Enter your email and we'll send a 6-digit code · 輸入電郵以接收6位數驗證碼</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);"><span lang="en">Reset Password</span><span lang="zh">重设密码</span></h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);"><span lang="en">Enter your email and we&rsquo;ll send a 6-digit code</span><span lang="zh">输入电邮以接收6位数验证码</span></p>
       <div class="field">
-        <label class="field-label" data-required>Email · 電郵</label>
+        <label class="field-label" data-required><span lang="en">Email</span><span lang="zh">电邮</span></label>
         <input type="email" name="email" class="field-input" required autocomplete="email">
         <div class="field-error"></div>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Send Code · 寄送驗證碼</button>
+      <button type="submit" class="btn btn--primary btn--block"><span lang="en">Send Code</span><span lang="zh">寄送验证码</span></button>
       <div style="text-align:center; margin-top: var(--s-4);">
-        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);"><span lang="en">← Back to Sign In</span><span lang="zh">← 返回登入</span></a>
       </div>
     </form>
 
@@ -1704,73 +2154,71 @@ html[lang="zh"] .hm-lang-sep { display: none; }
          (1) successful registration (auto-switch to this panel),
          (2) failed login when email_verified_at is null. -->
     <form class="tab-panel" data-panel="verify">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Verify Your Email · 驗證電郵</h2>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);"><span lang="en">Verify Your Email</span><span lang="zh">验证电邮</span></h2>
       <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">
-        Enter the 6-digit code we sent to <strong data-verify-email-display>your email</strong>.<br>
-        <span style="font-family: var(--font-zh);">輸入我們寄到您電郵的6位數驗證碼</span>
+        <span lang="en">Enter the 6-digit code we sent to <strong data-verify-email-display>your email</strong>.</span><span lang="zh">输入我们寄到您电邮的6位数验证码</span>
       </p>
       <input type="hidden" name="email">
       <div class="field">
-        <label class="field-label" data-required>6-digit code · 驗證碼</label>
+        <label class="field-label" data-required><span lang="en">6-digit code</span><span lang="zh">验证码</span></label>
         <input type="text" name="code" class="field-input" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="123456" style="font-size: 1.6rem; letter-spacing: 0.4em; text-align: center; font-weight: 600;">
         <div class="field-error"></div>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Verify · 驗證</button>
+      <button type="submit" class="btn btn--primary btn--block"><span lang="en">Verify</span><span lang="zh">验证</span></button>
       <div style="text-align:center; margin-top: var(--s-4);">
-        <a href="#" data-action="resend-code" style="font-size: var(--text-xs); color: var(--stone);">Didn't receive the code? Resend · 沒收到？重新寄送</a>
+        <a href="#" data-action="resend-code" style="font-size: var(--text-xs); color: var(--stone);"><span lang="en">Didn&rsquo;t receive the code? Resend</span><span lang="zh">没收到？重新寄送</span></a>
       </div>
       <div style="text-align:center; margin-top: var(--s-2);">
-        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);"><span lang="en">← Back to Sign In</span><span lang="zh">← 返回登入</span></a>
       </div>
     </form>
 
     <!-- Brief #16f — Step 2 of forgot-password flow. User arrives here
          after submitting their email on the "forgot" panel above. -->
     <form class="tab-panel" data-panel="reset">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);"><span lang="en">Reset Password</span><span lang="zh">重设密码</span></h2>
       <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">
-        Enter the 6-digit code from your email and choose a new password.<br>
-        <span style="font-family: var(--font-zh);">輸入電郵中的6位數驗證碼及新密碼</span>
+        <span lang="en">Enter the 6-digit code from your email and choose a new password.</span><span lang="zh">输入电邮中的6位数验证码及新密码</span>
       </p>
       <input type="hidden" name="email">
       <div class="field">
-        <label class="field-label" data-required>6-digit code · 驗證碼</label>
+        <label class="field-label" data-required><span lang="en">6-digit code</span><span lang="zh">验证码</span></label>
         <input type="text" name="code" class="field-input" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="123456" style="font-size: 1.6rem; letter-spacing: 0.4em; text-align: center; font-weight: 600;">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>New Password · 新密碼</label>
+        <label class="field-label" data-required><span lang="en">New Password</span><span lang="zh">新密码</span></label>
         <input type="password" name="password" class="field-input" required minlength="8" autocomplete="new-password">
-        <div class="field-hint">Min 8 characters with one uppercase, one number, one symbol · 至少8字元，包含大寫、數字、符號</div>
+        <div class="field-hint"><span lang="en">Min 8 characters with one uppercase, one number, one symbol</span><span lang="zh">至少8字元，包含大写、数字、符号</span></div>
         <div class="field-error"></div>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Reset Password · 重設密碼</button>
+      <button type="submit" class="btn btn--primary btn--block"><span lang="en">Reset Password</span><span lang="zh">重设密码</span></button>
       <div style="text-align:center; margin-top: var(--s-4);">
-        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
+        <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);"><span lang="en">← Back to Sign In</span><span lang="zh">← 返回登入</span></a>
       </div>
     </form>
 
     <form class="tab-panel" data-panel="professional">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Professional Sign In · 專業人員登入</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">For doctors, pharmacies, and administrators · 醫師 / 藥房 / 管理員登入</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);"><span lang="en">Professional Sign In</span><span lang="zh">专业人员登入</span></h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);"><span lang="en">For doctors, pharmacies, and administrators</span><span lang="zh">医师 / 药房 / 管理员登入</span></p>
       <div class="field">
-        <label class="field-label" data-required>Email · 電郵</label>
+        <label class="field-label" data-required><span lang="en">Email</span><span lang="zh">电邮</span></label>
         <input type="email" name="identifier" class="field-input" required>
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Password · 密碼</label>
+        <label class="field-label" data-required><span lang="en">Password</span><span lang="zh">密码</span></label>
         <input type="password" name="password" class="field-input" required>
         <div class="field-error"></div>
       </div>
       <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
-        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);"><span lang="en">Forgot password?</span><span lang="zh">忘记密码？</span></a>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
+      <button type="submit" class="btn btn--primary btn--block"><span lang="en">Sign In</span><span lang="zh">登入</span></button>
       <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">
         Need an account? Contact your administrator.
       </p>
@@ -1793,7 +2241,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 </template>
 
 <!-- ══════════════ SCRIPTS — portal integration preserved ══════════════ -->
-<script src="assets/js/config.js"></script>
+<script src="assets/js/config.js?v=2"></script>
 <script src="assets/js/api.js?v=16-email-verify"></script>
 <script src="assets/js/nav-auth.js?v=14a-fix-14"></script>
 <script src="assets/js/auth.js"></script>
@@ -1902,18 +2350,18 @@ window.setLang = setLang;
    and the info panel updates as real time passes.
    ══════════════════════════════════════════════════════════════════ */
 var CLOCK_ORGANS = [
-  { key: 'gallbladder',     name: 'Gallbladder',     zh: '膽',   start: 23, el: 'Wood',  elZh: '木', col: '#7A9060', tip: 'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.',            tipZh: '晚上 11 時前就寢。膽經此時排濁更新，休息就是最好的養生。' },
-  { key: 'liver',           name: 'Liver',           zh: '肝',   start: 1,  el: 'Wood',  elZh: '木', col: '#6E8858', tip: 'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.',                  tipZh: '肝經當令，深度排毒時段。應臥床休息，忌飲酒、強光與壓力。' },
-  { key: 'lung',            name: 'Lung',            zh: '肺',   start: 3,  el: 'Metal', elZh: '金', col: '#A09888', tip: 'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.',                            tipZh: '肺氣最旺。此時做深呼吸或太極，最能養肺補氣。' },
-  { key: 'large_intestine', name: 'Large Intestine', zh: '大腸', start: 5,  el: 'Metal', elZh: '金', col: '#909080', tip: 'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.',                      tipZh: '起床喝溫水、排便。身體正準備排濁，順應之即養生。' },
-  { key: 'stomach',         name: 'Stomach',         zh: '胃',   start: 7,  el: 'Earth', elZh: '土', col: '#C49840', tip: 'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.',                                    tipZh: '脾胃消化力最強。此時宜吃最豐盛、溫熱的一餐。' },
-  { key: 'spleen',          name: 'Spleen',          zh: '脾',   start: 9,  el: 'Earth', elZh: '土', col: '#B88A38', tip: 'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.',                                    tipZh: '思慮最清明。適合專注學習、分析與精細創作。' },
-  { key: 'heart',           name: 'Heart',           zh: '心',   start: 11, el: 'Fire',  elZh: '火', col: '#B85840', tip: 'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.',                            tipZh: '心氣最旺。午後小憩 20 分鐘，長年護心。' },
-  { key: 'small_intestine', name: 'Small Intestine', zh: '小腸', start: 13, el: 'Fire',  elZh: '火', col: '#A84830', tip: 'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.',                         tipZh: '小腸分清別濁。午後散步片刻，有助消化吸收。' },
-  { key: 'bladder',         name: 'Bladder',         zh: '膀胱', start: 15, el: 'Water', elZh: '水', col: '#4A7890', tip: 'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.',                             tipZh: '體力腦力俱佳時段。多飲水，膀胱經主水液代謝。' },
-  { key: 'kidney',          name: 'Kidney',          zh: '腎',   start: 17, el: 'Water', elZh: '水', col: '#3A6080', tip: 'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.',                        tipZh: '腎為先天之本。宜節飲食、忌生冷，漸入晚間收斂。' },
-  { key: 'pericardium',     name: 'Pericardium',     zh: '心包', start: 19, el: 'Fire',  elZh: '火', col: '#8A6070', tip: 'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.',                                   tipZh: '心包經當令。此時宜歡聚、溫情相伴，養神安心。' },
-  { key: 'triple_warmer',   name: 'Triple Warmer',   zh: '三焦', start: 21, el: 'Fire',  elZh: '火', col: '#705058', tip: 'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.',                      tipZh: '三焦通調，準備入眠。調暗燈光、靜心收攝，迎接安眠。' },
+  { key: 'gallbladder',     name: 'Gallbladder',     zh: '胆',   start: 23, el: 'Wood',  elZh: '木', col: '#7A9060', tip: 'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.',            tipZh: '晚上 11 时前就寝。胆经此时排浊更新，休息就是最好的养生。' },
+  { key: 'liver',           name: 'Liver',           zh: '肝',   start: 1,  el: 'Wood',  elZh: '木', col: '#6E8858', tip: 'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.',                  tipZh: '肝经当令，深度排毒时段。应卧床休息，忌饮酒、强光与压力。' },
+  { key: 'lung',            name: 'Lung',            zh: '肺',   start: 3,  el: 'Metal', elZh: '金', col: '#A09888', tip: 'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.',                            tipZh: '肺气最旺。此时做深呼吸或太极，最能养肺补气。' },
+  { key: 'large_intestine', name: 'Large Intestine', zh: '大肠', start: 5,  el: 'Metal', elZh: '金', col: '#909080', tip: 'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.',                      tipZh: '起床喝温水、排便。身体正准备排浊，顺应之即养生。' },
+  { key: 'stomach',         name: 'Stomach',         zh: '胃',   start: 7,  el: 'Earth', elZh: '土', col: '#C49840', tip: 'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.',                                    tipZh: '脾胃消化力最强。此时宜吃最丰盛、温热的一餐。' },
+  { key: 'spleen',          name: 'Spleen',          zh: '脾',   start: 9,  el: 'Earth', elZh: '土', col: '#B88A38', tip: 'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.',                                    tipZh: '思虑最清明。适合专注学习、分析与精细创作。' },
+  { key: 'heart',           name: 'Heart',           zh: '心',   start: 11, el: 'Fire',  elZh: '火', col: '#B85840', tip: 'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.',                            tipZh: '心气最旺。午后小憩 20 分钟，长年护心。' },
+  { key: 'small_intestine', name: 'Small Intestine', zh: '小肠', start: 13, el: 'Fire',  elZh: '火', col: '#A84830', tip: 'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.',                         tipZh: '小肠分清别浊。午后散步片刻，有助消化吸收。' },
+  { key: 'bladder',         name: 'Bladder',         zh: '膀胱', start: 15, el: 'Water', elZh: '水', col: '#4A7890', tip: 'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.',                             tipZh: '体力脑力俱佳时段。多饮水，膀胱经主水液代谢。' },
+  { key: 'kidney',          name: 'Kidney',          zh: '肾',   start: 17, el: 'Water', elZh: '水', col: '#3A6080', tip: 'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.',                        tipZh: '肾为先天之本。宜节饮食、忌生冷，渐入晚间收敛。' },
+  { key: 'pericardium',     name: 'Pericardium',     zh: '心包', start: 19, el: 'Fire',  elZh: '火', col: '#8A6070', tip: 'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.',                                   tipZh: '心包经当令。此时宜欢聚、温情相伴，养神安心。' },
+  { key: 'triple_warmer',   name: 'Triple Warmer',   zh: '三焦', start: 21, el: 'Fire',  elZh: '火', col: '#705058', tip: 'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.',                      tipZh: '三焦通调，准备入眠。调暗灯光、静心收摄，迎接安眠。' },
 ];
 
 function hmNs(t)  { return document.createElementNS('http://www.w3.org/2000/svg', t); }
@@ -1933,8 +2381,8 @@ function hmFmtH(h) {
 }
 
 /* Generic clock renderer — paints 12 organ segments + hand + optional
-   center 漢方 glyph. Supports two instances on the same page:
-     - hero-clk  (inside hero, with center 漢方 + label, no sub-time)
+   center 汉方 glyph. Supports two instances on the same page:
+     - hero-clk  (inside hero, with center 汉方 + label, no sub-time)
      - hm-clk    (optional section clock, with sub-time, no center glyph) */
 function drawClock(svgId, cx, cy, ro, ri, rl, fontSize, showLabel, showHand, showCenter) {
   var svg = document.getElementById(svgId);
@@ -2004,7 +2452,7 @@ function drawClock(svgId, cx, cy, ro, ri, rl, fontSize, showLabel, showHand, sho
   cf.setAttribute('stroke', 'rgba(216,201,174,0.5)'); cf.setAttribute('stroke-width', '0.5');
   svg.appendChild(cf);
 
-  /* Center 漢方 glyph + botanical sprig (hero clock only) */
+  /* Center 汉方 glyph + botanical sprig (hero clock only) */
   if (showCenter) {
     var bpaths = [
       { d: 'M' + cx + ' ' + (cy - 18) + 'C' + (cx - 1) + ' ' + (cy - 32) + ' ' + (cx - 3) + ' ' + (cy - 46) + ' ' + (cx - 5) + ' ' + (cy - 58), sw: 1.4, col: 'rgba(155,114,72,0.22)' },
@@ -2024,7 +2472,7 @@ function drawClock(svgId, cx, cy, ro, ri, rl, fontSize, showLabel, showHand, sho
     ch.setAttribute('font-family', "'Noto Serif SC',serif");
     ch.setAttribute('font-size', '40'); ch.setAttribute('font-weight', '300');
     ch.setAttribute('fill', '#B8895A'); ch.setAttribute('pointer-events', 'none');
-    ch.textContent = '漢方';
+    ch.textContent = '汉方';
     svg.appendChild(ch);
 
     var organNow = CLOCK_ORGANS[ai];
@@ -2099,7 +2547,7 @@ function drawAllClocks() {
   var hStr = String(h).padStart(2, '0');
   var mStr = String(m).padStart(2, '0');
 
-  /* Hero clock — compact 380x320 viewport, with center 漢方 */
+  /* Hero clock — compact 380x320 viewport, with center 汉方 */
   drawClock('hero-clk', 190, 155, 130, 74, 148, 11, true, true, true);
 
   /* Update panel digital time */
@@ -2140,7 +2588,7 @@ function drawAllClocks() {
   var infoEn = byId('hm-info-cta-en');
   var infoZh = byId('hm-info-cta-zh');
   if (infoEn) infoEn.textContent = 'View ' + organ.name + ' info →';
-  if (infoZh) infoZh.textContent = '了解「' + organ.zh + '」詳情 →';
+  if (infoZh) infoZh.textContent = '了解「' + organ.zh + '」详情 →';
   var infoBtn = byId('hm-info-cta');
   if (infoBtn && !infoBtn._wired) {
     /* One-time bind — drawAllClocks runs every 30 s and the
@@ -2192,136 +2640,136 @@ setInterval(function () {
    ════════════════════════════════════════════════════════════════ */
 var ORGAN_EDU = {
   gallbladder: {
-    zh: '膽', enName: 'Gallbladder', element: 'Wood · 木', window: '23:00 – 01:00', paired: 'Liver · 肝',
+    zh: '胆', enName: 'Gallbladder', element: 'Wood · 木', window: '23:00 – 01:00', paired: 'Liver · 肝',
     theory_en: 'In TCM, the Gallbladder governs decisive judgement and the courage to act. It works in close partnership with the Liver, helping turn intention into decision.',
-    theory_zh: '中醫認為，膽主決斷，與肝相表裡。膽氣足則決斷有力，遇事不疑。',
+    theory_zh: '中医认为，胆主决断，与肝相表里。胆气足则决断有力，遇事不疑。',
     function_en: 'Stores and releases bile to aid the digestion of fats. In TCM theory, also supports clear thinking and confident decision-making.',
-    function_zh: '儲存與排放膽汁，幫助消化脂肪。中醫認為亦主決斷力與清晰思考。',
+    function_zh: '储存与排放胆汁，帮助消化脂肪。中医认为亦主决断力与清晰思考。',
     imbalance_en: 'Indecisiveness, timidity, bitter taste in the mouth on waking, headaches at the temples, restless sleep between 11 PM and 1 AM.',
-    imbalance_zh: '優柔寡斷、易驚膽怯、晨起口苦、太陽穴頭痛、夜半11點至1點難以入睡。',
+    imbalance_zh: '优柔寡断、易惊胆怯、晨起口苦、太阳穴头痛、夜半11点至1点难以入睡。',
     seek_care_en: 'Persistent right upper abdominal discomfort, recurring bitter taste, chronic indecisiveness affecting daily life, or sleep disruption around midnight.',
-    seek_care_zh: '右上腹持續不適、反覆口苦、長期優柔寡斷影響生活、或半夜時段持續睡眠困擾。'
+    seek_care_zh: '右上腹持续不适、反复口苦、长期优柔寡断影响生活、或半夜时段持续睡眠困扰。'
   },
   liver: {
-    zh: '肝', enName: 'Liver', element: 'Wood · 木', window: '01:00 – 03:00', paired: 'Gallbladder · 膽',
+    zh: '肝', enName: 'Liver', element: 'Wood · 木', window: '01:00 – 03:00', paired: 'Gallbladder · 胆',
     theory_en: 'The Liver governs the smooth flow of qi and blood, stores blood, and houses the ethereal soul (魂). It is the body\'s great strategist — holding plans and direction.',
-    theory_zh: '肝主疏泄，藏血，藏魂。中醫稱肝為將軍之官，主謀慮，掌人體氣機之通暢。',
+    theory_zh: '肝主疏泄，藏血，藏魂。中医称肝为将军之官，主谋虑，掌人体气机之通畅。',
     function_en: 'Detoxifies blood, regulates emotional flow, supports tendon and eye health. Modern parallel: liver metabolism + emotional regulation systems.',
-    function_zh: '解毒、藏血、調節情緒、養筋明目。對應現代醫學：肝臟代謝與情緒調節系統。',
+    function_zh: '解毒、藏血、调节情绪、养筋明目。对应现代医学：肝脏代谢与情绪调节系统。',
     imbalance_en: 'Irritability, frustration, sighing, tight neck and shoulders, menstrual irregularities, dry or bloodshot eyes, waking around 1–3 AM.',
-    imbalance_zh: '易怒、鬱悶、嘆息、頸肩緊繃、月經不調、目乾或紅赤、凌晨1至3點易醒。',
+    imbalance_zh: '易怒、郁闷、叹息、颈肩紧绷、月经不调、目干或红赤、凌晨1至3点易醒。',
     seek_care_en: 'Chronic irritability or low mood, persistent right-side pain, eye problems, menstrual irregularities, or repeatedly waking 1–3 AM.',
-    seek_care_zh: '長期煩躁或情緒低落、右側持續疼痛、目疾、月經不調、或反覆於凌晨1至3點驚醒。'
+    seek_care_zh: '长期烦躁或情绪低落、右侧持续疼痛、目疾、月经不调、或反复于凌晨1至3点惊醒。'
   },
   lung: {
-    zh: '肺', enName: 'Lung', element: 'Metal · 金', window: '03:00 – 05:00', paired: 'Large Intestine · 大腸',
+    zh: '肺', enName: 'Lung', element: 'Metal · 金', window: '03:00 – 05:00', paired: 'Large Intestine · 大肠',
     theory_en: 'The Lung governs qi and respiration, controls the skin and body hair, and houses the corporeal soul (魄). It is the prime minister of organs — distributing qi throughout the body.',
-    theory_zh: '肺主氣，司呼吸，主皮毛，藏魄。中醫稱肺為相傅之官，朝百脈，輸布氣血津液。',
+    theory_zh: '肺主气，司呼吸，主皮毛，藏魄。中医称肺为相傅之官，朝百脉，输布气血津液。',
     function_en: 'Gas exchange, oxygenation, immune defence at the body surface. Modern parallel: respiratory + skin barrier + frontline immunity.',
-    function_zh: '氣體交換、供氧、體表免疫防護。對應現代醫學：呼吸系統、皮膚屏障、第一線免疫。',
+    function_zh: '气体交换、供氧、体表免疫防护。对应现代医学：呼吸系统、皮肤屏障、第一线免疫。',
     imbalance_en: 'Shortness of breath, weak voice, frequent colds, dry or sensitive skin, grief or melancholy that lingers, waking around 3–5 AM.',
-    imbalance_zh: '氣短、聲音低弱、易感冒、皮膚乾燥或敏感、悲憂難解、凌晨3至5點易醒。',
+    imbalance_zh: '气短、声音低弱、易感冒、皮肤干燥或敏感、悲忧难解、凌晨3至5点易醒。',
     seek_care_en: 'Chronic cough, persistent shortness of breath, recurring respiratory infections, unresolved grief affecting wellbeing, or skin conditions that won\'t settle.',
-    seek_care_zh: '慢性咳嗽、持續氣短、反覆呼吸道感染、長期悲傷影響身心、或久治不癒之皮膚問題。'
+    seek_care_zh: '慢性咳嗽、持续气短、反复呼吸道感染、长期悲伤影响身心、或久治不愈之皮肤问题。'
   },
   large_intestine: {
-    zh: '大腸', enName: 'Large Intestine', element: 'Metal · 金', window: '05:00 – 07:00', paired: 'Lung · 肺',
+    zh: '大肠', enName: 'Large Intestine', element: 'Metal · 金', window: '05:00 – 07:00', paired: 'Lung · 肺',
     theory_en: 'The Large Intestine governs the elimination of waste — both physical and metaphorical. In TCM theory, it also supports the ability to "let go" emotionally.',
-    theory_zh: '大腸主傳導，將廢物排出體外。中醫認為亦助於情志的「放下」與更新。',
+    theory_zh: '大肠主传导，将废物排出体外。中医认为亦助于情志的「放下」与更新。',
     function_en: 'Reabsorbs water and forms stool. Modern parallel: colon function, microbiome health, regular elimination.',
-    function_zh: '吸收水分、形成糞便。對應現代醫學：大腸功能、腸道菌群、規律排便。',
+    function_zh: '吸收水分、形成粪便。对应现代医学：大肠功能、肠道菌群、规律排便。',
     imbalance_en: 'Constipation or loose stools, bloating, difficulty letting go of past hurts, abdominal cramping, skin breakouts (TCM links skin to large intestine).',
-    imbalance_zh: '便秘或便溏、腹脹、難以放下舊事、腹部絞痛、皮膚痘瘡（中醫認為肺與大腸相表裡，影響皮膚）。',
+    imbalance_zh: '便秘或便溏、腹胀、难以放下旧事、腹部绞痛、皮肤痘疮（中医认为肺与大肠相表里，影响皮肤）。',
     seek_care_en: 'Chronic constipation or diarrhoea, blood in stool, persistent abdominal pain, or recurring skin issues alongside digestive problems.',
-    seek_care_zh: '長期便秘或腹瀉、便血、持續腹痛、或皮膚問題與消化問題並存反覆發作。'
+    seek_care_zh: '长期便秘或腹泻、便血、持续腹痛、或皮肤问题与消化问题并存反复发作。'
   },
   stomach: {
     zh: '胃', enName: 'Stomach', element: 'Earth · 土', window: '07:00 – 09:00', paired: 'Spleen · 脾',
     theory_en: 'The Stomach is the "sea of grain and water" — receiving food and beginning digestion. It works in close partnership with the Spleen as the centre of post-natal qi.',
-    theory_zh: '胃為水穀之海，主受納腐熟。與脾相表裡，共為後天之本。',
+    theory_zh: '胃为水谷之海，主受纳腐熟。与脾相表里，共为后天之本。',
     function_en: 'Mechanical and chemical breakdown of food. Modern parallel: gastric digestion, acid production, gastric emptying.',
-    function_zh: '對食物進行機械與化學的初步消化。對應現代醫學：胃部消化、胃酸分泌、胃排空。',
+    function_zh: '对食物进行机械与化学的初步消化。对应现代医学：胃部消化、胃酸分泌、胃排空。',
     imbalance_en: 'Acid reflux, bad breath, hunger pangs without appetite, mouth ulcers, bloating after meals, irregular eating disrupting the 7–9 AM window.',
-    imbalance_zh: '胃酸逆流、口臭、飢而不欲食、口瘡、餐後腹脹、不按時進餐影響晨間7至9點吸收。',
+    imbalance_zh: '胃酸逆流、口臭、饥而不欲食、口疮、餐后腹胀、不按时进餐影响晨间7至9点吸收。',
     seek_care_en: 'Persistent reflux, recurring mouth ulcers, unexplained weight loss, blood in vomit or stool, or chronic loss of appetite.',
-    seek_care_zh: '持續胃酸逆流、反覆口瘡、不明原因消瘦、嘔吐物或糞便帶血、或長期食慾不振。'
+    seek_care_zh: '持续胃酸逆流、反复口疮、不明原因消瘦、呕吐物或粪便带血、或长期食欲不振。'
   },
   spleen: {
     zh: '脾', enName: 'Spleen', element: 'Earth · 土', window: '09:00 – 11:00', paired: 'Stomach · 胃',
     theory_en: 'The Spleen governs transformation and transport — turning food into qi and blood. It also "holds" the blood in vessels and supports the muscles and limbs.',
-    theory_zh: '脾主運化，化生氣血，統血，主肌肉四肢。為氣血生化之源。',
+    theory_zh: '脾主运化，化生气血，统血，主肌肉四肢。为气血生化之源。',
     function_en: 'In TCM the "spleen" is closer to the modern understanding of pancreas + small intestine + lymphatic absorption, not just the anatomical spleen organ.',
-    function_zh: '中醫所稱「脾」涵蓋現代醫學的胰臟、小腸、淋巴吸收等多個系統，並非僅指脾臟本身。',
+    function_zh: '中医所称「脾」涵盖现代医学的胰脏、小肠、淋巴吸收等多个系统，并非仅指脾脏本身。',
     imbalance_en: 'Fatigue (especially after meals), poor appetite, loose stools, easy bruising, heavy or foggy thinking, swollen tongue with teeth marks.',
-    imbalance_zh: '疲倦（餐後尤甚）、食慾不振、便溏、易瘀青、頭重思緒不清、舌胖有齒痕。',
+    imbalance_zh: '疲倦（餐后尤甚）、食欲不振、便溏、易瘀青、头重思绪不清、舌胖有齿痕。',
     seek_care_en: 'Chronic fatigue with digestive symptoms, unexplained bruising, persistent loose stools, or significant appetite loss affecting nutrition.',
-    seek_care_zh: '慢性疲勞伴消化不良、不明原因瘀青、持續便溏、或食慾顯著下降影響營養。'
+    seek_care_zh: '慢性疲劳伴消化不良、不明原因瘀青、持续便溏、或食欲显著下降影响营养。'
   },
   heart: {
-    zh: '心', enName: 'Heart', element: 'Fire · 火', window: '11:00 – 13:00', paired: 'Small Intestine · 小腸',
+    zh: '心', enName: 'Heart', element: 'Fire · 火', window: '11:00 – 13:00', paired: 'Small Intestine · 小肠',
     theory_en: 'The Heart governs blood and houses the spirit (神). It is the emperor of organs — when the Heart is settled, all other organs follow in harmony.',
-    theory_zh: '心主血脈，藏神。中醫稱心為君主之官，心定則五臟和。',
+    theory_zh: '心主血脉，藏神。中医称心为君主之官，心定则五脏和。',
     function_en: 'Pumps blood throughout the body. Modern parallel: cardiovascular function + the broader nervous-system seat of consciousness and emotional clarity.',
-    function_zh: '推動血液循環全身。對應現代醫學：心血管功能、以及神經系統所主之意識與情志清明。',
+    function_zh: '推动血液循环全身。对应现代医学：心血管功能、以及神经系统所主之意识与情志清明。',
     imbalance_en: 'Palpitations, anxiety, insomnia (especially difficulty falling asleep), tongue tip redness, vivid or disturbing dreams, easily startled.',
-    imbalance_zh: '心悸、焦慮、入睡困難、舌尖紅赤、多夢易驚、稍受刺激即受驚。',
+    imbalance_zh: '心悸、焦虑、入睡困难、舌尖红赤、多梦易惊、稍受刺激即受惊。',
     seek_care_en: 'Persistent chest pain or palpitations, severe insomnia, sudden anxiety attacks, or any cardiovascular symptom — please also see a Western doctor for any chest symptom.',
-    seek_care_zh: '持續胸悶心悸、嚴重失眠、突發焦慮、或任何心血管症狀 —— 任何胸部症狀亦請同時就診西醫。'
+    seek_care_zh: '持续胸闷心悸、严重失眠、突发焦虑、或任何心血管症状 —— 任何胸部症状亦请同时就诊西医。'
   },
   small_intestine: {
-    zh: '小腸', enName: 'Small Intestine', element: 'Fire · 火', window: '13:00 – 15:00', paired: 'Heart · 心',
+    zh: '小肠', enName: 'Small Intestine', element: 'Fire · 火', window: '13:00 – 15:00', paired: 'Heart · 心',
     theory_en: 'The Small Intestine separates the pure from the impure — clear nutrients ascend to nourish, turbid waste descends. It also helps the mind discern what to keep and what to release.',
-    theory_zh: '小腸主分清泌濁 —— 清者上升以養身，濁者下降以排出。亦助心神辨明取捨。',
+    theory_zh: '小肠主分清泌浊 —— 清者上升以养身，浊者下降以排出。亦助心神辨明取舍。',
     function_en: 'Major site of nutrient absorption. Modern parallel: small bowel absorption, microbiome diversity in the upper intestine.',
-    function_zh: '主要吸收養分之處。對應現代醫學：小腸吸收、上段腸道菌群多樣性。',
+    function_zh: '主要吸收养分之处。对应现代医学：小肠吸收、上段肠道菌群多样性。',
     imbalance_en: 'Lower abdominal discomfort after lunch, difficulty discerning priorities, urinary symptoms (TCM links small intestine and bladder), painful or scant urination.',
-    imbalance_zh: '午餐後下腹不適、難以判斷輕重緩急、小便異常（中醫認為小腸與膀胱相關）、小便短赤或刺痛。',
+    imbalance_zh: '午餐后下腹不适、难以判断轻重缓急、小便异常（中医认为小肠与膀胱相关）、小便短赤或刺痛。',
     seek_care_en: 'Chronic lower abdominal pain, persistent malabsorption symptoms (weight loss, nutritional deficiency), or recurring urinary tract symptoms.',
-    seek_care_zh: '慢性下腹疼痛、持續吸收不良（體重下降、營養缺乏）、或反覆泌尿道症狀。'
+    seek_care_zh: '慢性下腹疼痛、持续吸收不良（体重下降、营养缺乏）、或反复泌尿道症状。'
   },
   bladder: {
-    zh: '膀胱', enName: 'Bladder', element: 'Water · 水', window: '15:00 – 17:00', paired: 'Kidney · 腎',
+    zh: '膀胱', enName: 'Bladder', element: 'Water · 水', window: '15:00 – 17:00', paired: 'Kidney · 肾',
     theory_en: 'The Bladder stores and releases water. The Bladder meridian is the longest in the body, running from the head down the back to the feet — it carries the body\'s defensive qi along the spine.',
-    theory_zh: '膀胱主藏津液。足太陽膀胱經為人體最長之經，自頭沿背走足，行衛氣於背部。',
+    theory_zh: '膀胱主藏津液。足太阳膀胱经为人体最长之经，自头沿背走足，行卫气于背部。',
     function_en: 'Stores urine until release. Modern parallel: urinary bladder function plus the broader autonomic regulation along the spine.',
-    function_zh: '儲存與排放尿液。對應現代醫學：膀胱功能、以及沿脊柱之自主神經調節。',
+    function_zh: '储存与排放尿液。对应现代医学：膀胱功能、以及沿脊柱之自主神经调节。',
     imbalance_en: 'Frequent or scant urination, urinary urgency, lower back pain, neck and shoulder tension along the bladder meridian, late-afternoon energy slump.',
-    imbalance_zh: '小便頻數或短少、尿急、腰痛、頸肩沿膀胱經緊繃、午後體力下降。',
+    imbalance_zh: '小便频数或短少、尿急、腰痛、颈肩沿膀胱经紧绷、午后体力下降。',
     seek_care_en: 'Persistent urinary frequency or urgency, blood in urine, recurring back or neck pain, or unexplained late-afternoon fatigue affecting daily life.',
-    seek_care_zh: '持續尿頻或尿急、尿血、反覆腰頸疼痛、或不明原因午後疲憊影響生活。'
+    seek_care_zh: '持续尿频或尿急、尿血、反复腰颈疼痛、或不明原因午后疲惫影响生活。'
   },
   kidney: {
-    zh: '腎', enName: 'Kidney', element: 'Water · 水', window: '17:00 – 19:00', paired: 'Bladder · 膀胱',
+    zh: '肾', enName: 'Kidney', element: 'Water · 水', window: '17:00 – 19:00', paired: 'Bladder · 膀胱',
     theory_en: 'The Kidney stores Essence (精) — the foundation of constitution, growth, reproduction, and longevity. In TCM, the Kidney is "the root of pre-natal qi" — what your parents gave you.',
-    theory_zh: '腎藏精，主生殖、生長、發育、壽命。腎為先天之本 —— 來自父母之根本能量。',
+    theory_zh: '肾藏精，主生殖、生长、发育、寿命。肾为先天之本 —— 来自父母之根本能量。',
     function_en: 'Filters blood, regulates fluid balance, governs the adrenal-reproductive axis. Modern parallel: renal function plus endocrine systems including adrenal and gonadal hormones.',
-    function_zh: '過濾血液、調節水液、主導腎上腺與生殖軸。對應現代醫學：腎臟功能、腎上腺與性腺內分泌。',
+    function_zh: '过滤血液、调节水液、主导肾上腺与生殖轴。对应现代医学：肾脏功能、肾上腺与性腺内分泌。',
     imbalance_en: 'Low back pain, weak knees, ringing in the ears, hair loss or premature greying, low libido, fearfulness, dark circles under the eyes.',
-    imbalance_zh: '腰痠膝軟、耳鳴、脫髮或早白、性欲低下、易恐懼、目下黑暈。',
+    imbalance_zh: '腰酸膝软、耳鸣、脱发或早白、性欲低下、易恐惧、目下黑晕。',
     seek_care_en: 'Persistent lower back or knee pain, swelling in legs/feet, changes in urination, hearing problems, or fertility/hormonal concerns.',
-    seek_care_zh: '持續腰膝疼痛、下肢水腫、小便異常、聽力問題、或生殖與荷爾蒙相關之困擾。'
+    seek_care_zh: '持续腰膝疼痛、下肢水肿、小便异常、听力问题、或生殖与荷尔蒙相关之困扰。'
   },
   pericardium: {
     zh: '心包', enName: 'Pericardium', element: 'Fire · 火', window: '19:00 – 21:00', paired: 'Triple Warmer · 三焦',
     theory_en: 'The Pericardium is the Heart\'s protector — it shields the emperor (Heart) from external pathogens and emotional shock. It governs the warmth of intimate connection.',
-    theory_zh: '心包為心之外衛，代心受邪。中醫稱之為臣使之官，主喜樂、人際溫情之傳達。',
+    theory_zh: '心包为心之外卫，代心受邪。中医称之为臣使之官，主喜乐、人际温情之传达。',
     function_en: 'Anatomically the membrane around the heart. In TCM, also the seat of emotional warmth and intimate connection — chest tightness from heartbreak lives here.',
-    function_zh: '解剖上為心臟外膜。中醫認為亦主情感溫度與親密連結 —— 失戀之胸悶即與心包相關。',
+    function_zh: '解剖上为心脏外膜。中医认为亦主情感温度与亲密连结 —— 失恋之胸闷即与心包相关。',
     imbalance_en: 'Chest tightness, palpitations linked to emotional stress, difficulty in close relationships, evening anxiety, hot palms.',
-    imbalance_zh: '胸悶、情緒壓力引發之心悸、人際親密困難、晚間焦慮、手心發熱。',
+    imbalance_zh: '胸闷、情绪压力引发之心悸、人际亲密困难、晚间焦虑、手心发热。',
     seek_care_en: 'Persistent chest tightness, panic attacks at night, palpitations linked to emotional triggers, or chronic difficulty in close relationships affecting wellbeing.',
-    seek_care_zh: '持續胸悶、夜間恐慌發作、情緒觸發之心悸、或親密關係困擾長期影響身心。'
+    seek_care_zh: '持续胸闷、夜间恐慌发作、情绪触发之心悸、或亲密关系困扰长期影响身心。'
   },
   triple_warmer: {
     zh: '三焦', enName: 'Triple Warmer', element: 'Fire · 火', window: '21:00 – 23:00', paired: 'Pericardium · 心包',
     theory_en: 'The Triple Warmer (San Jiao) is the unique TCM organ with no Western anatomical equivalent. It coordinates the upper, middle, and lower body cavities — governing fluid metabolism, temperature regulation, and overall qi flow.',
-    theory_zh: '三焦為中醫特有之腑，無西醫對應實體。統管上中下三焦，主水液代謝、體溫調節、氣機通暢。',
+    theory_zh: '三焦为中医特有之腑，无西医对应实体。统管上中下三焦，主水液代谢、体温调节、气机通畅。',
     function_en: 'A "functional system" rather than a single organ — coordinates how qi and fluids move between body cavities. Modern parallel: lymphatic system + autonomic temperature regulation + interstitial fluid network.',
-    function_zh: '功能性系統，非單一臟器 —— 協調氣血津液在三焦間流動。對應現代醫學：淋巴系統、體溫自主調節、組織間液網絡。',
+    function_zh: '功能性系统，非单一脏器 —— 协调气血津液在三焦间流动。对应现代医学：淋巴系统、体温自主调节、组织间液网络。',
     imbalance_en: 'Difficulty regulating temperature (always hot or always cold), edema, metabolic sluggishness, evening restlessness, trouble winding down for sleep.',
-    imbalance_zh: '體溫調節失常（常熱或常冷）、水腫、代謝遲緩、晚間躁動、難以放鬆入睡。',
+    imbalance_zh: '体温调节失常（常热或常冷）、水肿、代谢迟缓、晚间躁动、难以放松入睡。',
     seek_care_en: 'Persistent edema, severe temperature dysregulation, chronic insomnia in the 9–11 PM window, or metabolic concerns alongside fluid retention.',
-    seek_care_zh: '持續水腫、嚴重體溫失調、晚間9至11點長期失眠、或代謝問題伴水液滯留。'
+    seek_care_zh: '持续水肿、严重体温失调、晚间9至11点长期失眠、或代谢问题伴水液滞留。'
   }
 };
 
@@ -2388,11 +2836,11 @@ function openOrganDetailModal(key) {
     '</h3>' +
     '<div class="organ-modal-pills">' +
       '<div class="organ-modal-pill"><span class="opl">Element · 元素</span><span class="opv">' + esc(data.element) + '</span></div>' +
-      '<div class="organ-modal-pill"><span class="opl">Peak window · 當令</span><span class="opv">' + esc(data.window) + '</span></div>' +
-      '<div class="organ-modal-pill"><span class="opl">Paired · 表裡</span><span class="opv">' + esc(data.paired) + '</span></div>' +
+      '<div class="organ-modal-pill"><span class="opl">Peak window · 当令</span><span class="opv">' + esc(data.window) + '</span></div>' +
+      '<div class="organ-modal-pill"><span class="opl">Paired · 表里</span><span class="opv">' + esc(data.paired) + '</span></div>' +
     '</div>' +
     '<div class="organ-modal-section">' +
-      '<h4><span lang="en">TCM theory</span><span lang="zh">中醫理論</span></h4>' +
+      '<h4><span lang="en">TCM theory</span><span lang="zh">中医理论</span></h4>' +
       '<p><span lang="en">' + esc(data.theory_en) + '</span><span lang="zh">' + esc(data.theory_zh) + '</span></p>' +
     '</div>' +
     '<div class="organ-modal-section">' +
@@ -2400,22 +2848,22 @@ function openOrganDetailModal(key) {
       '<p><span lang="en">' + esc(data.function_en) + '</span><span lang="zh">' + esc(data.function_zh) + '</span></p>' +
     '</div>' +
     '<div class="organ-modal-section">' +
-      '<h4><span lang="en">When out of balance</span><span lang="zh">失調時</span></h4>' +
+      '<h4><span lang="en">When out of balance</span><span lang="zh">失调时</span></h4>' +
       '<p><span lang="en">' + esc(data.imbalance_en) + '</span><span lang="zh">' + esc(data.imbalance_zh) + '</span></p>' +
     '</div>' +
     '<div class="organ-modal-section">' +
-      '<h4><span lang="en">When to seek care</span><span lang="zh">何時就診</span></h4>' +
+      '<h4><span lang="en">When to seek care</span><span lang="zh">何时就诊</span></h4>' +
       '<p><span lang="en">' + esc(data.seek_care_en) + '</span><span lang="zh">' + esc(data.seek_care_zh) + '</span></p>' +
     '</div>' +
     '<div class="organ-modal-cta">' +
       '<a class="btn-v4 btn-dark" href="' + ctaHref + '">' +
         '<span lang="en">Book a ' + esc(data.enName) + '-window consult →</span>' +
-        '<span lang="zh">預約「' + esc(data.zh) + '」時段問診 →</span>' +
+        '<span lang="zh">预约「' + esc(data.zh) + '」时段问诊 →</span>' +
       '</a>' +
     '</div>' +
     '<p class="organ-modal-disclaimer">' +
       '<span lang="en">Educational content. Not a medical diagnosis.</span>' +
-      '<span lang="zh">教育內容，並非醫療診斷。</span>' +
+      '<span lang="zh">教育内容，并非医疗诊断。</span>' +
     '</p>';
 
   backdrop.classList.add('open');
@@ -2444,8 +2892,8 @@ function openOrganDetailModal(key) {
     toggle.addEventListener('change', function () {
       if (hint) {
         hint.innerHTML = toggle.checked
-          ? '<span lang="en">(all organs unlocked)</span><span lang="zh">（所有臟腑已解鎖）</span>'
-          : '<span lang="en">(default: only the active organ is clickable)</span><span lang="zh">（預設：只可點擊正在當令的臟腑）</span>';
+          ? '<span lang="en">(all organs unlocked)</span><span lang="zh">（所有脏腑已解锁）</span>'
+          : '<span lang="en">(default: only the active organ is clickable)</span><span lang="zh">（预设：只可点击正在当令的脏腑）</span>';
       }
       syncOrganClockInteractivity();
     });
@@ -2471,188 +2919,4 @@ function openOrganDetailModal(key) {
     if (skip(el)) return;
     el.classList.add('ib-fade', 'ib-d2');
   });
-  document.querySelectorAll('.card-v4').forEach(function (el, i) {
-    if (skip(el)) return;
-    el.classList.add('ib-fade', 'ib-d' + (i % 3 + 1));
-  });
-  document.querySelectorAll('.step-card').forEach(function (el, i) {
-    if (skip(el)) return;
-    el.classList.add('ib-fade', 'ib-d' + (i + 1));
-  });
-  document.querySelectorAll('.pnav-card').forEach(function (el, i) {
-    if (skip(el)) return;
-    el.classList.add('ib-fade', 'ib-d' + (i + 1));
-  });
-  document.querySelectorAll('.cert-pill').forEach(function (el, i) {
-    if (skip(el)) return;
-    el.classList.add('ib-fade', 'ib-d' + Math.min(i % 5 + 1, 6));
-  });
-  document.querySelectorAll('.ti').forEach(function (el, i) {
-    el.classList.add('ib-fade', 'ib-d' + (i + 1));
-  });
-  var ctaBar = document.querySelector('#cta-italic');
-  if (ctaBar) { var p = ctaBar.closest('div[style]'); if (p) p.classList.add('ib-fade', 'ib-d3'); }
-
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (!entry.isIntersecting) return;
-      var sec = entry.target;
-      var vis = function (cls) { sec.querySelectorAll('.' + cls).forEach(function (el) { el.classList.add('vis'); }); };
-      // Bug-fix 2026-05-03: previous staged setTimeouts (90ms, 220ms)
-      // gave content a "rolling out part by part" feel as user scrolled.
-      // Tightened to 0ms / 60ms so all sub-elements appear within ~60ms
-      // of trigger — still visually staggered, no longer feels slow.
-      vis('ib-rule');
-      vis('ib-sweep');
-      setTimeout(function () { vis('ib-fade'); vis('ib-herb'); }, 60);
-      io.unobserve(sec);
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -48px 0px' });
-  document.querySelectorAll('.sec, .trust').forEach(function (el) { io.observe(el); });
-})();
-</script>
-
-<!-- ════════════════════════════════════════════════════════════════
-     Brief #8 — visual-upgrade JS layer.
-     Smooth scroll (Lenis), scroll-reveal observer, hero parallax,
-     image fade-in. All four respect prefers-reduced-motion; the
-     scroll/parallax also bow out on touch-mobile so we don't
-     fight iOS Safari's native momentum scroll.
-     Total inline JS budget: ~1.5KB; Lenis library ~10KB.
-     ════════════════════════════════════════════════════════════════ -->
-
-<!-- Lenis smooth scroll (Task B) — desktop only. -->
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.0.42/dist/lenis.min.js" defer></script>
-<script>
-(function () {
-  function start() {
-    if (typeof Lenis === 'undefined') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Bug-fix 2026-05-03: previous guard used AND between touch-device
-    // and small-viewport, so large phones/tablets in landscape still
-    // ran Lenis and lagged badly. Switch to OR — any touch device OR
-    // any small viewport gets native scroll. Lenis is desktop-mouse only.
-    if ('ontouchstart' in window || window.matchMedia('(max-width: 1024px)').matches) return;
-    var lenis = new Lenis({
-      duration: 1.05,
-      easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
-      smoothWheel: true
-    });
-    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-    requestAnimationFrame(raf);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 0); });
-  } else {
-    /* Lenis is loaded via defer, so it lands after DOMContentLoaded.
-       Defer one tick so the library has a chance to attach. */
-    setTimeout(start, 50);
-  }
-})();
-</script>
-
-<!-- Scroll-reveal observer (Task C). Falls back to immediate
-     visibility if IntersectionObserver is unsupported. -->
-<script>
-(function () {
-  function reveal(el) { el.classList.add('is-visible'); }
-  if (!('IntersectionObserver' in window)) {
-    document.querySelectorAll('.reveal').forEach(reveal);
-    return;
-  }
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) {
-        reveal(e.target);
-        io.unobserve(e.target);
-      }
-    });
-  // Bug-fix 2026-05-03: previous threshold:0.12 + rootMargin:-8%
-  // delayed reveals until elements were well inside the viewport,
-  // making content feel like it "waits a few seconds then suddenly
-  // appears" on a long scroll. Trigger 200px BEFORE the element
-  // enters the viewport so the fade-in is mostly done by the time
-  // the user sees it — feels like content is already present, not
-  // animating in late.
-  }, { threshold: 0, rootMargin: '0px 0px 200px 0px' });
-  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
-})();
-</script>
-
-<!-- Hero parallax (Task D) — desktop, no reduced-motion. Updates
-     background-position via rAF, only while the hero is in view. -->
-<script>
-(function () {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  // Bug-fix 2026-05-03: also disable parallax on any touch device,
-  // not just narrow viewport. Touch + scroll-driven background
-  // position updates is the worst-case lag combo.
-  if ('ontouchstart' in window || window.matchMedia('(max-width: 1024px)').matches) return;
-  var hero = document.querySelector('.hero-v3');
-  if (!hero) return;
-  var ticking = false;
-  function update() {
-    var y = window.scrollY;
-    if (y > window.innerHeight) { ticking = false; return; }
-    var offset = y * 0.20;
-    hero.style.backgroundPosition = 'center calc(50% + ' + offset + 'px)';
-    ticking = false;
-  }
-  window.addEventListener('scroll', function () {
-    if (!ticking) {
-      window.requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
-})();
-</script>
-
-<!-- Image fade-in on load (Task F). Adds .loaded once the image
-     completes; CSS handles the opacity transition. Reduced-motion
-     users skip the transition via the CSS media query. -->
-<script>
-(function () {
-  document.querySelectorAll('img.fade-in-load').forEach(function (img) {
-    if (img.complete && img.naturalWidth > 0) {
-      img.classList.add('loaded');
-    } else {
-      img.addEventListener('load',  function () { img.classList.add('loaded'); }, { once: true });
-      img.addEventListener('error', function () { img.classList.add('loaded'); }, { once: true });
-    }
-  });
-})();
-</script>
-
-<!-- Cloudflare Web Analytics -->
-<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "b22decee5e7940658a78263e5e8b9fb6"}'></script>
-<!-- End Cloudflare Web Analytics -->
-
-<script>
-/* ─── Sign In → My Portal swap (auth-aware nav) ───
-   When the visitor is signed in, the "Sign In · 登入" nav button
-   becomes "My Portal · 我的入口" linking to their role-appropriate
-   portal page. Re-runs on storage changes so logging out in another
-   tab immediately reverts the button. */
-(function () {
-  var PORTAL_URL = {
-    patient:  'portal.html',
-    doctor:   'doctor.html',
-    pharmacy: 'pharmacy.html',
-    admin:    'admin.html',
-  };
-  function applySignInSwap() {
-    var user = (window.HM && HM.auth && typeof HM.auth.user === 'function') ? HM.auth.user() : null;
-    if (!user || !user.role) return; /* not signed in — leave "Sign In" as-is */
-    var dest = PORTAL_URL[user.role] || 'portal.html';
-    /* Desktop nav */
-    document.querySelectorAll('.nav-signin, .nl.nav-signin').forEach(function (el) {
-      if (el.tagName === 'A' || el.tagName === 'BUTTON') {
-        if (el.tagName === 'A') el.setAttribute('href', dest);
-        else el.setAttribute('onclick', "location.href='" + dest + "'");
-        /* disabled — CSS handles label swap */
-      }
-    });
-    /* Mobile drawer link labeled 登入 Sign In — if walker wrapped it,
-       its combined text is "Sign In · 登入". Replace both possibilities. */
-    document.querySelectorAll('.mob-nl').forEach(function (el) {
-      var txt = (el.textContent 
+  d
