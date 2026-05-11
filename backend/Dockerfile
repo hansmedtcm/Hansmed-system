@@ -75,10 +75,17 @@ EXPOSE ${PORT:-8080}
 #   - recreate storage dirs (idempotent — only matters when a Railway
 #     Volume is mounted over /app/storage)
 #   - re-link public storage symlink
-#   - run pending migrations
+#   - run pending migrations  (with MySQL-ready retry — see below)
 #   - run demo seeder (legacy from initial setup; idempotent in
 #     practice — DemoSeeder handles duplicate inserts)
 #   - hand off to Octane on FrankenPHP
+#
+# MySQL-ready retry wrapper around `migrate`: with the heavier Octane
+# image, the PHP process arrives at the migrate step a fraction of a
+# second earlier than Railway's internal MySQL DNS is resolvable from
+# this container's network namespace. Previous (lighter) artisan-serve
+# image didn't hit this because boot was slower. Retry up to 10 times
+# at 3-second intervals — covers any plausible MySQL startup window.
 #
 # --workers=auto lets FrankenPHP pick worker count from vCPU count.
 # --max-requests=500 cycles each worker after 500 requests as a
@@ -86,4 +93,10 @@ EXPOSE ${PORT:-8080}
 CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/storage/app/public/medical-docs /app/storage/framework/cache/data /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs \
     && chmod -R 775 /app/storage 2>/dev/null || true; \
     php artisan storage:link --force 2>/dev/null || true; \
-    php artisan migrate --force && php artisan db:seed --force && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=auto --max-requests=500
+    for i in 1 2 3 4 5 6 7 8 9 10; do \
+        php artisan migrate --force && break; \
+        echo "MySQL not ready yet (attempt $i/10), retrying in 3s..."; \
+        sleep 3; \
+    done; \
+    php artisan db:seed --force; \
+    php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=auto --max-requests=500
