@@ -64,13 +64,33 @@ class NotificationService
             $doctorIds = \App\Models\User::where('role', 'doctor')->pluck('id');
         }
 
-        foreach ($doctorIds as $uid) {
-            $this->notify((int) $uid, 'appointment.pool.new', $title, $body, [
-                'appointment_id' => $appointmentId,
-                'patient_id'     => $patientId,
-                'route'          => '#/queue',
-            ]);
+        if ($doctorIds->isEmpty()) {
+            return;
         }
+
+        // 2026-05-12 perf — bulk insert instead of a foreach-of-creates.
+        // Under php artisan serve + Railway MySQL the per-row Eloquent
+        // path was costing ~200-400ms per doctor (model events, JSON
+        // re-encode, transaction round-trips). On a DB with accumulated
+        // test doctor accounts the fanout pushed booking responses past
+        // the 45s frontend timeout. Bulk insert is a single SQL
+        // statement regardless of doctor count.
+        $now     = now();
+        $payload = json_encode([
+            'appointment_id' => $appointmentId,
+            'patient_id'     => $patientId,
+            'route'          => '#/queue',
+        ]);
+        $rows = $doctorIds->map(fn ($uid) => [
+            'user_id'    => (int) $uid,
+            'type'       => 'appointment.pool.new',
+            'title'      => $title,
+            'body'       => $body,
+            'data'       => $payload,
+            'created_at' => $now,
+        ])->all();
+
+        Notification::insert($rows);
     }
 
     public function prescriptionIssued(int $patientId, int $prescriptionId): void
