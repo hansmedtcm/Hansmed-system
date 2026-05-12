@@ -152,15 +152,17 @@
         // Only shown for statuses where the doctor hasn't started/
         // completed the consult yet.
         var assessableStatuses = ['confirmed', 'pending_payment', 'in_progress'];
-        if (assessableStatuses.indexOf(a.status) >= 0 && node.querySelector('.appt-actions')) {
+        var viewBtn = node.querySelector('[data-action="view"]');
+        var actionsRow = viewBtn ? viewBtn.parentElement : null;
+        if (assessableStatuses.indexOf(a.status) >= 0 && actionsRow) {
           var assessBtn = document.createElement('button');
-          assessBtn.className = 'btn btn--ghost btn--sm';
-          assessBtn.style.cssText = 'margin-top: var(--s-2); width: 100%;';
+          assessBtn.className = 'btn btn--outline btn--sm';
+          assessBtn.style.cssText = 'flex-basis: 100%; margin-top: var(--s-2);';
           assessBtn.innerHTML = '<span lang="en">📝 Complete Wellness Assessment</span><span lang="zh"> · 完成健康评估</span>';
           assessBtn.addEventListener('click', function () {
             location.hash = '#/pre-assessment/' + a.id;
           });
-          node.querySelector('.appt-actions').appendChild(assessBtn);
+          actionsRow.appendChild(assessBtn);
         }
 
         // When inside the 1hr window, replace the hidden cancel button
