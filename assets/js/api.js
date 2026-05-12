@@ -224,14 +224,16 @@
         throw et;
       }
 
-      // Step 1 — request presigned URL. 10s timeout because the backend
-      // does a tiny DB insert + a few crypto ops.
+      // Step 1 — request presigned URL. Bumped 10s → 30s 2026-05-12:
+      // under php artisan serve + Railway cold-start the 'tiny' DB insert
+      // can take 10-15s on the first request after idle. The frontend was
+      // showing 'Request timed out' before the real upload even started.
       var sign = await api.post('/patient/tongue-assessments/start-upload', {
         filename:  file.name,
         file_size: file.size,
         // consent_text omitted in Phase 6 — Phase 8 wires the consent UI.
         // Backend column is nullable; it'll just store NULL for these uploads.
-      }, { timeout: 10000 });
+      }, { timeout: 30000 });
 
       if (!sign || !sign.upload_url || !sign.assessment_id) {
         var es = new Error('start-upload response missing fields');
@@ -281,7 +283,7 @@
       var done = await api.post(
         '/patient/tongue-assessments/' + sign.assessment_id + '/complete-upload',
         {},
-        { timeout: 90000 }
+        { timeout: 120000 } // bumped 90s → 120s 2026-05-12: Claude Vision can run long under artisan serve cold-start
       );
 
       // Match the legacy response shape that the call sites expect:
