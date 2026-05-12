@@ -1,74 +1,55 @@
 # HansMed backend Dockerfile.
 #
-# 2026-05-11 — migrated from `php artisan serve` (single-threaded
-# development server, no OPcache, ~5-8s per request) to Laravel
-# Octane on FrankenPHP (persistent worker mode, ~100-300ms per
-# request). Mirror image of backend/nixpacks.toml — Railway picks
-# this file as the build source when both exist, so keeping the two
-# in sync is essential.
+# 2026-05-12 — REVERTED from Laravel Octane + FrankenPHP back to
+# `php artisan serve`. The Octane migration broke CORS in a way we
+# could not diagnose without shell access to the running container:
+# HandleCors middleware silently stopped emitting Access-Control-*
+# headers, taking patient/doctor portals + login offline. Three fix
+# attempts (HandleCors prepend, custom HansMedCors middleware,
+# Caddyfile at the HTTP layer) all failed. Rolling Octane back
+# restores the known-working Laravel middleware stack at the cost of
+# the 5-8x performance regression. Octane will be re-attempted in a
+# separate dev environment with proper observability.
 #
-# See backend/config/octane.php for the runtime config.
+# Trade-off accepted: ~1-4s/request (was ~100-300ms under Octane) in
+# exchange for a working production site. Acceptable during soft-launch
+# while we figure out the real Octane interaction.
+#
+# Mirror image of backend/nixpacks.toml — if both exist, Railway picks
+# this Dockerfile.
 
 FROM php:8.3-cli
 
-# System packages + PHP extensions, including opcache (NEW —
-# needed for the FrankenPHP worker mode's bytecode cache).
+# System packages + PHP extensions for Laravel + AWS S3 (R2) + image work.
+# OPcache/JIT/pcntl dropped — those were only needed for Octane worker mode.
 RUN apt-get update && apt-get install -y \
-        git unzip wget libonig-dev libzip-dev libpng-dev libicu-dev \
-    && docker-php-ext-install pdo pdo_mysql bcmath intl zip gd opcache pcntl \
+        git unzip libonig-dev libzip-dev libpng-dev libicu-dev \
+    && docker-php-ext-install pdo pdo_mysql bcmath intl zip gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# OPcache + JIT config — drop into the conf.d directory the docker
-# PHP image scans on startup. opcache.enable_cli=1 is the critical
-# bit; without it, every CLI invocation re-tokenizes the whole
-# Laravel autoload tree (the original cause of 4-8s requests).
-RUN { \
-        echo 'opcache.enable=1'; \
-        echo 'opcache.enable_cli=1'; \
-        echo 'opcache.memory_consumption=256'; \
-        echo 'opcache.max_accelerated_files=20000'; \
-        echo 'opcache.validate_timestamps=0'; \
-        echo 'opcache.jit_buffer_size=256M'; \
-        echo 'opcache.jit=tracing'; \
-        echo 'realpath_cache_size=4096K'; \
-        echo 'realpath_cache_ttl=600'; \
-    } > /usr/local/etc/php/conf.d/zz-opcache.ini
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 COPY . .
 
-# `composer update` (full, not partial): the repo has historically
-# never committed a composer.lock file, so `composer update <pkg>`
-# fails with "Cannot update only a partial set of packages without
-# a lock file present" (caught in the first Octane deploy attempt
-# 2026-05-11). A full update resolves composer.json fresh, generates
-# the lockfile, and installs laravel/octane along with everything
-# else. Version constraints in composer.json (^11.0, ^4.0 etc.) keep
-# this from pulling in unexpected major-version drift.
+# Full composer install (no committed composer.lock). With laravel/octane
+# now removed from composer.json, this resolves a smaller dependency tree
+# than the Octane image — the build is also a touch faster.
 #
-# --no-plugins suppresses the "Composer plugins disabled" warning
-# in non-interactive root-user installs (we have no plugins anyway).
-# COMPOSER_ALLOW_SUPERUSER=1 silences the root-user warning that
-# Composer otherwise prints to stderr (the image runs as root).
+# --no-plugins suppresses the "Composer plugins disabled" warning in
+# non-interactive root-user installs (we have no plugins anyway).
+# COMPOSER_ALLOW_SUPERUSER=1 silences the root-user warning.
 ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN composer update --no-dev --optimize-autoloader --no-interaction --no-scripts --no-plugins \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# FrankenPHP static binary — single file, no deps. v1.4.2 pinned to
-# match Laravel Octane ^2.5 compatibility. Bump in lockstep with octane.
-RUN wget -q https://github.com/dunglas/frankenphp/releases/download/v1.4.2/frankenphp-linux-x86_64 -O /usr/local/bin/frankenphp \
-    && chmod +x /usr/local/bin/frankenphp
-
-# Pre-build Laravel caches so the workers don't have to do it on first
-# request. Each `artisan ... cache` shaves milliseconds off boot.
-# NOTE: php artisan config:cache deliberately NOT run here. Railway
-# injects env vars (DB_HOST, DB_PASSWORD, etc.) at RUNTIME, not at
-# build time, so caching config at build snapshots the fallback
-# defaults from config/*.php (DB_HOST=127.0.0.1 etc.) and the runtime
-# env vars get ignored. Bit us on the first Octane deploy 2026-05-11.
+# Pre-build the route/event/view caches so the per-request bootstrap
+# at runtime is as fast as possible under artisan serve.
+# config:cache is deliberately NOT run here — Railway injects env vars
+# (DB_HOST, DB_PASSWORD, etc.) at RUNTIME, not build time, so caching
+# config at build snapshots the fallback defaults from config/*.php
+# (DB_HOST=127.0.0.1 etc.) and the runtime env vars get ignored.
 # Config cache moved to runtime in the CMD below.
 RUN php artisan route:cache \
     && php artisan event:cache \
@@ -83,20 +64,13 @@ EXPOSE ${PORT:-8080}
 #   - run pending migrations  (with MySQL-ready retry — see below)
 #   - run demo seeder (legacy from initial setup; idempotent in
 #     practice — DemoSeeder handles duplicate inserts)
-#   - hand off to Octane on FrankenPHP
+#   - hand off to artisan serve
 #
-# MySQL-ready retry wrapper around `migrate`: with the heavier Octane
-# image, the PHP process arrives at the migrate step a fraction of a
-# second earlier than Railway's internal MySQL DNS is resolvable from
-# this container's network namespace. Previous (lighter) artisan-serve
-# image didn't hit this because boot was slower. Retry up to 10 times
-# at 3-second intervals — covers any plausible MySQL startup window.
-#
-# --workers=16 overrides FrankenPHP's vCPU-based auto-detect.
-# 16 workers on 8 vCPU lets ~2 requests queue per core during DB I/O
-# waits — empirically better for I/O-bound Laravel + MySQL workloads.
-# --max-requests=500 cycles each worker after 500 requests as a
-# defensive measure against any long-tail memory leaks.
+# MySQL-ready retry wrapper around `migrate`: at container boot the
+# PHP process can arrive at the migrate step a fraction of a second
+# earlier than Railway's internal MySQL DNS is resolvable from this
+# container's network namespace. Retry up to 10 times at 3-second
+# intervals — covers any plausible MySQL startup window.
 CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/storage/app/public/medical-docs /app/storage/framework/cache/data /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs \
     && chmod -R 775 /app/storage 2>/dev/null || true; \
     php artisan storage:link --force 2>/dev/null || true; \
@@ -107,4 +81,4 @@ CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/st
     done; \
     php artisan config:cache; \
     php artisan db:seed --force; \
-    php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=16 --max-requests=500
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8080}

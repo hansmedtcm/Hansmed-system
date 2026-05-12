@@ -1,89 +1,23 @@
 # Railway nixpacks build config.
 #
-# 2026-05-11 — migrated from `php artisan serve` (single-threaded
-# development server, no OPcache, ~5-8s per request) to Laravel
-# Octane on FrankenPHP (persistent worker mode, ~100-300ms per
-# request). See backend/config/octane.php for the runtime config.
+# 2026-05-12 — reverted from Laravel Octane + FrankenPHP back to
+# `php artisan serve` after the Octane migration broke CORS in a
+# way we could not diagnose under load. See backend/Dockerfile (the
+# canonical build source — Railway uses Dockerfile over nixpacks
+# when both exist) for the full rollback rationale.
 
 [phases.setup]
-# php83Extensions.opcache is the new addition — pre-2026-05-11 builds
-# didn't include it, so OPcache was unavailable even if we'd enabled
-# it via php.ini. We need it now because (a) it's the standard
-# bytecode cache that PHP relies on at production scale, and (b)
-# FrankenPHP's worker mode pre-compiles + caches autoload paths
-# inside the worker, dramatically reducing per-request CPU.
-nixPkgs = [
-  "php83",
-  "php83Extensions.pdo_mysql",
-  "php83Extensions.bcmath",
-  "php83Extensions.intl",
-  "php83Extensions.zip",
-  "php83Extensions.gd",
-  "php83Extensions.opcache",
-  "wget",
-]
-
-# PHP loads any .ini fragments it finds in the path set by this env var.
-# We use it to drop in our OPcache + JIT config in the install phase
-# below (writing to /app/.php-ini/zz-opcache.ini).
-[variables]
-PHP_INI_SCAN_DIR = "/app/.php-ini"
+nixPkgs = ["php83", "php83Extensions.pdo_mysql", "php83Extensions.bcmath", "php83Extensions.intl", "php83Extensions.zip", "php83Extensions.gd"]
 
 [phases.install]
-cmds = [
-  # First-time install will add laravel/octane to composer.lock
-  # (composer.json was updated 2026-05-11 but lock wasn't regenerated
-  # locally — no PHP/composer on the dev's machine). Subsequent builds
-  # see the lock already up to date and this becomes a no-op verify.
-  # `update <package>` is scoped: it ONLY refreshes octane + its
-  # direct deps, not every package in the lockfile. Safer than a
-  # blanket `composer update`.
-  "composer update laravel/octane --with-all-dependencies --no-dev --optimize-autoloader --no-interaction",
-  # Pull the FrankenPHP static binary (single-file, no deps) and
-  # drop it into /usr/local/bin so it's on PATH for octane:start.
-  # Pinned to v1.4.2 — Laravel Octane ^2.5 is tested against this
-  # series. Bump in lockstep with octane upgrades.
-  "wget -q https://github.com/dunglas/frankenphp/releases/download/v1.4.2/frankenphp-linux-x86_64 -O /usr/local/bin/frankenphp",
-  "chmod +x /usr/local/bin/frankenphp",
-  # Drop OPcache .ini fragment that gets loaded via PHP_INI_SCAN_DIR
-  # above. opcache.enable_cli=1 is the key bit — without it, the
-  # bytecode cache is disabled for any CLI invocation (including
-  # the artisan/octane processes), which was the root cause of the
-  # 5-8s per-request latency we hit on 2026-05-11.
-  "mkdir -p /app/.php-ini",
-  "printf 'opcache.enable=1\\nopcache.enable_cli=1\\nopcache.memory_consumption=256\\nopcache.max_accelerated_files=20000\\nopcache.validate_timestamps=0\\nopcache.jit_buffer_size=256M\\nopcache.jit=tracing\\nrealpath_cache_size=4096K\\nrealpath_cache_ttl=600\\n' > /app/.php-ini/zz-opcache.ini",
-]
+cmds = ["composer install --no-dev --optimize-autoloader"]
 
 [phases.build]
-cmds = [
-  "php artisan config:cache",
-  "php artisan route:cache",
-  # event:cache is new with Laravel 11 — caches the event-listener
-  # discovery map. Modest win on its own, but every saved millisecond
-  # of boot pays off across every Octane request before reload.
-  "php artisan event:cache",
-  # view:cache pre-compiles all Blade templates we have today —
-  # currently the email templates from Brief #16. Same reason as
-  # above: take the per-request work off the hot path.
-  "php artisan view:cache",
-]
+cmds = ["php artisan config:cache", "php artisan route:cache"]
 
 [start]
 # mkdir -p first: when a Railway Volume is mounted over /app/storage
 # (or a sub-path) the mount starts empty, so Laravel's expected dirs
 # must be (re)created every boot. Idempotent — safe when no volume
 # is attached too.
-#
-# octane:start replaces `artisan serve`. FrankenPHP keeps a pool of
-# Laravel-bootstrapped PHP workers in memory and dispatches each HTTP
-# request to a worker; no boot cost per request.
-#
-# --workers=auto lets FrankenPHP pick worker count based on CPU
-# (typically num_cpu × 1). On Railway Hobby (8 vCPU ceiling) that's
-# more than enough for the current traffic, with plenty of slack for
-# parallel admin/portal requests.
-#
-# --max-requests=500 cycles each worker after 500 requests, which
-# prevents long-term memory leaks from any service that holds
-# resident state. Standard defensive setting.
-cmd = "mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/storage/app/public/medical-docs /app/storage/framework/cache/data /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs && chmod -R 775 /app/storage 2>/dev/null || true; php artisan storage:link --force 2>/dev/null || true; php artisan migrate --force && php artisan db:seed --force && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=auto --max-requests=500"
+cmd = "mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/storage/app/public/medical-docs /app/storage/framework/cache/data /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs && chmod -R 775 /app/storage 2>/dev/null || true; php artisan storage:link --force 2>/dev/null || true; php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
