@@ -9,8 +9,8 @@ This document is the source of truth for **how to add new modules to the HansMed
 Every page imports two stylesheets, in this order:
 
 ```html
-<link rel="stylesheet" href="/v2/assets/css/tokens.css">
-<link rel="stylesheet" href="/v2/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/components.css">
 ```
 
 Then write **plain HTML** that uses canonical classes (`.btn .btn--primary`, `.card`, `.alert alert--success`, `.field .input`). Do NOT introduce page-local component CSS unless it can't be expressed by the system — and if you do, add it to `components.css`, not the page.
