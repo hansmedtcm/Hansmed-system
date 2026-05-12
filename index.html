@@ -2486,4 +2486,42 @@ function openOrganDetailModal(key) {
     if (skip(el)) return;
     el.classList.add('ib-fade', 'ib-d2');
   });
-  d
+  document.querySelectorAll('.card-v4').forEach(function (el, i) {
+    if (skip(el)) return;
+    el.classList.add('ib-fade', 'ib-d' + (i % 3 + 1));
+  });
+  document.querySelectorAll('.step-card').forEach(function (el, i) {
+    if (skip(el)) return;
+    el.classList.add('ib-fade', 'ib-d' + (i + 1));
+  });
+  document.querySelectorAll('.pnav-card').forEach(function (el, i) {
+    if (skip(el)) return;
+    el.classList.add('ib-fade', 'ib-d' + (i + 1));
+  });
+  document.querySelectorAll('.cert-pill').forEach(function (el, i) {
+    if (skip(el)) return;
+    el.classList.add('ib-fade', 'ib-d' + Math.min(i % 5 + 1, 6));
+  });
+  document.querySelectorAll('.ti').forEach(function (el, i) {
+    el.classList.add('ib-fade', 'ib-d' + (i + 1));
+  });
+  var ctaBar = document.querySelector('#cta-italic');
+  if (ctaBar) { var p = ctaBar.closest('div[style]'); if (p) p.classList.add('ib-fade', 'ib-d3'); }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      var sec = entry.target;
+      var vis = function (cls) { sec.querySelectorAll('.' + cls).forEach(function (el) { el.classList.add('vis'); }); };
+      vis('ib-rule');
+      setTimeout(function () { vis('ib-sweep'); }, 90);
+      setTimeout(function () { vis('ib-fade'); vis('ib-herb'); }, 220);
+      io.unobserve(sec);
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -48px 0px' });
+  document.querySelectorAll('.sec, .trust').forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>
