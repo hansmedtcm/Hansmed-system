@@ -17,13 +17,34 @@ class PatientListController extends Controller
     {
         $doctorId = $request->user()->id;
 
-        $patientIds = Appointment::where('doctor_id', $doctorId)
-            ->distinct()
-            ->pluck('patient_id');
-
-        $q = User::whereIn('id', $patientIds)
+        // 2026-05-12 perf rewrite — the previous version did
+        //   (a) pluck() of ALL patient_ids for this doctor (no LIMIT)
+        //   (b) WHERE IN on potentially thousands of IDs
+        //   (c) N+1 loop: 2 extra queries per patient row to derive
+        //       appointment_count + last_visit.
+        // Under artisan serve with cold opcache + Railway MySQL, a
+        // 30-patient page was hitting ~30+s and the frontend (45s
+        // ceiling) was timing out. Rewrite collapses everything into
+        // a single main query with two correlated subqueries via
+        // addSelect — same data shape, ~1-2s on the same DB.
+        $q = User::query()
             ->where('role', 'patient')
-            ->with('patientProfile');
+            ->whereExists(function ($sq) use ($doctorId) {
+                $sq->select(DB::raw(1))
+                   ->from('appointments')
+                   ->whereColumn('appointments.patient_id', 'users.id')
+                   ->where('appointments.doctor_id', $doctorId);
+            })
+            ->with('patientProfile')
+            ->addSelect([
+                'appointment_count' => Appointment::selectRaw('COUNT(*)')
+                    ->whereColumn('patient_id', 'users.id')
+                    ->where('doctor_id', $doctorId),
+                'last_visit' => Appointment::selectRaw('MAX(scheduled_start)')
+                    ->whereColumn('patient_id', 'users.id')
+                    ->where('doctor_id', $doctorId)
+                    ->where('status', 'completed'),
+            ]);
 
         if ($s = $request->query('search')) {
             $q->where(function ($w) use ($s) {
@@ -37,18 +58,10 @@ class PatientListController extends Controller
 
         $patients = $q->orderByDesc('id')->paginate(30);
 
-        // Enrich with appointment count and last visit
+        // Brief #20 — drop email from JSON output. We needed the
+        // column loaded so the search query (above) could match
+        // on it, but the doctor doesn't get to see the address.
         foreach ($patients as $p) {
-            $p->appointment_count = Appointment::where('doctor_id', $doctorId)
-                ->where('patient_id', $p->id)->count();
-            $p->last_visit = Appointment::where('doctor_id', $doctorId)
-                ->where('patient_id', $p->id)
-                ->where('status', 'completed')
-                ->orderByDesc('scheduled_start')
-                ->value('scheduled_start');
-            // Brief #20 — drop email from JSON output. We needed the
-            // column loaded so the search query (above) could match
-            // on it, but the doctor doesn't get to see the address.
             $p->makeHidden('email');
         }
 
