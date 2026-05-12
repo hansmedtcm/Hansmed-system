@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  *   PATCH  /api/patient/pre-assessment/{id}/stage/{stage}
  *
  * SECURITY: every response goes through PreAssessment::patientSafePayload()
- * so the patient never sees the AI\'s diagnosis, the TCM pattern hypothesis,
+ * so the patient never sees the AI's diagnosis, the TCM pattern hypothesis,
  * the Western differentials, the red-flag breakdown, or the suggested
  * treatment. Those fields are doctor-only — they live on the model but
  * patientSafePayload() filters them out.
@@ -37,47 +37,47 @@ class PreAssessmentController extends Controller
     public function start(Request $request)
     {
         $request->validate([
-            \'appointment_id\' => [\'nullable', \'integer\', \'exists:appointments,id\'],
+            'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],
         ]);
         $user = $request->user();
 
         // Look for an in-progress assessment to resume (per appointment if
         // provided, else per patient).
-        $existing = PreAssessment::where(\'patient_id\', $user->id)
-            ->where(\'status\', \'in_progress\')
+        $existing = PreAssessment::where('patient_id', $user->id)
+            ->where('status', 'in_progress')
             ->when($request->appointment_id, fn ($q) =>
-                $q->where(\'appointment_id\', $request->appointment_id))
-            ->orderByDesc(\'id\')
+                $q->where('appointment_id', $request->appointment_id))
+            ->orderByDesc('id')
             ->first();
 
         if ($existing) {
             return response()->json([
-                \'pre_assessment\' => $existing->patientSafePayload(),
-                \'profile_baseline\' => $this->profileBaseline($user),
-                \'resumed\' => true,
+                'pre_assessment' => $existing->patientSafePayload(),
+                'profile_baseline' => $this->profileBaseline($user),
+                'resumed' => true,
             ]);
         }
 
         $pa = PreAssessment::create([
-            \'patient_id\'      => $user->id,
-            \'appointment_id\'  => $request->appointment_id,
-            \'chief_complaint\' => \'\', // filled at stage 1 submit
-            \'status\'          => \'in_progress\',
-            \'current_stage\'   => 1,
+            'patient_id'      => $user->id,
+            'appointment_id'  => $request->appointment_id,
+            'chief_complaint' => '', // filled at stage 1 submit
+            'status'          => 'in_progress',
+            'current_stage'   => 1,
         ]);
         return response()->json([
-            \'pre_assessment\' => $pa->patientSafePayload(),
-            \'profile_baseline\' => $this->profileBaseline($user),
-            \'resumed\' => false,
+            'pre_assessment' => $pa->patientSafePayload(),
+            'profile_baseline' => $this->profileBaseline($user),
+            'resumed' => false,
         ], 201);
     }
 
     /** GET /api/patient/pre-assessment/{id} — resume / inspect own. */
     public function show(Request $request, int $id)
     {
-        $pa = PreAssessment::where(\'patient_id\', $request->user()->id)
-            ->where(\'id\', $id)->firstOrFail();
-        return response()->json([\'pre_assessment\' => $pa->patientSafePayload()]);
+        $pa = PreAssessment::where('patient_id', $request->user()->id)
+            ->where('id', $id)->firstOrFail();
+        return response()->json(['pre_assessment' => $pa->patientSafePayload()]);
     }
 
     /**
@@ -91,14 +91,14 @@ class PreAssessmentController extends Controller
      */
     public function updateStage(Request $request, int $id, int $stage)
     {
-        $pa = PreAssessment::where(\'patient_id\', $request->user()->id)
-            ->where(\'id\', $id)->firstOrFail();
+        $pa = PreAssessment::where('patient_id', $request->user()->id)
+            ->where('id', $id)->firstOrFail();
 
-        if ($pa->status !== \'in_progress\') {
-            return response()->json([\'message\' => \'Assessment already completed\'], 409);
+        if ($pa->status !== 'in_progress') {
+            return response()->json(['message' => 'Assessment already completed'], 409);
         }
         if ($stage < 1 || $stage > 5) {
-            return response()->json([\'message\' => \'Invalid stage\'], 422);
+            return response()->json(['message' => 'Invalid stage'], 422);
         }
 
         return DB::transaction(function () use ($request, $pa, $stage) {
@@ -106,44 +106,44 @@ class PreAssessmentController extends Controller
             switch ($stage) {
                 case 1:
                     $data = $request->validate([
-                        \'chief_complaint\'  => [\'required\', \'string\', \'min:2\', \'max:1000\'],
-                        \'symptom_timeline\' => [\'nullable\', \'string\', \'max:1000\'],
+                        'chief_complaint'  => ['required', 'string', 'min:2', 'max:1000'],
+                        'symptom_timeline' => ['nullable', 'string', 'max:1000'],
                     ]);
                     $pa->fill($data);
                     break;
                 case 2:
                     $data = $request->validate([
-                        \'western_history_answers\' => [\'nullable\', \'array\'],
-                        \'clinical_assist_output\'  => [\'nullable\', \'array\'],
-                        \'vitals\'                  => [\'nullable\', \'array\'],
+                        'western_history_answers' => ['nullable', 'array'],
+                        'clinical_assist_output'  => ['nullable', 'array'],
+                        'vitals'                  => ['nullable', 'array'],
                     ]);
                     $pa->fill($data);
                     break;
                 case 3:
                     $data = $request->validate([
-                        \'tongue_assessment_id\' => [\'required\', \'integer\', \'exists:tongue_assessments,id\'],
+                        'tongue_assessment_id' => ['required', 'integer', 'exists:tongue_assessments,id'],
                     ]);
                     // Verify the tongue assessment belongs to this patient
-                    $ta = TongueAssessment::find($data[\'tongue_assessment_id\']);
+                    $ta = TongueAssessment::find($data['tongue_assessment_id']);
                     if (! $ta || $ta->patient_id !== $pa->patient_id) {
-                        return response()->json([\'message\' => \'Tongue assessment not yours\'], 403);
+                        return response()->json(['message' => 'Tongue assessment not yours'], 403);
                     }
                     $pa->tongue_assessment_id = $ta->id;
                     // Extract top-2 patterns from the tongue analysis result
                     // and ask the AdaptiveQuestionSelector to pick the questions.
-                    $extra[\'tcm_questions\'] = $this->prepareStage4Questions($pa, $ta);
+                    $extra['tcm_questions'] = $this->prepareStage4Questions($pa, $ta);
                     break;
                 case 4:
                     $data = $request->validate([
-                        \'tcm_answers\' => [\'required\', \'array\'],
+                        'tcm_answers' => ['required', 'array'],
                     ]);
-                    $pa->tcm_answers = $data[\'tcm_answers\'];
+                    $pa->tcm_answers = $data['tcm_answers'];
                     break;
                 case 5:
                     $data = $request->validate([
-                        \'safety_screen_answers\' => [\'required\', \'array\'],
+                        'safety_screen_answers' => ['required', 'array'],
                     ]);
-                    $pa->safety_screen_answers = $data[\'safety_screen_answers\'];
+                    $pa->safety_screen_answers = $data['safety_screen_answers'];
                     $this->finalizeAssessment($pa);
                     break;
             }
@@ -151,7 +151,7 @@ class PreAssessmentController extends Controller
             $pa->current_stage = max($pa->current_stage, $stage + 1);
             $pa->save();
             return response()->json([
-                \'pre_assessment\' => $pa->patientSafePayload(),
+                'pre_assessment' => $pa->patientSafePayload(),
             ] + $extra);
         });
     }
@@ -163,12 +163,12 @@ class PreAssessmentController extends Controller
         $p = $user->patientProfile;
         if (! $p) return [];
         return [
-            \'current_medications\' => $p->current_medications,
-            \'chronic_conditions\'  => $p->chronic_conditions ?? null,
-            \'allergies\'           => $p->allergies,
-            \'halal_only\'          => $p->halal_only ?? null,
-            \'pregnancy_status\'    => $p->pregnancy_status ?? null,
-            \'pregnancy_status_updated_at\' => $p->pregnancy_status_updated_at ?? null,
+            'current_medications' => $p->current_medications,
+            'chronic_conditions'  => $p->chronic_conditions ?? null,
+            'allergies'           => $p->allergies,
+            'halal_only'          => $p->halal_only ?? null,
+            'pregnancy_status'    => $p->pregnancy_status ?? null,
+            'pregnancy_status_updated_at' => $p->pregnancy_status_updated_at ?? null,
         ];
     }
 
@@ -181,16 +181,16 @@ class PreAssessmentController extends Controller
         $analysis = is_string($ta->analysis_json ?? null)
             ? json_decode($ta->analysis_json, true)
             : ($ta->analysis_json ?? []);
-        $topPatterns = $analysis[\'top_patterns\'] ?? $analysis[\'patterns\'] ?? [];
-        $tongueSigns = $analysis[\'tongue_signs\'] ?? $analysis[\'signs\'] ?? [];
+        $topPatterns = $analysis['top_patterns'] ?? $analysis['patterns'] ?? [];
+        $tongueSigns = $analysis['tongue_signs'] ?? $analysis['signs'] ?? [];
 
-        // Normalise top patterns to [\'pattern\', \'confidence\'] shape
+        // Normalise top patterns to ['pattern', 'confidence'] shape
         $normalised = [];
         foreach ((array) $topPatterns as $p) {
-            if (is_array($p) && isset($p[\'pattern\'])) {
+            if (is_array($p) && isset($p['pattern'])) {
                 $normalised[] = [
-                    \'pattern\'    => $p[\'pattern\'],
-                    \'confidence\' => (float) ($p[\'confidence\'] ?? 0),
+                    'pattern'    => $p['pattern'],
+                    'confidence' => (float) ($p['confidence'] ?? 0),
                 ];
             }
         }
@@ -224,22 +224,22 @@ class PreAssessmentController extends Controller
         if ($p) {
             $answers = $pa->safety_screen_answers ?? [];
             $update = [];
-            if (isset($answers[\'current_medications\']))
-                $update[\'current_medications\'] = $answers[\'current_medications\'];
-            if (isset($answers[\'chronic_conditions\']))
-                $update[\'chronic_conditions\']  = $answers[\'chronic_conditions\'];
-            if (isset($answers[\'allergies\']))
-                $update[\'allergies\']           = $answers[\'allergies\'];
-            if (isset($answers[\'halal_only\']))
-                $update[\'halal_only\']          = (bool) $answers[\'halal_only\'];
-            if (isset($answers[\'pregnancy_status\'])) {
-                $update[\'pregnancy_status\']    = $answers[\'pregnancy_status\'];
-                $update[\'pregnancy_status_updated_at\'] = now();
+            if (isset($answers['current_medications']))
+                $update['current_medications'] = $answers['current_medications'];
+            if (isset($answers['chronic_conditions']))
+                $update['chronic_conditions']  = $answers['chronic_conditions'];
+            if (isset($answers['allergies']))
+                $update['allergies']           = $answers['allergies'];
+            if (isset($answers['halal_only']))
+                $update['halal_only']          = (bool) $answers['halal_only'];
+            if (isset($answers['pregnancy_status'])) {
+                $update['pregnancy_status']    = $answers['pregnancy_status'];
+                $update['pregnancy_status_updated_at'] = now();
             }
             if (! empty($update)) $p->update($update);
         }
 
-        $pa->status = \'complete\';
+        $pa->status = 'complete';
         $pa->completed_at = now();
     }
 }

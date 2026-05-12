@@ -19,7 +19,7 @@ use App\Services\WellnessAssessment\data\TreatmentBank;
  * Data source: classical formulas only (1000+ years old, public domain)
  * baked into TreatmentBank from the curated tier-1 spreadsheet. The
  * 845-page treatment textbook is intentionally NOT auto-ingested in v1
- * — it stays as the doctor\'s personal reference.
+ * — it stays as the doctor's personal reference.
  */
 class TreatmentSuggester
 {
@@ -27,7 +27,7 @@ class TreatmentSuggester
 
     /**
      * @param array $topPatterns Top-2 patterns from tongue analysis.
-     *   Each: [\'pattern\', \'confidence\', \'syndrome_id\' (optional)]
+     *   Each: ['pattern', 'confidence', 'syndrome_id' (optional)]
      * @param array $redFlagsDetected Output of RedFlagScreener::screen()
      * @return array|null  Suggestion payload, or null if no confident match.
      */
@@ -40,42 +40,42 @@ class TreatmentSuggester
         if (! $primary) return null;
 
         // 2. Determine secondary (only if its confidence is reasonable
-        //    and it\'s different from the primary).
+        //    and it's different from the primary).
         $secondary = $this->resolveSyndrome($topPatterns[1] ?? null);
-        if ($secondary && $secondary[\'id\'] === $primary[\'id\']) {
+        if ($secondary && $secondary['id'] === $primary['id']) {
             $secondary = null;
         }
 
         // 3. Get composition for primary formula.
-        $formula = $this->lookupFormula($primary[\'formula_zh\']);
+        $formula = $this->lookupFormula($primary['formula_zh']);
 
         // 4. Cross-reference composition against RedFlags to produce
         //    modification suggestions.
         $modifications = $this->computeModifications($formula, $redFlagsDetected);
 
         $payload = [
-            \'primary\' => [
-                \'syndrome_id\'           => $primary[\'id\'],
-                \'syndrome_name_zh\'      => $primary[\'name_zh\'],
-                \'syndrome_name_en\'      => $primary[\'name_en\'],
-                \'confidence\'            => $primary[\'confidence\'],
-                \'formula_zh\'            => $primary[\'formula_zh\'],
-                \'formula_pinyin\'        => $formula[\'pinyin\'] ?? null,
-                \'treatment_principle\'   => $primary[\'treatment_principle\'],
-                \'source\'                => $formula[\'source\'] ?? $primary[\'source\'],
-                \'composition\'           => $formula[\'composition\'] ?? null,
-                \'modifications\'         => $modifications,
+            'primary' => [
+                'syndrome_id'           => $primary['id'],
+                'syndrome_name_zh'      => $primary['name_zh'],
+                'syndrome_name_en'      => $primary['name_en'],
+                'confidence'            => $primary['confidence'],
+                'formula_zh'            => $primary['formula_zh'],
+                'formula_pinyin'        => $formula['pinyin'] ?? null,
+                'treatment_principle'   => $primary['treatment_principle'],
+                'source'                => $formula['source'] ?? $primary['source'],
+                'composition'           => $formula['composition'] ?? null,
+                'modifications'         => $modifications,
             ],
         ];
 
         if ($secondary) {
-            $payload[\'secondary_consideration\'] = [
-                \'syndrome_id\'      => $secondary[\'id\'],
-                \'syndrome_name_zh\' => $secondary[\'name_zh\'],
-                \'syndrome_name_en\' => $secondary[\'name_en\'],
-                \'confidence\'       => $secondary[\'confidence\'],
-                \'note\'             => \'Consider only if confirmed during consult\',
-                \'formula_options\'  => $this->splitFormulas($secondary[\'formula_zh\']),
+            $payload['secondary_consideration'] = [
+                'syndrome_id'      => $secondary['id'],
+                'syndrome_name_zh' => $secondary['name_zh'],
+                'syndrome_name_en' => $secondary['name_en'],
+                'confidence'       => $secondary['confidence'],
+                'note'             => 'Consider only if confirmed during consult',
+                'formula_options'  => $this->splitFormulas($secondary['formula_zh']),
             ];
         }
 
@@ -90,12 +90,12 @@ class TreatmentSuggester
     private function resolveSyndrome(?array $patternEntry): ?array
     {
         if (! $patternEntry) return null;
-        $confidence = (float) ($patternEntry[\'confidence\'] ?? 0);
+        $confidence = (float) ($patternEntry['confidence'] ?? 0);
         if ($confidence < self::MIN_CONFIDENCE) return null;
 
-        $sid = $patternEntry[\'syndrome_id\'] ?? null;
+        $sid = $patternEntry['syndrome_id'] ?? null;
         if (! $sid) {
-            $candidates = PatternQuestionBank::syndromesFor($patternEntry[\'pattern\'] ?? \'\');
+            $candidates = PatternQuestionBank::syndromesFor($patternEntry['pattern'] ?? '');
             $sid = $candidates[0] ?? null;
         }
         if (! $sid) return null;
@@ -104,17 +104,17 @@ class TreatmentSuggester
         if (! $entry) return null;
 
         // Extract the FIRST formula from the (possibly semicolon-separated) list.
-        $formulas = $this->splitFormulas($entry[\'default_formulas\'] ?? \'\');
+        $formulas = $this->splitFormulas($entry['default_formulas'] ?? '');
         $firstFormula = $formulas[0] ?? null;
 
         return [
-            \'id\'                  => $entry[\'id\'],
-            \'name_zh\'             => $entry[\'name_zh\'],
-            \'name_en\'             => $entry[\'name_en\'],
-            \'treatment_principle\' => $entry[\'treatment_principle\'],
-            \'source\'              => $entry[\'source\'],
-            \'formula_zh\'          => $firstFormula,
-            \'confidence\'          => $confidence,
+            'id'                  => $entry['id'],
+            'name_zh'             => $entry['name_zh'],
+            'name_en'             => $entry['name_en'],
+            'treatment_principle' => $entry['treatment_principle'],
+            'source'              => $entry['source'],
+            'formula_zh'          => $firstFormula,
+            'confidence'          => $confidence,
         ];
     }
 
@@ -123,7 +123,7 @@ class TreatmentSuggester
     private function lookupFormula(?string $formulaZh): ?array
     {
         if (! $formulaZh) return null;
-        $key = trim(preg_replace(\'/\\s*\\([^)]*\\)\\s*$/\', \'\', $formulaZh));
+        $key = trim(preg_replace('/\\s*\\([^)]*\\)\\s*$/', '', $formulaZh));
         return TreatmentBank::FORMULAS[$key] ?? TreatmentBank::FORMULAS[$formulaZh] ?? null;
     }
 
@@ -132,8 +132,8 @@ class TreatmentSuggester
     private function splitFormulas(?string $raw): array
     {
         if (! $raw) return [];
-        $parts = preg_split(\'/[;，；、]/u\', $raw);
-        return array_values(array_filter(array_map(\'trim\', $parts)));
+        $parts = preg_split('/[;，；、]/u', $raw);
+        return array_values(array_filter(array_map('trim', $parts)));
     }
 
     /** For each composition herb, see if any triggered RedFlag rule
@@ -144,24 +144,24 @@ class TreatmentSuggester
         if (! $formula || empty($formula)) return $mods;
 
         // Composition is stored as text in FORMULAS["composition"];
-        // parse the herbs out — they\'re typically Chinese names
+        // parse the herbs out — they're typically Chinese names
         // separated by ;, ,, 、, or 加.
-        $compRaw = $formula[\'composition\'] ?? \'\';
-        if (! is_string($compRaw) || $compRaw === \'\') return $mods;
-        $herbsInFormula = preg_split(\'/[;，；、+加]/u\', $compRaw);
+        $compRaw = $formula['composition'] ?? '';
+        if (! is_string($compRaw) || $compRaw === '') return $mods;
+        $herbsInFormula = preg_split('/[;，；、+加]/u', $compRaw);
         $herbsInFormula = array_filter(array_map(function ($h) {
             // Strip dose suffix (e.g. "丹參 15g" → "丹參")
-            $h = trim(preg_replace(\'/\\s*\\d+\\s*g?$/iu\', \'\', $h));
+            $h = trim(preg_replace('/\\s*\\d+\\s*g?$/iu', '', $h));
             // Strip parenthetical
-            return trim(preg_replace(\'/\\s*\\([^)]*\\)\\s*/\', \'\', $h));
+            return trim(preg_replace('/\\s*\\([^)]*\\)\\s*/', '', $h));
         }, $herbsInFormula));
 
         foreach ($redFlagsDetected as $flag) {
-            $avoid = $flag[\'avoid_herbs\'] ?? [];
+            $avoid = $flag['avoid_herbs'] ?? [];
             $affected = [];
             foreach ($avoid as $avoidHerb) {
                 foreach ($herbsInFormula as $compHerb) {
-                    if ($compHerb !== \'\' && str_contains($avoidHerb, $compHerb)) {
+                    if ($compHerb !== '' && str_contains($avoidHerb, $compHerb)) {
                         $affected[] = $compHerb;
                         break;
                     }
@@ -169,12 +169,12 @@ class TreatmentSuggester
             }
             if (! empty($affected)) {
                 $mods[] = [
-                    \'rf_id\'             => $flag[\'id\'] ?? null,
-                    \'trigger\'           => $flag[\'triggered_by\'] ?? $flag[\'condition\'] ?? null,
-                    \'affected_herbs_zh\' => array_values(array_unique($affected)),
-                    \'suggested_change\'  => \'reduce dose, substitute, or remove based on clinical judgement\',
-                    \'severity\'          => $flag[\'severity\'] ?? \'relative\',
-                    \'reason\'            => $flag[\'reason\'] ?? null,
+                    'rf_id'             => $flag['id'] ?? null,
+                    'trigger'           => $flag['triggered_by'] ?? $flag['condition'] ?? null,
+                    'affected_herbs_zh' => array_values(array_unique($affected)),
+                    'suggested_change'  => 'reduce dose, substitute, or remove based on clinical judgement',
+                    'severity'          => $flag['severity'] ?? 'relative',
+                    'reason'            => $flag['reason'] ?? null,
                 ];
             }
         }
