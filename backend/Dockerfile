@@ -64,8 +64,13 @@ RUN wget -q https://github.com/dunglas/frankenphp/releases/download/v1.4.2/frank
 
 # Pre-build Laravel caches so the workers don't have to do it on first
 # request. Each `artisan ... cache` shaves milliseconds off boot.
-RUN php artisan config:cache \
-    && php artisan route:cache \
+# NOTE: php artisan config:cache deliberately NOT run here. Railway
+# injects env vars (DB_HOST, DB_PASSWORD, etc.) at RUNTIME, not at
+# build time, so caching config at build snapshots the fallback
+# defaults from config/*.php (DB_HOST=127.0.0.1 etc.) and the runtime
+# env vars get ignored. Bit us on the first Octane deploy 2026-05-11.
+# Config cache moved to runtime in the CMD below.
+RUN php artisan route:cache \
     && php artisan event:cache \
     && php artisan view:cache
 
@@ -98,5 +103,6 @@ CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/st
         echo "MySQL not ready yet (attempt $i/10), retrying in 3s..."; \
         sleep 3; \
     done; \
+    php artisan config:cache; \
     php artisan db:seed --force; \
     php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=auto --max-requests=500
