@@ -7,30 +7,50 @@ use App\Models\DoctorProfile;
 use App\Models\PharmacyProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AccountController extends Controller
 {
-    /** List all non-patient accounts (doctor, pharmacy, admin) */
+    /**
+     * List all non-patient accounts (doctor, pharmacy, admin).
+     *
+     * Brief #21 perf-opt — Redis-cached at 60 s TTL. Cache key
+     * includes the search query, role filter, and pagination page so
+     * different filter combos don't collide. The 60 s window is short
+     * enough that admin actions feel responsive (worst case a
+     * 1-minute lag before a new account appears in the list).
+     */
     public function index(Request $request)
     {
-        $q = User::whereIn('role', ['doctor', 'pharmacy', 'admin'])
-            ->with(['doctorProfile', 'pharmacyProfile']);
+        $cacheKey = sprintf(
+            'admin.accounts.list:s=%s:r=%s:p=%s',
+            md5((string) $request->query('search', '')),
+            (string) $request->query('role', 'all'),
+            (string) $request->query('page', 1),
+        );
 
-        if ($s = $request->query('search')) {
-            $q->where(function ($w) use ($s) {
-                $w->where('email', 'like', "%{$s}%")
-                  ->orWhereHas('doctorProfile', fn($p) => $p->where('full_name', 'like', "%{$s}%"))
-                  ->orWhereHas('pharmacyProfile', fn($p) => $p->where('name', 'like', "%{$s}%"));
-            });
-        }
+        $payload = Cache::store('redis')->remember($cacheKey, 60, function () use ($request) {
+            $q = User::whereIn('role', ['doctor', 'pharmacy', 'admin'])
+                ->with(['doctorProfile', 'pharmacyProfile']);
 
-        if ($role = $request->query('role')) {
-            $q->where('role', $role);
-        }
+            if ($s = $request->query('search')) {
+                $q->where(function ($w) use ($s) {
+                    $w->where('email', 'like', "%{$s}%")
+                      ->orWhereHas('doctorProfile', fn($p) => $p->where('full_name', 'like', "%{$s}%"))
+                      ->orWhereHas('pharmacyProfile', fn($p) => $p->where('name', 'like', "%{$s}%"));
+                });
+            }
 
-        return response()->json($q->orderByDesc('id')->paginate(30));
+            if ($role = $request->query('role')) {
+                $q->where('role', $role);
+            }
+
+            return $q->orderByDesc('id')->paginate(30)->toArray();
+        });
+
+        return response()->json($payload);
     }
 
     /** Admin creates any account type: doctor, pharmacy, or admin */

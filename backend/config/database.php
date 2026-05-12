@@ -28,6 +28,34 @@ return [
             ],
         ],
     ],
+    // Redis connections (Brief #21 perf-opt, 2026-05-12).
+    // Railway's Redis service binding injects REDIS_HOST, REDIS_PORT,
+    // REDIS_PASSWORD env vars. predis/predis is used as the client
+    // (pure-PHP, no docker-php-ext-install redis needed). Two
+    // connections: 'default' for general use, 'cache' as the
+    // dedicated cache store (separate DB index so cache:clear doesn't
+    // touch session/queue data).
+    'redis' => [
+        'client' => env('REDIS_CLIENT', 'predis'),
+        'options' => [
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix' => env('REDIS_PREFIX', 'hansmed_database_'),
+        ],
+        'default' => [
+            'url'      => env('REDIS_URL'),
+            'host'     => env('REDIS_HOST', '127.0.0.1'),
+            'password' => env('REDIS_PASSWORD'),
+            'port'     => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_DB', '0'),
+        ],
+        'cache' => [
+            'url'      => env('REDIS_URL'),
+            'host'     => env('REDIS_HOST', '127.0.0.1'),
+            'password' => env('REDIS_PASSWORD'),
+            'port'     => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_CACHE_DB', '1'),
+        ],
+    ],
     'migrations' => [
         'table' => 'migrations',
         'update_date_on_publish' => true,
