@@ -74,6 +74,15 @@ RUN php artisan route:cache \
     && php artisan event:cache \
     && php artisan view:cache
 
+# Custom Caddyfile (CORS hotfix 2026-05-12) — sits at /app/Caddyfile
+# and gets passed to Octane via --caddyfile below. Mirrors Octane's
+# default FrankenPHP stub but adds HansMed CORS rules at the HTTP layer
+# because Laravel-level CORS middleware silently stopped firing under
+# Octane+FrankenPHP. The COPY . . above already pulled it in; this
+# line is for documentation — confirms the file is where the CMD
+# expects it. If it's missing the container will fail fast on start.
+RUN test -f /app/Caddyfile || (echo "Caddyfile missing at /app/Caddyfile" && exit 1)
+
 EXPOSE ${PORT:-8080}
 
 # Container start:
@@ -107,4 +116,4 @@ CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/st
     done; \
     php artisan config:cache; \
     php artisan db:seed --force; \
-    php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=16 --max-requests=500
+    php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=16 --max-requests=500 --caddyfile=/app/Caddyfile

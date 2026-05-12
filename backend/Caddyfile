@@ -1,0 +1,88 @@
+# HansMed FrankenPHP Caddyfile.
+#
+# Mirrors the stub Laravel Octane ships at
+# vendor/laravel/octane/src/Commands/stubs/FrankenPhp/Caddyfile so we
+# keep Octane's worker mode (the env-var placeholders $FRANKENPHP_CONFIG,
+# $CADDY_GLOBAL_OPTIONS, $APP_PUBLIC_PATH, $SERVER_PORT etc. get filled
+# in by Octane at start time). The ONLY material addition is the HansMed
+# CORS block in the site definition below.
+#
+# Why CORS lives at the HTTP-server layer:
+#   Under Octane + FrankenPHP the Laravel HandleCors middleware silently
+#   stops emitting Access-Control-* headers. Verified empirically
+#   2026-05-12 — every /api/* response (preflight OPTIONS and actual
+#   GET/POST) came back with zero CORS headers, locking patient and
+#   doctor portals out of the API. Two attempts to fix this in Laravel
+#   (commits 472e5f7 and a89f30a) both failed to take effect in prod.
+#   Doing CORS here, before PHP runs, sidesteps every Laravel/Octane
+#   variable and is guaranteed to fire.
+#
+# Used by backend/Dockerfile via:
+#   php artisan octane:start --server=frankenphp --caddyfile=/app/Caddyfile ...
+
+{
+	{$CADDY_GLOBAL_OPTIONS}
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+}
+
+{$CADDY_SERVER_EXTRA_DIRECTIVES}
+
+{$SERVER_NAME:localhost}:{$SERVER_PORT:8080} {
+	log {
+		# Octane's redacted format — keeps authorization query params
+		# (Mercure tokens etc.) out of access logs.
+		format filter {
+			wrap {$CADDY_SERVER_LOGGER:console}
+			fields {
+				uri query {
+					replace authorization REDACTED
+				}
+			}
+		}
+	}
+
+	root * {$APP_PUBLIC_PATH}
+	encode zstd br gzip
+
+	# ── HansMed CORS at the HTTP-server layer ────────────────────────
+	# Allowed origins: HansMed primary frontend (apex + www), the
+	# github.io transition fallback, and localhost dev ports.
+	# Matched by regex so we can keep the allow-list in one place
+	# without listing each as a separate matcher.
+	@hansmedAllowed {
+		header_regexp Origin "^(https://(www\.)?hansmedtcm\.com|https://hansmedtcm\.github\.io|http://(localhost|127\.0\.0\.1):(5173|3000))$"
+	}
+
+	# Preflight: OPTIONS request from an allowed origin.
+	# Short-circuit with 204 + the full CORS header set — PHP never runs.
+	@hansmedPreflight {
+		method OPTIONS
+		header_regexp Origin "^(https://(www\.)?hansmedtcm\.com|https://hansmedtcm\.github\.io|http://(localhost|127\.0\.0\.1):(5173|3000))$"
+	}
+
+	handle @hansmedPreflight {
+		header Access-Control-Allow-Origin "{http.request.header.Origin}"
+		header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+		header Access-Control-Allow-Headers "Accept, Authorization, Content-Type, X-Requested-With, X-CSRF-TOKEN"
+		header Access-Control-Max-Age "86400"
+		header Vary "Origin"
+		respond 204
+	}
+
+	# Actual cross-origin request from an allowed origin: PHP handles
+	# the body, we tack on Access-Control-Allow-Origin to the response
+	# on the way out so the browser exposes the result to the page.
+	header @hansmedAllowed Access-Control-Allow-Origin "{http.request.header.Origin}"
+	header @hansmedAllowed Vary "Origin"
+	# ─────────────────────────────────────────────────────────────────
+
+	{$CADDY_EXTRA_DIRECTIVES}
+
+	php_server {
+		{$CADDY_SERVER_INDEX_DIRECTIVE}
+		try_files {path} {path}/ /index.php
+	}
+}
