@@ -134,16 +134,26 @@ class PreAssessmentController extends Controller
                     $extra['tcm_questions'] = $this->prepareStage4Questions($pa, $ta);
                     break;
                 case 4:
+                    // 2026-05-12 — relaxed from required to nullable. When
+                    // AdaptiveQuestionSelector returns zero questions (rare
+                    // umbrella patterns or deterministic-only mode), the
+                    // patient legitimately has nothing to answer — but the
+                    // old 'required' rule rejected the empty submission and
+                    // froze the flow at Stage 4.
                     $data = $request->validate([
-                        'tcm_answers' => ['required', 'array'],
+                        'tcm_answers' => ['nullable', 'array'],
                     ]);
-                    $pa->tcm_answers = $data['tcm_answers'];
+                    $pa->tcm_answers = $data['tcm_answers'] ?? [];
                     break;
                 case 5:
+                    // 2026-05-12 — relaxed from required to nullable for the
+                    // same reason as Stage 4: if the patient has no extra
+                    // safety screen items to answer, the flow should still
+                    // close cleanly. finalizeAssessment runs regardless.
                     $data = $request->validate([
-                        'safety_screen_answers' => ['required', 'array'],
+                        'safety_screen_answers' => ['nullable', 'array'],
                     ]);
-                    $pa->safety_screen_answers = $data['safety_screen_answers'];
+                    $pa->safety_screen_answers = $data['safety_screen_answers'] ?? [];
                     $this->finalizeAssessment($pa);
                     break;
             }
