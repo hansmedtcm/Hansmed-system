@@ -145,6 +145,24 @@
             HM.ui.toast(e.message || 'Failed to cancel. Please contact the clinic.', 'danger');
           }
         });
+        // 2026-05-12 — inject "Complete Wellness Assessment" link for
+        // upcoming appointments. The AI Wellness Assessment sidebar tab
+        // was retired; the assessment now lives per-appointment so the
+        // doctor sees the handoff packet tied to a specific booking.
+        // Only shown for statuses where the doctor hasn't started/
+        // completed the consult yet.
+        var assessableStatuses = ['confirmed', 'pending_payment', 'in_progress'];
+        if (assessableStatuses.indexOf(a.status) >= 0 && node.querySelector('.appt-actions')) {
+          var assessBtn = document.createElement('button');
+          assessBtn.className = 'btn btn--ghost btn--sm';
+          assessBtn.style.cssText = 'margin-top: var(--s-2); width: 100%;';
+          assessBtn.innerHTML = '<span lang="en">📝 Complete Wellness Assessment</span><span lang="zh"> · 完成健康评估</span>';
+          assessBtn.addEventListener('click', function () {
+            location.hash = '#/pre-assessment/' + a.id;
+          });
+          node.querySelector('.appt-actions').appendChild(assessBtn);
+        }
+
         // When inside the 1hr window, replace the hidden cancel button
         // with a small inline hint so the patient knows *why* they
         // can't self-cancel.

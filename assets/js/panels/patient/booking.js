@@ -282,8 +282,36 @@
       HM.ui.toast('Payment processing… · 付款處理中', 'success');
       setTimeout(function () {
         HM.ui.toast('You are in the pool! A doctor will pick you up shortly. · 已加入候診池', 'success', 5000);
-        location.hash = '#/appointments';
+        // 2026-05-12 — AI Wellness Assessment is no longer a sidebar tab.
+        // After a successful pool booking, prompt the patient to complete
+        // the assessment now so the doctor has the handoff packet ready
+        // before they pick up the appointment. If they decline, they can
+        // re-open it from the My Appointments card later.
+        showAssessmentPrompt(appt && appt.id);
       }, 1200);
+    });
+  }
+
+  function showAssessmentPrompt(appointmentId) {
+    var html =
+      '<p class="mb-3">Taking 5 minutes now to answer a few health questions helps your doctor prepare before the consultation — usually saves time during the actual session.</p>' +
+      '<p class="text-xs text-muted mb-4" lang="zh">用 5 分钟回答几个健康问题，可帮助医师在问诊前提前准备，通常能在实际就诊中节省时间。</p>' +
+      '<div style="display:flex; gap: var(--s-2); flex-wrap: wrap;">' +
+        '<button id="hm-pa-start" class="btn btn--primary" style="flex:1; min-width: 180px;">Start Assessment Now · 立即开始</button>' +
+        '<button id="hm-pa-later" class="btn btn--outline" style="flex:1; min-width: 140px;">Later · 稍后</button>' +
+      '</div>';
+    var m = HM.ui.modal({ title: 'Help your doctor prepare · 协助医师提前准备', content: html, dismissible: true });
+    m.element.querySelector('#hm-pa-start').addEventListener('click', function () {
+      m.close();
+      if (appointmentId) {
+        location.hash = '#/pre-assessment/' + appointmentId;
+      } else {
+        location.hash = '#/pre-assessment';
+      }
+    });
+    m.element.querySelector('#hm-pa-later').addEventListener('click', function () {
+      m.close();
+      location.hash = '#/appointments';
     });
   }
 
