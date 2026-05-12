@@ -49,13 +49,16 @@ class AdaptiveQuestionSelector
                 continue; // no questions for this umbrella (e.g. 'normal')
             }
 
-            // Try the Claude-driven smart selector first; on any
-            // failure (slow API, parse error, missing key) fall back
-            // to the deterministic local selector.
-            $picked = $this->tryClaudeSelector($umbrella, $candidates, $tongueSigns);
-            if (! $picked) {
-                $picked = $this->deterministicFallback($candidates, $tongueSigns);
-            }
+            // 2026-05-12 — Claude-driven selector temporarily disabled.
+            // The Anthropic call was hanging past its 12s timeout in
+            // production, blocking Stage 3 → Stage 4 transition. Go
+            // straight to the deterministic local selector which uses
+            // clinical_weight + signal_signs from the curated
+            // PatternQuestionBank. Re-enable by uncommenting the
+            // tryClaudeSelector line once the upstream timeout issue
+            // is understood.
+            // $picked = $this->tryClaudeSelector($umbrella, $candidates, $tongueSigns);
+            $picked = $this->deterministicFallback($candidates, $tongueSigns);
 
             if ($picked) {
                 $selections[] = $picked + [
