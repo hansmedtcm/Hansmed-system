@@ -505,11 +505,19 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-        $relation = $user->role . 'Profile';
-        if (method_exists($user, $relation)) {
-            $user->load($relation);
-        }
-        return response()->json(['user' => $user]);
+        // Brief #21 — Redis-cached at 60 s, PER-USER key. Hit on every
+        // panel/portal load to display the user's name + role. Profile
+        // updates clear the cache via the helper at the bottom of this
+        // file (not yet wired — for MVP we accept up to 60 s lag).
+        $key = "auth.me:user={$user->id}";
+        $payload = Cache::store('redis')->remember($key, 60, function () use ($user) {
+            $relation = $user->role . 'Profile';
+            if (method_exists($user, $relation)) {
+                $user->load($relation);
+            }
+            return ['user' => $user->toArray()];
+        });
+        return response()->json($payload);
     }
 
     public function logout(Request $request)

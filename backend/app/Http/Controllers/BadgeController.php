@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Returns "unread" / "pending" counts per sidebar tab for the current user.
@@ -17,25 +18,25 @@ class BadgeController extends Controller
         $user = $request->user();
         $role = $user->role;
 
-        $counts = [
-            // Common to all roles
-            'notifications' => $this->safeCount(function () use ($user) {
-                return DB::table('notifications')
-                    ->where('user_id', $user->id)
-                    ->whereNull('read_at')
-                    ->count();
-            }),
-        ];
-
-        if ($role === 'patient') {
-            $counts = array_merge($counts, $this->patientCounts($user->id));
-        } elseif ($role === 'doctor') {
-            $counts = array_merge($counts, $this->doctorCounts($user->id));
-        } elseif ($role === 'pharmacy') {
-            $counts = array_merge($counts, $this->pharmacyCounts($user->id));
-        } elseif ($role === 'admin') {
-            $counts = array_merge($counts, $this->adminCounts());
-        }
+        // Brief #21 — Redis-cached at 15 s TTL, PER-USER key. Badges
+        // are polled on every nav action; short TTL keeps the data
+        // fresh while still cutting most DB load.
+        $key = "badges:user={$user->id}:role={$role}";
+        $counts = Cache::store('redis')->remember($key, 15, function () use ($user, $role) {
+            $c = [
+                'notifications' => $this->safeCount(function () use ($user) {
+                    return DB::table('notifications')
+                        ->where('user_id', $user->id)
+                        ->whereNull('read_at')
+                        ->count();
+                }),
+            ];
+            if ($role === 'patient')         $c = array_merge($c, $this->patientCounts($user->id));
+            elseif ($role === 'doctor')      $c = array_merge($c, $this->doctorCounts($user->id));
+            elseif ($role === 'pharmacy')    $c = array_merge($c, $this->pharmacyCounts($user->id));
+            elseif ($role === 'admin')       $c = array_merge($c, $this->adminCounts());
+            return $c;
+        });
 
         return response()->json(['counts' => $counts]);
     }

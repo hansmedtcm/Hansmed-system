@@ -7,28 +7,34 @@ use App\Models\PatientProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class PatientController extends Controller
 {
     public function index(Request $request)
     {
-        $q = User::where('role', 'patient')->with('patientProfile');
-        if ($s = $request->query('search')) {
-            $q->where(function ($w) use ($s) {
-                $w->where('email', 'like', "%{$s}%")
-                  ->orWhereHas('patientProfile', fn($p) => $p->where('full_name', 'like', "%{$s}%")
-                    ->orWhere('ic_number', 'like', "%{$s}%")
-                    ->orWhere('phone', 'like', "%{$s}%"));
-            });
-        }
-        $page = $q->orderByDesc('id')->paginate(30);
-        // Brief #20 — admin context: reveal the contact-info fields on
-        // each patient profile so the admin patient list shows phone,
-        // IC etc. (Without this, $hidden would strip them from JSON.)
-        foreach ($page->items() as $u) {
-            if ($u->patientProfile) $u->patientProfile->revealContactInfo();
-        }
-        return response()->json($page);
+        // Brief #21 — Redis-cached at 60 s TTL (admin-only surface).
+        $key = sprintf('admin.patients.list:s=%s:p=%s',
+            md5((string) $request->query('search', '')),
+            (string) $request->query('page', 1));
+        $payload = Cache::store('redis')->remember($key, 60, function () use ($request) {
+            $q = User::where('role', 'patient')->with('patientProfile');
+            if ($s = $request->query('search')) {
+                $q->where(function ($w) use ($s) {
+                    $w->where('email', 'like', "%{$s}%")
+                      ->orWhereHas('patientProfile', fn($p) => $p->where('full_name', 'like', "%{$s}%")
+                        ->orWhere('ic_number', 'like', "%{$s}%")
+                        ->orWhere('phone', 'like', "%{$s}%"));
+                });
+            }
+            $page = $q->orderByDesc('id')->paginate(30);
+            // Brief #20 — admin context: reveal contact info per row.
+            foreach ($page->items() as $u) {
+                if ($u->patientProfile) $u->patientProfile->revealContactInfo();
+            }
+            return $page->toArray();
+        });
+        return response()->json($payload);
     }
 
     public function show(int $id)

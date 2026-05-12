@@ -8,20 +8,28 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 
 class DoctorManagementController extends Controller
 {
     /** List all doctors (not just pending) */
     public function index(Request $request)
     {
-        $q = User::where('role', 'doctor')->with('doctorProfile');
-        if ($s = $request->query('search')) {
-            $q->where(function ($w) use ($s) {
-                $w->where('email', 'like', "%{$s}%")
-                  ->orWhereHas('doctorProfile', fn($p) => $p->where('full_name', 'like', "%{$s}%"));
-            });
-        }
-        return response()->json($q->orderByDesc('id')->paginate(30));
+        // Brief #21 — Redis-cached at 60 s TTL.
+        $key = sprintf('admin.doctors.list:s=%s:p=%s',
+            md5((string) $request->query('search', '')),
+            (string) $request->query('page', 1));
+        $payload = Cache::store('redis')->remember($key, 60, function () use ($request) {
+            $q = User::where('role', 'doctor')->with('doctorProfile');
+            if ($s = $request->query('search')) {
+                $q->where(function ($w) use ($s) {
+                    $w->where('email', 'like', "%{$s}%")
+                      ->orWhereHas('doctorProfile', fn($p) => $p->where('full_name', 'like', "%{$s}%"));
+                });
+            }
+            return $q->orderByDesc('id')->paginate(30)->toArray();
+        });
+        return response()->json($payload);
     }
 
     /** Admin creates a doctor account — active + approved immediately */

@@ -9,31 +9,37 @@ use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Cache;
 
 class ReportsController extends Controller
 {
     // M-13: dashboard metrics
     public function dashboard()
     {
-        return response()->json([
-            'users' => [
-                'patients'   => User::where('role', 'patient')->count(),
-                'doctors'    => User::where('role', 'doctor')->where('status', 'active')->count(),
-                'pharmacies' => User::where('role', 'pharmacy')->where('status', 'active')->count(),
-            ],
-            'appointments' => [
-                'total'     => Appointment::count(),
-                'completed' => Appointment::where('status', 'completed')->count(),
-                'today'     => Appointment::whereDate('scheduled_start', now()->toDateString())->count(),
-            ],
-            'orders' => [
-                'total'   => Order::count(),
-                'paid'    => Order::whereNotNull('paid_at')->count(),
-                'revenue' => (float) Order::whereNotNull('paid_at')->sum('total'),
-            ],
-            'payments_last_30d' => (float) Payment::where('status', 'succeeded')
-                ->where('paid_at', '>=', now()->subDays(30))->sum('amount'),
-        ]);
+        // Brief #21 — Redis-cached at 60 s TTL. Heavy aggregation queries
+        // (8 COUNTs + 2 SUMs); caching pays back massively under polling.
+        $payload = Cache::store('redis')->remember('admin.reports.dashboard', 60, function () {
+            return [
+                'users' => [
+                    'patients'   => User::where('role', 'patient')->count(),
+                    'doctors'    => User::where('role', 'doctor')->where('status', 'active')->count(),
+                    'pharmacies' => User::where('role', 'pharmacy')->where('status', 'active')->count(),
+                ],
+                'appointments' => [
+                    'total'     => Appointment::count(),
+                    'completed' => Appointment::where('status', 'completed')->count(),
+                    'today'     => Appointment::whereDate('scheduled_start', now()->toDateString())->count(),
+                ],
+                'orders' => [
+                    'total'   => Order::count(),
+                    'paid'    => Order::whereNotNull('paid_at')->count(),
+                    'revenue' => (float) Order::whereNotNull('paid_at')->sum('total'),
+                ],
+                'payments_last_30d' => (float) Payment::where('status', 'succeeded')
+                    ->where('paid_at', '>=', now()->subDays(30))->sum('amount'),
+            ];
+        });
+        return response()->json($payload);
     }
 
     // M-13: CSV export (orders | appointments | payments)

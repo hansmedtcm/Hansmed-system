@@ -9,6 +9,7 @@ use App\Models\Withdrawal;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class FinanceController extends Controller
 {
@@ -184,11 +185,14 @@ class FinanceController extends Controller
 
     public function pendingWithdrawals()
     {
-        return response()->json(
-            Withdrawal::where('status', 'pending')
+        // Brief #21 — Redis-cached at 30 s TTL (polled by admin dashboard).
+        $payload = Cache::store('redis')->remember('admin.finance.withdrawals.pending', 30, function () {
+            return Withdrawal::where('status', 'pending')
                 ->orderBy('created_at')
                 ->paginate(30)
-        );
+                ->toArray();
+        });
+        return response()->json($payload);
     }
 
     public function reviewWithdrawal(Request $request, int $id, NotificationService $notifier)
