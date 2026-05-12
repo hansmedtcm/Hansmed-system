@@ -45,8 +45,6 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
-<!-- PREVIEW · Palette B (Forest Medical) + Fonts Y (Fraunces + Public Sans + Noto Sans SC).
-     Added 2026-05-11 for index-only design review. If approved, fold into tokens.css. -->
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;500&family=Public+Sans:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
 <!-- LOCKED brand-wordmark fonts · IBM Plex Sans (Latin Bold 700) + IBM Plex Sans SC (Simplified Chinese Bold 700).
@@ -84,18 +82,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <!-- Preload the hero PNG so the LCP element paints immediately. -->
 <link rel="preload" as="image" href="assets/img/hero-bg.webp" fetchpriority="high">
 
-<!-- ══════════════════════════════════════════════════════════════════
-     PREVIEW · DESIGN REFRESH v2 (index.html ONLY, 2026-05-11)
-     Direction reset: stays in the original cream/gold/wood family,
-     just refined variations (deeper gold, warmer cream, muted clay).
-     Fonts: Fraunces / Public Sans / Noto Serif SC (kept from v1).
-     Heading scale collapsed from ~7 tiers to 4: hero / section /
-     subsection / body. Auth modal converted to single-language via
-     existing lang=en|zh span pairs (lang-switcher hides the inactive
-     one — much cleaner than the bilingual walls).
-     If approved, promote to tokens.css and remove this block.
-     ══════════════════════════════════════════════════════════════════ -->
-<style id="preview-design-bxy">
+<style>
   :root {
     /* ── Refined cream/gold family (within original DNA) ──────── */
     --cream:           #F4EDE0;   /* was #F5F1EA — hair warmer       */
@@ -337,28 +324,6 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     font-family: var(--font-display) !important;
     font-weight: 600;
     letter-spacing: -0.01em;
-  }
-
-  /* ── Preview ribbon ─────────────────────────────────────────── */
-  body.landing-v4::before {
-    content: "PREVIEW · refined cream/gold · 4-tier headings · single-lang popup";
-    position: fixed;
-    left: 12px; bottom: 12px;
-    z-index: 9999;
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--cream);
-    background: var(--ink);
-    padding: 6px 10px;
-    border-radius: var(--r-sm);
-    box-shadow: var(--shadow-card);
-    pointer-events: none;
-    opacity: 0.78;
-  }
-  @media (max-width: 640px) {
-    body.landing-v4::before { font-size: 10px; padding: 4px 8px; }
   }
 
   /* ── Mobile polish (≤ 768 px) ───────────────────────────────── */
