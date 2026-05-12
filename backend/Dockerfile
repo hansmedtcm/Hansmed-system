@@ -15,7 +15,7 @@ FROM php:8.3-cli
 # needed for the FrankenPHP worker mode's bytecode cache).
 RUN apt-get update && apt-get install -y \
         git unzip wget libonig-dev libzip-dev libpng-dev libicu-dev \
-    && docker-php-ext-install pdo pdo_mysql bcmath intl zip gd opcache \
+    && docker-php-ext-install pdo pdo_mysql bcmath intl zip gd opcache pcntl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # OPcache + JIT config — drop into the conf.d directory the docker
