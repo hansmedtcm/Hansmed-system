@@ -9,8 +9,8 @@ This document is the source of truth for **how to add new modules to the HansMed
 Every page imports two stylesheets, in this order:
 
 ```html
-<link rel="stylesheet" href="/v2/assets/css/tokens.css">
-<link rel="stylesheet" href="/v2/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/components.css">
 ```
 
 Then write **plain HTML** that uses canonical classes (`.btn .btn--primary`, `.card`, `.alert alert--success`, `.field .input`). Do NOT introduce page-local component CSS unless it can't be expressed by the system — and if you do, add it to `components.css`, not the page.
@@ -23,16 +23,16 @@ The showcase at `design-system/showcase.html` is the live reference. If you can'
 
 ```
 design-system/
-├── tokens.css          ← copied from v2/assets/css/tokens.css (single source)
-├── components.css      ← canonical components — copy back to v2/assets/css/
+├── tokens.css          ← copied from assets/css/tokens.css (single source)
+├── components.css      ← canonical components — copy back to assets/css/
 ├── showcase.html       ← live reference, every component family
 ├── design-canvas.jsx   ← canvas shell (showcase only)
 └── tweaks-panel.jsx    ← tweaks shell (showcase only)
 ```
 
-`tokens.css` is the **same file** that lives at `v2/assets/css/tokens.css`. Do not duplicate the values — when colors / type / spacing need to change, edit tokens.css and every page picks it up.
+`tokens.css` is the **same file** that lives at `assets/css/tokens.css`. Do not duplicate the values — when colors / type / spacing need to change, edit tokens.css and every page picks it up.
 
-`components.css` is **new and ready to ship**. To deploy: copy `design-system/components.css` to `v2/assets/css/components.css` (or merge with the existing one), and add the `<link>` to every page.
+`components.css` is **new and ready to ship**. To deploy: copy `design-system/components.css` to `assets/css/components.css` (or merge with the existing one), and add the `<link>` to every page.
 
 ---
 

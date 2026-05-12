@@ -338,7 +338,7 @@ const doc = new Document({
 
       // === 7. PRIVACY POLICY ===
       h1('7. Draft Privacy Policy'),
-      note('Suggested public URL: https://hansmedtcm.com/v2/privacy-policy.html. Final wording to be set by counsel.'),
+      note('Suggested public URL: https://hansmedtcm.com/privacy-policy.html. Final wording to be set by counsel.'),
       h3('7.1 Who we are'),
       p('HansMed Modern TCM (“HansMed”, “we”, “us”) is a Malaysia-based telehealth platform connecting patients with licensed Traditional Chinese Medicine practitioners. This Privacy Policy explains what personal data we collect, why we collect it, how we store it, and your rights under Malaysia’s Personal Data Protection Act 2010 (PDPA).'),
       h3('7.2 Personal data we collect'),
@@ -393,7 +393,7 @@ const doc = new Document({
 
       // === 8. TERMS OF SERVICE ===
       h1('8. Draft Terms of Service'),
-      note('Suggested public URL: https://hansmedtcm.com/v2/terms.html.'),
+      note('Suggested public URL: https://hansmedtcm.com/terms.html.'),
       h3('8.1 Acceptance'),
       p('By creating an account or using the HansMed Modern TCM service, you agree to these Terms.'),
       h3('8.2 Service description'),
