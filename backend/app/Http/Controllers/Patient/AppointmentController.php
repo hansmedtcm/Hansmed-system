@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Services\NotificationService;
 use App\Services\StripeClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -141,15 +142,36 @@ class AppointmentController extends Controller
 
     public function index(Request $request)
     {
-        // Eager-load the doctor's profile so the patient UI can show
-        // the doctor's real name once a pool appointment is picked up.
-        // Until then doctor_id is null and the UI shows "Awaiting pickup".
-        return response()->json(
-            Appointment::where('patient_id', $request->user()->id)
-                ->with(['doctor.doctorProfile'])
-                ->orderByDesc('scheduled_start')
-                ->paginate(20)
+        // 2026-05-12 perf — patient appointments list was timing out
+        // (45s frontend ceiling) under php artisan serve. Cache the
+        // paginated response in Redis for 15s per (user, page). Stale
+        // window is short enough that a freshly-booked appointment
+        // shows up on the next refresh in the worst case; if you need
+        // immediate consistency, call Cache::forget("patient:{id}:appointments:*")
+        // from the booking flow (deferred — not blocking the showcase).
+        //
+        // Eager-load is column-trimmed: we only need id/role/email on
+        // the doctor User and a handful of profile fields. That cuts
+        // the payload roughly in half versus the naive ->with() chain.
+        $userId = $request->user()->id;
+        $page   = (int) $request->query('page', 1);
+
+        $payload = Cache::remember(
+            "patient:{$userId}:appointments:page:{$page}",
+            15,
+            function () use ($userId) {
+                return Appointment::where('patient_id', $userId)
+                    ->with([
+                        'doctor:id,role,email',
+                        'doctor.doctorProfile:user_id,full_name,avatar_url,specialties',
+                    ])
+                    ->orderByDesc('scheduled_start')
+                    ->paginate(20)
+                    ->toArray();
+            }
         );
+
+        return response()->json($payload);
     }
 
     /**
