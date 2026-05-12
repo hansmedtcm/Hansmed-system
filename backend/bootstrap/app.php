@@ -12,21 +12,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // CORS hotfix 2026-05-12 — explicitly prepend HandleCors at the
-        // top of the global stack. Laravel 11 auto-registers HandleCors
-        // by default, but in production under Octane + FrankenPHP we
-        // observed ZERO CORS headers being emitted on any /api/*
-        // response (browser shows "Failed to fetch" on cross-origin
-        // requests from hansmedtcm.com). Pre-pending it here forces it
-        // into the resolved middleware list regardless of whether
-        // auto-discovery is firing under the persistent-worker model.
-        //
-        // Safe to keep even after the underlying cause is identified —
-        // Laravel deduplicates middleware classes in the pipeline, so
-        // an explicit prepend on top of an auto-registered entry runs
-        // once, not twice.
-        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
-
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'registration.complete' => \App\Http\Middleware\EnsureRegistrationComplete::class,
