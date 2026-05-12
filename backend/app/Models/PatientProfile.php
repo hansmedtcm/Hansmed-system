@@ -17,7 +17,10 @@ class PatientProfile extends Model
         'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country',
         'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation',
         'blood_type', 'allergies', 'medical_history', 'current_medications',
-        'family_history', 'height_cm', 'weight_kg',
+        'family_history', 'height_cm', 'weight_kg',,
+        // Brief #22 — health baseline for pre-assessment (Hybrid 1C).
+        'chronic_conditions', 'halal_only',
+        'pregnancy_status', 'pregnancy_status_updated_at',
     ];
 
     protected $casts = [
@@ -25,7 +28,12 @@ class PatientProfile extends Model
         'height_cm'              => 'decimal:2',
         'weight_kg'              => 'decimal:2',
         'registration_completed' => 'boolean',
-    ];
+        // Brief #22 — JSON-typed health baseline.
+        'chronic_conditions'          => 'array',
+        'current_medications'         => 'array',
+        'halal_only'                  => 'boolean',
+        'pregnancy_status_updated_at' => 'datetime',
+        ];
 
     /**
      * Sensitive PII never returned in API responses by default.

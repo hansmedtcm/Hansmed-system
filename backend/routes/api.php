@@ -155,6 +155,22 @@ Route::get('/public/features', function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    // ── Brief #22 · pre-assessment (tongue-led adaptive intake) ──
+    // Patient + doctor routes use explicit full paths so they\'re easy
+    // to grep. Auth scoping is via role check inside the controllers.
+    Route::post ('/patient/pre-assessment/start',
+        [\App\Http\Controllers\Patient\PreAssessmentController::class, 'start']);
+    Route::get  ('/patient/pre-assessment/{id}',
+        [\App\Http\Controllers\Patient\PreAssessmentController::class, 'show']);
+    Route::patch('/patient/pre-assessment/{id}/stage/{stage}',
+        [\App\Http\Controllers\Patient\PreAssessmentController::class, 'updateStage']);
+
+    Route::get ('/doctor/pre-assessment/{id}',
+        [\App\Http\Controllers\Doctor\PreAssessmentController::class, 'show']);
+    Route::post('/doctor/pre-assessment/{id}/decision',
+        [\App\Http\Controllers\Doctor\PreAssessmentController::class, 'recordDecision']);
+
     Route::get('/auth/me',      [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
