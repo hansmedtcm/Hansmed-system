@@ -12,6 +12,26 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // CORS hotfix 2026-05-12 — explicit HandleCors prepend (kept as
+        // first line of defence) AND a custom HansMedCors middleware
+        // ahead of it. The custom middleware sets CORS headers directly
+        // from a hardcoded allowlist so we don't depend on Laravel's
+        // HandleCors firing correctly under Octane+FrankenPHP — which
+        // verified empirically to be silently failing in prod 2026-05-12
+        // (zero Access-Control-* headers on any /api/* response, both
+        // preflight and actual). HansMedCors short-circuits OPTIONS
+        // preflights with a 204 before they touch the route.
+        //
+        // Both are prepended; ORDER MATTERS. Laravel's prepend() pushes
+        // each new entry to the FRONT of the prepends array, so the
+        // LAST prepend() call ends up first in the resolved stack.
+        // Therefore: prepend HandleCors first, then HansMedCors — so
+        // the runtime stack becomes [HansMedCors, HandleCors, ...rest].
+        // HansMedCors short-circuits OPTIONS preflights with a 204
+        // before HandleCors even sees them.
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->prepend(\App\Http\Middleware\HansMedCors::class);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'registration.complete' => \App\Http\Middleware\EnsureRegistrationComplete::class,
