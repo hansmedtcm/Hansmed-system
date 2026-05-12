@@ -17,7 +17,7 @@ class PatientProfile extends Model
         'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country',
         'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation',
         'blood_type', 'allergies', 'medical_history', 'current_medications',
-        'family_history', 'height_cm', 'weight_kg',,
+        'family_history', 'height_cm', 'weight_kg',
         // Brief #22 — health baseline for pre-assessment (Hybrid 1C).
         'chronic_conditions', 'halal_only',
         'pregnancy_status', 'pregnancy_status_updated_at',
