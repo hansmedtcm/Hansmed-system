@@ -21,28 +21,29 @@
  | Allowed origins match config/cors.php (kept in sync deliberately).
  | Remove this block once the Laravel-level CORS is verified working.
  */
-$hansmed_origin   = $_SERVER['HTTP_ORIGIN'] ?? '';
-$hansmed_allowed  = [
-    'https://hansmedtcm.com',
-    'https://www.hansmedtcm.com',
-    'https://hansmedtcm.github.io',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:3000',
-];
-if ($hansmed_origin !== '' && in_array($hansmed_origin, $hansmed_allowed, true)) {
-    header('Access-Control-Allow-Origin: ' . $hansmed_origin);
-    header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Accept, Authorization, Content-Type, X-Requested-With, X-CSRF-TOKEN');
-    header('Access-Control-Max-Age: 86400');
-    header('Vary: Origin');
-
-    // Preflight short-circuit. Reply 204 with the headers above and
-    // exit before Laravel boots — saves the full framework cycle on
-    // every OPTIONS request and guarantees no Laravel middleware can
-    // strip the headers we just set.
-    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+// OPTIONS-only path. Plan K now scoped strictly to preflight requests
+// so it can't collide with Laravel's HandleCors middleware (which now
+// runs correctly post-PatientProfile fatal fix). For non-OPTIONS
+// requests, Plan K is intentionally a no-op — Laravel's HandleCors
+// sets the Access-Control-Allow-Origin header on the actual response,
+// and we don't want two layers fighting over it.
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+    $hansmed_origin  = $_SERVER['HTTP_ORIGIN'] ?? '';
+    $hansmed_allowed = [
+        'https://hansmedtcm.com',
+        'https://www.hansmedtcm.com',
+        'https://hansmedtcm.github.io',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:3000',
+    ];
+    if ($hansmed_origin !== '' && in_array($hansmed_origin, $hansmed_allowed, true)) {
+        header('Access-Control-Allow-Origin: ' . $hansmed_origin);
+        header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        header('Access-Control-Allow-Headers: Accept, Authorization, Content-Type, X-Requested-With, X-CSRF-TOKEN');
+        header('Access-Control-Max-Age: 86400');
+        header('Vary: Origin');
         http_response_code(204);
         exit;
     }
