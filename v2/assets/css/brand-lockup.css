@@ -1,0 +1,56 @@
+/* LOCKED brand stylesheet · HansMed bilingual wordmark
+ * ----------------------------------------------------------------------------
+ * DO NOT EDIT without owner approval. See v2/assets/img/brand/BRAND.md.
+ * Source-of-truth SVG: v2/assets/img/brand/wordmark.svg.
+ * Source-of-truth font weights: IBM Plex Sans 700 + IBM Plex Sans SC 700
+ *   (loaded in v2/index.html <head> Google Fonts link).
+ * ----------------------------------------------------------------------------
+ */
+
+/* Header / cream-surface variant — used in nav */
+.hm-wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+}
+.hm-wordmark__en {
+  font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.012em;
+  color: #1a1612;
+  line-height: 1;
+}
+.hm-wordmark__zh {
+  font-family: 'IBM Plex Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Source Han Sans SC', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: #5A4115;
+  line-height: 1;
+  margin-top: 6px;
+}
+
+/* Footer / dark-surface variant — same structure, retuned colors */
+.hm-wordmark--dark .hm-wordmark__en { color: #FEFCF8; }
+.hm-wordmark--dark .hm-wordmark__zh { color: #C9A86B; }
+
+/* Compact size — for mobile nav and condensed contexts */
+.hm-wordmark--compact .hm-wordmark__en { font-size: 18px; }
+.hm-wordmark--compact .hm-wordmark__zh { font-size: 13px; margin-top: 5px; }
+
+/* Nav context — slightly more compact + slightly larger logo for balanced 1:1 proportions */
+.nav-brand-v4 .nav-logo-v4 { width: 44px; height: 44px; }
+.nav-brand-v4 .hm-wordmark__en { font-size: 19px; }
+.nav-brand-v4 .hm-wordmark__zh { font-size: 13px; margin-top: 5px; }
+
+/* Mobile breakpoint — auto-shrink */
+@media (max-width: 640px) {
+  .hm-wordmark__en { font-size: 17px; }
+  .hm-wordmark__zh { font-size: 12px; margin-top: 4px; }
+  .nav-brand-v4 .nav-logo-v4 { width: 36px; height: 36px; }
+  .nav-brand-v4 .hm-wordmark__en { font-size: 16px; }
+  .nav-brand-v4 .hm-wordmark__zh { font-size: 11.5px; margin-top: 4px; }
+}

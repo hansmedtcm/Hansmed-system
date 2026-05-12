@@ -24,12 +24,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
 <meta name="description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI wellness analysis, herbal prescriptions, pharmacy delivery.">
 <meta name="theme-color" content="#F5F0E8">
-<title>HansMed Modern TCM · 漢方現代中醫</title>
+<title>HansMed Modern TCM · 汉方现代中医</title>
 
 <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hansmedtcm.com/v2/index.html">
-<meta property="og:title" content="HansMed Modern TCM · 漢方現代中醫">
+<meta property="og:title" content="HansMed Modern TCM · 汉方现代中医">
 <meta property="og:description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI wellness analysis, herbal prescriptions, pharmacy delivery.">
 <meta property="og:image" content="https://hansmedtcm.com/v2/assets/img/hero-bg.webp">
 <meta property="og:locale" content="en_US">
@@ -38,7 +38,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="HansMed Modern TCM · 漢方現代中醫">
+<meta name="twitter:title" content="HansMed Modern TCM · 汉方现代中医">
 <meta name="twitter:description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI wellness analysis, herbal prescriptions, pharmacy delivery.">
 <meta name="twitter:image" content="https://hansmedtcm.com/v2/assets/img/hero-bg.webp">
 
@@ -48,11 +48,15 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <!-- PREVIEW · Palette B (Forest Medical) + Fonts Y (Fraunces + Public Sans + Noto Sans SC).
      Added 2026-05-11 for index-only design review. If approved, fold into tokens.css. -->
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;500&family=Public+Sans:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<!-- LOCKED brand-wordmark fonts · IBM Plex Sans (Latin Bold 700) + IBM Plex Sans SC (Simplified Chinese Bold 700).
+     Source-of-truth: v2/assets/img/brand/wordmark.svg + BRAND.md. Do not remove this link without updating BRAND.md. -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@700&family=IBM+Plex+Sans+SC:wght@700&display=swap" rel="stylesheet">
 <style>
-  /* 正顏楷體 — system fallback chain */
+  /* 正颜楷体 — system fallback chain */
   @font-face {
     font-family: 'ZhengYanKaiTi';
-    src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+    src: local('正颜楷体'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
          local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
     font-display: swap;
   }
@@ -67,6 +71,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <!-- Landing v4 CSS — scoped under body.landing-v4 so it can't leak
      into portal/admin/doctor pages. -->
 <link rel="stylesheet" href="assets/css/landing-v4.css">
+
+<!-- LOCKED brand wordmark stylesheet · source-of-truth · DO NOT EDIT without owner approval -->
+<link rel="stylesheet" href="assets/css/brand-lockup.css">
+<!-- LOCKED typography stylesheet · 3-tier heading scale + Plex Sans body · See BRAND.md -->
+<link rel="stylesheet" href="assets/css/typography.css">
+
 <link rel="stylesheet" href="assets/css/dropdown.css">
 <!-- Brief #8 — v3 visual upgrade (imagery, scroll reveals, parallax,
      tilt, textures). v3-only; no v2 stylesheet was modified. -->
@@ -526,12 +536,13 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <nav id="nav-v4">
   <div class="nav-in">
     <button class="nav-brand-v4" onclick="go('home');closeMob();">
-      <img src="assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
-      <span lang="en" style="display:flex;align-items:baseline;">
-        <span class="nav-bn">HansMed</span>
+      <img src="assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="HansMed logo">
+      <!-- LOCKED · HansMed bilingual wordmark · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+      <span class="hm-wordmark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+        <span class="hm-wordmark__en">HansMed · TCM</span>
+        <span class="hm-wordmark__zh">汉方现代中医</span>
       </span>
-      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;">
-        <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span></span>
+      <!-- /LOCKED HansMed bilingual wordmark -->
     </button>
     <div class="nav-links-v4">
       <a class="nl act" href="index.html"><span lang="en">Home</span><span lang="zh">首页</span></a>
@@ -1963,7 +1974,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="emergency-title">⚠ Medical Emergency Notice</div>
     <div class="emergency-text">
       HansMed is designed for non-emergency consultations. If you are experiencing chest pain, difficulty breathing, severe bleeding, or other life-threatening symptoms, please call <strong>999</strong> immediately or visit the nearest emergency department.
-      <span class="emergency-zh">漢方現代中醫仅提供非紧急医疗咨询。如遇胸痛、呼吸困难、严重出血等紧急情况，请立即拨打 999 或前往急诊。</span>
+      <span class="emergency-zh">汉方现代中医仅提供非紧急医疗咨询。如遇胸痛、呼吸困难、严重出血等紧急情况，请立即拨打 999 或前往急诊。</span>
     </div>
   </div>
 </section>
@@ -1975,18 +1986,14 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="fg">
     <div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <svg viewBox="0 0 66 66" width="44" height="44" aria-hidden="true" style="opacity:0.95;flex-shrink:0;">
-          <rect x="1"  y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="1"  width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="10.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
-          <rect x="1"  y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="23" width="20" height="20" fill="#B8965A"/><circle cx="33" cy="33" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
-          <rect x="1"  y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="46" width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="55.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
-        </svg>
-        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+        <!-- LOCKED · footer logo · Treatment B (cream + outlined gold) · source: v2/assets/img/brand/logo-mark-dark.svg · DO NOT EDIT -->
+        <img src="assets/img/brand/logo-mark-dark.svg" width="44" height="44" alt="HansMed logo" style="opacity:0.95;flex-shrink:0;display:block;">
+        <!-- LOCKED · HansMed bilingual wordmark (footer / dark variant) · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+        <span class="hm-wordmark hm-wordmark--dark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+          <span class="hm-wordmark__en">HansMed · TCM</span>
+          <span class="hm-wordmark__zh">汉方现代中医</span>
+        </span>
+        <!-- /LOCKED footer brand block -->
       </div>
       <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持证中医师 · 马来西亚各地皆可问诊</span></p>
     </div>
@@ -2021,7 +2028,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="f-cert"><div class="f-cert-top">T&amp;CM Act</div><div class="f-cert-bot">2016</div></div>
   </div>
   <div class="fbot">
-    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心于马来西亚</span>
+    <span>© 2026 HansMed Modern TCM · 汉方现代中医 · Made with care in Malaysia · 匠心于马来西亚</span>
     <span>PDPA · T&amp;CM Act 2016</span>
   </div>
 </footer>

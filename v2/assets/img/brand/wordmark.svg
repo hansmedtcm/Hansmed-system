@@ -1,0 +1,16 @@
+<!-- LOCKED brand asset · HansMed bilingual wordmark · DO NOT EDIT without owner approval · See v2/assets/img/brand/BRAND.md
+     Rendering note: this SVG uses <text> elements bound to IBM Plex Sans (Latin) and IBM Plex Sans SC (Simplified Chinese), both at weight 700.
+     When embedded INLINE in HTML, the SVG uses the page's loaded web fonts (Google Fonts).
+     When loaded via <img> tag, browsers DO NOT load external fonts — the system fallback chain renders instead.
+     For runtime use in v2/*.html, this SVG content is INLINED in the brand wordmark blocks (see HTML LOCKED markers).
+     This file remains the canonical source-of-truth and is the file you edit if the wordmark ever needs to change. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+  <style>
+    .hm-en { font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif; font-weight: 700; font-size: 26px; letter-spacing: -0.012em; }
+    .hm-zh { font-family: 'IBM Plex Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Source Han Sans SC', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.1em; }
+    .hm-en-light { fill: #1a1612; } .hm-en-dark { fill: #FEFCF8; }
+    .hm-zh-light { fill: #5A4115; } .hm-zh-dark { fill: #C9A86B; }
+  </style>
+  <text x="0" y="24" class="hm-en hm-en-light">HansMed · TCM</text>
+  <text x="0" y="50" class="hm-zh hm-zh-light">汉方现代中医</text>
+</svg>

@@ -11,7 +11,7 @@ html[lang="zh"] [lang="en"] { display: none !important; }
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#F5F0E8">
-<title>HansMed Blog · 漢方部落格</title>
+<title>HansMed Blog · 汉方部落格</title>
 
 <!-- Open Graph + Twitter card meta — placeholders set here so social
      previews look right even before the JS swaps them with real
@@ -158,6 +158,15 @@ html[lang="zh"] [lang="en"] { display: none !important; }
 #art-totop:hover{background:var(--art-wd);}
 @media(max-width:600px){#art-totop{right:14px;bottom:74px;width:38px;height:38px;}}
 </style>
+
+<!-- LOCKED brand-wordmark fonts · IBM Plex Sans Bold 700 + IBM Plex Sans SC Bold 700 · See v2/assets/img/brand/BRAND.md -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@700&family=IBM+Plex+Sans+SC:wght@700&display=swap" rel="stylesheet">
+
+<!-- LOCKED brand wordmark stylesheet · DO NOT EDIT without owner approval -->
+<link rel="stylesheet" href="assets/css/brand-lockup.css">
+<!-- LOCKED typography stylesheet · 3-tier heading scale + Plex Sans body · See BRAND.md -->
+<link rel="stylesheet" href="assets/css/typography.css">
+
 </head>
 <body class="landing-v4">
 <a href="#main" class="skip-link">Skip to main content</a>
@@ -166,36 +175,40 @@ html[lang="zh"] [lang="en"] { display: none !important; }
   <div class="nav-in">
     <a class="nav-brand-v4" href="index.html">
       <img src="assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
-      <span lang="en" style="display:flex;align-items:baseline;"><span class="nav-bn">HansMed</span></span>
-      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;"><span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span></span>
+      <!-- LOCKED · HansMed bilingual wordmark · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+      <span class="hm-wordmark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+        <span class="hm-wordmark__en">HansMed · TCM</span>
+        <span class="hm-wordmark__zh">汉方现代中医</span>
+      </span>
+      <!-- /LOCKED HansMed bilingual wordmark -->
     </a>
     <div class="nav-links-v4">
-      <a class="nl" href="index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <a class="nl" href="index.html"><span lang="en">Home</span><span lang="zh">首页</span></a>
       <div style="position:relative;" id="about-wrap">
         <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)">
-          <span lang="en">About</span><span lang="zh">關於</span>
+          <span lang="en">About</span><span lang="zh">关于</span>
           <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
             <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
         <div id="about-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:210px;background:var(--cream-white,#FEFCF8);border:1px solid var(--border,#D8C9AE);border-radius:12px;box-shadow:0 8px 32px rgba(36,22,8,0.14);z-index:9999;overflow:hidden;padding:4px 0;">
           <div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold,#9A7A3E),transparent);"></div>
-          <a href="about.html"         class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
-          <a href="practitioners.html" class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
-          <a href="services.html"      class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a href="about.html"         class="dd-item"><span lang="en">About HansMed</span><span lang="zh">关于我们</span></a>
+          <a href="practitioners.html" class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">医师</span></a>
+          <a href="services.html"      class="dd-item"><span lang="en">Our Services</span><span lang="zh">服务</span></a>
           <a href="blog.html"          class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
-          <a href="faq.html"           class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
-          <a href="contact.html"       class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+          <a href="faq.html"           class="dd-item"><span lang="en">FAQ</span><span lang="zh">常见问题</span></a>
+          <a href="contact.html"       class="dd-item"><span lang="en">Contact Us</span><span lang="zh">联络</span></a>
         </div>
       </div>
       <a class="nl" href="shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
-      <a class="nl" href="portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
+      <a class="nl" href="portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康评估</span></a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
       </div>
       <a class="nl nav-signin" href="index.html#/login" target="_blank" rel="noopener" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></a>
-      <a class="nav-cta" href="portal.html#/book"><span lang="en">Book</span><span lang="zh">預約</span></a>
+      <a class="nav-cta" href="portal.html#/book"><span lang="en">Book</span><span lang="zh">预约</span></a>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
@@ -215,27 +228,33 @@ html[lang="zh"] [lang="en"] { display: none !important; }
   <div class="fg">
     <div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <img src="assets/img/brand/logo-mark.svg" alt="" style="width:44px;height:44px;opacity:0.95;">
-        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+        <!-- LOCKED · footer logo · Treatment B (cream + outlined gold) · source: v2/assets/img/brand/logo-mark-dark.svg · DO NOT EDIT -->
+        <img src="assets/img/brand/logo-mark-dark.svg" width="44" height="44" alt="HansMed logo" style="opacity:0.95;flex-shrink:0;display:block;">
+        <!-- LOCKED · HansMed bilingual wordmark (footer / dark variant) · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+        <span class="hm-wordmark hm-wordmark--dark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+          <span class="hm-wordmark__en">HansMed · TCM</span>
+          <span class="hm-wordmark__zh">汉方现代中医</span>
+        </span>
+        <!-- /LOCKED footer brand block -->
       </div>
       <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.</p>
     </div>
     <div>
       <div class="flbl">Platform · 平台</div>
-      <a class="fl" href="services.html">Services · 服務</a>
+      <a class="fl" href="services.html">Services · 服务</a>
       <a class="fl" href="shop.html">Shop · 商店</a>
-      <a class="fl" href="portal.html#/book">Book · 預約</a>
-      <a class="fl" href="portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
-      <a class="fl" href="contact.html">Contact · 聯絡</a>
+      <a class="fl" href="portal.html#/book">Book · 预约</a>
+      <a class="fl" href="portal.html#/wellness-assessment">AI Wellness · AI 健康评估</a>
+      <a class="fl" href="contact.html">Contact · 联络</a>
     </div>
     <div>
-      <div class="flbl">Account · 帳號</div>
+      <div class="flbl">Account · 帐号</div>
       <a class="fl" href="index.html#/login">Sign In · 登入</a>
-      <a class="fl" href="index.html#/register">Create Account · 註冊</a>
+      <a class="fl" href="index.html#/register">Create Account · 注册</a>
     </div>
     <div>
-      <div class="flbl">Compliance · 合規</div>
-      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <div class="flbl">Compliance · 合规</div>
+      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隐政策</span></a>
       <a class="fl" href="security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
     </div>
   </div>
@@ -247,7 +266,7 @@ html[lang="zh"] [lang="en"] { display: none !important; }
     <div class="f-cert"><div class="f-cert-top">T&amp;CM Act</div><div class="f-cert-bot">2016</div></div>
   </div>
   <div class="fbot">
-    <span>© 2026 HansMed Modern TCM · 漢方現代中醫</span>
+    <span>© 2026 HansMed Modern TCM · 汉方现代中医</span>
     <span>PDPA · T&amp;CM Act 2016</span>
   </div>
 </footer>
@@ -395,7 +414,7 @@ window.setLang = setLang;
 
       root.classList.remove('art-loading');
       var meta = [];
-      if (post.reading_time_min) meta.push(post.reading_time_min + ' min read · ' + post.reading_time_min + ' 分鐘');
+      if (post.reading_time_min) meta.push(post.reading_time_min + ' min read · ' + post.reading_time_min + ' 分钟');
       var when = fmtDate(post.published_at);
       if (when) meta.push(when);
 
@@ -442,7 +461,7 @@ window.setLang = setLang;
           '</div>' +
           '<aside class="art-toc" id="art-toc" aria-label="Table of contents">' +
             '<div class="art-toc-label">' +
-              '<span lang="en">In this article</span><span lang="zh">本文目錄</span>' +
+              '<span lang="en">In this article</span><span lang="zh">本文目录</span>' +
             '</div>' +
             '<ul></ul>' +
           '</aside>' +
@@ -458,7 +477,7 @@ window.setLang = setLang;
             'WhatsApp' +
           '</a>' +
           '<button class="art-share-btn" type="button" id="art-share-native">📤 <span lang="en">Share</span><span lang="zh">分享</span></button>' +
-          '<button class="art-share-btn" type="button" id="art-share-copy">🔗 <span lang="en">Copy link</span><span lang="zh">複製連結</span></button>' +
+          '<button class="art-share-btn" type="button" id="art-share-copy">🔗 <span lang="en">Copy link</span><span lang="zh">复制连结</span></button>' +
         '</div>' +
 
         '<a href="blog.html" class="back-link">← <span lang="en">Back to all articles</span><span lang="zh">返回部落格</span></a>' +
@@ -466,10 +485,10 @@ window.setLang = setLang;
         // ── Related articles strip ──
         '<section class="art-related" id="art-related" style="display:none;">' +
           '<div class="art-related-label">' +
-            '<span lang="en">Continue reading</span><span lang="zh">繼續閱讀</span>' +
+            '<span lang="en">Continue reading</span><span lang="zh">继续阅读</span>' +
           '</div>' +
           '<h2 class="art-related-h">' +
-            '<span lang="en">More from our practitioners</span><span lang="zh">更多醫師專欄</span>' +
+            '<span lang="en">More from our practitioners</span><span lang="zh">更多医师专栏</span>' +
           '</h2>' +
           '<div class="art-related-grid" id="art-related-grid"></div>' +
         '</section>';
@@ -582,7 +601,7 @@ window.setLang = setLang;
         cp.dataset.copied = '1';
         var en = cp.querySelector('[lang="en"]'); var zh = cp.querySelector('[lang="zh"]');
         var oldEn = en && en.textContent, oldZh = zh && zh.textContent;
-        if (en) en.textContent = 'Copied!'; if (zh) zh.textContent = '已複製！';
+        if (en) en.textContent = 'Copied!'; if (zh) zh.textContent = '已复制！';
         setTimeout(function () {
           delete cp.dataset.copied;
           if (en) en.textContent = oldEn; if (zh) zh.textContent = oldZh;
@@ -609,7 +628,7 @@ window.setLang = setLang;
         if (!grid || !sec) return;
         grid.innerHTML = posts.map(function (p) {
           var when = fmtDate(p.published_at);
-          var rt   = p.reading_time_min ? p.reading_time_min + ' min · ' + p.reading_time_min + ' 分鐘' : '';
+          var rt   = p.reading_time_min ? p.reading_time_min + ' min · ' + p.reading_time_min + ' 分钟' : '';
           return '<a class="art-related-card" href="article.html?slug=' + encodeURIComponent(p.slug) + '">' +
             '<div class="art-related-mini">' + esc(p.thumb_initial || '文') + '</div>' +
             '<div class="art-related-title">' + esc(p.title) + '</div>' +
@@ -635,13 +654,4 @@ window.setLang = setLang;
       totop.classList.toggle('is-visible', pct > 30);
     }
     window.addEventListener('scroll', tick, { passive: true });
-    window.addEventListener('resize', tick);
-    tick();
-    totop.addEventListener('click', function () {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  }
-})();
-</script>
-</body>
-</html>
+    window.addEven

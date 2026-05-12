@@ -24,7 +24,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
 <meta name="description" content="HansMed Modern TCM — bridging traditional Chinese medicine wisdom with modern technology. Licensed practitioners, AI-assisted assessment, herbs delivered. Serving Malaysia.">
 <meta name="theme-color" content="#F5F0E8">
-<title>About · 關於 · HansMed Modern TCM</title>
+<title>About · 关于 · HansMed Modern TCM</title>
 
 <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
 <meta property="og:type" content="website">
@@ -46,10 +46,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 <style>
-  /* 正顏楷體 — system fallback chain */
+  /* 正颜楷体 — system fallback chain */
   @font-face {
     font-family: 'ZhengYanKaiTi';
-    src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+    src: local('正颜楷体'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
          local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
     font-display: swap;
   }
@@ -70,6 +70,15 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <link rel="stylesheet" href="assets/css/visual-upgrade.css">
 <!-- Preload the about hero image so the LCP element paints quickly. -->
 <link rel="preload" as="image" href="assets/img/brand-story.webp" fetchpriority="high">
+
+<!-- LOCKED brand-wordmark fonts · IBM Plex Sans Bold 700 + IBM Plex Sans SC Bold 700 · See v2/assets/img/brand/BRAND.md -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@700&family=IBM+Plex+Sans+SC:wght@700&display=swap" rel="stylesheet">
+
+<!-- LOCKED brand wordmark stylesheet · DO NOT EDIT without owner approval -->
+<link rel="stylesheet" href="assets/css/brand-lockup.css">
+<!-- LOCKED typography stylesheet · 3-tier heading scale + Plex Sans body · See BRAND.md -->
+<link rel="stylesheet" href="assets/css/typography.css">
+
 </head>
 <body class="landing-v4">
 <!-- (Preview banner removed 2026-05-03 at v3 cutover. v3 is now
@@ -83,18 +92,19 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="nav-in">
     <button class="nav-brand-v4" onclick="location.href='index.html'">
       <img src="assets/img/brand/logo-mark.svg" class="nav-logo-v4" alt="">
-      <span lang="en" style="display:flex;align-items:baseline;">
-        <span class="nav-bn">HansMed</span>
+      <!-- LOCKED · HansMed bilingual wordmark · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+      <span class="hm-wordmark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+        <span class="hm-wordmark__en">HansMed · TCM</span>
+        <span class="hm-wordmark__zh">汉方现代中医</span>
       </span>
-      <span lang="zh" style="display:flex;align-items:baseline;gap:6px;">
-        <span style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-size:22px;font-weight:400;color:var(--v4-ink);letter-spacing:0.04em;line-height:1;">漢方現代中醫</span></span>
+      <!-- /LOCKED HansMed bilingual wordmark -->
     </button>
     <div class="nav-links-v4">
-      <a class="nl" href="index.html"><span lang="en">Home</span><span lang="zh">首頁</span></a>
+      <a class="nl" href="index.html"><span lang="en">Home</span><span lang="zh">首页</span></a>
       <!-- About dropdown wrapper — active state on this page. -->
       <div style="position:relative;display:inline-block;" id="about-wrap">
         <button id="about-trigger" type="button" class="nl act" onclick="toggleAboutMenu(event)">
-          <span lang="en">About</span><span lang="zh">關於</span>
+          <span lang="en">About</span><span lang="zh">关于</span>
           <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none"
             style="transition:transform 0.2s;flex-shrink:0;">
             <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5"
@@ -107,22 +117,22 @@ html[lang="zh"] .hm-lang-sep { display: none; }
                  border-radius:10px;box-shadow:0 8px 32px rgba(36,22,8,0.12);
                  z-index:9999;overflow:hidden;padding:4px 0;">
           <div style="height:2px;background:linear-gradient(90deg,transparent,#B5881A,transparent);"></div>
-          <a id="dd-about"   href="about.html"                  class="dd-item is-current"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
-          <a id="dd-prac"    href="practitioners.html"         class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
-          <a id="dd-svc"     href="services.html"              class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a id="dd-about"   href="about.html"                  class="dd-item is-current"><span lang="en">About HansMed</span><span lang="zh">关于我们</span></a>
+          <a id="dd-prac"    href="practitioners.html"         class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">医师</span></a>
+          <a id="dd-svc"     href="services.html"              class="dd-item"><span lang="en">Our Services</span><span lang="zh">服务</span></a>
           <a id="dd-blog"    href="blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
-          <a id="dd-faq"     href="faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
-          <a id="dd-contact" href="contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+          <a id="dd-faq"     href="faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常见问题</span></a>
+          <a id="dd-contact" href="contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">联络</span></a>
         </div>
       </div>
       <a class="nl"     href="shop.html"><span lang="en">Shop</span><span lang="zh">商店</span></a>
-      <a class="nl"     href="../portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></a>
+      <a class="nl"     href="../portal.html#/wellness-assessment"><span lang="en">AI Wellness</span><span lang="zh">AI 健康评估</span></a>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" data-lang="en" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     data-lang="zh" onclick="setLang('zh')">中</button>
       </div>
       <button class="nl nav-signin" onclick="go('login')" style="color:var(--v4-ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
-      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
+      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">预约</span></button>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -133,12 +143,12 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <!-- MOBILE DRAWER -->
 <div class="mobile-menu" id="mob-menu">
   <div style="padding:20px 0;">
-    <button class="mob-nl" onclick="location.href='index.html'"><span lang="en">Home</span><span lang="zh">首頁</span></button>
-    <button class="mob-nl" onclick="location.href='about.html'"><span lang="en">About</span><span lang="zh">關於我們</span></button>
-    <button class="mob-nl" onclick="go('services');closeMob();"><span lang="en">Services</span><span lang="zh">服務項目</span></button>
-    <button class="mob-nl" onclick="go('shop');closeMob();"><span lang="en">Shop</span><span lang="zh">中藥商店</span></button>
-    <button class="mob-nl" onclick="go('wellness');closeMob();"><span lang="en">AI Wellness Assessment</span><span lang="zh">AI 健康評估</span></button>
-    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">聯絡我們</span></button>
+    <button class="mob-nl" onclick="location.href='index.html'"><span lang="en">Home</span><span lang="zh">首页</span></button>
+    <button class="mob-nl" onclick="location.href='about.html'"><span lang="en">About</span><span lang="zh">关于我们</span></button>
+    <button class="mob-nl" onclick="go('services');closeMob();"><span lang="en">Services</span><span lang="zh">服务项目</span></button>
+    <button class="mob-nl" onclick="go('shop');closeMob();"><span lang="en">Shop</span><span lang="zh">中药商店</span></button>
+    <button class="mob-nl" onclick="go('wellness');closeMob();"><span lang="en">AI Wellness Assessment</span><span lang="zh">AI 健康评估</span></button>
+    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">联络我们</span></button>
     <button class="mob-nl mob-nl-signin" onclick="navMobSignin()"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
     <button class="mob-nl mob-nl-logout" onclick="navLogout()" style="display:none;color:#9a3a2a;"><span lang="en">Sign Out</span><span lang="zh">登出</span></button>
     <div class="mob-lang">
@@ -146,8 +156,8 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <button id="mlzh" class="mob-lb"     data-lang="zh" onclick="setLang('zh')">中</button>
     </div>
     <div class="mob-ctas">
-      <button class="btn-v4 btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">預約</span></button>
-      <button class="btn-v4 btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();"><span lang="en">Create Account</span><span lang="zh">建立帳號</span></button>
+      <button class="btn-v4 btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">预约</span></button>
+      <button class="btn-v4 btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();"><span lang="en">Create Account</span><span lang="zh">建立帐号</span></button>
       <a class="btn-v4 btn-wa" id="hm-wa-drawer" target="_blank" rel="noopener" style="width:100%;padding:15px;font-size:15px;justify-content:center;" href="https://wa.me/601165600393">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
         WhatsApp Us
@@ -162,7 +172,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
     WhatsApp
   </a>
-  <button class="bb-book" onclick="go('book')">📅 Book · 預約</button>
+  <button class="bb-book" onclick="go('book')">📅 Book · 预约</button>
 </div>
 
 <!-- ══════════════ ABOUT PAGE ══════════════ -->
@@ -176,15 +186,15 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="hero-content">
     <div class="eyebrow" style="margin-bottom:24px;">
       <span lang="en">About HansMed</span>
-      <span lang="zh">關於 漢方</span>
+      <span lang="zh">关于 汉方</span>
     </div>
     <h1 class="hero-h1">
       <span lang="en">Where tradition meets <em>modern care</em></span>
-      <span lang="zh">傳統智慧 · <em>現代中醫</em></span>
+      <span lang="zh">传统智慧 · <em>现代中医</em></span>
     </h1>
     <p class="hero-sub">
       <span lang="en">Quality TCM, made accessible to every Malaysian.</span>
-      <span lang="zh">傳統中醫智慧 · 讓每位馬來西亞人都能輕鬆獲得優質中醫服務。</span>
+      <span lang="zh">传统中医智慧 · 让每位马来西亚人都能轻松获得优质中医服务。</span>
     </p>
   </div>
 </section>
@@ -197,37 +207,37 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="origin-text reveal">
       <div class="eyebrow" style="margin-bottom:18px;">
         <span lang="en">Our origin</span>
-        <span lang="zh">緣起</span>
+        <span lang="zh">缘起</span>
       </div>
       <h2 class="origin-h">
         <span lang="en">Why we built <em>HansMed</em></span>
-        <span lang="zh">為何創辦 <em>HansMed</em></span>
+        <span lang="zh">为何创办 <em>HansMed</em></span>
       </h2>
       <p class="origin-body">
         <span lang="en">HansMed was born from a simple idea — to help busy Malaysians see a qualified TCM practitioner with peace of mind, while freeing doctors from paperwork so they can focus on what they trained for: listening, feeling the pulse, understanding your constitution.</span>
-        <span lang="zh">為了方便大眾在忙碌的生活節奏中可以安心看上合格中醫，讓中醫師專心做他們一輩子在做的事 —— 聽您說，把您的脈，了解您的體質。</span>
+        <span lang="zh">为了方便大众在忙碌的生活节奏中可以安心看上合格中医，让中医师专心做他们一辈子在做的事 —— 听您说，把您的脉，了解您的体质。</span>
       </p>
       <p class="origin-spine">
         <span lang="en">Modern technology, traditional wisdom — bridging the generations.</span>
-        <span lang="zh">現代化的科技平台，傳統式的中醫智慧 — 造就了現代與傳統不再有代溝。</span>
+        <span lang="zh">现代化的科技平台，传统式的中医智慧 — 造就了现代与传统不再有代沟。</span>
       </p>
     </div>
     <div class="origin-stats reveal" style="transition-delay:0.04s;">
       <div class="stat-b">
         <div class="stat-n">2</div>
-        <div class="stat-l"><span lang="en">Licensed Doctors</span><span lang="zh">持證醫師</span></div>
+        <div class="stat-l"><span lang="en">Licensed Doctors</span><span lang="zh">持证医师</span></div>
       </div>
       <div class="stat-b">
         <div class="stat-n"><span lang="en">New</span><span lang="zh">全新</span></div>
-        <div class="stat-l"><span lang="en">Modern Platform</span><span lang="zh">現代化平台</span></div>
+        <div class="stat-l"><span lang="en">Modern Platform</span><span lang="zh">现代化平台</span></div>
       </div>
       <div class="stat-b">
         <div class="stat-n">10+</div>
-        <div class="stat-l"><span lang="en">TCM Specialties</span><span lang="zh">專科類別</span></div>
+        <div class="stat-l"><span lang="en">TCM Specialties</span><span lang="zh">专科类别</span></div>
       </div>
       <div class="stat-b">
         <div class="stat-n">24/7</div>
-        <div class="stat-l"><span lang="en">Chat Support</span><span lang="zh">線上支援</span></div>
+        <div class="stat-l"><span lang="en">Chat Support</span><span lang="zh">线上支援</span></div>
       </div>
     </div>
   </div>
@@ -244,15 +254,15 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="about-space-text reveal" style="transition-delay:0.04s;">
       <div class="eyebrow" style="margin-bottom:14px;">
         <span lang="en">Our practice</span>
-        <span lang="zh">診室</span>
+        <span lang="zh">诊室</span>
       </div>
       <h2>
         <span lang="en">A space for <em>quiet listening</em></span>
-        <span lang="zh">為您 <em>專注傾聽</em></span>
+        <span lang="zh">为您 <em>专注倾听</em></span>
       </h2>
       <p>
         <span lang="en">Our practitioners work in a calm, traditional setting designed for the time-honored craft of TCM diagnosis — pulse, tongue, voice, observation. The technology is invisible; what you experience is care.</span>
-        <span lang="zh">我們的中醫師在一個寧靜、傳統的環境中工作，專為望聞問切而設。科技在背後運作，您所體驗的是照護本身。</span>
+        <span lang="zh">我们的中医师在一个宁静、传统的环境中工作，专为望闻问切而设。科技在背后运作，您所体验的是照护本身。</span>
       </p>
     </div>
   </div>
@@ -260,48 +270,48 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 
 <!-- Three principles — verbatim v2 copy (Clinical Integrity /
      Privacy First / Quality Herbs), restyled with calligraphic
-     seal characters (醫 / 私 / 質) as elegant typography, NOT
+     seal characters (医 / 私 / 质) as elegant typography, NOT
      emoji. .principle-seal styled in visual-upgrade.css. -->
 <section class="sec sec-white about-principles">
   <div class="sh center reveal">
     <div class="eyebrow">
       <span lang="en">Our approach</span>
-      <span lang="zh">原則</span>
+      <span lang="zh">原则</span>
     </div>
     <h2>
       <span lang="en">Three things we <em>never compromise</em> on</span>
-      <span lang="zh">我們絕不妥協的 <em>三件事</em></span>
+      <span lang="zh">我们绝不妥协的 <em>三件事</em></span>
     </h2>
   </div>
   <div class="g3 principles-grid">
     <div class="card-v4 principle-card reveal">
       <h3>
         <span lang="en">Clinical integrity</span>
-        <span lang="zh">臨床誠信</span>
+        <span lang="zh">临床诚信</span>
       </h3>
       <p>
         <span lang="en">Every AI output and wellness report is reviewed by a licensed TCM practitioner before it reaches you. All practitioners are registered with Malaysia's T&amp;CM Council and undergo continuous education.</span>
-        <span lang="zh">所有 AI 健康報告均由持牌中醫師審核後才呈現給您。所有醫師均於馬來西亞傳統與輔助醫藥局註冊，並持續進修中醫學識。</span>
+        <span lang="zh">所有 AI 健康报告均由持牌中医师审核后才呈现给您。所有医师均于马来西亚传统与辅助医药局注册，并持续进修中医学识。</span>
       </p>
     </div>
     <div class="card-v4 principle-card reveal" style="transition-delay:0.04s;">
       <h3>
         <span lang="en">Privacy first</span>
-        <span lang="zh">私隱優先</span>
+        <span lang="zh">私隐优先</span>
       </h3>
       <p>
         <span lang="en">Fully PDPA 2010 compliant. Explicit consent before any AI processing. Encrypted storage — export or delete your data at any time from settings.</span>
-        <span lang="zh">完全符合 2010 年個人資料保護法（PDPA）。AI 處理前必須取得明確同意。資料加密儲存 — 您可隨時於設定中匯出或刪除個人資料。</span>
+        <span lang="zh">完全符合 2010 年个人资料保护法（PDPA）。AI 处理前必须取得明确同意。资料加密储存 — 您可随时于设定中汇出或删除个人资料。</span>
       </p>
     </div>
     <div class="card-v4 principle-card reveal" style="transition-delay:0.08s;">
       <h3>
         <span lang="en">Quality herbs</span>
-        <span lang="zh">品質藥材</span>
+        <span lang="zh">品质药材</span>
       </h3>
       <p>
         <span lang="en">Only verified Malaysian and international suppliers. Every product labelled with Chinese name, pinyin, and transparent sourcing details.</span>
-        <span lang="zh">只與經認證的本地及國際供應商合作。每款藥材均附上中文名稱、拼音及完整的來源資訊，公開透明。</span>
+        <span lang="zh">只与经认证的本地及国际供应商合作。每款药材均附上中文名称、拼音及完整的来源资讯，公开透明。</span>
       </p>
     </div>
   </div>
@@ -312,20 +322,20 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="cta-inner">
     <h2>
       <span lang="en">Ready to begin?</span>
-      <span lang="zh">準備好了嗎？</span>
+      <span lang="zh">准备好了吗？</span>
     </h2>
     <p>
       <span lang="en">Book your first consultation, or try the free wellness assessment.</span>
-      <span lang="zh">立即預約您的首次問診，或先試試免費的體質評估。</span>
+      <span lang="zh">立即预约您的首次问诊，或先试试免费的体质评估。</span>
     </p>
     <div class="cta-row">
       <a class="btn-v4 btn-dark" href="../portal.html#/book">
-        <span lang="en">Book a consultation · 預約問診</span>
-        <span lang="zh">預約問診 · Book a consultation</span>
+        <span lang="en">Book a consultation · 预约问诊</span>
+        <span lang="zh">预约问诊 · Book a consultation</span>
       </a>
       <a class="btn-v4 btn-outline" href="../portal.html#/wellness-assessment">
-        <span lang="en">Try wellness assessment · 體質評估</span>
-        <span lang="zh">體質評估 · Try wellness assessment</span>
+        <span lang="en">Try wellness assessment · 体质评估</span>
+        <span lang="zh">体质评估 · Try wellness assessment</span>
       </a>
     </div>
   </div>
@@ -338,42 +348,38 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="fg">
     <div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <svg viewBox="0 0 66 66" width="44" height="44" aria-hidden="true" style="opacity:0.95;flex-shrink:0;">
-          <rect x="1"  y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="1"  width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="10.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
-          <rect x="1"  y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="23" width="20" height="20" fill="#B8965A"/><circle cx="33" cy="33" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
-          <rect x="1"  y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="46" width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="55.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
-        </svg>
-        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+        <!-- LOCKED · footer logo · Treatment B (cream + outlined gold) · source: v2/assets/img/brand/logo-mark-dark.svg · DO NOT EDIT -->
+        <img src="assets/img/brand/logo-mark-dark.svg" width="44" height="44" alt="HansMed logo" style="opacity:0.95;flex-shrink:0;display:block;">
+        <!-- LOCKED · HansMed bilingual wordmark (footer / dark variant) · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+        <span class="hm-wordmark hm-wordmark--dark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+          <span class="hm-wordmark__en">HansMed · TCM</span>
+          <span class="hm-wordmark__zh">汉方现代中医</span>
+        </span>
+        <!-- /LOCKED footer brand block -->
       </div>
-      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持证中医师 · 马来西亚各地皆可问诊</span></p>
     </div>
     <div>
       <div class="flbl">Platform · 平台</div>
-      <a class="fl" href="services.html">Services · 服務</a>
+      <a class="fl" href="services.html">Services · 服务</a>
       <a class="fl" href="shop.html">Shop · 商店</a>
-      <a class="fl" href="../portal.html#/book">Book · 預約</a>
-      <a class="fl" href="../portal.html#/wellness-assessment">AI Wellness · AI 健康評估</a>
-      <a class="fl" href="contact.html">Contact · 聯絡</a>
+      <a class="fl" href="../portal.html#/book">Book · 预约</a>
+      <a class="fl" href="../portal.html#/wellness-assessment">AI Wellness · AI 健康评估</a>
+      <a class="fl" href="contact.html">Contact · 联络</a>
     </div>
     <div>
-      <div class="flbl">Account · 帳號</div>
+      <div class="flbl">Account · 帐号</div>
       <a class="fl" href="#/login">Sign In · 登入</a>
-      <a class="fl" href="#/register">Create Account · 註冊</a>
-      <a class="fl" href="#/login">Doctor Login · 醫師</a>
-      <a class="fl" href="#/login">Pharmacy Login · 藥房</a>
+      <a class="fl" href="#/register">Create Account · 注册</a>
+      <a class="fl" href="#/login">Doctor Login · 医师</a>
+      <a class="fl" href="#/login">Pharmacy Login · 药房</a>
     </div>
     <div>
-      <div class="flbl">Compliance · 合規</div>
-      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <div class="flbl">Compliance · 合规</div>
+      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隐政策</span></a>
       <a class="fl" href="security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
 
-      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 评估非医疗诊断 · 所有医师皆持证</span></p>
     </div>
   </div>
   <div class="f-cert-row">
@@ -384,7 +390,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
     <div class="f-cert"><div class="f-cert-top">T&amp;CM Act</div><div class="f-cert-bot">2016</div></div>
   </div>
   <div class="fbot">
-    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心於馬來西亞</span>
+    <span>© 2026 HansMed Modern TCM · 汉方现代中医 · Made with care in Malaysia · 匠心于马来西亚</span>
     <span>PDPA · T&amp;CM Act 2016</span>
   </div>
 </footer>
@@ -399,50 +405,50 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   <div class="auth-modal">
     <div class="tabs" style="margin-bottom: var(--s-5);">
       <button class="tab" data-tab="login">Sign In · 登入</button>
-      <button class="tab" data-tab="register">Register · 註冊</button>
-      <button class="tab" data-tab="professional">Doctor/Pharmacy · 專業</button>
+      <button class="tab" data-tab="register">Register · 注册</button>
+      <button class="tab" data-tab="professional">Doctor/Pharmacy · 专业</button>
     </div>
 
     <form class="tab-panel" data-panel="login">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Welcome Back · 歡迎回來</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in with your email or phone · 以電郵或手機號碼登入</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Welcome Back · 欢迎回来</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Sign in with your email or phone · 以电邮或手机号码登入</p>
       <div class="field">
-        <label class="field-label" data-required>Email or Phone · 電郵或手機</label>
+        <label class="field-label" data-required>Email or Phone · 电邮或手机</label>
         <input type="text" name="identifier" class="field-input" required autocomplete="username" placeholder="you@example.com  或  +60 12-345 6789">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Password · 密碼</label>
+        <label class="field-label" data-required>Password · 密码</label>
         <input type="password" name="password" class="field-input" required autocomplete="current-password">
         <div class="field-error"></div>
       </div>
       <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
-        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘记密码？</a>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>
     </form>
 
     <form class="tab-panel" data-panel="register">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Create Account · 建立帳號</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Free — takes less than a minute · 免費建立 · 不需一分鐘</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Create Account · 建立帐号</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Free — takes less than a minute · 免费建立 · 不需一分钟</p>
       <div class="field">
         <label class="field-label" data-required>Full Name · 姓名</label>
         <input type="text" name="name" class="field-input" required autocomplete="name">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Email · 電郵</label>
+        <label class="field-label" data-required>Email · 电邮</label>
         <input type="email" name="email" class="field-input" required autocomplete="email">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label">Phone · 電話</label>
+        <label class="field-label">Phone · 电话</label>
         <input type="tel" name="phone" class="field-input" autocomplete="tel" placeholder="+60 12-345 6789">
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Password · 密碼</label>
+        <label class="field-label" data-required>Password · 密码</label>
         <input type="password" name="password" class="field-input" required minlength="8" autocomplete="new-password">
         <div class="field-hint">Min 8 characters · 至少8字元</div>
         <div class="field-error"></div>
@@ -450,51 +456,51 @@ html[lang="zh"] .hm-lang-sep { display: none; }
       <div class="field" style="margin-bottom: var(--s-3);">
         <label class="consent-row">
           <input type="checkbox" name="consent_pdpa" required>
-          <span class="consent-text">I consent to HansMed processing my personal data (name, email, phone, health information) in accordance with the <a href="privacy-policy.html" target="_blank">Privacy Policy</a>&nbsp;and Malaysia's PDPA 2010. · 本人同意依據<a href="privacy-policy.html" target="_blank">私隱政策</a>及《2010年個人資料保護法》處理個人資料。</span>
+          <span class="consent-text">I consent to HansMed processing my personal data (name, email, phone, health information) in accordance with the <a href="privacy-policy.html" target="_blank">Privacy Policy</a>&nbsp;and Malaysia's PDPA 2010. · 本人同意依据<a href="privacy-policy.html" target="_blank">私隐政策</a>及《2010年个人资料保护法》处理个人资料。</span>
         </label>
       </div>
       <div class="field" style="margin-bottom: var(--s-4);">
         <label class="consent-row">
           <input type="checkbox" name="consent_ai" required>
-          <span class="consent-text">I understand that HansMed uses AI-assisted wellness tools (tongue image analysis, constitution questionnaires) which are <strong>not medical diagnoses</strong>. Licensed practitioners review all AI-generated suggestions. · 本人知悉 AI 輔助工具並非醫療診斷，所有結果均由持牌中醫師審核。</span>
+          <span class="consent-text">I understand that HansMed uses AI-assisted wellness tools (tongue image analysis, constitution questionnaires) which are <strong>not medical diagnoses</strong>. Licensed practitioners review all AI-generated suggestions. · 本人知悉 AI 辅助工具并非医疗诊断，所有结果均由持牌中医师审核。</span>
         </label>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Create Account · 建立帳號</button>
-      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">Both consents are required by Malaysian law and T&amp;CM Act 2016. · 兩項同意均為法例要求。</p>
+      <button type="submit" class="btn btn--primary btn--block">Create Account · 建立帐号</button>
+      <p style="text-align:center; color: var(--stone); margin-top: var(--s-4); font-size: var(--text-xs);">Both consents are required by Malaysian law and T&amp;CM Act 2016. · 两项同意均为法例要求。</p>
     </form>
 
     <form class="tab-panel" data-panel="forgot">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重設密碼</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Enter your email and we'll send a reset link · 輸入電郵以接收重設連結</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Reset Password · 重设密码</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">Enter your email and we'll send a reset link · 输入电邮以接收重设连结</p>
       <div class="field">
-        <label class="field-label" data-required>Email · 電郵</label>
+        <label class="field-label" data-required>Email · 电邮</label>
         <input type="email" name="email" class="field-input" required autocomplete="email">
         <div class="field-error"></div>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <div data-general-success class="alert alert--success" style="display:none; margin-bottom: var(--s-4);"></div>
-      <button type="submit" class="btn btn--primary btn--block">Send Reset Link · 寄送連結</button>
+      <button type="submit" class="btn btn--primary btn--block">Send Reset Link · 寄送连结</button>
       <div style="text-align:center; margin-top: var(--s-4);">
         <a href="#" data-action="back-to-login" style="font-size: var(--text-xs); color: var(--stone);">← Back to Sign In · 返回登入</a>
       </div>
     </form>
 
     <form class="tab-panel" data-panel="professional">
-      <h2 style="text-align:center; margin-bottom: var(--s-2);">Professional Sign In · 專業人員登入</h2>
-      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">For doctors, pharmacies, and administrators · 醫師 / 藥房 / 管理員登入</p>
+      <h2 style="text-align:center; margin-bottom: var(--s-2);">Professional Sign In · 专业人员登入</h2>
+      <p style="text-align:center; color: var(--stone); margin-bottom: var(--s-6); font-size: var(--text-sm);">For doctors, pharmacies, and administrators · 医师 / 药房 / 管理员登入</p>
       <div class="field">
-        <label class="field-label" data-required>Email · 電郵</label>
+        <label class="field-label" data-required>Email · 电邮</label>
         <input type="email" name="identifier" class="field-input" required>
         <div class="field-error"></div>
       </div>
       <div class="field">
-        <label class="field-label" data-required>Password · 密碼</label>
+        <label class="field-label" data-required>Password · 密码</label>
         <input type="password" name="password" class="field-input" required>
         <div class="field-error"></div>
       </div>
       <div style="text-align:right; margin-top: -8px; margin-bottom: var(--s-3);">
-        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘記密碼？</a>
+        <a href="#" data-action="forgot" style="font-size: var(--text-xs); color: var(--stone);">Forgot password? · 忘记密码？</a>
       </div>
       <div data-general-error class="alert alert--danger" style="display:none; margin-bottom: var(--s-4);"></div>
       <button type="submit" class="btn btn--primary btn--block">Sign In · 登入</button>

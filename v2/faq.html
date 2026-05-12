@@ -17,7 +17,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 </style>
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>HansMed Modern TCM · 漢方現代中醫</title>
+<title>HansMed Modern TCM · 汉方现代中医</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+SC:wght@300;400;600&family=DM+Sans:wght@300;400;500&family=Ma+Shan+Zheng&display=swap" rel="stylesheet"/>
@@ -26,7 +26,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
    Ma Shan Zheng from Google Fonts. Used by the nav brand ZH wordmark. */
 @font-face {
   font-family: 'ZhengYanKaiTi';
-  src: local('正顏楷體'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
+  src: local('正颜楷体'), local('ZhengYan KaiTi'), local('FZKaiTi-S04'),
        local('STKaiTi'), local('KaiTi_GB2312'), local('KaiTi'), local('BiauKai');
   font-display: swap;
 }
@@ -571,6 +571,15 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 <link rel="stylesheet" href="assets/css/dropdown.css">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/landing-v4.css">
+
+<!-- LOCKED brand-wordmark fonts · IBM Plex Sans Bold 700 + IBM Plex Sans SC Bold 700 · See v2/assets/img/brand/BRAND.md -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@700&family=IBM+Plex+Sans+SC:wght@700&display=swap" rel="stylesheet">
+
+<!-- LOCKED brand wordmark stylesheet · DO NOT EDIT without owner approval -->
+<link rel="stylesheet" href="assets/css/brand-lockup.css">
+<!-- LOCKED typography stylesheet · 3-tier heading scale + Plex Sans body · See BRAND.md -->
+<link rel="stylesheet" href="assets/css/typography.css">
+
 </head>
 <body class="landing-v4">
 
@@ -579,18 +588,18 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
   <div class="nav-in px">
     <button class="nav-brand" onclick="go('home');closeMob();">
       <img class="nav-logo" src="assets/img/brand/logo-mark.svg" alt="HansMed"/>
-      <span lang="en" style="display:inline-flex;align-items:baseline;gap:4px;">
-        <span class="nav-bn">HansMed</span>
+      <!-- LOCKED · HansMed bilingual wordmark · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+      <span class="hm-wordmark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+        <span class="hm-wordmark__en">HansMed · TCM</span>
+        <span class="hm-wordmark__zh">汉方现代中医</span>
       </span>
-      <span lang="zh" style="display:inline-flex;align-items:baseline;gap:4px;">
-        <span class="nav-bn" style="font-family:'ZhengYanKaiTi','Ma Shan Zheng','Noto Serif SC',serif;font-weight:400;">漢方現代中醫</span>
-      </span>
+      <!-- /LOCKED HansMed bilingual wordmark -->
     </button>
     <div class="nav-links-v4">
-      <button class="nl" data-p="home" onclick="go('home')"><span lang="en">Home</span><span lang="zh">首頁</span></button>
+      <button class="nl" data-p="home" onclick="go('home')"><span lang="en">Home</span><span lang="zh">首页</span></button>
       <div style="position:relative;" id="about-wrap">
         <button id="about-trigger" type="button" class="nl" onclick="toggleAboutMenu(event)" style="display:inline-flex;align-items:center;gap:5px;line-height:inherit;">
-          <span lang="en">About</span><span lang="zh">關於</span>
+          <span lang="en">About</span><span lang="zh">关于</span>
           <svg id="about-chevron" width="9" height="6" viewBox="0 0 9 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
             <path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -602,22 +611,22 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
                  box-shadow:0 8px 32px rgba(36,22,8,0.14);z-index:9999;
                  overflow:hidden;padding:4px 0;">
           <div style="height:2px;background:linear-gradient(90deg,transparent,var(--gold,#9A7A3E),transparent);"></div>
-          <a href="about.html"           class="dd-item"><span lang="en">About HansMed</span><span lang="zh">關於我們</span></a>
-          <a href="practitioners.html"   class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">醫師</span></a>
-          <a href="services.html"        class="dd-item"><span lang="en">Our Services</span><span lang="zh">服務</span></a>
+          <a href="about.html"           class="dd-item"><span lang="en">About HansMed</span><span lang="zh">关于我们</span></a>
+          <a href="practitioners.html"   class="dd-item"><span lang="en">Our Practitioners</span><span lang="zh">医师</span></a>
+          <a href="services.html"        class="dd-item"><span lang="en">Our Services</span><span lang="zh">服务</span></a>
           <a href="blog.html"            class="dd-item"><span lang="en">Blog</span><span lang="zh">部落格</span></a>
-          <a href="faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常見問題</span></a>
-          <a href="contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">聯絡</span></a>
+          <a href="faq.html"             class="dd-item"><span lang="en">FAQ</span><span lang="zh">常见问题</span></a>
+          <a href="contact.html"         class="dd-item"><span lang="en">Contact Us</span><span lang="zh">联络</span></a>
         </div>
       </div>
       <button class="nl" data-p="shop" onclick="go('shop')"><span lang="en">Shop</span><span lang="zh">商店</span></button>
-      <button class="nl" data-p="wellness" onclick="go('wellness')"><span lang="en">AI Wellness</span><span lang="zh">AI 健康評估</span></button>
+      <button class="nl" data-p="wellness" onclick="go('wellness')"><span lang="en">AI Wellness</span><span lang="zh">AI 健康评估</span></button>
       <div class="lang-wrap">
         <button id="len" class="lang-btn-v4 act" onclick="setLang('en')">EN</button>
         <button id="lzh" class="lang-btn-v4"     onclick="setLang('zh')">中</button>
       </div>
       <button class="nl nav-signin" onclick="window.open('index.html#/login','_blank','noopener')" style="color:var(--ink);font-weight:500;"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
-      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">預約</span></button>
+      <button class="nav-cta" onclick="go('book')"><span lang="en">Book</span><span lang="zh">预约</span></button>
     </div>
     <button class="hamburger" id="ham" onclick="toggleMob()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -679,12 +688,12 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 <!-- MOBILE DRAWER -->
 <div class="mobile-menu" id="mob-menu">
   <div style="padding-top:8px;">
-    <button class="mob-nl" onclick="go('home');closeMob();"><span lang="en">Home</span><span lang="zh">首頁</span></button>
-    <button class="mob-nl" onclick="go('about');closeMob();"><span lang="en">About</span><span lang="zh">關於</span></button>
-    <button class="mob-nl" onclick="go('services');closeMob();"><span lang="en">Services</span><span lang="zh">服務</span></button>
+    <button class="mob-nl" onclick="go('home');closeMob();"><span lang="en">Home</span><span lang="zh">首页</span></button>
+    <button class="mob-nl" onclick="go('about');closeMob();"><span lang="en">About</span><span lang="zh">关于</span></button>
+    <button class="mob-nl" onclick="go('services');closeMob();"><span lang="en">Services</span><span lang="zh">服务</span></button>
     <button class="mob-nl" onclick="go('shop');closeMob();"><span lang="en">Shop</span><span lang="zh">商店</span></button>
-    <button class="mob-nl" onclick="go('wellness');closeMob();">AI Wellness Assessment · AI 健康評估</button>
-    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">聯絡</span></button>
+    <button class="mob-nl" onclick="go('wellness');closeMob();">AI Wellness Assessment · AI 健康评估</button>
+    <button class="mob-nl" onclick="go('contact');closeMob();"><span lang="en">Contact</span><span lang="zh">联络</span></button>
     <button class="mob-nl mob-nl-signin" onclick="navMobSignin()"><span class="lbl-signin"><span lang="en">Sign In</span><span lang="zh">登入</span></span><span class="lbl-portal"><span lang="en">My Portal</span><span lang="zh">我的入口</span></span></button>
     <button class="mob-nl mob-nl-logout" onclick="navLogout()" style="display:none;color:#9a3a2a;"><span lang="en">Sign Out</span><span lang="zh">登出</span></button>
     <div class="mob-lang">
@@ -692,11 +701,11 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
       <button id="mlzh" class="mob-lb"     onclick="setLang('zh');syncMobLang('zh');">中</button>
     </div>
     <div class="mob-ctas">
-      <button class="btn btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">預約</span></button>
-      <button class="btn btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();">建立帳號 Create Account</button>
+      <button class="btn btn-dark" style="width:100%;padding:16px;font-size:16px;justify-content:center;" onclick="go('book');closeMob();"><span lang="en">Book Appointment</span><span lang="zh">预约</span></button>
+      <button class="btn btn-outline-cream" style="width:100%;padding:15px;font-size:15px;justify-content:center;" onclick="go('register');closeMob();">建立帐号 Create Account</button>
       <a class="btn btn-wa" target="_blank" style="width:100%;padding:15px;font-size:15px;justify-content:center;" rel="noopener noreferrer" href="https://wa.me/601165600393">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-        WhatsApp Us · 聯絡我們
+        WhatsApp Us · 联络我们
       </a>
     </div>
   </div>
@@ -709,7 +718,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
     WhatsApp
   </a>
   <button class="bb-book" onclick="go('book')">
-    預約 Book Now
+    预约 Book Now
   </button>
 </div>
 
@@ -723,13 +732,13 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
       <div class="hero-left">
         <div class="hero-tag">
           <img src="assets/img/brand/logo-mark.svg" style="width:18px;height:18px;opacity:0.6;vertical-align:middle;margin-right:4px;" alt=""/>
-          漢方現代中醫 · Licensed TCM · Malaysia
+          汉方现代中医 · Licensed TCM · Malaysia
         </div>
         <h1>Traditional<br/>wisdom.<br/><em>Modern care.</em></h1>
-        <div class="hero-zh">傳統智慧 · 現代中醫</div>
+        <div class="hero-zh">传统智慧 · 现代中医</div>
         <p class="hero-sub">Licensed TCM practitioners, AI-assisted wellness insights, and quality herbs — all in one platform, built for Malaysia.</p>
         <div class="hero-ctas">
-          <button class="btn btn-outline-cream" onclick="go('register')">建立帳號 Create Account</button>
+          <button class="btn btn-outline-cream" onclick="go('register')">建立帐号 Create Account</button>
           <a class="btn btn-wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/601165600393">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
             WhatsApp Us
@@ -755,7 +764,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
               <span id="hm-el" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Element</div><div class="cert-bot">Fire · 火</div></span>
               <span id="hm-window" class="cert-pill" style="flex:1;min-width:90px;"><div class="cert-top">Peak window</div><div class="cert-bot">11am – 1pm</div></span>
-              <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Next</div><div class="cert-bot">Small Intestine · 小腸</div></span>
+              <span id="hm-next-pill" class="cert-pill" style="flex:1;min-width:80px;"><div class="cert-top">Next</div><div class="cert-bot">Small Intestine · 小肠</div></span>
             </div>
             <!-- Tip -->
             <div id="hm-tip" style="font-size:13px;color:var(--mu);line-height:1.72;font-style:italic;font-weight:300;border-left:2px solid var(--go);padding-left:12px;margin-bottom:12px;">
@@ -782,10 +791,10 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
   <!-- Trust bar -->
   <div class="trust">
     <div class="trust-in">
-      <div class="ti"><div class="ti-n" id="ti-1n">2</div><div class="ti-l" id="ti-1l">Licensed Doctors · 持證醫師</div></div>
-      <div class="ti"><div class="ti-n" id="ti-2n">AI +</div><div class="ti-l" id="ti-2l">Doctor Reviewed · 醫師審核報告</div></div>
-      <div class="ti"><div class="ti-n" id="ti-3n">24/7</div><div class="ti-l" id="ti-3l">Chat Support · 線上支援</div></div>
-      <div class="ti"><div class="ti-n" id="ti-4n">PDPA</div><div class="ti-l" id="ti-4l">Data Compliant · 資料保護</div></div>
+      <div class="ti"><div class="ti-n" id="ti-1n">2</div><div class="ti-l" id="ti-1l">Licensed Doctors · 持证医师</div></div>
+      <div class="ti"><div class="ti-n" id="ti-2n">AI +</div><div class="ti-l" id="ti-2l">Doctor Reviewed · 医师审核报告</div></div>
+      <div class="ti"><div class="ti-n" id="ti-3n">24/7</div><div class="ti-l" id="ti-3l">Chat Support · 线上支援</div></div>
+      <div class="ti"><div class="ti-n" id="ti-4n">PDPA</div><div class="ti-l" id="ti-4l">Data Compliant · 资料保护</div></div>
     </div>
   </div>
 
@@ -793,9 +802,9 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
   <section class="sec sec-alt">
     <div class="sh center">
       <div class="eyebrow" id="hw-eyebrow">使用流程</div>
-      <h2>HansMed 123 · <span style="font-family:'Noto Serif SC',serif;font-weight:300;">簡單三步</span> <em>Easy Steps</em></h2>
+      <h2>HansMed 123 · <span style="font-family:'Noto Serif SC',serif;font-weight:300;">简单三步</span> <em>Easy Steps</em></h2>
       <p id="hw-sub" style="margin:0 auto;">From the first tap to the herbs at your door — three steps, one trusted practitioner.</p>
-      <p id="hw-sub2" class="sh-zh">從預約到送藥，三個步驟，一次信任。</p>
+      <p id="hw-sub2" class="sh-zh">从预约到送药，三个步骤，一次信任。</p>
     </div>
     <div class="g3" style="margin-bottom:28px;padding-top:22px;">
       <!-- Card 1 -->
@@ -818,10 +827,10 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
           </svg>
         </div>
         <div style="padding:0 22px;text-align:center;">
-          <div class="step-zh" id="s1-zh">預約</div>
+          <div class="step-zh" id="s1-zh">预约</div>
           <div class="step-en" id="s1-en">Book Appointment</div>
           <p class="step-desc" id="s1-desc">Pick your concern and a convenient time.</p>
-          <p class="step-desc2" id="s1-desc2">選擇症狀與時段。</p>
+          <p class="step-desc2" id="s1-desc2">选择症状与时段。</p>
         </div>
       </div>
       <!-- Card 2 -->
@@ -843,10 +852,10 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
           </svg>
         </div>
         <div style="padding:0 22px;text-align:center;">
-          <div class="step-zh" id="s2-zh">問診</div>
+          <div class="step-zh" id="s2-zh">问诊</div>
           <div class="step-en" id="s2-en">Online Consultation</div>
           <p class="step-desc" id="s2-desc">Licensed TCM doctor sees you by video.</p>
-          <p class="step-desc2" id="s2-desc2">持證中醫師視訊問診。</p>
+          <p class="step-desc2" id="s2-desc2">持证中医师视讯问诊。</p>
         </div>
       </div>
       <!-- Card 3 -->
@@ -870,10 +879,10 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
           </svg>
         </div>
         <div style="padding:0 22px;text-align:center;">
-          <div class="step-zh" id="s3-zh">送藥 / 上門</div>
+          <div class="step-zh" id="s3-zh">送药 / 上门</div>
           <div class="step-en" id="s3-en">Delivery / Home Visit</div>
           <p class="step-desc" id="s3-desc">Herbs delivered to your door, or a home visit.</p>
-          <p class="step-desc2" id="s3-desc2">送藥到府，或上門服務。</p>
+          <p class="step-desc2" id="s3-desc2">送药到府，或上门服务。</p>
         </div>
       </div>
     </div>
@@ -894,7 +903,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <path d="M57 9 Q61 0 55 0 Q51 7 57 9Z" fill="rgba(196,154,42,0.3)"/>
       </svg>
       <p class="qt-text">"Every AI output is reviewed by a licensed TCM practitioner before it reaches you. Our technology assists. Your doctor decides."</p>
-      <p class="qt-zh">每份 AI 報告皆由持證中醫師審核後才發送 · 科技輔助，醫師決策</p>
+      <p class="qt-zh">每份 AI 报告皆由持证中医师审核后才发送 · 科技辅助，医师决策</p>
       <p class="qt-attr">HansMed · PDPA Compliant · T&amp;CM Act 2016 · MOH Registered</p>
       <button class="btn btn-ghost" onclick="go('about')">About our approach →</button>
     </div>
@@ -903,14 +912,14 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
   <!-- Certifications -->
   <section class="sec sec-white" style="padding-top:56px;padding-bottom:56px;">
     <div class="sh center" style="margin-bottom:28px;">
-      <div class="eyebrow">認證與監管 · Certified &amp; Regulated</div>
+      <div class="eyebrow">认证与监管 · Certified &amp; Regulated</div>
       <h2 style="font-size:clamp(22px,3.5vw,32px);">Practising with full <em>regulatory compliance</em></h2>
     </div>
     <div class="cert-strip">
       <div class="cert-pill"><div class="cert-top">KKM Malaysia</div><div class="cert-bot">Ministry of Health</div></div>
       <div class="cert-pill"><div class="cert-top">HALAL</div><div class="cert-bot">JAKIM Certified</div></div>
       <div class="cert-pill"><div class="cert-top">NPRA</div><div class="cert-bot">Approved Products</div></div>
-      <div class="cert-pill"><div class="cert-top">MOH Registered</div><div class="cert-bot">TCM Clinic · 登記中醫診所</div></div>
+      <div class="cert-pill"><div class="cert-top">MOH Registered</div><div class="cert-bot">TCM Clinic · 登记中医诊所</div></div>
       <div class="cert-pill"><div class="cert-top">T&amp;CM Act 2016</div><div class="cert-bot">Licensed Practitioners</div></div>
     </div>
   </section>
@@ -918,30 +927,30 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
   <!-- Our Services -->
   <section class="sec sec-alt dot-tex">
     <div class="sh center">
-      <div class="eyebrow">Our Services · 我們的服務</div>
+      <div class="eyebrow">Our Services · 我们的服务</div>
       <h2>Care that <em>fits your life</em></h2>
       <p>Every consultation is led by a licensed TCM practitioner. AI assists — it never replaces — clinical expertise.</p>
     </div>
     <div class="g3">
       <div class="card"><div class="ctr"></div><div class="cbl"></div>
         <div class="card-icon">🩺</div>
-        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">TCM Consultations · 問診</h3>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">TCM Consultations · 问诊</h3>
         <p style="font-size:14px;color:var(--mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Book in-person or video sessions. Your doctor reviews your case, writes a treatment plan, and can prescribe herbs directly.</p>
-        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">持牌中醫師 · 親診或視訊</p>
+        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">持牌中医师 · 亲诊或视讯</p>
         <button class="btn btn-outline btn-sm" onclick="go('services')">See all services →</button>
       </div>
       <div class="card"><div class="ctr"></div><div class="cbl"></div>
         <div class="card-icon">👅</div>
-        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">AI Wellness Assessment · AI 健康評估</h3>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">AI Wellness Assessment · AI 健康评估</h3>
         <p style="font-size:14px;color:var(--mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Upload a tongue photo or complete a constitution questionnaire. A licensed practitioner reviews every AI report before it reaches you.</p>
-        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">AI 體質分析 · 非醫療診斷</p>
+        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">AI 体质分析 · 非医疗诊断</p>
         <button class="btn btn-outline btn-sm" onclick="go('services')">Learn more →</button>
       </div>
       <div class="card"><div class="ctr"></div><div class="cbl"></div>
         <div class="card-icon">🌿</div>
-        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">Herb Shop · 中藥商店</h3>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--ink);font-weight:500;margin-bottom:10px;letter-spacing:-0.01em;">Herb Shop · 中药商店</h3>
         <p style="font-size:14px;color:var(--mu);line-height:1.76;margin-bottom:6px;font-weight:300;">Quality single herbs and classical formulas from verified Malaysian suppliers. Prescription-linked orders reviewed by your practitioner.</p>
-        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">品質驗證 · 藥師審核</p>
+        <p style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);margin-bottom:22px;font-weight:300;">品质验证 · 药师审核</p>
         <button class="btn btn-outline btn-sm" onclick="go('services')">Browse herbs →</button>
       </div>
     </div>
@@ -951,12 +960,12 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
   <section class="sec sec-white">
     <div class="sh"><div class="eyebrow">Explore · 了解更多</div><h2>Want to know more?</h2></div>
     <div class="pnav">
-      <button class="pnav-card" onclick="go('about')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">關</div><div><div class="pnc-t">About HansMed · 關於我們</div><div class="pnc-s">Our story, approach and team</div></div></button>
-      <button class="pnav-card" onclick="go('practitioners')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">醫</div><div><div class="pnc-t">Our Doctors · 我們的醫師</div><div class="pnc-s">Mr. Siew &amp; Mr. Lim — founders</div></div></button>
-      <button class="pnav-card" onclick="go('services')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">服</div><div><div class="pnc-t">Our Services · 服務項目</div><div class="pnc-s">Consultations, AI wellness, herbs</div></div></button>
+      <button class="pnav-card" onclick="go('about')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">关</div><div><div class="pnc-t">About HansMed · 关于我们</div><div class="pnc-s">Our story, approach and team</div></div></button>
+      <button class="pnav-card" onclick="go('practitioners')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">医</div><div><div class="pnc-t">Our Doctors · 我们的医师</div><div class="pnc-s">Mr. Siew &amp; Mr. Lim — founders</div></div></button>
+      <button class="pnav-card" onclick="go('services')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">服</div><div><div class="pnc-t">Our Services · 服务项目</div><div class="pnc-s">Consultations, AI wellness, herbs</div></div></button>
       <button class="pnav-card" onclick="go('blog')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">文</div><div><div class="pnc-t">Blog · 部落格</div><div class="pnc-s">TCM insights from our practitioners</div></div></button>
-      <button class="pnav-card" onclick="go('faq')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">問</div><div><div class="pnc-t">FAQ · 常見問題</div><div class="pnc-s">TCM, online consult, herbal meds</div></div></button>
-      <button class="pnav-card" onclick="go('contact')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">聯</div><div><div class="pnc-t">Get in Touch · 聯絡我們</div><div class="pnc-s">WhatsApp, location, hours</div></div></button>
+      <button class="pnav-card" onclick="go('faq')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">问</div><div><div class="pnc-t">FAQ · 常见问题</div><div class="pnc-s">TCM, online consult, herbal meds</div></div></button>
+      <button class="pnav-card" onclick="go('contact')"><div class="seal seal-go" style="width:46px;height:46px;font-size:18px;flex-shrink:0;">联</div><div><div class="pnc-t">Get in Touch · 联络我们</div><div class="pnc-s">WhatsApp, location, hours</div></div></button>
     </div>
   </section>
 </div>
@@ -965,9 +974,9 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 <div class="page" id="page-about">
   <section class="hero-page">
     <div class="hp">
-      <div class="eyebrow">About Us · 關於我們</div>
+      <div class="eyebrow">About Us · 关于我们</div>
       <h1>Where Tradition Meets<br/><em>Modern Care</em></h1>
-      <p>傳統中醫智慧，遇見現代科技 · Making quality TCM accessible to every Malaysian.</p>
+      <p>传统中医智慧，遇见现代科技 · Making quality TCM accessible to every Malaysian.</p>
     </div>
   </section>
 
@@ -978,25 +987,25 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
       <h2>What would you like to <em>know?</em></h2>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:52px;">
-      <button onclick="go('practitioners')" class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">醫</div><div><div class="pnc-t">Our Practitioners</div><div class="pnc-s">Meet the founders</div></div></button>
+      <button onclick="go('practitioners')" class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">医</div><div><div class="pnc-t">Our Practitioners</div><div class="pnc-s">Meet the founders</div></div></button>
       <button onclick="go('services')"      class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">服</div><div><div class="pnc-t">Our Services</div><div class="pnc-s">Consult, wellness, herbs</div></div></button>
       <button onclick="go('blog')"          class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">文</div><div><div class="pnc-t">Blog · 部落格</div><div class="pnc-s">TCM insights</div></div></button>
-      <button onclick="go('faq')"           class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">問</div><div><div class="pnc-t">FAQ · 常見問題</div><div class="pnc-s">All your questions</div></div></button>
-      <button onclick="go('contact')"       class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">聯</div><div><div class="pnc-t">Contact Us</div><div class="pnc-s">WhatsApp, hours</div></div></button>
+      <button onclick="go('faq')"           class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">问</div><div><div class="pnc-t">FAQ · 常见问题</div><div class="pnc-s">All your questions</div></div></button>
+      <button onclick="go('contact')"       class="pnav-card"><div class="seal seal-go" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">联</div><div><div class="pnc-t">Contact Us</div><div class="pnc-s">WhatsApp, hours</div></div></button>
     </div>
 
     <!-- Our story -->
     <div class="g2">
       <div>
-        <div class="sh"><div class="eyebrow">HansMed 的由來</div><h2>Why we built <em>HansMed</em></h2></div>
-        <div class="bi" style="margin-bottom:18px;"><div class="bi-en">HansMed was born from a simple idea — to help busy Malaysians see a qualified TCM practitioner with peace of mind, while freeing doctors from paperwork so they can focus on healing.</div><div class="bi-zh">為了方便大眾在忙碌的生活節奏中可以安心看上合格中醫，讓中醫師專心看病治病。</div></div>
-        <div class="bi"><div class="bi-en">Modern technology, traditional wisdom — bridging the generations.</div><div class="bi-zh">現代化的科技平台 · 傳統式的中醫智慧 · 造就了現代與傳統不再有代溝</div></div>
+        <div class="sh"><div class="eyebrow">HansMed 的由来</div><h2>Why we built <em>HansMed</em></h2></div>
+        <div class="bi" style="margin-bottom:18px;"><div class="bi-en">HansMed was born from a simple idea — to help busy Malaysians see a qualified TCM practitioner with peace of mind, while freeing doctors from paperwork so they can focus on healing.</div><div class="bi-zh">为了方便大众在忙碌的生活节奏中可以安心看上合格中医，让中医师专心看病治病。</div></div>
+        <div class="bi"><div class="bi-en">Modern technology, traditional wisdom — bridging the generations.</div><div class="bi-zh">现代化的科技平台 · 传统式的中医智慧 · 造就了现代与传统不再有代沟</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-        <div class="stat-b"><div class="stat-n">2</div><div class="stat-l">Licensed Doctors</div><div class="stat-zh">持證醫師</div></div>
+        <div class="stat-b"><div class="stat-n">2</div><div class="stat-l">Licensed Doctors</div><div class="stat-zh">持证医师</div></div>
         <div class="stat-b"><div class="stat-n">New</div><div class="stat-l">Platform · 全新平台</div><div class="stat-zh">Platform · 全新平台</div></div>
-        <div class="stat-b"><div class="stat-n">10+</div><div class="stat-l">TCM Specialties</div><div class="stat-zh">專科類別</div></div>
-        <div class="stat-b"><div class="stat-n">24/7</div><div class="stat-l">Chat Support</div><div class="stat-zh">線上支援</div></div>
+        <div class="stat-b"><div class="stat-n">10+</div><div class="stat-l">TCM Specialties</div><div class="stat-zh">专科类别</div></div>
+        <div class="stat-b"><div class="stat-n">24/7</div><div class="stat-l">Chat Support</div><div class="stat-zh">线上支援</div></div>
       </div>
     </div>
   </section>
@@ -1006,20 +1015,20 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 
   <!-- 3 principles -->
   <section class="sec sec-white dot-tex" style="padding-top:48px;">
-    <div class="sh center"><div class="eyebrow">Our Approach · 我們的原則</div><h2>Three things we <em>never compromise</em> on</h2></div>
+    <div class="sh center"><div class="eyebrow">Our Approach · 我们的原则</div><h2>Three things we <em>never compromise</em> on</h2></div>
     <div class="g3">
-      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">醫</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Clinical Integrity · 臨床誠信</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Every AI output and wellness report is reviewed by a licensed TCM practitioner before it reaches you. All practitioners are registered and undergo continuous education.</p></div>
-      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">私</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Privacy First · 私隱優先</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Fully PDPA 2010 compliant. Explicit consent before any AI processing. Encrypted storage — export or delete your data at any time from settings.</p></div>
-      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">質</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Quality Herbs · 品質藥材</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Only verified Malaysian and international suppliers. Every product labelled with Chinese name, pinyin, and transparent sourcing details.</p></div>
+      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">医</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Clinical Integrity · 临床诚信</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Every AI output and wellness report is reviewed by a licensed TCM practitioner before it reaches you. All practitioners are registered and undergo continuous education.</p></div>
+      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">私</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Privacy First · 私隐优先</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Fully PDPA 2010 compliant. Explicit consent before any AI processing. Encrypted storage — export or delete your data at any time from settings.</p></div>
+      <div class="card"><div class="ctr"></div><div class="cbl"></div><div class="card-icon" style="font-size:22px;">质</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:10px;">Quality Herbs · 品质药材</h3><p style="font-size:14px;color:var(--mu);line-height:1.76;font-weight:300;">Only verified Malaysian and international suppliers. Every product labelled with Chinese name, pinyin, and transparent sourcing details.</p></div>
     </div>
   </section>
 
   <section class="qb sec" style="text-align:center;">
     <div style="position:relative;">
-      <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;font-weight:400;margin-bottom:12px;">Ready to begin? · 準備好了嗎？</h2>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;font-weight:400;margin-bottom:12px;">Ready to begin? · 准备好了吗？</h2>
       <p style="font-size:15px;color:rgba(255,255,255,0.5);margin-bottom:28px;font-weight:300;">Book your first consultation or create a free account today.</p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn btn-gold" onclick="go('book')">Book Appointment · 預約</button>
+        <button class="btn btn-gold" onclick="go('book')">Book Appointment · 预约</button>
         <button class="btn btn-ghost" onclick="go('services')">View Services</button>
       </div>
     </div>
@@ -1028,68 +1037,68 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 
 <!-- ══ SERVICES ════════════════════════════════════════════════ -->
 <div class="page" id="page-services">
-  <section class="hero-page"><div class="hp"><div class="eyebrow">Services · 服務</div><h1>Everything you need,<br/><em>in one place</em></h1><p>From first consultation to herbs at your door. · 從問診到送藥，一站式中醫服務。</p></div></section>
+  <section class="hero-page"><div class="hp"><div class="eyebrow">Services · 服务</div><h1>Everything you need,<br/><em>in one place</em></h1><p>From first consultation to herbs at your door. · 从问诊到送药，一站式中医服务。</p></div></section>
   <section class="sec sec-white">
     <div class="g2">
-      <div><div class="eyebrow">問診 Consultation</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">TCM <em>Consultations</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Book in-person or video sessions with a licensed TCM practitioner. Doctor reviews your case, records consultation notes, and can prescribe herbs directly.</div><div class="bi-zh">持牌中醫師親診或視訊問診 · 醫師記錄病歷並直接開方</div></div><button class="btn btn-wd" onclick="go('book')">Book Now · 立即預約</button></div>
-      <div class="svc-box"><div style="font-size:36px;margin-bottom:16px;">🩺</div><div class="sfi"><span class="sfi-dot"></span>In-person &amp; video · 親診及視訊</div><div class="sfi"><span class="sfi-dot"></span>Secure consultation notes · 加密病歷</div><div class="sfi"><span class="sfi-dot"></span>Doctor-written treatment plans · 治療方案</div><div class="sfi"><span class="sfi-dot"></span>Direct prescription management · 直接開方</div><div class="sfi"><span class="sfi-dot"></span>Reschedule anytime · 隨時更改</div></div>
+      <div><div class="eyebrow">问诊 Consultation</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">TCM <em>Consultations</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Book in-person or video sessions with a licensed TCM practitioner. Doctor reviews your case, records consultation notes, and can prescribe herbs directly.</div><div class="bi-zh">持牌中医师亲诊或视讯问诊 · 医师记录病历并直接开方</div></div><button class="btn btn-wd" onclick="go('book')">Book Now · 立即预约</button></div>
+      <div class="svc-box"><div style="font-size:36px;margin-bottom:16px;">🩺</div><div class="sfi"><span class="sfi-dot"></span>In-person &amp; video · 亲诊及视讯</div><div class="sfi"><span class="sfi-dot"></span>Secure consultation notes · 加密病历</div><div class="sfi"><span class="sfi-dot"></span>Doctor-written treatment plans · 治疗方案</div><div class="sfi"><span class="sfi-dot"></span>Direct prescription management · 直接开方</div><div class="sfi"><span class="sfi-dot"></span>Reschedule anytime · 随时更改</div></div>
     </div>
   </section>
   <div style="background:var(--bg-2);padding:0 max(1.5rem,calc(50% - 540px));"><div class="herb-div"><span class="hdl-l"></span><svg width="80" height="28" viewBox="0 0 80 28" fill="none"><path d="M6 22 Q40 10 74 8" stroke="#6E8C5A" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M26 18 Q30 8 23 3 Q19 11 26 18Z" fill="#6E8C5A" opacity="0.5"/><path d="M43 13 Q47 3 40 0 Q36 8 43 13Z" fill="#6E8C5A" opacity="0.45"/><path d="M60 10 Q64 1 58 0 Q54 7 60 10Z" fill="#6E8C5A" opacity="0.4"/><circle cx="6" cy="22" r="2" fill="#B5881A" opacity="0.55"/><circle cx="74" cy="8" r="2" fill="#B5881A" opacity="0.55"/></svg><span class="hdl-r"></span></div></div>
   <section class="sec sec-alt">
     <div class="g2">
-      <div class="svc-box" style="order:1;"><div style="font-size:36px;margin-bottom:16px;">👅</div><div class="sfi"><span class="sfi-dot"></span>Tongue photo analysis · 舌診分析</div><div class="sfi"><span class="sfi-dot"></span>10-dimension constitution questionnaire</div><div class="sfi"><span class="sfi-dot"></span>Doctor-approved reports · 醫師審核</div><div class="sfi"><span class="sfi-dot"></span>Qualitative wellness bands</div><div class="sfi"><span class="sfi-dot"></span>Educational only — not a diagnosis</div></div>
-      <div style="order:2;"><div class="eyebrow">健康評估 AI Wellness</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">AI <em>Wellness Analysis</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Upload a tongue photo or complete our constitution questionnaire. AI generates a wellness insight — reviewed by a licensed TCM practitioner before it reaches you.</div><div class="bi-zh">AI 體質分析 · 持牌中醫師審核後才發送 · 健康評估，非醫療診斷</div></div><button class="btn btn-wd" onclick="go('register')">Get Started · 立即開始</button></div>
+      <div class="svc-box" style="order:1;"><div style="font-size:36px;margin-bottom:16px;">👅</div><div class="sfi"><span class="sfi-dot"></span>Tongue photo analysis · 舌诊分析</div><div class="sfi"><span class="sfi-dot"></span>10-dimension constitution questionnaire</div><div class="sfi"><span class="sfi-dot"></span>Doctor-approved reports · 医师审核</div><div class="sfi"><span class="sfi-dot"></span>Qualitative wellness bands</div><div class="sfi"><span class="sfi-dot"></span>Educational only — not a diagnosis</div></div>
+      <div style="order:2;"><div class="eyebrow">健康评估 AI Wellness</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">AI <em>Wellness Analysis</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Upload a tongue photo or complete our constitution questionnaire. AI generates a wellness insight — reviewed by a licensed TCM practitioner before it reaches you.</div><div class="bi-zh">AI 体质分析 · 持牌中医师审核后才发送 · 健康评估，非医疗诊断</div></div><button class="btn btn-wd" onclick="go('register')">Get Started · 立即开始</button></div>
     </div>
   </section>
   <div style="background:var(--bg-3);padding:0 max(1.5rem,calc(50% - 540px));"><div class="herb-div"><span class="hdl-l"></span><svg width="80" height="28" viewBox="0 0 80 28" fill="none"><path d="M6 22 Q40 10 74 8" stroke="#6E8C5A" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M26 18 Q30 8 23 3 Q19 11 26 18Z" fill="#6E8C5A" opacity="0.5"/><path d="M43 13 Q47 3 40 0 Q36 8 43 13Z" fill="#6E8C5A" opacity="0.45"/><path d="M60 10 Q64 1 58 0 Q54 7 60 10Z" fill="#6E8C5A" opacity="0.4"/><circle cx="6" cy="22" r="2" fill="#B5881A" opacity="0.55"/><circle cx="74" cy="8" r="2" fill="#B5881A" opacity="0.55"/></svg><span class="hdl-r"></span></div></div>
   <section class="sec sec-white">
     <div class="g2">
-      <div><div class="eyebrow">中藥商店 Herb Shop</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">Quality <em>Herb Shop</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Browse single herbs and classical formulas from verified suppliers. Prescription-linked orders reviewed by your practitioner. Over-the-counter items offered as herbal food supplements only.</div><div class="bi-zh">品質驗證草藥 · 藥師審核 · 處方藥需醫師開方</div></div><button class="btn btn-wd" onclick="go('register')">Browse Shop · 瀏覽商店</button></div>
-      <div class="svc-box"><div style="font-size:36px;margin-bottom:16px;">🌿</div><div class="sfi"><span class="sfi-dot"></span>Verified supplier network · 驗證供應商</div><div class="sfi"><span class="sfi-dot"></span>Chinese name + pinyin labels</div><div class="sfi"><span class="sfi-dot"></span>Prescription-linked orders · 處方連結</div><div class="sfi"><span class="sfi-dot"></span>Pharmacist review gate · 藥師審核</div><div class="sfi"><span class="sfi-dot"></span>Transparent sourcing · 透明來源</div></div>
+      <div><div class="eyebrow">中药商店 Herb Shop</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,36px);color:var(--ink);font-weight:400;letter-spacing:-0.025em;margin-bottom:14px;">Quality <em>Herb Shop</em></h2><div class="bi" style="margin-bottom:26px;"><div class="bi-en">Browse single herbs and classical formulas from verified suppliers. Prescription-linked orders reviewed by your practitioner. Over-the-counter items offered as herbal food supplements only.</div><div class="bi-zh">品质验证草药 · 药师审核 · 处方药需医师开方</div></div><button class="btn btn-wd" onclick="go('register')">Browse Shop · 浏览商店</button></div>
+      <div class="svc-box"><div style="font-size:36px;margin-bottom:16px;">🌿</div><div class="sfi"><span class="sfi-dot"></span>Verified supplier network · 验证供应商</div><div class="sfi"><span class="sfi-dot"></span>Chinese name + pinyin labels</div><div class="sfi"><span class="sfi-dot"></span>Prescription-linked orders · 处方连结</div><div class="sfi"><span class="sfi-dot"></span>Pharmacist review gate · 药师审核</div><div class="sfi"><span class="sfi-dot"></span>Transparent sourcing · 透明来源</div></div>
     </div>
   </section>
   <section style="background:var(--ink);padding:52px max(1.5rem,calc(50% - 540px));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;">
     <div><h2 style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#fff;font-weight:400;margin-bottom:8px;">Ready to start?</h2><p style="font-size:14px;color:rgba(255,255,255,0.4);font-weight:300;">Book a consultation or WhatsApp us with any questions.</p></div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-gold" onclick="go('book')">Book Now · 預約</button><a class="btn btn-wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/601165600393">💬 WhatsApp</a></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-gold" onclick="go('book')">Book Now · 预约</button><a class="btn btn-wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/601165600393">💬 WhatsApp</a></div>
   </section>
 </div>
 
 <!-- ══ CONTACT ════════════════════════════════════════════════ -->
 <div class="page" id="page-contact">
-  <section class="hero-page"><div class="hp"><div class="eyebrow">Contact · 聯絡我們</div><h1>We're here<br/>to <em>help.</em></h1><p>Ask anything — appointments, services, or general enquiries. We respond on WhatsApp during clinic hours.</p></div></section>
+  <section class="hero-page"><div class="hp"><div class="eyebrow">Contact · 联络我们</div><h1>We're here<br/>to <em>help.</em></h1><p>Ask anything — appointments, services, or general enquiries. We respond on WhatsApp during clinic hours.</p></div></section>
   <section class="sec dot-tex">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:52px;">
       <div class="card" style="padding:32px 28px;"><div class="ctr"></div><div class="cbl"></div>
         <div style="font-size:36px;margin-bottom:16px;">💬</div>
-        <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--ink);font-weight:400;margin-bottom:10px;">WhatsApp · 立即聯絡</h2>
-        <div class="bi" style="margin-bottom:24px;"><div class="bi-en">The fastest way to reach us. Ask anything — appointments, services, or general enquiries. We typically respond within a few hours during clinic hours.</div><div class="bi-zh">最快的聯絡方式 · 診所時段內數小時內回覆</div></div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--ink);font-weight:400;margin-bottom:10px;">WhatsApp · 立即联络</h2>
+        <div class="bi" style="margin-bottom:24px;"><div class="bi-en">The fastest way to reach us. Ask anything — appointments, services, or general enquiries. We typically respond within a few hours during clinic hours.</div><div class="bi-zh">最快的联络方式 · 诊所时段内数小时内回复</div></div>
         <a class="btn btn-wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/601165600393">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
           Chat on WhatsApp
         </a>
       </div>
       <div style="display:flex;flex-direction:column;gap:16px;">
-        <div class="card"><div class="ctr"></div><div class="cbl"></div><div style="font-size:26px;margin-bottom:12px;">🕐</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);margin-bottom:12px;">Clinic Hours · 診所時段</h3><div class="hr-row"><span class="hr-d">Monday – Friday</span><span class="hr-t">9:00 am – 6:00 pm</span></div><div class="hr-row"><span class="hr-d">Saturday · 週六</span><span class="hr-t">9:00 am – 1:00 pm</span></div><div class="hr-row"><span class="hr-d">Sunday &amp; Public Holidays</span><span class="hr-t">Closed · 休息</span></div></div>
-        <div class="card"><div class="ctr"></div><div class="cbl"></div><div style="font-size:26px;margin-bottom:12px;">📍</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);margin-bottom:8px;">Location · 地址</h3><p style="font-size:14px;color:var(--mu);line-height:1.65;font-weight:300;">Kuala Lumpur, Malaysia · 馬來西亞吉隆坡<br/>Full address provided on appointment confirmation.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);">預約確認後提供完整地址</span></p></div>
+        <div class="card"><div class="ctr"></div><div class="cbl"></div><div style="font-size:26px;margin-bottom:12px;">🕐</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);margin-bottom:12px;">Clinic Hours · 诊所时段</h3><div class="hr-row"><span class="hr-d">Monday – Friday</span><span class="hr-t">9:00 am – 6:00 pm</span></div><div class="hr-row"><span class="hr-d">Saturday · 周六</span><span class="hr-t">9:00 am – 1:00 pm</span></div><div class="hr-row"><span class="hr-d">Sunday &amp; Public Holidays</span><span class="hr-t">Closed · 休息</span></div></div>
+        <div class="card"><div class="ctr"></div><div class="cbl"></div><div style="font-size:26px;margin-bottom:12px;">📍</div><h3 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);margin-bottom:8px;">Location · 地址</h3><p style="font-size:14px;color:var(--mu);line-height:1.65;font-weight:300;">Kuala Lumpur, Malaysia · 马来西亚吉隆坡<br/>Full address provided on appointment confirmation.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);">预约确认后提供完整地址</span></p></div>
       </div>
     </div>
-    <div class="sh"><div class="eyebrow">FAQ · 常見問題</div><h2>Common questions</h2></div>
+    <div class="sh"><div class="eyebrow">FAQ · 常见问题</div><h2>Common questions</h2></div>
     <div class="g4">
-      <div class="faq-card"><div class="faq-q">Do I need an account? · 需要帳號嗎？</div><div class="faq-a">Yes — a free account lets you manage appointments, view records, and access AI wellness tools securely.</div></div>
-      <div class="faq-card"><div class="faq-q">Are doctors licensed? · 醫師持牌嗎？</div><div class="faq-a">Every practitioner holds a valid T&amp;CM registration certificate, verified before accepting patients. 所有醫師皆持證。</div></div>
-      <div class="faq-card"><div class="faq-q">Is my data safe? · 資料安全嗎？</div><div class="faq-a">Fully PDPA 2010 compliant. Explicit consent before any processing. Export or delete your data anytime.</div></div>
-      <div class="faq-card"><div class="faq-q">What is the AI tool? · AI 評估？</div><div class="faq-a">Educational wellness insight only — not a medical diagnosis. Every report reviewed by a licensed practitioner first. 非醫療診斷。</div></div>
+      <div class="faq-card"><div class="faq-q">Do I need an account? · 需要帐号吗？</div><div class="faq-a">Yes — a free account lets you manage appointments, view records, and access AI wellness tools securely.</div></div>
+      <div class="faq-card"><div class="faq-q">Are doctors licensed? · 医师持牌吗？</div><div class="faq-a">Every practitioner holds a valid T&amp;CM registration certificate, verified before accepting patients. 所有医师皆持证。</div></div>
+      <div class="faq-card"><div class="faq-q">Is my data safe? · 资料安全吗？</div><div class="faq-a">Fully PDPA 2010 compliant. Explicit consent before any processing. Export or delete your data anytime.</div></div>
+      <div class="faq-card"><div class="faq-q">What is the AI tool? · AI 评估？</div><div class="faq-a">Educational wellness insight only — not a medical diagnosis. Every report reviewed by a licensed practitioner first. 非医疗诊断。</div></div>
     </div>
   </section>
 </div>
 
 <!-- ══ BOOK ════════════════════════════════════════════════════ -->
 <div class="page" id="page-book">
-  <section class="hero-page"><div class="hp"><div class="eyebrow">Book · 預約</div><h1>Book your<br/><em>consultation.</em></h1><p>Takes less than 2 minutes. · 不需兩分鐘，輕鬆預約。</p></div></section>
+  <section class="hero-page"><div class="hp"><div class="eyebrow">Book · 预约</div><h1>Book your<br/><em>consultation.</em></h1><p>Takes less than 2 minutes. · 不需两分钟，轻松预约。</p></div></section>
   <section class="sec dot-tex">
     <div style="max-width:560px;margin:0 auto;">
-      <div class="sh center"><div class="eyebrow">HansMed 123 · 簡單三步</div><h2>How it <em>works</em></h2></div>
+      <div class="sh center"><div class="eyebrow">HansMed 123 · 简单三步</div><h2>How it <em>works</em></h2></div>
       <!-- Five Elements selector -->
       <div class="sh center" style="margin-bottom:16px;">
         <div class="eyebrow">五行 · What brings you here?</div>
@@ -1107,23 +1116,23 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         </div>
       </div>
       <div class="sh center" style="margin-bottom:20px;">
-        <div class="eyebrow" style="margin-bottom:8px;">HansMed 123 · 簡單三步</div>
+        <div class="eyebrow" style="margin-bottom:8px;">HansMed 123 · 简单三步</div>
         <h2 style="font-size:clamp(22px,4vw,32px);">How it <em>works</em></h2>
       </div>
       <div style="max-width:560px;margin:0 auto;">
-      <div class="step-row"><div class="step-num-big">01</div><div><div class="step-zh2">預約 Book Appointment</div><div class="step-desc2">Pick your concern and a convenient time. In-person or teleconsult.</div><div class="step-zh-desc2">選擇症狀與時段 · 親診或視訊</div></div></div>
-      <div class="step-row"><div class="step-num-big">02</div><div><div class="step-zh2">問診 Consultation</div><div class="step-desc2">A licensed TCM doctor sees you and writes your personalised treatment plan.</div><div class="step-zh-desc2">持證中醫師視訊或親診</div></div></div>
-      <div class="step-row"><div class="step-num-big">03</div><div><div class="step-zh2">送藥 / 上門 Delivery</div><div class="step-desc2">Prescribed herbs delivered to your door, or a home visit anywhere in Malaysia.</div><div class="step-zh-desc2">送藥到府 · 或上門服務</div></div></div>
+      <div class="step-row"><div class="step-num-big">01</div><div><div class="step-zh2">预约 Book Appointment</div><div class="step-desc2">Pick your concern and a convenient time. In-person or teleconsult.</div><div class="step-zh-desc2">选择症状与时段 · 亲诊或视讯</div></div></div>
+      <div class="step-row"><div class="step-num-big">02</div><div><div class="step-zh2">问诊 Consultation</div><div class="step-desc2">A licensed TCM doctor sees you and writes your personalised treatment plan.</div><div class="step-zh-desc2">持证中医师视讯或亲诊</div></div></div>
+      <div class="step-row"><div class="step-num-big">03</div><div><div class="step-zh2">送药 / 上门 Delivery</div><div class="step-desc2">Prescribed herbs delivered to your door, or a home visit anywhere in Malaysia.</div><div class="step-zh-desc2">送药到府 · 或上门服务</div></div></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;">
         <button id="bk-btn" class="btn btn-dark" style="width:100%;padding:16px;font-size:15px;font-weight:600;" onclick="go('register')">Book a Wood Element Consultation</button>
         <div style="text-align:center;font-size:13px;color:var(--mu);padding:4px 0;font-weight:300;">or · 或者</div>
         <a class="btn btn-wa" target="_blank" style="width:100%;padding:14px;font-size:15px;justify-content:center;" rel="noopener noreferrer" href="https://wa.me/601165600393">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-          WhatsApp Us to Book · WhatsApp 預約
+          WhatsApp Us to Book · WhatsApp 预约
         </a>
       </div>
       <div style="background:var(--tc-xl);border:1px solid var(--tc-lt);padding:14px 18px;margin-top:24px;border-radius:10px;">
-        <p style="font-size:12px;color:var(--tc-dk);line-height:1.7;text-align:center;font-weight:300;">⚠ HansMed is for non-emergency consultations only. For chest pain, difficulty breathing, or life-threatening symptoms, call <strong>999</strong> immediately.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--mu);">漢方僅提供非緊急醫療諮詢。如遇緊急情況，請立即撥打 999。</span></p>
+        <p style="font-size:12px;color:var(--tc-dk);line-height:1.7;text-align:center;font-weight:300;">⚠ HansMed is for non-emergency consultations only. For chest pain, difficulty breathing, or life-threatening symptoms, call <strong>999</strong> immediately.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--mu);">汉方仅提供非紧急医疗咨询。如遇紧急情况，请立即拨打 999。</span></p>
       </div>
       </div>
     </div>
@@ -1132,23 +1141,23 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 
 <!-- ══ REGISTER ════════════════════════════════════════════════ -->
 <div class="page" id="page-register">
-  <section class="hero-page"><div class="hp"><div class="eyebrow">建立帳號 Create Account</div><h1>Your wellness journey<br/><em>starts here.</em></h1><p>A free HansMed account — all your TCM care in one place. 免費帳號 · 一站式中醫服務</p></div></section>
+  <section class="hero-page"><div class="hp"><div class="eyebrow">建立帐号 Create Account</div><h1>Your wellness journey<br/><em>starts here.</em></h1><p>A free HansMed account — all your TCM care in one place. 免费帐号 · 一站式中医服务</p></div></section>
   <section class="sec dot-tex">
     <div style="max-width:640px;margin:0 auto;">
-      <div class="sh center"><div class="eyebrow">Free account includes · 免費帳號包含</div><h2>Everything you <em>need</em></h2></div>
+      <div class="sh center"><div class="eyebrow">Free account includes · 免费帐号包含</div><h2>Everything you <em>need</em></h2></div>
       <div class="g4" style="margin-bottom:36px;">
-        <div class="benefit"><div class="bi-icon">🗓️</div><div><div class="bt">Easy Booking · 輕鬆預約</div><div class="bd">Book and manage appointments with licensed TCM practitioners.</div></div></div>
-        <div class="benefit"><div class="bi-icon">📋</div><div><div class="bt">Health Records · 健康記錄</div><div class="bd">Consultation notes, prescriptions and reports — all secure.</div></div></div>
-        <div class="benefit"><div class="bi-icon">👅</div><div><div class="bt">Wellness Analysis · 健康評估</div><div class="bd">Tongue photo and constitution questionnaire, doctor-reviewed.</div></div></div>
-        <div class="benefit"><div class="bi-icon">🌿</div><div><div class="bt">Herb Shop · 中藥商店</div><div class="bd">Order quality herbs with practitioner review.</div></div></div>
-        <div class="benefit"><div class="bi-icon">🔒</div><div><div class="bt">Private &amp; Secure · 私隱保護</div><div class="bd">PDPA compliant. Export or delete your data anytime.</div></div></div>
-        <div class="benefit"><div class="bi-icon">💬</div><div><div class="bt">Chat with Doctor · 醫患溝通</div><div class="bd">Secure in-platform messaging between visits.</div></div></div>
+        <div class="benefit"><div class="bi-icon">🗓️</div><div><div class="bt">Easy Booking · 轻松预约</div><div class="bd">Book and manage appointments with licensed TCM practitioners.</div></div></div>
+        <div class="benefit"><div class="bi-icon">📋</div><div><div class="bt">Health Records · 健康记录</div><div class="bd">Consultation notes, prescriptions and reports — all secure.</div></div></div>
+        <div class="benefit"><div class="bi-icon">👅</div><div><div class="bt">Wellness Analysis · 健康评估</div><div class="bd">Tongue photo and constitution questionnaire, doctor-reviewed.</div></div></div>
+        <div class="benefit"><div class="bi-icon">🌿</div><div><div class="bt">Herb Shop · 中药商店</div><div class="bd">Order quality herbs with practitioner review.</div></div></div>
+        <div class="benefit"><div class="bi-icon">🔒</div><div><div class="bt">Private &amp; Secure · 私隐保护</div><div class="bd">PDPA compliant. Export or delete your data anytime.</div></div></div>
+        <div class="benefit"><div class="bi-icon">💬</div><div><div class="bt">Chat with Doctor · 医患沟通</div><div class="bd">Secure in-platform messaging between visits.</div></div></div>
       </div>
       <div style="text-align:center;">
-        <button class="btn btn-dark" style="padding:16px 52px;font-size:16px;font-weight:600;margin-bottom:14px;">建立帳號 Create Free Account</button>
+        <button class="btn btn-dark" style="padding:16px 52px;font-size:16px;font-weight:600;margin-bottom:14px;">建立帐号 Create Free Account</button>
         <div style="font-size:13px;color:var(--mu);font-weight:300;">Already have an account? <button onclick="go('book')" style="background:none;border:none;color:var(--tc);cursor:pointer;font-size:13px;font-weight:500;">Sign in to book</button></div>
       </div>
-      <p style="font-size:12px;color:var(--mu);text-align:center;margin-top:22px;line-height:1.72;font-weight:300;">By registering you agree to our Privacy Policy and PDPA-compliant data processing.<br/><span style="font-family:'Noto Serif SC',serif;color:var(--bdr);">AI 健康評估僅供教育用途，非醫療診斷。</span></p>
+      <p style="font-size:12px;color:var(--mu);text-align:center;margin-top:22px;line-height:1.72;font-weight:300;">By registering you agree to our Privacy Policy and PDPA-compliant data processing.<br/><span style="font-family:'Noto Serif SC',serif;color:var(--bdr);">AI 健康评估仅供教育用途，非医疗诊断。</span></p>
     </div>
   </section>
 </div>
@@ -1157,7 +1166,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 <div class="page" id="page-practitioners">
   <section class="hero-page">
     <div class="hp">
-      <div class="eyebrow">Our Practitioners · 我們的醫師</div>
+      <div class="eyebrow">Our Practitioners · 我们的医师</div>
       <h1>Meet the doctors<br/>behind <em>HansMed</em></h1>
       <p>Founders, head practitioners, and the clinical heart of HansMed. Every AI report, every treatment plan passes through their hands.</p>
     </div>
@@ -1178,17 +1187,17 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <div class="ctr"></div><div class="cbl"></div>
         <!-- Avatar placeholder -->
         <div style="width:88px;height:88px;border-radius:50%;background:var(--bg-2);border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
-          <span style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:300;color:var(--wd-md);">蕭</span>
+          <span style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:300;color:var(--wd-md);">萧</span>
         </div>
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
           <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;">Mr. Siew Kuen Xian</h2>
-          <span style="font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);font-weight:300;">蕭坤賢</span>
+          <span style="font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);font-weight:300;">萧坤贤</span>
         </div>
         <div style="font-size:13px;color:var(--wd-md);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">Co-Founder · Head Practitioner</div>
 
         <!-- Credentials -->
         <div style="background:var(--go-xl);border:1px solid var(--bdr-l);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
-          <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;font-weight:500;">Credentials · 資歷</div>
+          <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;font-weight:500;">Credentials · 资历</div>
           <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);font-weight:400;">BSc (Hons) TCM — First Class Honours</span></div>
           <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">International Medical University (IMU)</span></div>
           <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">T&amp;CM Act 2016 Registered · MOH Licensed</span></div>
@@ -1196,7 +1205,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         </div>
 
         <!-- Specialties -->
-        <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-weight:500;">Areas of Practice · 專科</div>
+        <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-weight:500;">Areas of Practice · 专科</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;">
           <span class="cert-pill">Internal Pain</span>
           <span class="cert-pill">External Pain</span>
@@ -1221,19 +1230,19 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         </div>
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
           <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;">Mr. Lim Gao Hong</h2>
-          <span style="font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);font-weight:300;">林高鴻</span>
+          <span style="font-family:'Noto Serif SC',serif;font-size:13px;color:var(--mu);font-weight:300;">林高鸿</span>
         </div>
         <div style="font-size:13px;color:var(--wd-md);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">Co-Founder · Head Practitioner</div>
 
         <div style="background:var(--go-xl);border:1px solid var(--bdr-l);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
-          <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;font-weight:500;">Credentials · 資歷</div>
+          <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;font-weight:500;">Credentials · 资历</div>
           <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);font-weight:400;">BSc (Hons) TCM — Honours</span></div>
           <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">International Medical University (IMU)</span></div>
           <div class="sfi"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">T&amp;CM Act 2016 Registered · MOH Licensed</span></div>
           <div class="sfi" style="border-bottom:none;"><span class="sfi-dot"></span><span style="font-size:13px;color:var(--ink-m);">Co-Founder, HansMed Modern TCM</span></div>
         </div>
 
-        <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-weight:500;">Areas of Practice · 專科</div>
+        <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-weight:500;">Areas of Practice · 专科</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;">
           <span class="cert-pill">Internal Pain</span>
           <span class="cert-pill">External Pain</span>
@@ -1253,7 +1262,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 
     <!-- Compliance note -->
     <div style="background:var(--go-xl);border:1px solid var(--bdr-l);border-radius:12px;padding:16px 20px;margin-top:36px;text-align:center;">
-      <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;">All HansMed practitioners hold valid T&amp;CM Act 2016 registration certificates, verified before accepting patients. AI wellness reports are reviewed and approved by a licensed practitioner before reaching you.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);">所有醫師皆持有效 T&amp;CM 執照 · AI 報告由持牌醫師審核後發送</span></p>
+      <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;">All HansMed practitioners hold valid T&amp;CM Act 2016 registration certificates, verified before accepting patients. AI wellness reports are reviewed and approved by a licensed practitioner before reaching you.<br/><span style="font-family:'Noto Serif SC',serif;font-size:11px;color:var(--bdr);">所有医师皆持有效 T&amp;CM 执照 · AI 报告由持牌医师审核后发送</span></p>
     </div>
   </section>
 
@@ -1263,7 +1272,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
       <h2 style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#fff;font-weight:400;margin-bottom:10px;">Ready to consult?</h2>
       <p style="font-size:15px;color:rgba(255,255,255,0.5);margin-bottom:28px;font-weight:300;">Book a session with Mr. Siew or Mr. Lim — in-person or video.</p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn btn-gold" onclick="go('book')">Book a Consultation · 預約</button>
+        <button class="btn btn-gold" onclick="go('book')">Book a Consultation · 预约</button>
         <a class="btn btn-ghost" target="_blank" rel="noopener noreferrer" href="https://wa.me/601165600393">💬 WhatsApp us</a>
       </div>
     </div>
@@ -1293,7 +1302,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <!-- Cover area -->
         <div style="background:linear-gradient(135deg,var(--bg-2) 0%,var(--go-xl) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
           <div style="text-align:center;">
-            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--wd-lt);line-height:1;">針藥</div>
+            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--wd-lt);line-height:1;">针药</div>
             <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Treatment</div>
           </div>
         </div>
@@ -1320,7 +1329,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <div class="ctr"></div><div class="cbl"></div>
         <div style="background:linear-gradient(135deg,var(--sage-lt,#EEF3E8) 0%,var(--bg-2) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
           <div style="text-align:center;">
-            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--sage);line-height:1;">線診</div>
+            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--sage);line-height:1;">线诊</div>
             <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Online Care</div>
           </div>
         </div>
@@ -1347,7 +1356,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
         <div class="ctr"></div><div class="cbl"></div>
         <div style="background:linear-gradient(135deg,var(--tc-xl,#FCF6EF) 0%,var(--bg-2) 100%);height:160px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bdr-l);">
           <div style="text-align:center;">
-            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--tc);line-height:1;">舌診</div>
+            <div style="font-family:'Noto Serif SC',serif;font-size:42px;font-weight:300;color:var(--tc);line-height:1;">舌诊</div>
             <div style="font-size:10px;color:var(--mu);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Tongue Diagnosis</div>
           </div>
         </div>
@@ -1357,7 +1366,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
             <span class="cert-pill">AI Wellness</span>
             <span class="cert-pill">Diagnosis</span>
           </div>
-          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">How Practitioners Read With Your Tongue: The Ancient Art of 舌診</h3>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:10px;letter-spacing:-0.01em;">How Practitioners Read With Your Tongue: The Ancient Art of 舌诊</h3>
           <p style="font-size:13px;color:var(--mu);line-height:1.72;font-weight:300;margin-bottom:18px;">Your tongue is a map of your internal health. Colour, coating, shape, and moisture all tell a practitioner things your symptoms alone cannot. Here is how it works.</p>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div>
@@ -1371,8 +1380,8 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 
     </div>
     <div style="text-align:center;margin-top:36px;">
-      <p style="font-size:13px;color:var(--mu);font-weight:300;margin-bottom:16px;">More articles coming soon · 更多文章即將推出</p>
-      <button class="btn btn-dark" style="border-radius:10px;" onclick="go('register')">Subscribe for updates · 訂閱最新資訊</button>
+      <p style="font-size:13px;color:var(--mu);font-weight:300;margin-bottom:16px;">More articles coming soon · 更多文章即将推出</p>
+      <button class="btn btn-dark" style="border-radius:10px;" onclick="go('register')">Subscribe for updates · 订阅最新资讯</button>
     </div>
   </section>
 </div>
@@ -1381,14 +1390,14 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 <div class="page act" id="page-faq">
   <section class="hero-page">
     <div class="hp">
-      <div class="eyebrow">FAQ · 常見問題</div>
+      <div class="eyebrow">FAQ · 常见问题</div>
       <h1>
         <span lang="en">Answers to your<br/><em>questions.</em></span>
-        <span lang="zh">為您解答<br/><em>常見疑問</em></span>
+        <span lang="zh">为您解答<br/><em>常见疑问</em></span>
       </h1>
       <p>
         <span lang="en">Everything you need to know before your first HansMed consultation.</span>
-        <span lang="zh">首次預約 HansMed 之前，您需要知道的一切。</span>
+        <span lang="zh">首次预约 HansMed 之前，您需要知道的一切。</span>
       </p>
     </div>
   </section>
@@ -1397,98 +1406,98 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 
     <!-- About TCM -->
     <div class="sh" style="margin-bottom:20px;">
-      <div class="eyebrow">About TCM · 關於中醫</div>
+      <div class="eyebrow">About TCM · 关于中医</div>
       <h2>
         <span lang="en">Traditional Chinese <em>Medicine</em></span>
-        <span lang="zh">傳統 <em>中醫學</em></span>
+        <span lang="zh">传统 <em>中医学</em></span>
       </h2>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:48px;">
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">What is Traditional Chinese Medicine (TCM)?</span><span lang="zh">什麼是傳統中醫（TCM）？</span></div>
-        <div class="faq-a"><span lang="en">TCM is a comprehensive medical system developed over 2,000 years. It views the body as an interconnected whole — using acupuncture, herbal medicine, manipulation, and dietary guidance to restore balance and address the root cause of illness, not just symptoms.</span><span lang="zh">中醫是有兩千多年歷史的完整醫學體系，將人體視為相互聯繫的整體，以陰陽平衡為核心，通過針灸、中藥、推拿及飲食調理來治本而非只治標。</span></div>
+        <div class="faq-q"><span lang="en">What is Traditional Chinese Medicine (TCM)?</span><span lang="zh">什么是传统中医（TCM）？</span></div>
+        <div class="faq-a"><span lang="en">TCM is a comprehensive medical system developed over 2,000 years. It views the body as an interconnected whole — using acupuncture, herbal medicine, manipulation, and dietary guidance to restore balance and address the root cause of illness, not just symptoms.</span><span lang="zh">中医是有两千多年历史的完整医学体系，将人体视为相互联系的整体，以阴阳平衡为核心，通过针灸、中药、推拿及饮食调理来治本而非只治标。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">Does TCM work alongside Western medicine?</span><span lang="zh">中醫可以與西醫並用嗎？</span></div>
-        <div class="faq-a"><span lang="en">Yes — integrative care is increasingly common. Many patients use TCM to complement Western treatment, particularly for chronic pain, recovery, digestive health, and stress. Our practitioners will always advise you if your condition requires urgent conventional medical attention. Please continue any existing prescribed medication unless advised otherwise by your Western doctor.</span><span lang="zh">可以——中西醫結合越來越普遍。許多患者以中醫輔助西醫治療，尤其在慢性疼痛、術後康復、消化健康及壓力管理方面。若您的情況需要緊急西醫處理，本院醫師必定會告知您。在西醫醫師另有指示前，請持續服用既有的處方藥物。</span></div>
+        <div class="faq-q"><span lang="en">Does TCM work alongside Western medicine?</span><span lang="zh">中医可以与西医并用吗？</span></div>
+        <div class="faq-a"><span lang="en">Yes — integrative care is increasingly common. Many patients use TCM to complement Western treatment, particularly for chronic pain, recovery, digestive health, and stress. Our practitioners will always advise you if your condition requires urgent conventional medical attention. Please continue any existing prescribed medication unless advised otherwise by your Western doctor.</span><span lang="zh">可以——中西医结合越来越普遍。许多患者以中医辅助西医治疗，尤其在慢性疼痛、术后康复、消化健康及压力管理方面。若您的情况需要紧急西医处理，本院医师必定会告知您。在西医医师另有指示前，请持续服用既有的处方药物。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">How many sessions will I need?</span><span lang="zh">我需要幾次治療？</span></div>
-        <div class="faq-a"><span lang="en">This varies by condition and individual constitution. Acute concerns (recent pain, mild digestive issues) often respond within 2–4 sessions. Chronic or complex conditions may require longer-term care. Your practitioner will give you an honest assessment at the first consultation.</span><span lang="zh">視病情及個人體質而定。急性問題（近期疼痛、輕微消化問題）通常 2–4 次內見效；慢性或複雜病症可能需較長期調理。首診時，醫師會誠實地給您評估建議。</span></div>
+        <div class="faq-q"><span lang="en">How many sessions will I need?</span><span lang="zh">我需要几次治疗？</span></div>
+        <div class="faq-a"><span lang="en">This varies by condition and individual constitution. Acute concerns (recent pain, mild digestive issues) often respond within 2–4 sessions. Chronic or complex conditions may require longer-term care. Your practitioner will give you an honest assessment at the first consultation.</span><span lang="zh">视病情及个人体质而定。急性问题（近期疼痛、轻微消化问题）通常 2–4 次内见效；慢性或复杂病症可能需较长期调理。首诊时，医师会诚实地给您评估建议。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">Is TCM safe? Are there side effects?</span><span lang="zh">中醫安全嗎？有副作用嗎？</span></div>
-        <div class="faq-a"><span lang="en">When practised by a licensed, registered practitioner, TCM is generally safe. Acupuncture may cause mild soreness or bruising at needle points. Herbal medicine is prescribed specifically to your constitution — we never use a one-size-fits-all formula. Our practitioners are T&amp;CM Act 2016 registered and MOH licensed. Always disclose existing medications and health conditions at consultation.</span><span lang="zh">在持牌、合法註冊的中醫師施治下，中醫一般安全。針灸可能在穴位處有輕微痠脹或瘀青。中藥處方根據個人體質開立，絕不採取一刀切配方。本院醫師均依 T&amp;CM 2016 法令註冊，並持衛生部執照。請務必在問診時告知所有現有藥物及健康狀況。</span></div>
+        <div class="faq-q"><span lang="en">Is TCM safe? Are there side effects?</span><span lang="zh">中医安全吗？有副作用吗？</span></div>
+        <div class="faq-a"><span lang="en">When practised by a licensed, registered practitioner, TCM is generally safe. Acupuncture may cause mild soreness or bruising at needle points. Herbal medicine is prescribed specifically to your constitution — we never use a one-size-fits-all formula. Our practitioners are T&amp;CM Act 2016 registered and MOH licensed. Always disclose existing medications and health conditions at consultation.</span><span lang="zh">在持牌、合法注册的中医师施治下，中医一般安全。针灸可能在穴位处有轻微酸胀或瘀青。中药处方根据个人体质开立，绝不采取一刀切配方。本院医师均依 T&amp;CM 2016 法令注册，并持卫生部执照。请务必在问诊时告知所有现有药物及健康状况。</span></div>
       </div>
     </div>
 
     <!-- Online consultation -->
     <div class="sh" style="margin-bottom:20px;">
-      <div class="eyebrow">Online Consultation · 線上問診</div>
+      <div class="eyebrow">Online Consultation · 线上问诊</div>
       <h2>
         <span lang="en">Video consultations &amp; <em>accuracy</em></span>
-        <span lang="zh">視訊問診的 <em>準確度</em></span>
+        <span lang="zh">视讯问诊的 <em>准确度</em></span>
       </h2>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:48px;">
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">How accurate is an online TCM consultation?</span><span lang="zh">線上中醫問診準確嗎？</span></div>
-        <div class="faq-a"><span lang="en">For many conditions — especially those involving pain, stress, sleep, digestion, and constitution-based concerns — a video consultation with tongue photo analysis is clinically comparable to an in-person visit. Our practitioners conduct a thorough intake: tongue assessment, symptom history, lifestyle, and pulse description. Physical acupuncture and manipulation require an in-person visit, and your practitioner will advise you if this is necessary.</span><span lang="zh">就許多情況而言——尤其是疼痛、壓力、睡眠、消化及體質類問題——配合舌診照片的視訊問診，臨床效果與親診相當。本院醫師會做完整問診：舌診、症狀史、生活習慣與脈象描述。針灸及推拿等需動手的治療則須親自到診，醫師會告知您。</span></div>
+        <div class="faq-q"><span lang="en">How accurate is an online TCM consultation?</span><span lang="zh">线上中医问诊准确吗？</span></div>
+        <div class="faq-a"><span lang="en">For many conditions — especially those involving pain, stress, sleep, digestion, and constitution-based concerns — a video consultation with tongue photo analysis is clinically comparable to an in-person visit. Our practitioners conduct a thorough intake: tongue assessment, symptom history, lifestyle, and pulse description. Physical acupuncture and manipulation require an in-person visit, and your practitioner will advise you if this is necessary.</span><span lang="zh">就许多情况而言——尤其是疼痛、压力、睡眠、消化及体质类问题——配合舌诊照片的视讯问诊，临床效果与亲诊相当。本院医师会做完整问诊：舌诊、症状史、生活习惯与脉象描述。针灸及推拿等需动手的治疗则须亲自到诊，医师会告知您。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">What happens during an online consultation?</span><span lang="zh">線上問診過程是怎樣的？</span></div>
-        <div class="faq-a"><span lang="en">You will join a secure video session with a licensed practitioner. They will ask about your symptoms, lifestyle, and medical history. You may be asked to show your tongue and describe your pulse. After the session, your practitioner writes a personalised treatment plan, which may include a herbal prescription, dietary recommendations, and follow-up guidance.</span><span lang="zh">您將透過加密視訊與持牌中醫師對談。醫師會詢問症狀、生活習慣與病史，可能會請您伸舌並描述脈象。問診結束後，醫師會撰寫個人化治療方案，內容可能包含中藥處方、飲食建議及後續追蹤。</span></div>
+        <div class="faq-q"><span lang="en">What happens during an online consultation?</span><span lang="zh">线上问诊过程是怎样的？</span></div>
+        <div class="faq-a"><span lang="en">You will join a secure video session with a licensed practitioner. They will ask about your symptoms, lifestyle, and medical history. You may be asked to show your tongue and describe your pulse. After the session, your practitioner writes a personalised treatment plan, which may include a herbal prescription, dietary recommendations, and follow-up guidance.</span><span lang="zh">您将透过加密视讯与持牌中医师对谈。医师会询问症状、生活习惯与病史，可能会请您伸舌并描述脉象。问诊结束后，医师会撰写个人化治疗方案，内容可能包含中药处方、饮食建议及后续追踪。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">What conditions are NOT suitable for online consultation?</span><span lang="zh">哪些情況不適合線上問診？</span></div>
-        <div class="faq-a"><span lang="en">Any emergency or acute condition requiring urgent medical care should go directly to A&amp;E — call 999. Conditions requiring hands-on physical assessment (e.g. complex spinal injuries, post-surgical care) require an in-person visit. Your practitioner will tell you clearly at the start of the session if an in-person assessment is needed.</span><span lang="zh">任何緊急或急性需要立即醫療處置的情況，請直接前往急診室或撥打 999。需要動手評估的病症（如複雜脊椎損傷、術後照護）必須親自到診。問診一開始時，醫師會明確告知您是否需要親診。</span></div>
+        <div class="faq-q"><span lang="en">What conditions are NOT suitable for online consultation?</span><span lang="zh">哪些情况不适合线上问诊？</span></div>
+        <div class="faq-a"><span lang="en">Any emergency or acute condition requiring urgent medical care should go directly to A&amp;E — call 999. Conditions requiring hands-on physical assessment (e.g. complex spinal injuries, post-surgical care) require an in-person visit. Your practitioner will tell you clearly at the start of the session if an in-person assessment is needed.</span><span lang="zh">任何紧急或急性需要立即医疗处置的情况，请直接前往急诊室或拨打 999。需要动手评估的病症（如复杂脊椎损伤、术后照护）必须亲自到诊。问诊一开始时，医师会明确告知您是否需要亲诊。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">What is the AI Wellness Assessment — is it a diagnosis?</span><span lang="zh">AI 健康評估是什麼——算診斷嗎？</span></div>
-        <div class="faq-a"><span lang="en">No. The AI Wellness Assessment is an educational tool — it analyses your tongue photo and constitution questionnaire to generate a wellness insight about your body type and likely imbalances. It is not a medical diagnosis. Every AI report is reviewed and approved by a licensed TCM practitioner before it is sent to you. Do not use it to self-treat or replace a clinical consultation.</span><span lang="zh">不是。AI 健康評估屬教育性工具——透過分析您的舌診照片及體質問卷，提供體質傾向的健康參考，並非醫療診斷。所有 AI 報告皆由持牌中醫師審核及核可後才發送。請勿據此自行治療或取代正式問診。</span></div>
+        <div class="faq-q"><span lang="en">What is the AI Wellness Assessment — is it a diagnosis?</span><span lang="zh">AI 健康评估是什么——算诊断吗？</span></div>
+        <div class="faq-a"><span lang="en">No. The AI Wellness Assessment is an educational tool — it analyses your tongue photo and constitution questionnaire to generate a wellness insight about your body type and likely imbalances. It is not a medical diagnosis. Every AI report is reviewed and approved by a licensed TCM practitioner before it is sent to you. Do not use it to self-treat or replace a clinical consultation.</span><span lang="zh">不是。AI 健康评估属教育性工具——透过分析您的舌诊照片及体质问卷，提供体质倾向的健康参考，并非医疗诊断。所有 AI 报告皆由持牌中医师审核及核可后才发送。请勿据此自行治疗或取代正式问诊。</span></div>
       </div>
     </div>
 
     <!-- Herbal medicine -->
     <div class="sh" style="margin-bottom:20px;">
-      <div class="eyebrow">Herbal Medicine · 中藥</div>
+      <div class="eyebrow">Herbal Medicine · 中药</div>
       <h2>
         <span lang="en">Questions about <em>our herbs</em></span>
-        <span lang="zh">關於 <em>本院中藥</em></span>
+        <span lang="zh">关于 <em>本院中药</em></span>
       </h2>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:48px;">
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">Where do your herbs come from?</span><span lang="zh">您們的藥材來源是哪裡？</span></div>
-        <div class="faq-a"><span lang="en">All herbs and formulas are sourced from verified Malaysian and international suppliers who meet our quality standards. Every product is labelled with its Chinese name, pinyin, and sourcing information. Prescription herbs are reviewed by your practitioner before dispatch. Over-the-counter items in the herb shop are listed as herbal food supplements — not medicinal products — unless prescribed.</span><span lang="zh">所有藥材及方劑均採自符合本院品質標準、經過驗證的本地及國際供應商。每款產品均附中文名稱、拼音與來源資訊。處方藥材在出貨前經您的中醫師審核；商店中非處方類則以「草本食品補充品」形式販售，並非醫療藥品。</span></div>
+        <div class="faq-q"><span lang="en">Where do your herbs come from?</span><span lang="zh">您们的药材来源是哪里？</span></div>
+        <div class="faq-a"><span lang="en">All herbs and formulas are sourced from verified Malaysian and international suppliers who meet our quality standards. Every product is labelled with its Chinese name, pinyin, and sourcing information. Prescription herbs are reviewed by your practitioner before dispatch. Over-the-counter items in the herb shop are listed as herbal food supplements — not medicinal products — unless prescribed.</span><span lang="zh">所有药材及方剂均采自符合本院品质标准、经过验证的本地及国际供应商。每款产品均附中文名称、拼音与来源资讯。处方药材在出货前经您的中医师审核；商店中非处方类则以「草本食品补充品」形式贩售，并非医疗药品。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">Can I order herbs without a consultation?</span><span lang="zh">沒有問診可以購買中藥嗎？</span></div>
-        <div class="faq-a"><span lang="en">Selected over-the-counter items (general wellness teas, single herbs) are available in the shop without a prescription. Prescription-grade formulas require a consultation with a HansMed practitioner, who will review and approve the order before it is fulfilled. We do not dispense prescription herbs without practitioner sign-off — this protects your safety.</span><span lang="zh">指定的非處方品項（一般養生茶、單味藥材）可於商店無需處方購買。處方等級的方劑必須先經本院中醫師問診核可後才出貨。為您的用藥安全，我們不會在沒有醫師簽署的情況下發出處方藥材。</span></div>
+        <div class="faq-q"><span lang="en">Can I order herbs without a consultation?</span><span lang="zh">没有问诊可以购买中药吗？</span></div>
+        <div class="faq-a"><span lang="en">Selected over-the-counter items (general wellness teas, single herbs) are available in the shop without a prescription. Prescription-grade formulas require a consultation with a HansMed practitioner, who will review and approve the order before it is fulfilled. We do not dispense prescription herbs without practitioner sign-off — this protects your safety.</span><span lang="zh">指定的非处方品项（一般养生茶、单味药材）可于商店无需处方购买。处方等级的方剂必须先经本院中医师问诊核可后才出货。为您的用药安全，我们不会在没有医师签署的情况下发出处方药材。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">Do the herbs interact with Western medications?</span><span lang="zh">中藥會與西藥相互作用嗎？</span></div>
-        <div class="faq-a"><span lang="en">Some herbs can interact with pharmaceutical medications — particularly blood thinners, diabetes medication, and immunosuppressants. Always disclose all medications at your consultation. Our practitioners are trained to identify and avoid interactions. Never self-prescribe herbal medicine if you are on long-term pharmaceutical treatment without practitioner advice.</span><span lang="zh">部分藥材可能與西藥相互作用，尤其是抗凝血劑、糖尿病藥及免疫抑制劑。問診時請務必告知所有正在服用的藥物。本院醫師受過訓練，能識別並避免相關交互作用。長期服用西藥者，切勿在未經醫師指示前自行服用中藥。</span></div>
+        <div class="faq-q"><span lang="en">Do the herbs interact with Western medications?</span><span lang="zh">中药会与西药相互作用吗？</span></div>
+        <div class="faq-a"><span lang="en">Some herbs can interact with pharmaceutical medications — particularly blood thinners, diabetes medication, and immunosuppressants. Always disclose all medications at your consultation. Our practitioners are trained to identify and avoid interactions. Never self-prescribe herbal medicine if you are on long-term pharmaceutical treatment without practitioner advice.</span><span lang="zh">部分药材可能与西药相互作用，尤其是抗凝血剂、糖尿病药及免疫抑制剂。问诊时请务必告知所有正在服用的药物。本院医师受过训练，能识别并避免相关交互作用。长期服用西药者，切勿在未经医师指示前自行服用中药。</span></div>
       </div>
       <div class="faq-card">
-        <div class="faq-q"><span lang="en">Are your products HALAL certified?</span><span lang="zh">您們的產品有清真認證嗎？</span></div>
-        <div class="faq-a"><span lang="en">We are committed to HALAL-compliant sourcing. Products carrying the HALAL label have been certified by JAKIM-recognised bodies. If you have specific requirements, please ask your practitioner or contact us via WhatsApp before purchase.</span><span lang="zh">我們致力於提供符合清真規範的產品。標示「HALAL」的產品已由 JAKIM 認可機構認證。如有特殊需求，購買前歡迎透過 WhatsApp 聯絡我們，或於問診時告知中醫師。</span></div>
+        <div class="faq-q"><span lang="en">Are your products HALAL certified?</span><span lang="zh">您们的产品有清真认证吗？</span></div>
+        <div class="faq-a"><span lang="en">We are committed to HALAL-compliant sourcing. Products carrying the HALAL label have been certified by JAKIM-recognised bodies. If you have specific requirements, please ask your practitioner or contact us via WhatsApp before purchase.</span><span lang="zh">我们致力于提供符合清真规范的产品。标示「HALAL」的产品已由 JAKIM 认可机构认证。如有特殊需求，购买前欢迎透过 WhatsApp 联络我们，或于问诊时告知中医师。</span></div>
       </div>
     </div>
 
     <!-- Still have questions -->
     <div style="background:var(--bg-3);border:1px solid var(--bdr-l);border-radius:16px;padding:32px;text-align:center;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--ink);font-weight:400;margin-bottom:10px;">Still have questions? · 還有疑問？</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--ink);font-weight:400;margin-bottom:10px;">Still have questions? · 还有疑问？</div>
       <p style="font-size:14px;color:var(--mu);font-weight:300;margin-bottom:22px;line-height:1.72;">
         <span lang="en">WhatsApp us — our team responds within a few hours during clinic hours. Or book a consultation and ask your practitioner directly.</span>
-        <span lang="zh">透過 WhatsApp 聯絡我們，診所時段內團隊通常數小時內回覆。或者預約問診，直接向您的醫師詢問。</span>
+        <span lang="zh">透过 WhatsApp 联络我们，诊所时段内团队通常数小时内回复。或者预约问诊，直接向您的医师询问。</span>
       </p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
         <a class="btn btn-wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/601165600393">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.345.223-.643.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51-.172-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.876 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-          <span lang="en">WhatsApp Us</span><span lang="zh">透過 WhatsApp 聯絡</span>
+          <span lang="en">WhatsApp Us</span><span lang="zh">透过 WhatsApp 联络</span>
         </a>
-        <button class="btn btn-dark" style="border-radius:10px;" onclick="go('book')"><span lang="en">Book a Consultation →</span><span lang="zh">立即預約問診 →</span></button>
+        <button class="btn btn-dark" style="border-radius:10px;" onclick="go('book')"><span lang="en">Book a Consultation →</span><span lang="zh">立即预约问诊 →</span></button>
       </div>
     </div>
   </section>
@@ -1499,38 +1508,34 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
   <div class="fg">
     <div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <svg viewBox="0 0 66 66" width="44" height="44" aria-hidden="true" style="opacity:0.95;flex-shrink:0;">
-          <rect x="1"  y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="10.5" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="1"  width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="10.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="1"  width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="10.5" r="3.5" fill="#1a1612"/>
-          <rect x="1"  y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="33" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="23" width="20" height="20" fill="#B8965A"/><circle cx="33" cy="33" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="23" width="19" height="20" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="33" r="3.5" fill="#1a1612"/>
-          <rect x="1"  y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="10.5" cy="55.5" r="3.5" fill="#1a1612"/>
-          <rect x="23" y="46" width="20" height="19" fill="rgba(254,252,248,0.18)"/><circle cx="33" cy="55.5" r="3.5" fill="rgba(254,252,248,0.95)"/>
-          <rect x="46" y="46" width="19" height="19" fill="rgba(254,252,248,0.95)" stroke="rgba(254,252,248,0.35)" stroke-width="1"/><circle cx="55.5" cy="55.5" r="3.5" fill="#1a1612"/>
-        </svg>
-        <div><div class="fn">HansMed</div><div class="fzh">漢方現代中醫 · Modern TCM</div></div>
+        <!-- LOCKED · footer logo · Treatment B (cream + outlined gold) · source: v2/assets/img/brand/logo-mark-dark.svg · DO NOT EDIT -->
+        <img src="assets/img/brand/logo-mark-dark.svg" width="44" height="44" alt="HansMed logo" style="opacity:0.95;flex-shrink:0;display:block;">
+        <!-- LOCKED · HansMed bilingual wordmark (footer / dark variant) · source: v2/assets/img/brand/wordmark.svg + BRAND.md · DO NOT EDIT -->
+        <span class="hm-wordmark hm-wordmark--dark" role="img" aria-label="HansMed · TCM · 汉方现代中医">
+          <span class="hm-wordmark__en">HansMed · TCM</span>
+          <span class="hm-wordmark__zh">汉方现代中医</span>
+        </span>
+        <!-- /LOCKED footer brand block -->
       </div>
-      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持證中醫師 · 馬來西亞各地皆可問診</span></p>
+      <p class="fp">Licensed Traditional Chinese Medicine, accessible from anywhere in Malaysia.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.2);">持证中医师 · 马来西亚各地皆可问诊</span></p>
     </div>
     <div>
       <div class="flbl">Platform · 平台</div>
-      <button class="fl" onclick="go('home')">Home · 首頁</button>
-      <button class="fl" onclick="go('about')">About · 關於</button>
-      <button class="fl" onclick="go('practitioners')">Our Doctors · 醫師</button>
-      <button class="fl" onclick="go('services')">Services · 服務</button>
+      <button class="fl" onclick="go('home')">Home · 首页</button>
+      <button class="fl" onclick="go('about')">About · 关于</button>
+      <button class="fl" onclick="go('practitioners')">Our Doctors · 医师</button>
+      <button class="fl" onclick="go('services')">Services · 服务</button>
       <button class="fl" onclick="go('blog')">Blog · 部落格</button>
-      <button class="fl" onclick="go('faq')">FAQ · 常見問題</button>
-      <button class="fl" onclick="go('book')">Book · 預約</button>
-      <button class="fl" onclick="go('register')">Sign Up · 註冊</button>
+      <button class="fl" onclick="go('faq')">FAQ · 常见问题</button>
+      <button class="fl" onclick="go('book')">Book · 预约</button>
+      <button class="fl" onclick="go('register')">Sign Up · 注册</button>
     </div>
     <div>
-      <div class="flbl">Compliance · 合規</div>
-      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隱政策</span></a>
+      <div class="flbl">Compliance · 合规</div>
+      <a class="fl" href="privacy-policy.html"><span lang="en">Privacy Policy</span><span lang="zh">私隐政策</span></a>
       <a class="fl" href="security.html"><span lang="en">Security</span><span lang="zh">安全保障</span></a>
       
-      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 評估非醫療診斷 · 所有醫師皆持證</span></p>
+      <p class="fp">AI wellness tools are for educational insight only — not medical diagnosis. All practitioners hold T&amp;CM registration certificates. PDPA 2010 compliant.<br/><span style="font-family:'Noto Serif SC',serif;font-size:10px;color:rgba(255,255,255,0.18);">AI 评估非医疗诊断 · 所有医师皆持证</span></p>
     </div>
   </div>
   <div class="f-cert-row">
@@ -1541,7 +1546,7 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
     <div class="f-cert"><div class="f-cert-top">T&CM Act</div><div class="f-cert-bot">2016</div></div>
   </div>
   <div class="fbot">
-    <span>© 2026 HansMed Modern TCM · 漢方現代中醫 · Made with care in Malaysia · 匠心於馬來西亞</span>
+    <span>© 2026 HansMed Modern TCM · 汉方现代中医 · Made with care in Malaysia · 匠心于马来西亚</span>
     <span>PDPA · T&amp;CM Act 2016</span>
   </div>
 </footer>
@@ -1563,16 +1568,16 @@ button,a{font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;}
 /* ── TCM Organ Clock ── */
 
 const CLOCK_ORGANS=[
-  {name:'Gallbladder',zh:'膽',start:23,el:'Wood',elZh:'木',col:'#7A9060',tip:'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.'},
+  {name:'Gallbladder',zh:'胆',start:23,el:'Wood',elZh:'木',col:'#7A9060',tip:'Sleep by 11pm. Your gallbladder renews bile and processes the day\'s decisions. Rest is its medicine.'},
   {name:'Liver',zh:'肝',start:1,el:'Wood',elZh:'木',col:'#6E8858',tip:'Your liver detoxifies deeply. Lie down and rest — avoid alcohol, screen light, and stress right now.'},
   {name:'Lung',zh:'肺',start:3,el:'Metal',elZh:'金',col:'#A09888',tip:'Peak lung qi at dawn. Gentle breathing or tai chi nourishes your lungs most in this window.'},
-  {name:'Large Intestine',zh:'大腸',start:5,el:'Metal',elZh:'金',col:'#909080',tip:'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.'},
+  {name:'Large Intestine',zh:'大肠',start:5,el:'Metal',elZh:'金',col:'#909080',tip:'Rise, drink warm water, and allow elimination. Your body is ready to release — support it gently.'},
   {name:'Stomach',zh:'胃',start:7,el:'Earth',elZh:'土',col:'#C49840',tip:'Digestive fire is at its peak. Eat your most nourishing, warming meal of the day now.'},
   {name:'Spleen',zh:'脾',start:9,el:'Earth',elZh:'土',col:'#B88A38',tip:'Mental clarity peaks. Perfect for focused study, analysis, and careful creative work.'},
   {name:'Heart',zh:'心',start:11,el:'Fire',elZh:'火',col:'#B85840',tip:'Heart energy peaks at noon. Rest after lunch — even 20 minutes protects your heart for years.'},
-  {name:'Small Intestine',zh:'小腸',start:13,el:'Fire',elZh:'火',col:'#A84830',tip:'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.'},
+  {name:'Small Intestine',zh:'小肠',start:13,el:'Fire',elZh:'火',col:'#A84830',tip:'Your body sorts nutrients from waste. A short walk after lunch powerfully supports this process.'},
   {name:'Bladder',zh:'膀胱',start:15,el:'Water',elZh:'水',col:'#4A7890',tip:'Good qi for physical and mental work. Drink enough water — bladder governs fluid metabolism.'},
-  {name:'Kidney',zh:'腎',start:17,el:'Water',elZh:'水',col:'#3A6080',tip:'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.'},
+  {name:'Kidney',zh:'肾',start:17,el:'Water',elZh:'水',col:'#3A6080',tip:'Kidney qi governs your life force. Begin winding down — eat lightly and avoid cold food or water.'},
   {name:'Pericardium',zh:'心包',start:19,el:'Fire',elZh:'火',col:'#8A6070',tip:'Your heart\'s protector governs now. Gentle joy and warm connection restore the spirit.'},
   {name:'Triple Warmer',zh:'三焦',start:21,el:'Fire',elZh:'火',col:'#705058',tip:'The three energy zones harmonise for sleep. Dim lights, quiet your mind — begin preparing for rest.'},
 ];
@@ -1669,14 +1674,14 @@ function drawClock(svgId,cx,cy,ro,ri,rl,fontSize,showLabel,showHand,showCenter){
       svg.appendChild(p);
     });
 
-    // 漢方 — center
+    // 汉方 — center
     const ch=hmNs('text');
     ch.setAttribute('x',cx);ch.setAttribute('y',cy+18);
     ch.setAttribute('text-anchor','middle');
     ch.setAttribute('font-family',"'Noto Serif SC',serif");
     ch.setAttribute('font-size','40');ch.setAttribute('font-weight','300');
     ch.setAttribute('fill','#B8895A');ch.setAttribute('pointer-events','none');
-    ch.textContent='漢方';
+    ch.textContent='汉方';
     svg.appendChild(ch);
 
     // Current organ label
@@ -1899,33 +1904,33 @@ const S={
   en:{
     'hw-eyebrow':'How it works',
     'hw-sub':'From the first tap to the herbs at your door — three steps, one trusted practitioner.',
-    'hw-sub2':'從預約到送藥，三個步驟，一次信任。',
-    's1-zh':'預約','s1-en':'Book Appointment',
-    's1-desc':'Pick your concern and a convenient time.','s1-desc2':'選擇症狀與時段。',
-    's2-zh':'問診','s2-en':'Online Consultation',
-    's2-desc':'Licensed TCM doctor sees you by video.','s2-desc2':'持證中醫師視訊問診。',
-    's3-zh':'送藥 / 上門','s3-en':'Delivery / Home Visit',
-    's3-desc':'Herbs delivered to your door, or a home visit.','s3-desc2':'送藥到府，或上門服務。',
+    'hw-sub2':'从预约到送药，三个步骤，一次信任。',
+    's1-zh':'预约','s1-en':'Book Appointment',
+    's1-desc':'Pick your concern and a convenient time.','s1-desc2':'选择症状与时段。',
+    's2-zh':'问诊','s2-en':'Online Consultation',
+    's2-desc':'Licensed TCM doctor sees you by video.','s2-desc2':'持证中医师视讯问诊。',
+    's3-zh':'送药 / 上门','s3-en':'Delivery / Home Visit',
+    's3-desc':'Herbs delivered to your door, or a home visit.','s3-desc2':'送药到府，或上门服务。',
     'cta-italic':'Three simple steps to feel better — the modern way.','cta-btn':'START NOW',
-    'ti-1n':'25+','ti-1l':'Licensed Doctors · 持證醫師',
-    'ti-2n':'AI +','ti-2l':'Doctor Reviewed · 醫師審核報告',
-    'ti-3n':'24/7','ti-3l':'Chat Support · 線上支援',
-    'ti-4n':'PDPA','ti-4l':'Data Compliant · 資料保護',
+    'ti-1n':'25+','ti-1l':'Licensed Doctors · 持证医师',
+    'ti-2n':'AI +','ti-2l':'Doctor Reviewed · 医师审核报告',
+    'ti-3n':'24/7','ti-3l':'Chat Support · 线上支援',
+    'ti-4n':'PDPA','ti-4l':'Data Compliant · 资料保护',
   },
   zh:{
     'hw-eyebrow':'使用流程',
-    'hw-sub':'從預約到送藥，三個步驟，一次信任。','hw-sub2':'',
-    's1-zh':'預約','s1-en':'預約掛號',
-    's1-desc':'選擇您的症狀與方便的時段。','s1-desc2':'',
-    's2-zh':'問診','s2-en':'線上問診',
-    's2-desc':'持證中醫師視訊問診。','s2-desc2':'',
-    's3-zh':'送藥 / 上門','s3-en':'送藥 / 上門服務',
-    's3-desc':'送藥到府，或上門服務。','s3-desc2':'',
-    'cta-italic':'三個簡單步驟，現代中醫，輕鬆體驗。','cta-btn':'立即開始',
-    'ti-1n':'25+','ti-1l':'持證醫師',
-    'ti-2n':'AI +','ti-2l':'醫師審核報告',
-    'ti-3n':'24/7','ti-3l':'線上支援',
-    'ti-4n':'PDPA','ti-4l':'資料保護合規',
+    'hw-sub':'从预约到送药，三个步骤，一次信任。','hw-sub2':'',
+    's1-zh':'预约','s1-en':'预约挂号',
+    's1-desc':'选择您的症状与方便的时段。','s1-desc2':'',
+    's2-zh':'问诊','s2-en':'线上问诊',
+    's2-desc':'持证中医师视讯问诊。','s2-desc2':'',
+    's3-zh':'送药 / 上门','s3-en':'送药 / 上门服务',
+    's3-desc':'送药到府，或上门服务。','s3-desc2':'',
+    'cta-italic':'三个简单步骤，现代中医，轻松体验。','cta-btn':'立即开始',
+    'ti-1n':'25+','ti-1l':'持证医师',
+    'ti-2n':'AI +','ti-2l':'医师审核报告',
+    'ti-3n':'24/7','ti-3l':'线上支援',
+    'ti-4n':'PDPA','ti-4l':'资料保护合规',
   }
 };
 const IDS=Object.keys(S.en);
