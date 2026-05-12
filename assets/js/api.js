@@ -323,7 +323,7 @@
     pickPoolAppt:     function (id) { return api.post('/doctor/pool/' + id + '/pick'); },
     setMeetingUrl:    function (id, url) { return api.post('/doctor/appointments/' + id + '/meeting-url', { meeting_url: url }); },
     createAppointment:function (d) { return api.post('/doctor/appointments', d); },
-    getAppointment:   function (id) { return api.get('/doctor/appointments/' + id); },
+    getAppointment:   function (id) { return api.get('/doctor/appointments/' + id, { timeout: 90000 }); }, // heavy consult-page hydration — 90s for artisan-serve cold start
     startAppointment: function (id) { return api.post('/doctor/appointments/' + id + '/start'); },
     completeAppointment: function (id) { return api.post('/doctor/appointments/' + id + '/complete'); },
 
