@@ -33,7 +33,13 @@
   pollNotifications();
   setInterval(pollNotifications, 60000);
 
-  HM.router.on('#/', function () { HM.doctorPanels.dashboard.render(panel()); });
+  HM.// Brief #22 — pre-assessment handoff for the doctor.
+  router.on('#/pre-assessment/:id', function (params) {
+    var el = document.getElementById('panel-container') || document.body;
+    el.innerHTML = '<div class="pav-host"></div>';
+    HM.preAssessmentView.render(el.querySelector('.pav-host'), params.id);
+  });
+  router.on('#/', function () { HM.doctorPanels.dashboard.render(panel()); });
   HM.router.on('#/queue', function () { HM.doctorPanels.queue.render(panel()); });
   HM.router.on('#/appointments', function () { HM.doctorPanels.appointments.render(panel()); });
   HM.router.on('#/appointments/:id', function (p) { HM.doctorPanels.appointments.renderDetail(panel(), p.id); });

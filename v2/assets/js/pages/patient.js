@@ -157,6 +157,20 @@
     HM.patientPanels.tongue.renderDetail(panel(), params.id);
   });
   router.on('#/wellness-assessment', function () {
+    // Brief #22 — redirect to the new pre-assessment flow.
+    location.hash = '#/pre-assessment';
+  });
+  router.on('#/pre-assessment', function () {
+    var host = panel();
+    host.innerHTML = '<div id="hm-pre-assessment-root"></div>';
+    HM.preAssessment.open(null);
+  });
+  router.on('#/pre-assessment/:appointmentId', function (params) {
+    var host = panel();
+    host.innerHTML = '<div id="hm-pre-assessment-root"></div>';
+    HM.preAssessment.open(params.appointmentId);
+  });
+  router.on('#/wellness-assessment-legacy', function () {
     HM.patientPanels.aiDiagnosis.render(panel());
   });
   router.on('#/wellness-assessment/:id', function (p) {
