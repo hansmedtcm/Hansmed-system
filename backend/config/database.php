@@ -20,6 +20,11 @@ return [
             'engine' => null,
             'options' => [
                 PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+                // Persistent connection: Octane workers reuse the same
+                // MySQL TCP socket across requests instead of doing a
+                // fresh TLS handshake + auth each call. Saves ~200-500ms
+                // per request when MySQL is on a separate Railway container.
+                PDO::ATTR_PERSISTENT => true,
             ],
         ],
     ],

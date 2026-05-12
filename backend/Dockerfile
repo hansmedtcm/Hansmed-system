@@ -92,7 +92,9 @@ EXPOSE ${PORT:-8080}
 # image didn't hit this because boot was slower. Retry up to 10 times
 # at 3-second intervals — covers any plausible MySQL startup window.
 #
-# --workers=auto lets FrankenPHP pick worker count from vCPU count.
+# --workers=16 overrides FrankenPHP's vCPU-based auto-detect.
+# 16 workers on 8 vCPU lets ~2 requests queue per core during DB I/O
+# waits — empirically better for I/O-bound Laravel + MySQL workloads.
 # --max-requests=500 cycles each worker after 500 requests as a
 # defensive measure against any long-tail memory leaks.
 CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/storage/app/public/medical-docs /app/storage/framework/cache/data /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs \
@@ -105,4 +107,4 @@ CMD mkdir -p /app/storage/app/public/tongue /app/storage/app/public/chat /app/st
     done; \
     php artisan config:cache; \
     php artisan db:seed --force; \
-    php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=auto --max-requests=500
+    php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=${PORT:-8080} --workers=16 --max-requests=500
