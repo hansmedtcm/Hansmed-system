@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Doctor;
 use App\Http\Controllers\Controller;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -40,6 +39,7 @@ class ConstitutionReviewController extends Controller
             ->leftJoin('users', 'users.id', '=', 'questionnaires.patient_id')
             ->leftJoin('patient_profiles', 'patient_profiles.user_id', '=', 'questionnaires.patient_id')
             ->orderByDesc('questionnaires.created_at')
+            // 2026-05-13 — tightened 200 → 50 for same reason as tongue queue.
             ->limit(50)
             ->get();
 
