@@ -23,7 +23,7 @@
     NOTIF_POLL_INTERVAL: 60000,
 
     // API request timeout (ms)
-    API_TIMEOUT: 15000,
+    API_TIMEOUT: 120000,
 
     // Default language
     DEFAULT_LANG: 'en',
