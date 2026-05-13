@@ -2655,4 +2655,25 @@ function openOrganDetailModal(key) {
     /* Mobile drawer link labeled 登入 Sign In — if walker wrapped it,
        its combined text is "Sign In · 登入". Replace both possibilities. */
     document.querySelectorAll('.mob-nl').forEach(function (el) {
-      var txt = (el.textContent 
+      var txt = (el.textContent || '').trim();
+      if (txt === 'Sign In · 登入' || txt === '登入 Sign In' || txt === 'Sign In' || txt === '登入') {
+        if (el.tagName === 'A') el.setAttribute('href', dest);
+        else el.setAttribute('onclick', "location.href='" + dest + "';closeMob();");
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySignInSwap);
+  } else {
+    applySignInSwap();
+  }
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'hm_user' || e.key === 'hm_token') applySignInSwap();
+  });
+})();
+</script>
+<script src="assets/js/about-dropdown.js"></script>
+<script src="assets/js/nav-auth.js"></script>
+<script src="assets/js/public-feature-flags.js"></script>
+</body>
+</html>
