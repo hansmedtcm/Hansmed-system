@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TongueAssessment;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Doctor Tongue Diagnosis review queue.
@@ -27,19 +28,28 @@ class TongueReviewController extends Controller
     public function index(Request $request)
     {
         $filter = $request->query('filter', 'pending');
-        // Brief #20 — drop email from patient User payload.
-        $q = TongueAssessment::query()
-            ->with(['patient:id,role', 'patient.patientProfile'])
-            ->orderByDesc('created_at');
-
-        if ($filter === 'pending') {
-            $q->where('review_status', 'pending')
-              ->whereIn('status', ['completed', 'uploaded']); // only reviewable ones
-        } elseif ($filter === 'mine') {
-            $q->where('reviewed_by', $request->user()->id);
-        } // 'all' → no extra filter
-
-        return response()->json(['data' => $q->limit(100)->get()]);
+        $userId = $request->user()->id;
+        // 30s cache per (filter, doctor) — first hit warms the slow
+        // ORDER BY created_at DESC scan, subsequent hits are instant.
+        // 30s is short enough that newly uploaded photos still show
+        // up on the next refresh.
+        $data = Cache::remember(
+            "doctor:{$userId}:tongue-reviews:{$filter}",
+            30,
+            function () use ($filter, $userId) {
+                $q = TongueAssessment::query()
+                    ->with(['patient:id,role', 'patient.patientProfile'])
+                    ->orderByDesc('created_at');
+                if ($filter === 'pending') {
+                    $q->where('review_status', 'pending')
+                      ->whereIn('status', ['completed', 'uploaded']);
+                } elseif ($filter === 'mine') {
+                    $q->where('reviewed_by', $userId);
+                }
+                return $q->limit(30)->get()->toArray();
+            }
+        );
+        return response()->json(['data' => $data]);
     }
 
     // GET /doctor/tongue-reviews/{id}
