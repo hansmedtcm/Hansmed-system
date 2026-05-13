@@ -12,6 +12,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust Railway's edge proxy. Without this, Laravel sees the
+        // container-internal request as plain HTTP (Railway terminates
+        // TLS at its edge and forwards plaintext to the container) and
+        // emits redirect Location headers with http:// — which the
+        // browser refuses to follow on a fetch/XHR. Symptom in the
+        // browser: login appears to "time out" silently. Trusting all
+        // proxies is fine here because the only ingress is Railway's
+        // edge; there's no other path into the container.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'registration.complete' => \App\Http\Middleware\EnsureRegistrationComplete::class,
