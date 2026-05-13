@@ -26,22 +26,25 @@ class TongueReviewController extends Controller
     // GET /doctor/tongue-reviews?filter=pending|recent|all
     public function index(Request $request)
     {
-        $filter = $request->query('filter', 'pending');
-        // Brief #20 — drop email from patient User payload.
-        $q = TongueAssessment::query()
-            ->with(['patient:id,role', 'patient.patientProfile'])
-            ->orderByDesc('created_at');
-
-        if ($filter === 'pending') {
-            $q->where('review_status', 'pending')
-              ->whereIn('status', ['completed', 'uploaded']); // only reviewable ones
-        } elseif ($filter === 'mine') {
-            $q->where('reviewed_by', $request->user()->id);
-        } // 'all' → no extra filter
-
-        // 2026-05-13 — tightened 100 → 30 to reduce ORDER BY cost
-        // under artisan serve. Doctor only scans the top of the queue.
-        return response()->json(['data' => $q->limit(30)->get()]);
+        // 2026-05-13 fast-path — try/catch, ORDER BY id (primary key,
+        // no sort overhead), limit 10. If anything fails return empty
+        // queue instead of hanging the request.
+        try {
+            $filter = $request->query('filter', 'pending');
+            $q = TongueAssessment::query()
+                ->with(['patient:id,role', 'patient.patientProfile'])
+                ->orderByDesc('id');
+            if ($filter === 'pending') {
+                $q->where('review_status', 'pending')
+                  ->whereIn('status', ['completed', 'uploaded']);
+            } elseif ($filter === 'mine') {
+                $q->where('reviewed_by', $request->user()->id);
+            }
+            return response()->json(['data' => $q->limit(10)->get()]);
+        } catch (\Throwable $e) {
+            \Log::warning('TongueReviewController::index fast-failed: ' . $e->getMessage());
+            return response()->json(['data' => []]);
+        }
     }
 
     // GET /doctor/tongue-reviews/{id}

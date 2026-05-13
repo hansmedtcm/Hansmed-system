@@ -38,9 +38,8 @@ class ConstitutionReviewController extends Controller
             )
             ->leftJoin('users', 'users.id', '=', 'questionnaires.patient_id')
             ->leftJoin('patient_profiles', 'patient_profiles.user_id', '=', 'questionnaires.patient_id')
-            ->orderByDesc('questionnaires.created_at')
-            // 2026-05-13 — tightened 200 → 50 for same reason as tongue queue.
-            ->limit(50)
+            ->orderByDesc('questionnaires.id') // id is primary key — fastest sort
+            ->limit(10) // 2026-05-13 — tightened to 10 for demo-day speed
             ->get();
 
         $me = $request->user()->id;
