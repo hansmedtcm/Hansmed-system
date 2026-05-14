@@ -429,6 +429,14 @@ Route::middleware('auth:sanctum')->group(function () {
         // Storage health — confirms whether uploads dir is persistent.
         Route::get ('/storage-health',             [\App\Http\Controllers\Admin\MigrationController::class, 'storageHealth']);
 
+        // ── Security · DANGER ZONE ──────────────────────────────────────
+        // Built 2026-05-14 (Day 1 of credential rotation cleanup). The
+        // revoke-all-tokens endpoint kills every Sanctum session in
+        // personal_access_tokens. Permanent infrastructure — used when a
+        // token leaks, a device is lost, or every active user must be
+        // force-logged-out at once. UI lives at admin portal #/security.
+        Route::post('/security/revoke-all-tokens', [\App\Http\Controllers\Admin\SecurityController::class, 'revokeAllTokens']);
+
         // Vouchers / discount codes
         Route::get   ('/vouchers',                       [\App\Http\Controllers\Admin\VoucherController::class, 'index']);
         Route::post  ('/vouchers',                       [\App\Http\Controllers\Admin\VoucherController::class, 'store']);

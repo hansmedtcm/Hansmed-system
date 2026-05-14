@@ -446,6 +446,10 @@
 
     auditLogs:      function (q) { return api.get('/admin/audit-logs' + (q ? '?' + q : '')); },
 
+    // Emergency security — revokes every Sanctum token in the platform.
+    // d = { confirm: 'REVOKE-ALL', exclude_self: true|false }
+    revokeAllTokens: function (d) { return api.post('/admin/security/revoke-all-tokens', d); },
+
     listContent:    function () { return api.get('/admin/content'); },
     getContent:     function (slug) { return api.get('/admin/content/' + slug); },
     saveContent:    function (d) { return api.post('/admin/content', d); },
