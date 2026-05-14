@@ -10,6 +10,6 @@
 .DS_Store
 Thumbs.db
 /mysql_data/
-.claude/worktrees/
+.claude/
 .design-pkg/
 v2/index.pre-v4-backup.html
