@@ -12,4 +12,5 @@ Thumbs.db
 /mysql_data/
 .claude/
 .design-pkg/
+_internal/
 v2/index.pre-v4-backup.html
