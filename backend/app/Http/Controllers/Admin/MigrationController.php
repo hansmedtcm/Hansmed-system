@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -13,6 +15,117 @@ use Illuminate\Support\Facades\Schema;
  */
 class MigrationController extends Controller
 {
+    /**
+     * Run all pending Laravel migrations via `php artisan migrate --force`.
+     *
+     * Built 2026-05-16 (post-breach Day 2 hardening) as a fallback for the
+     * primary Dockerfile-CMD-chained migrate. Use this when:
+     *   - A migration is shipped to the repo but the Dockerfile path
+     *     hasn't been redeployed yet, and you need the migration to run
+     *     against production NOW.
+     *   - A previous deploy's migrate failed and was manually marked
+     *     resolved; you want to retry without redeploying.
+     *   - Diagnostic: confirm which migrations are pending vs run.
+     *
+     * The audit pattern mirrors SecurityController::revokeAllTokens —
+     * intent row BEFORE, result row AFTER, failure row on exception.
+     * All audit writes outside any DB transaction so they cannot be
+     * elided by a rollback. Wrapped in try/catch so audit-table outages
+     * don't block the operation.
+     *
+     * Body:
+     *   confirm (string, required, must equal "RUN-MIGRATIONS")
+     *
+     * Returns JSON:
+     *   output    — captured stdout from artisan migrate
+     *   exit_code — 0 on success, non-zero on failure
+     *   message   — human-readable summary
+     */
+    public function runPendingMigrations(Request $request)
+    {
+        $request->validate([
+            'confirm' => ['required', 'string', 'in:RUN-MIGRATIONS'],
+        ]);
+
+        $admin = $request->user();
+        $ip = $request->ip();
+        $userAgent = substr((string) $request->userAgent(), 0, 255);
+
+        // ── Step 1: INTENT audit row ──
+        try {
+            DB::table('audit_logs')->insert([
+                'user_id'     => $admin ? $admin->id : null,
+                'action'      => 'security.migrate.initiated',
+                'target_type' => 'migrations',
+                'target_id'   => null,
+                'ip_address'  => $ip,
+                'user_agent'  => $userAgent,
+                'payload'     => json_encode([
+                    'command' => 'migrate --force',
+                ]),
+                'created_at'  => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('MigrationController::runPendingMigrations intent audit failed: ' . $e->getMessage());
+        }
+
+        // ── Step 2: run migrate ──
+        try {
+            $exitCode = Artisan::call('migrate', ['--force' => true]);
+            $output   = Artisan::output();
+        } catch (\Throwable $e) {
+            // Failure-audit row, then rethrow.
+            try {
+                DB::table('audit_logs')->insert([
+                    'user_id'     => $admin ? $admin->id : null,
+                    'action'      => 'security.migrate.failed',
+                    'target_type' => 'migrations',
+                    'target_id'   => null,
+                    'ip_address'  => $ip,
+                    'user_agent'  => $userAgent,
+                    'payload'     => json_encode([
+                        'error' => $e->getMessage(),
+                    ]),
+                    'created_at'  => now(),
+                ]);
+            } catch (\Throwable $auditErr) {
+                Log::warning('MigrationController::runPendingMigrations failure-audit insert failed: ' . $auditErr->getMessage());
+            }
+            return response()->json([
+                'exit_code' => 1,
+                'output'    => null,
+                'message'   => 'Migration command threw an exception: ' . $e->getMessage(),
+            ], 500);
+        }
+
+        // ── Step 3: RESULT audit row ──
+        try {
+            DB::table('audit_logs')->insert([
+                'user_id'     => $admin ? $admin->id : null,
+                'action'      => 'security.migrate.completed',
+                'target_type' => 'migrations',
+                'target_id'   => null,
+                'ip_address'  => $ip,
+                'user_agent'  => $userAgent,
+                'payload'     => json_encode([
+                    'exit_code'      => $exitCode,
+                    'output_excerpt' => substr($output, 0, 4000),
+                ]),
+                'created_at'  => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('MigrationController::runPendingMigrations result audit failed: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'exit_code' => $exitCode,
+            'output'    => $output,
+            'message'   => $exitCode === 0
+                ? 'Migrations completed successfully.'
+                : "Migrations exited with code {$exitCode}; inspect output.",
+        ]);
+    }
+
     /**
      * Storage health check — used after attaching a Railway Volume
      * to confirm uploads are landing on persistent disk. Reports:

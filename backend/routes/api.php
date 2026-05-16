@@ -426,6 +426,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/migrate/clear-tongue-orphans',  [\App\Http\Controllers\Admin\MigrationController::class, 'clearTongueOrphans']);
         Route::post('/migrate/medicine-catalog',   [\App\Http\Controllers\Admin\MedicineCatalogController::class, 'migrate']);
 
+        // Run all pending Laravel migrations (`php artisan migrate --force`).
+        // Built 2026-05-16 as a fallback when the Dockerfile-CMD-chained
+        // migrate path is unavailable (e.g. a deploy that didn't pick up
+        // a new migration, or you want to retry without a redeploy).
+        // Body: { "confirm": "RUN-MIGRATIONS" }. Audit-logged before/after/
+        // failure per the SecurityController pattern. Rate-limited because
+        // a runaway migrate-replay could lock the DB.
+        Route::post('/migrate/run-pending',        [\App\Http\Controllers\Admin\MigrationController::class, 'runPendingMigrations'])
+            ->middleware('throttle:3,60');
+
         // Storage health — confirms whether uploads dir is persistent.
         Route::get ('/storage-health',             [\App\Http\Controllers\Admin\MigrationController::class, 'storageHealth']);
 
