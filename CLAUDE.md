@@ -62,7 +62,7 @@
 
 **H3 — Non-ASCII content (Chinese characters, emojis) breaks naive edits.** Use surgical Edit with sufficient context, or Write to rewrite entire small files. Never use shell `sed`/`awk` on these files.
 
-**H4 — Audit before `git add -A`.** Repo root accumulates untracked items that should never be committed (backup files, internal directories). Always stage explicit file lists.
+**H4 — Audit before `git add -A`.** Repo root accumulates untracked items that should never be committed (backup files, internal directories). Always stage explicit file lists. Before any commit, run `git ls-files | grep -E '(-old\.|\.bak|\.pre-|\.local\.json$)'` — any match is a banned-pattern leak that must be resolved (move to `_internal/`, `git rm --cached`, or update `.gitignore`) before the commit lands.
 
 **H5 — Agent team pattern for high-stakes work.** Any change touching >2 files, security/auth, schema migrations, frontend path changes, or hosting config → spawn at minimum a `code-reviewer`-prompted `general-purpose` agent before commit. Target default: `Plan + Explore + code-reviewer` running in parallel for significant tasks.
 
@@ -78,6 +78,8 @@
 - **File truncation on Edit with non-ASCII content** — Files lose closing braces/tags mid-string. Restore from git if seen.
 - **Frontend cross-references between v2/ and v3/** — v3 imports from `../v2/assets/`. Will break when v3 is removed.
 - **Cache::* calls touching Redis** — see Hard Constraints rule 1.
+- **Revert cascade in git history** — `git log --oneline` of recent weeks shows multiple `Revert "..."` commits. Large or speculative changes get rolled back within days. Reinforces R3 (surgical) and H1 (Strangler Fig). If a change feels big enough to push as one commit, that's the signal to split it.
+- **Grep that misses `orWhere`** — searching `where\(['"]field['"]` is incomplete; Laravel also uses `orWhere`, `whereRaw`, `->when(...->where(...))`, and chained builder methods. Before claiming "zero WHERE-clause usage" on a field (matters before adding encryption casts, soft-delete scopes, etc.), grep wider: `grep -rn 'field_name' --include='*.php' app/` and inspect every hit.
 
 ---
 
