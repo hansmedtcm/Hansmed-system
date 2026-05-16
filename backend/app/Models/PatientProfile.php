@@ -25,6 +25,47 @@ class PatientProfile extends Model
         'height_cm'              => 'decimal:2',
         'weight_kg'              => 'decimal:2',
         'registration_completed' => 'boolean',
+
+        // ── Application-level encryption-at-rest for sensitive PHI ──
+        //
+        // Added 2026-05-16 (post-breach Day 2 hardening) to make the
+        // Privacy Policy v2 §5a/§7 "encryption at rest (AES-256)
+        // applied to all patient data" claim accurate at the
+        // application layer (it was previously only accurate at the
+        // Railway/GCP disk layer).
+        //
+        // The migration 2026_05_16_encrypt_patient_profile_phi.php
+        // widens these columns to TEXT and encrypts existing rows.
+        // Once that migration has run, every read returns the
+        // decrypted plaintext (via this cast) and every write
+        // encrypts (also via this cast).
+        //
+        // FIELDS NOT INCLUDED HERE (and why):
+        //   - phone: used in WHERE clauses (AuthController.php:92, :301
+        //     for collision detection + lookup). Encrypting would break
+        //     those queries silently. Future work: phone_hash column for
+        //     deterministic lookup + encrypted phone itself.
+        //   - ic_number: used in `orWhere ... LIKE %s%` clauses for
+        //     Admin/PatientController and Doctor/PatientListController
+        //     NRIC partial-match search. Encrypting would silently
+        //     break that search. Tracked as a separate task: add an
+        //     `ic_number_hash` column with deterministic hash for
+        //     lookup + encrypt the canonical `ic_number` value.
+        //   - full_name, nickname: used for display and admin search.
+        //   - gender, birth_date, height_cm, weight_kg, blood_type:
+        //     low-cardinality / structured data; encryption adds little
+        //     forensic value and may complicate analytics.
+        //   - city, state, postal_code, country: potentially needed for
+        //     geographic queries / analytics; deferred.
+        'address_line1'              => 'encrypted',
+        'address_line2'              => 'encrypted',
+        'emergency_contact_name'     => 'encrypted',
+        'emergency_contact_phone'    => 'encrypted',
+        'emergency_contact_relation' => 'encrypted',
+        'allergies'                  => 'encrypted',
+        'medical_history'            => 'encrypted',
+        'current_medications'        => 'encrypted',
+        'family_history'             => 'encrypted',
     ];
 
     /**
