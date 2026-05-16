@@ -435,7 +435,15 @@ Route::middleware('auth:sanctum')->group(function () {
         // personal_access_tokens. Permanent infrastructure — used when a
         // token leaks, a device is lost, or every active user must be
         // force-logged-out at once. UI lives at admin portal #/security.
-        Route::post('/security/revoke-all-tokens', [\App\Http\Controllers\Admin\SecurityController::class, 'revokeAllTokens']);
+        //
+        // Rate-limited 2026-05-16 (post-breach Day 2 hardening) per the
+        // Day 1 Security Researcher review. `throttle:3,60` = 3 hits per
+        // minute per resolved key (defaults to user id for authenticated
+        // routes). Legitimate emergency use needs 1 hit; this cap blocks
+        // a stolen-token spam-revoke DOS pattern against other admins
+        // while still leaving room for fat-finger retries.
+        Route::post('/security/revoke-all-tokens', [\App\Http\Controllers\Admin\SecurityController::class, 'revokeAllTokens'])
+            ->middleware('throttle:3,60');
 
         // Vouchers / discount codes
         Route::get   ('/vouchers',                       [\App\Http\Controllers\Admin\VoucherController::class, 'index']);
