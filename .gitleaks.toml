@@ -1,0 +1,93 @@
+# Gitleaks configuration for HansMed Modern TCM.
+#
+# Built 2026-05-16 (post-breach Day 2 hardening) per Breach Register
+# HM-BR-2026-001 §13 lesson-learned #2. Prevents recurrence of the
+# 2026-04-14 .claude/settings.local.json credential leak by failing
+# any commit that contains a known-secret pattern.
+#
+# Run manually before commit:
+#   gitleaks protect --staged --verbose
+# Or enable as a git pre-commit hook via the .githooks/pre-commit
+# script in this repo + `git config core.hooksPath .githooks`.
+
+title = "HansMed gitleaks config"
+
+# Extend gitleaks' built-in rule set (covers AWS keys, Stripe, GitHub
+# tokens, Slack tokens, generic API keys, private keys, etc.).
+[extend]
+useDefault = true
+
+# ── Custom rules for HansMed-specific secret formats ──
+
+[[rules]]
+id = "laravel-sanctum-token"
+description = "Laravel Sanctum personal access token (format: <id>|<40+ char secret>)"
+regex = '''\b\d{1,10}\|[A-Za-z0-9]{40,}\b'''
+keywords = ["|"]
+tags = ["sanctum", "laravel", "auth"]
+
+[[rules]]
+id = "hansmed-admin-password-explicit"
+description = "Catch the specific known-leaked admin password verbatim (defense in depth — should already be rotated)"
+regex = '''Admin@Hans1\b'''
+tags = ["hansmed", "credentials", "historical-leak"]
+
+[[rules]]
+id = "claude-settings-local"
+description = "AI-coding-assistant local settings file (the original 2026-04-14 leak vector)"
+path = '''\.claude/settings\.local\.json$'''
+tags = ["hansmed", "ai-tooling", "config"]
+
+[[rules]]
+id = "env-with-real-secret"
+description = "Catch .env files with actual values rather than <placeholder>/empty"
+path = '''\.env(\.|$)'''
+regex = '''(?i)(api[_-]?key|secret|password|token|credential)\s*=\s*[A-Za-z0-9_\-+/=]{12,}'''
+tags = ["env", "credentials"]
+
+# ── Allowlist: paths and patterns that are false positives ──
+
+[allowlist]
+description = "Paths and content that are known not to be secrets"
+
+paths = [
+    # Vendored deps
+    '''(^|/)vendor/''',
+    '''(^|/)node_modules/''',
+    # Build artefacts
+    '''(^|/)public/build/''',
+    '''(^|/)backend/storage/framework/''',
+    # Gitignored operational notes (defense in depth — these shouldn't
+    # appear in commits anyway; the .gitignore is the primary guard)
+    '''(^|/)_internal/''',
+    # Tongue images and other binary uploads
+    '''\.(png|jpg|jpeg|webp|gif|pdf|woff2?|ttf|eot|svg)$''',
+    # Lockfiles — long base64-like strings but not secrets
+    '''composer\.lock$''',
+    '''package-lock\.json$''',
+]
+
+regexes = [
+    # Common placeholder tokens used in docs and examples
+    '''<[A-Z_]+>''',
+    '''YOUR_[A-Z_]+_HERE''',
+    '''\bexample\.com\b''',
+    # The CLAUDE.md / breach-register references to the *now-revoked*
+    # historical token — they document it for audit purposes. Match
+    # the prefix only so future real tokens still trip the rule.
+    '''10\|1UxYnRE9RYWdHJiu1ome43oHr3zvzOcVFn3YU5ZH1f3466e7''',
+]
+
+# ── Commits that historically contain the known leak ──
+# These commits already contain the leaked credentials; gitleaks should
+# not re-flag them on every scan. The credentials are revoked, the
+# audit trail is in _internal/breach-register/HM-BR-2026-001.md, and
+# scrubbing the history is tracked as a separate remediation item.
+commits = [
+    # 2026-04-14 14:21:14 +0800 — first commit that introduced the leak
+    "712f825e",
+    # 2026-05-14 22:42:37 +0800 — partial gitignore + revoke command
+    "5afd1d8a",
+    # 2026-05-15 20:55:33 +0800 — full .claude/ gitignore (closes the leak)
+    "eaa4370",
+]

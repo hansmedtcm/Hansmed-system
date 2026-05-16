@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# HansMed pre-commit hook — runs gitleaks against the staged diff.
+#
+# Built 2026-05-16 (post-breach Day 2 hardening) per Breach Register
+# HM-BR-2026-001 §13 lesson-learned #2. Prevents recurrence of the
+# 2026-04-14 .claude/settings.local.json credential leak by refusing
+# any commit that contains a known-secret pattern (per .gitleaks.toml
+# rules at the repository root).
+#
+# To enable this hook after cloning:
+#   git config core.hooksPath .githooks
+#
+# To install gitleaks (Windows):
+#   1. Download the latest gitleaks_*_windows_x64.zip from
+#      https://github.com/gitleaks/gitleaks/releases
+#   2. Extract gitleaks.exe to a folder on your PATH (e.g. C:\Tools)
+#   3. Verify: gitleaks version
+#
+# To bypass this hook in an emergency (use with caution + audit):
+#   git commit --no-verify ...
+#
+# Exit code: 0 = clean, 1 = secret detected (commit blocked).
+
+set -e
+
+# Locate gitleaks. Prefer the binary on PATH; fall back to nothing
+# (warn the developer rather than silently skipping).
+if command -v gitleaks >/dev/null 2>&1; then
+    GITLEAKS_BIN="gitleaks"
+elif [ -x "/c/Tools/gitleaks.exe" ]; then
+    GITLEAKS_BIN="/c/Tools/gitleaks.exe"
+else
+    echo "[pre-commit] gitleaks not found on PATH."
+    echo "[pre-commit] Install gitleaks (https://github.com/gitleaks/gitleaks/releases)"
+    echo "[pre-commit] or run 'git commit --no-verify' to bypass this check."
+    echo "[pre-commit] Commit blocked for safety."
+    exit 1
+fi
+
+echo "[pre-commit] Running gitleaks against staged changes..."
+
+# `protect --staged` scans only the staged diff (cheap; ~milliseconds
+# even on large repos). `--redact` prevents the actual secret from
+# being echoed to the terminal if a match is found.
+if "$GITLEAKS_BIN" protect --staged --redact --verbose; then
+    echo "[pre-commit] OK — no secrets detected in staged changes."
+    exit 0
+else
+    echo ""
+    echo "[pre-commit] BLOCKED — gitleaks detected a possible secret in the staged diff."
+    echo "[pre-commit] Inspect the report above. If this is a true positive:"
+    echo "[pre-commit]   1. Remove the secret from your staged file."
+    echo "[pre-commit]   2. Re-stage (git add ...) and re-run the commit."
+    echo "[pre-commit] If this is a false positive:"
+    echo "[pre-commit]   1. Add an allowlist entry to .gitleaks.toml at the repo root."
+    echo "[pre-commit]   2. Re-stage .gitleaks.toml together with your change."
+    echo "[pre-commit] In a genuine emergency you can bypass with: git commit --no-verify"
+    echo "[pre-commit] (use of --no-verify is itself worth auditing later.)"
+    exit 1
+fi
