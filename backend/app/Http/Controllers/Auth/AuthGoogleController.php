@@ -75,7 +75,7 @@ class AuthGoogleController extends Controller
         } catch (\Throwable $e) {
             Log::warning('google_oauth_callback_failed', ['err' => $e->getMessage()]);
             return redirect($this->frontend()
-                . '/v2/index.html?google_error=auth_failed');
+                . '/index.html?google_error=auth_failed');
         }
 
         $googleId    = $google->getId();
@@ -160,7 +160,7 @@ class AuthGoogleController extends Controller
         // ── Block suspended/deleted accounts (mirrors AuthController::login) ──
         if ($user->status === 'suspended' || $user->status === 'deleted') {
             return redirect($this->frontend()
-                . '/v2/index.html?google_error=account_unavailable');
+                . '/index.html?google_error=account_unavailable');
         }
 
         // Mirror the existing login flow's last_login_at touch.
@@ -183,7 +183,7 @@ class AuthGoogleController extends Controller
         // exchange the code for a token. patient.js's requireAuth() at
         // the top of portal.html would otherwise bounce us to login
         // before the exchange runs.
-        return redirect($this->frontend() . '/v2/index.html#/google-exchange?code=' . $code);
+        return redirect($this->frontend() . '/index.html#/google-exchange?code=' . $code);
     }
 
     /**
