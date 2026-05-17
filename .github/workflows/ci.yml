@@ -1,0 +1,107 @@
+name: CI
+
+# Triggers on every push and PR — fast feedback for the small team.
+# PHP backend tests use sqlite in-memory; frontend JS gets a syntax check.
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+# Cancel earlier in-flight runs on the same branch when a new push lands.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Backend: PHPUnit on Laravel 11 / PHP 8.3
+  # ─────────────────────────────────────────────────────────────
+  backend-tests:
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.head_commit.modified, 'backend/') ||
+      contains(github.event.head_commit.added, 'backend/') ||
+      contains(github.event.head_commit.removed, 'backend/') ||
+      github.event_name == 'pull_request' ||
+      github.run_attempt > 1
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, openssl, pdo, sqlite, pdo_sqlite, tokenizer, bcmath
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            backend/vendor
+            ~/.cache/composer
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Composer install
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Generate APP_KEY (testing env reads from phpunit.xml; this is a sanity step)
+        run: php artisan key:generate --env=testing --show
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --testdox
+
+  # ─────────────────────────────────────────────────────────────
+  # Frontend: syntax check on every JS file under assets/
+  # No bundler — vanilla JS — so this is the lightest viable check.
+  # ─────────────────────────────────────────────────────────────
+  frontend-syntax:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: node --check every .js file in assets/ and v2/assets/
+        run: |
+          set -e
+          FAILED=0
+          # Glob both repo-root assets/ (post-migration) and v2/assets/ (pre-migration)
+          # so this CI works before and after the Monday 2026-05-18 migration.
+          for f in $(find assets v2/assets -name '*.js' 2>/dev/null); do
+            if ! node --check "$f"; then
+              echo "::error file=$f::JS syntax error"
+              FAILED=1
+            fi
+          done
+          [ "$FAILED" = 0 ]
+
+  # ─────────────────────────────────────────────────────────────
+  # gitleaks: catch any credential leak before it hits the public repo
+  # Backup to the pre-commit hook (.githooks/pre-commit) — defence in depth.
+  # ─────────────────────────────────────────────────────────────
+  gitleaks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
