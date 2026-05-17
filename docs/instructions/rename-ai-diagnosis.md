@@ -32,7 +32,7 @@ Use these strings exactly. Do not paraphrase.
 
 ## 2. Find / replace rules
 
-Apply to frontend only (`v2/**/*.html`, `v2/**/*.js`). Preserve case where possible.
+Apply to frontend only (`**/*.html`, `**/*.js`). Preserve case where possible.
 
 | Find (case-insensitive) | Replace with | Notes |
 |---|---|---|
@@ -68,21 +68,21 @@ Apply to frontend only (`v2/**/*.html`, `v2/**/*.js`). Preserve case where possi
 Apply rules above to these paths:
 
 ```
-v2/index.html
-v2/js/chat.js
-v2/js/video-consult.js
-v2/js/patient-extras.js
-v2/js/doctor-wire.js
-v2/js/portal-wire.js
-v2/js/admin-extras.js
-v2/js/checkout.js
-v2/js/pos.js
-v2/js/tongue-upload.js        (if present)
-v2/js/ai-diagnosis.js         (rename file contents; keep filename for now — filename change is out of scope)
-v2/services.html              (if present)
+index.html
+js/chat.js
+js/video-consult.js
+js/patient-extras.js
+js/doctor-wire.js
+js/portal-wire.js
+js/admin-extras.js
+js/checkout.js
+js/pos.js
+js/tongue-upload.js        (if present)
+js/ai-diagnosis.js         (rename file contents; keep filename for now — filename change is out of scope)
+services.html              (if present)
 ```
 
-Any other `v2/**/*.html` or `v2/**/*.js` with matches → include.
+Any other `**/*.html` or `**/*.js` with matches → include.
 
 ---
 
@@ -141,7 +141,7 @@ Note: anchor/URL stays `#ai-diagnosis` for now — URL rename is out of scope.
 Wire these into the language file (create if absent — even a simple JS object is fine for pilot).
 
 ```js
-// v2/js/i18n.js (or equivalent)
+// js/i18n.js (or equivalent)
 const translations = {
   en: {
     "feature.assessment.title": "TCM Wellness Assessment",
@@ -190,8 +190,8 @@ Backend is **out of scope** for this task, but:
 
 Before marking this task done, verify:
 
-- [ ] `grep -rE "AI[- ]?[Dd]iagnosis" v2/` returns zero hits
-- [ ] `grep -rE "Tongue [Dd]iagnosis" v2/` returns zero hits
+- [ ] `grep -rE "AI[- ]?[Dd]iagnosis" ` returns zero hits
+- [ ] `grep -rE "Tongue [Dd]iagnosis" ` returns zero hits
 - [ ] Feature page hero reads "TCM Wellness Assessment"
 - [ ] Nav label reads "Wellness Assessment"
 - [ ] Disclaimer renders above output, font ≥ 14px

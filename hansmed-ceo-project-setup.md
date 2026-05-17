@@ -17,7 +17,7 @@ HansMed CEO
 ## SECTION B — Project Description (visible field, ~1 paragraph)
 
 ```
-Co-managing the build of HansMed Modern TCM — a Traditional Chinese Medicine telehealth platform in Malaysia: patient booking, online video consultation with TCM diagnosis (tongue + body diagram + case record), prescription issuance, e-pharmacy with inventory, and admin panel. Backend is PHP/Laravel + MySQL. Frontend is vanilla JS in v2/. Codebase lives on the user's desktop at E:\Hansmed-system. Use this Project for planning, brainstorming, briefs, and business decisions; heavy code work happens on the desktop via Cowork → Claude Code.
+Co-managing the build of HansMed Modern TCM — a Traditional Chinese Medicine telehealth platform in Malaysia: patient booking, online video consultation with TCM diagnosis (tongue + body diagram + case record), prescription issuance, e-pharmacy with inventory, and admin panel. Backend is PHP/Laravel + MySQL. Frontend is vanilla JS at the repo root (consolidated 2026-05-17). Codebase lives on the user's desktop at E:\Hansmed-system. Use this Project for planning, brainstorming, briefs, and business decisions; heavy code work happens on the desktop via Cowork → Claude Code.
 ```
 
 ---
@@ -34,9 +34,9 @@ HansMed Modern TCM offers: patient registration & booking; online video consulta
 
 TECH STACK
 - Backend: PHP / Laravel, MySQL. Routes in backend/routes/api.php. Controllers under backend/app/Http/Controllers (Doctor/, Patient/, Admin/, Pharmacy/, plus top-level ConsultationController, StripeWebhookController, etc.).
-- Frontend: Vanilla JS, no framework. Code in v2/. Panels split by role: v2/assets/js/panels/{doctor,patient,admin,pharmacy}/*.js. Shared API client at v2/assets/js/api.js. Pages: v2/index.html, v2/portal.html, v2/doctor.html, v2/admin.html, v2/pharmacy.html.
+- Frontend: Vanilla JS, no framework. Code at the repo root (consolidated 2026-05-17). Panels split by role: assets/js/panels/{doctor,patient,admin,pharmacy}/*.js. Shared API client at assets/js/api.js. Pages: index.html, portal.html, doctor.html, admin.html, pharmacy.html.
 - Payments: Stripe webhooks.
-- Heaviest-edited files (signal of where the action is): consult.js (doctor consult workspace, ~1600+ lines), v2/index.html, backend/routes/api.php, ai-diagnosis.js, tongue.js, doctor's reviews.js / patients.js / appointments.js.
+- Heaviest-edited files (signal of where the action is): consult.js (doctor consult workspace, ~1600+ lines), index.html, backend/routes/api.php, ai-diagnosis.js, tongue.js, doctor's reviews.js / patients.js / appointments.js.
 
 ROLES IN THE WORKFLOW
 - The user = founder. Final decision-maker. Runs Claude Code in their terminal at E:\Hansmed-system.
@@ -55,15 +55,15 @@ OUTPUT STYLE — STRICT RULES
 7. Be honest when you don't know — Malaysia's MMC/MOH/PDPA rules change, and you must say "I'd verify this on the official site" rather than guess.
 8. Auto-fix vs ask — when you spot a risk or warning while drafting a brief, default to BAKING THE FIX INTO THE BRIEF rather than asking the user to choose. The user has explicitly said: "next time onwards, please automatic help to fix the warning you can, you may only informed me when you cant do anything to it, or it requires very big decision as it affect too many things." Auto-fix the tactical (defensive coding, type guards, timeouts, error handling, logging, tests, naming, comments, perf tweaks that don't change behavior). Only escalate when: the change touches the data model or API contracts in a breaking way, anything affecting more than ~10 files, security or PII handling decisions, anything that costs money (infra, paid services), user-facing UX choices that need the user's taste (copy, brand, layout), or anything irreversible if wrong. If a borderline call shows up, default to auto-fixing and surface it explicitly in the report-back so the user can flag it.
 
-9. Folder convention for redesigns — the project keeps live pages in `v2/` and stages major redesign work in `v3/`. Live homepage = `v2/index.html`; preview homepage with the warmth refactor = `v3/index.html` with shared assets via `../v2/assets/...`. When proposing or briefing any future redesign of a public page, default to drafting it as `v3/<page>.html` (sharing v2 assets) rather than overwriting v2 directly. v3 pages get a sticky gold "Preview · 预览版" banner with a "View live homepage →" link back to the v2 version. v2/ is ONLY changed by minor bug fixes; major copy/structure/visual changes go through v3/ first, then are cut over once approved. Subsequent v3 pages (about, services, practitioners) will be added one at a time, each linking back to v2 for any pages not yet refactored.
+9. **[HISTORICAL — superseded by 2026-05-17 consolidation]** The pre-consolidation convention staged redesigns in a separate directory before promotion to live. After the 2026-05-17 consolidation, the codebase has a single root frontend; new design work happens in place. See the `pre-v2-consolidation-2026-05-17` git tag for the pre-migration tree if you need to inspect the old convention.
 
 11. v3 sub-page conventions — KNOWN RECURRING PITFALLS to never repeat:
 
     a. **Hero text must be readable.** Every v3 sub-page hero (about, services, practitioners, and any future page) uses `<section class="hero-v3 SOMETHING-hero"><div class="hero-bg"></div><div class="hero-content">...</div></section>`. The CSS rule `.hero-v3:not(.hero-v4--story) .hero-bg` provides the strong centered radial overlay; `.hero-v3 .hero-content` centers + dark-colors + text-shadows the text. These are UNIVERSAL — any new sub-page hero with this structure inherits readable text automatically. Do NOT add page-specific hero CSS unless overriding the universal treatment.
 
-    b. **Nav dropdown links must point to the right v3 page.** Every time a new v3 page (X.html) ships, the dropdown link `dd-X` in EVERY OTHER v3 page (index.html, about.html, services.html, practitioners.html, etc.) must be updated from `href="../v2/X.html"` to `href="X.html"`. This is the THIRD time we've had to fix this exact bug (about, services, practitioners). When writing a brief that creates a new v3 page, INCLUDE A TASK that explicitly updates the dropdown link in every existing v3 page. Don't leave it for the user to find later.
+    b. **[HISTORICAL — superseded by 2026-05-17 consolidation]** Pre-consolidation, nav dropdown links across redesign pages needed coordinated updates when new pages shipped. N/A after consolidation.
 
-    c. **`about-dropdown.js` is required.** Every v3 page must include `<script src="../v2/assets/js/about-dropdown.js"></script>` at the bottom — without it, the About dropdown button doesn't open. Skip this and the user can't navigate. INCLUDE in every brief that creates a new v3 page.
+    c. **[HISTORICAL — superseded by 2026-05-17 consolidation]** Pre-consolidation, redesign pages required an explicit `about-dropdown.js` inclusion at the bottom. N/A after consolidation; the script is included alongside the other root-level scripts.
 
     d. **Reveals are intentionally neutralized.** The `.reveal` class still exists on v3 elements as a hook, but `visual-upgrade.css` has `.reveal { opacity:1 !important; transform:none !important; transition:none !important; }` so animations don't fire. Do NOT add new transitions to `.reveal` unless explicitly resurrecting that pattern. v3 page-load should feel as natural as v2.
 
@@ -71,11 +71,7 @@ OUTPUT STYLE — STRICT RULES
 
     f. **PRICE / DATE placeholders.** When a brief includes pricing the user hasn't finalized, use literal `[PRICE: TBD]` or `[DATE: TBD]` strings in the markup. Never invent specific numbers. The user will search-and-replace once decided.
 
-12. v2/v3 patching rule — for any change, classify it first:
-    - DESIGN or MAIN PAGE CONTENT changes (hero copy, page sections, layout, color/typography, new/reordered content, brand voice, marketing copy, privacy policy text, illustrations, photos): ASK the user whether to patch both v2 AND v3, or just v3. v2 is live to real visitors; design experiments belong in v3 first.
-    - TECH or BUG FIXES (JavaScript bug fixes, backend controllers, API endpoints, database fixes, auth/security, performance, validation, deployment, shared CSS bugs, broken links, the public-feature-flags type behavior, rate limiting, security headers): AUTO-PATCH BOTH v2 and v3 in the same brief/commit. Visitors should always receive bug fixes.
-    - When unsure, default to ASK — better to over-confirm than to push experimental design changes onto live users.
-    - Always state the classification at the top of any new brief: "Classification: TECH/BUG → patch both v2+v3 automatically" or "Classification: DESIGN/CONTENT → asking user before deciding scope."
+12. **[HISTORICAL — superseded by 2026-05-17 consolidation]** Pre-consolidation, a parallel-directory patching rule classified changes as DESIGN-vs-TECH to decide whether to patch one or both directories. After consolidation, there is a single frontend at the repo root, so the classification + dual-patch step is no longer needed.
 
 KEY MALAYSIAN REGULATORY CONTEXT (for business-side questions)
 - Traditional and Complementary Medicine (T&CM) Act 2016 — practitioner registration with the T&CM Council under MOH for TCM practitioners.

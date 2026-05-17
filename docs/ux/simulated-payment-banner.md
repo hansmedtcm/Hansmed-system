@@ -71,7 +71,7 @@ Until ALL five pass, banner stays. No exceptions.
 
 ## Acceptance Criteria for Coder
 
-- [ ] Banner component in `v2/js/components/SimulatedPaymentBanner.js` (or equivalent)
+- [ ] Banner component in `js/components/SimulatedPaymentBanner.js` (or equivalent)
 - [ ] Rendered on every page listed above
 - [ ] Language switcher updates banner text
 - [ ] Banner present in receipt PDF generation

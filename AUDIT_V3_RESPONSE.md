@@ -49,7 +49,7 @@ Migration lives at `backend/database/migrations_manual/2026_04_24_add_tcm_counci
 
 ### 3. Blog stub typo
 
-`v2/blog/tcm-treatment-types.html` said "tailored to each patient **is** constitution" — fixed to `patient's`.
+`blog/tcm-treatment-types.html` said "tailored to each patient **is** constitution" — fixed to `patient's`.
 
 ## Gaps that were already fixed in earlier sprints (v6 bugfix pass)
 
@@ -59,7 +59,7 @@ Already addressed before this audit arrived:
 - **Notification service strings** "tongue diagnosis" → "wellness assessment" in `NotificationService.php` (BUG-009)
 - **PDPA consent on contact form** (BUG-004)
 - **Explicit PDPA + AI-limitations consent on register modal** (BUG-016)
-- **Privacy Policy page** `v2/privacy-policy.html` — full 10-section bilingual PDPA-compliant policy (BUG-020)
+- **Privacy Policy page** `privacy-policy.html` — full 10-section bilingual PDPA-compliant policy (BUG-020)
 - **Unauth API returns 401, not 403** (BUG-011)
 - **`must_change_password` flag for admin-created accounts** (BUG-015)
 

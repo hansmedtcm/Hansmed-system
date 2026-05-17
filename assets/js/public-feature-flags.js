@@ -30,7 +30,7 @@
       'a[href="shop.html"]',
       'a[href^="shop.html"]',
       'a[href="./shop.html"]',
-      // Relative path used by pages in subfolders (e.g. /v2/blog/*).
+      // Relative path used by pages in subfolders (e.g. /blog/*).
       'a[href="../shop.html"]',
       'a[href$="/shop.html"]',
       '[onclick*="go(\'shop\')"]',

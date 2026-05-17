@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-04-21
 **Owner:** Compliance (coordinating Claude)
-**Applies to:** Frontend v2/ strings, backend API response messages, email templates, PDF outputs
+**Applies to:** Frontend  strings, backend API response messages, email templates, PDF outputs
 
 ## Purpose
 
@@ -64,13 +64,13 @@ Placement: directly above any AI-generated output block; minimum 14px body text;
 
 Coder should grep these paths and apply the rules above. Manual review required — do not blindly `sed` replace because some occurrences are in practitioner-authored contexts where "Prescription" / "Diagnosis" may be correct.
 
-- `v2/index.html`
-- `v2/services.html` (if present) or services section in index
-- `v2/js/patient-extras.js`
-- `v2/js/doctor-wire.js`
-- `v2/js/portal-wire.js`
-- `v2/js/chat.js`
-- `v2/js/video-consult.js`
+- `index.html`
+- `services.html` (if present) or services section in index
+- `js/patient-extras.js`
+- `js/doctor-wire.js`
+- `js/portal-wire.js`
+- `js/chat.js`
+- `js/video-consult.js`
 - `backend/app/Http/Controllers/**/*.php` — check API response `message` fields
 - `backend/resources/views/emails/**/*.blade.php` — if email templates exist
 - `backend/resources/lang/**/*.php` — if localization files exist

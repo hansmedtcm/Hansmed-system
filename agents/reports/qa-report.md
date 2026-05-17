@@ -10,7 +10,7 @@
 
 ## 1. Booking System (patient)
 
-**FEATURE TESTED:** Pool booking flow (`v2/assets/js/panels/patient/booking.js`)
+**FEATURE TESTED:** Pool booking flow (`assets/js/panels/patient/booking.js`)
 **RESULT:** PASS ✅ (with caveats)
 
 **What works:**
@@ -50,7 +50,7 @@
 - Prescription revise reverted — doctor re-enters consult, old Rx deleted, new one issued (supersede pattern), locked once a paid order exists.
 
 **ISSUES FOUND:**
-1. ⚠️ **Legacy consultation rows with `null` or string-shape `treatments`** previously crashed patient case record with "foreach not a function" — fixed with `Array.isArray` guards in `v2/assets/js/panels/doctor/patients.js`. Monitor for similar shapes in `case_record` / `body_marks`.
+1. ⚠️ **Legacy consultation rows with `null` or string-shape `treatments`** previously crashed patient case record with "foreach not a function" — fixed with `Array.isArray` guards in `assets/js/panels/doctor/patients.js`. Monitor for similar shapes in `case_record` / `body_marks`.
 2. ⚠️ **Synthesis panel doesn't re-render** if the doctor edits the patient's DOB mid-modal (edge case; unlikely in real flow).
 3. ⚠️ **Jitsi public instance caps unauthenticated rooms at ~5 min.** Mitigated by admin-configurable `jitsi_domain` + Google Meet provider switch, but if the clinic keeps `meet.jit.si` default the first doctor to join each day must sign in with Google to unlock moderator mode. Clinic process documentation needed.
 

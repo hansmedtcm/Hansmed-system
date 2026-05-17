@@ -28,10 +28,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 
 <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://hansmedtcm.com/v3/index.html">
+<meta property="og:url" content="https://hansmedtcm.com/index.html">
 <meta property="og:title" content="HansMed Modern TCM · 漢方現代中醫">
 <meta property="og:description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI wellness analysis, herbal prescriptions, pharmacy delivery.">
-<meta property="og:image" content="https://hansmedtcm.com/v3/assets/img/hero-bg.webp">
+<meta property="og:image" content="https://hansmedtcm.com/assets/img/hero-bg.webp">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="zh_TW">
 <meta property="og:site_name" content="HansMed Modern TCM">
@@ -40,7 +40,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="HansMed Modern TCM · 漢方現代中醫">
 <meta name="twitter:description" content="HansMed Modern TCM — Licensed Traditional Chinese Medicine telehealth platform in Malaysia. Book consultations, AI wellness analysis, herbal prescriptions, pharmacy delivery.">
-<meta name="twitter:image" content="https://hansmedtcm.com/v3/assets/img/hero-bg.webp">
+<meta name="twitter:image" content="https://hansmedtcm.com/assets/img/hero-bg.webp">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,17 +65,13 @@ html[lang="zh"] .hm-lang-sep { display: none; }
      into portal/admin/doctor pages. -->
 <link rel="stylesheet" href="assets/css/landing-v4.css">
 <link rel="stylesheet" href="assets/css/dropdown.css">
-<!-- Brief #8 — v3 visual upgrade (imagery, scroll reveals, parallax,
-     tilt, textures). v3-only; no v2 stylesheet was modified. -->
+<!-- Brief #8 — visual upgrade (imagery, scroll reveals, parallax,
+     tilt, textures). -->
 <link rel="stylesheet" href="assets/css/visual-upgrade.css">
 <!-- Preload the hero PNG so the LCP element paints immediately. -->
 <link rel="preload" as="image" href="assets/img/hero-bg.webp" fetchpriority="high">
 </head>
 <body class="landing-v4">
-<!-- (Preview banner removed 2026-05-03 at v3 cutover. v3 is now
-     the live site; v2 stays at /v2/ as backup. To re-enable a
-     preview banner here for a future redesign, restore the
-     #preview-banner block from git history.) -->
 <a href="#main" class="skip-link" style="position:absolute;left:-9999px;">Skip to main content</a>
 
 <!-- ══════════════ NAV ══════════════ -->
@@ -1807,9 +1803,6 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <script src="assets/js/i18n.js"></script>
 <script src="assets/js/lang-switcher.js"></script>
 <script src="assets/js/pages/landing.js?v=16-email-verify"></script>
-<!-- Bug-fix 2026-05-03: v3/index.html was missing about-dropdown.js,
-     so clicking the "About" nav button did nothing (toggleAboutMenu
-     undefined). Pulled in from v2 alongside the other shared scripts. -->
 <script src="assets/js/about-dropdown.js"></script>
 
 <!-- ══════════════ LANDING v4 INLINE BEHAVIOUR ══════════════ -->

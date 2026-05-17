@@ -57,7 +57,7 @@ So we grouped everything into this file and will plan a dedicated sprint.
 | Location | Current | Target |
 |---|---|---|
 | URL hash | `#/ai-diagnosis` | `#/wellness-assessment` |
-| JS file | `v2/assets/js/panels/patient/ai-diagnosis.js` | `v2/assets/js/panels/patient/wellness-assessment.js` |
+| JS file | `assets/js/panels/patient/ai-diagnosis.js` | `assets/js/panels/patient/wellness-assessment.js` |
 
 **Approach:** add a redirect layer in the hash router (e.g. `onhashchange`: if `#/ai-diagnosis`, rewrite to `#/wellness-assessment`). Keeps any bookmarked links working.
 

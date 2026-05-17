@@ -42,7 +42,7 @@ html[lang="zh"] [lang="en"] { display: none !important; }
 
 <style>
 /* ───── Article-specific styles (shared with the legacy hardcoded
-   /v2/blog/*.html files so the look stays consistent) ───── */
+   /blog/*.html files so the look stays consistent) ───── */
 :root{--art-ink:#241608;--art-mu:#7A6248;--art-go:#B5881A;--art-wd:#8C6340;--art-bg:#FAF7F2;--art-bg2:#F3EDE1;--art-bg3:#FEFCF8;--art-bdr:#D8C9AE;--art-bdrl:#EAE0CF;}
 .art-hero{background:var(--art-bg3);border-bottom:1px solid var(--art-bdrl);padding:64px 0 52px;}
 .art-hero::before{content:'';display:block;height:2.5px;background:linear-gradient(90deg,transparent,var(--art-go) 25%,var(--art-go) 75%,transparent);margin-bottom:52px;}
@@ -335,7 +335,7 @@ window.setLang = setLang;
    * Strip leftover legacy markup from body_html that this template
    * now provides itself — namely the .related "More from our
    * practitioners" block and the .back-link "← Back" anchor that
-   * the old hardcoded /v2/blog/*.html pages baked into their HTML.
+   * the old hardcoded /blog/*.html pages baked into their HTML.
    * Without this, posts seeded from those legacy pages would show
    * those sections twice (once from body_html, once from this
    * template's own related strip + back-link).

@@ -4,7 +4,7 @@
 **Date:** 2026-04-21
 **Frameworks audited:** Malaysia PDPA 2010, Medical Device Act 2012, Traditional & Complementary Medicine Act 2016, Consumer Protection Act 1999, Anthropic AUP
 
-**Inputs:** QA report at `agents/reports/qa-report.md`, full codebase read (v2/ frontend + backend/ Laravel).
+**Inputs:** QA report at `agents/reports/qa-report.md`, full codebase read ( frontend + backend/ Laravel).
 
 ---
 
@@ -16,7 +16,7 @@
 
 **ISSUES FOUND:**
 - The patient flow calls the AI output "**Tongue Diagnosis · 舌診**" and "**Constitution Report · 體質報告**" with a numeric `health_score`, coloured `col: red / yellow / green` pattern labels, and machine-identified `constitution.primary` (e.g. `yin_deficient`). Even with the doctor-review gate, the term "diagnosis" and a numeric health score place this close to, or inside, the MDA definition of a medical device (software intended for diagnosis).
-- Current framing in `v2/assets/js/panels/patient/ai-diagnosis.js` + `tongue.js` uses "diagnosis" as a page title and in the report header.
+- Current framing in `assets/js/panels/patient/ai-diagnosis.js` + `tongue.js` uses "diagnosis" as a page title and in the report header.
 
 **RECOMMENDED ACTION (must complete before public launch):**
 1. Rename every patient-facing instance of "diagnosis" → "wellness analysis" / "constitution insight" / "AI wellness report". Backend table name `tongue_diagnoses` can stay (internal) but every UI string must change.
@@ -37,7 +37,7 @@
 **REGULATION:** PDPA 2010 §6 (informed consent for each purpose).
 
 **ISSUES FOUND:**
-- Tongue photo upload (`v2/assets/js/panels/patient/tongue.js`) and constitution submission do not collect explicit consent before processing. Patient agrees to general T&Cs at registration but no per-activity consent timestamp is stored.
+- Tongue photo upload (`assets/js/panels/patient/tongue.js`) and constitution submission do not collect explicit consent before processing. Patient agrees to general T&Cs at registration but no per-activity consent timestamp is stored.
 - PDPA requires that consent be *informed* — patient must understand each distinct processing purpose.
 
 **RECOMMENDED ACTION:**
@@ -112,7 +112,7 @@
 **REGULATION:** Consumer Protection Act 1999 (prohibition on false advertising); T&CM Act 2016 Part V (advertising restrictions).
 
 **ISSUES FOUND:**
-- Existing copy in `v2/portal.html` + landing is clinically neutral: "wellness", "consultation", "licensed TCM practitioner". No therapeutic claims.
+- Existing copy in `portal.html` + landing is clinically neutral: "wellness", "consultation", "licensed TCM practitioner". No therapeutic claims.
 - Herb shop pages call products "herbal food supplements" — correct framing.
 - Consultation pages don't claim cure.
 - New marketing content generated in Step 5 of this orchestration passed compliance review (see `launch-content.md`).

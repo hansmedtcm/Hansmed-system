@@ -15,12 +15,12 @@
   HM.patientPanels = HM.patientPanels || {};
 
   // ── Brief #14a: dictionaries now live in the shared component
-  //     v2/assets/js/components/constitution-card.js. This file pulls
+  //     assets/js/components/constitution-card.js. This file pulls
   //     them back via the HM.constitutionCard namespace so all the
   //     existing references below (DIMS, QS, FOLLOW_UPS, HERB_MAP) keep
   //     working unchanged. NO behavior change for the patient.
   if (!window.HM || !HM.constitutionCard) {
-    console.error('[ai-diagnosis] HM.constitutionCard component is missing — load v2/assets/js/components/constitution-card.js before this file.');
+    console.error('[ai-diagnosis] HM.constitutionCard component is missing — load assets/js/components/constitution-card.js before this file.');
   }
   var DIMS       = (HM.constitutionCard && HM.constitutionCard.DIMS) || {};
   var QS         = (HM.constitutionCard && HM.constitutionCard.QS) || [];

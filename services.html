@@ -25,10 +25,10 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 
 <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://hansmedtcm.com/v3/services.html">
+<meta property="og:url" content="https://hansmedtcm.com/services.html">
 <meta property="og:title" content="Our Services · TCM consultations, AI Wellness, Herb Shop">
 <meta property="og:description" content="HansMed services — AI tongue analysis, video TCM consultations with licensed practitioners (RM 35 launch promo), prescription-linked herb shop. Pricing, FAQ, and how each works.">
-<meta property="og:image" content="https://hansmedtcm.com/v3/assets/img/hero-bg.webp">
+<meta property="og:image" content="https://hansmedtcm.com/assets/img/hero-bg.webp">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="zh_TW">
 <meta property="og:site_name" content="HansMed Modern TCM">
@@ -37,7 +37,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Our Services · TCM consultations, AI Wellness, Herb Shop">
 <meta name="twitter:description" content="HansMed services — AI tongue analysis, video TCM consultations with licensed practitioners (RM 35 launch promo), prescription-linked herb shop. Pricing, FAQ, and how each works.">
-<meta name="twitter:image" content="https://hansmedtcm.com/v3/assets/img/hero-bg.webp">
+<meta name="twitter:image" content="https://hansmedtcm.com/assets/img/hero-bg.webp">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,10 +61,6 @@ html[lang="zh"] .hm-lang-sep { display: none; }
 <link rel="preload" as="image" href="assets/img/hero-bg.webp" fetchpriority="high">
 </head>
 <body class="landing-v4">
-<!-- (Preview banner removed 2026-05-03 at v3 cutover. v3 is now
-     the live site; v2 stays at /v2/ as backup. To re-enable a
-     preview banner here for a future redesign, restore the
-     #preview-banner block from git history.) -->
 <a href="#main" class="skip-link" style="position:absolute;left:-9999px;">Skip to main content</a>
 
 <!-- ══════════════ NAV ══════════════ -->
@@ -684,8 +680,7 @@ html[lang="zh"] .hm-lang-sep { display: none; }
   });
 })();
 
-/* Mobile drawer + sign-in / logout helpers — match v3/about.html so
-   nav buttons work the same here. */
+/* Mobile drawer + sign-in / logout helpers — match about.html. */
 function toggleMob() {
   var menu = document.getElementById('mob-menu');
   var ham  = document.getElementById('ham');
@@ -722,7 +717,7 @@ function setLang(l) {
      (c) updates the body.lang-en / body.lang-zh class that the injected
      bilingual-toggle CSS depends on. Without this delegation, body class
      stays stale and EN/中 swap visually hides EVERYTHING. Mirrors
-     v3/index.html's setLang pattern. */
+     index.html's setLang pattern. */
   if (window.HM && HM.langSwitch && HM.langSwitch.set) {
     HM.langSwitch.set(l);
   } else {
@@ -740,8 +735,8 @@ function setLang(l) {
   });
 }
 
-/* ── Brief #21b: v3 subpage navigation routes.
-      Mirrors v3/index.html lines 1748-1764 so onclick="go('login')"
+/* ── Brief #21b: subpage navigation routes.
+      Mirrors index.html so onclick="go('login')"
       and onclick="go('book')" buttons work on subpages too.
       Subpage-specific tweaks vs index.html:
         - home  → navigate to index.html (subpages can't scroll-to-top
@@ -775,7 +770,7 @@ window.go = go;
       need a call to our local setLang() to reflect the stored
       preference. Without this, a user landing directly on this
       subpage with stored pref=zh sees Chinese content but EN
-      button highlighted. Mirrors v3/index.html lines 1812-1816. ── */
+      button highlighted. Mirrors index.html. ── */
 (function () {
   var stored = (window.HM && HM.langSwitch && HM.langSwitch.get) ? HM.langSwitch.get() : 'en';
   setLang(stored);
@@ -783,7 +778,7 @@ window.go = go;
 </script>
 
 <!-- Lenis smooth scroll — desktop only. Same guard pattern as
-     v3/index.html and v3/about.html. -->
+     index.html and about.html. -->
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.0.42/dist/lenis.min.js" defer></script>
 <script>
 (function () {

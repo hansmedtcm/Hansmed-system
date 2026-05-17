@@ -1,16 +1,10 @@
 /**
- * v2/assets/js/components/constitution-card.js
+ * assets/js/components/constitution-card.js
  *
  * Single source of truth for rendering TCM constitution data.
  * Used by:
- *   - v2/assets/js/panels/doctor/patients.js  (doctor view)
- *   - v2/assets/js/panels/patient/ai-diagnosis.js  (patient view)
- *
- * MIGRATION NOTE: This file currently lives in v2 because v2 is still
- * the live app. When v3 portal is built (future Brief #15+), move this
- * file to v3/assets/js/components/constitution-card.js and update the
- * <script src> tags in v2/doctor.html and v2/portal.html to point at
- * the new path. No code changes inside the component will be needed.
+ *   - assets/js/panels/doctor/patients.js  (doctor view)
+ *   - assets/js/panels/patient/ai-diagnosis.js  (patient view)
  *
  * Public API (all renderers return HTML strings):
  *   HM.constitutionCard.renderAnswers(symObj)        — q1-q10 with question text + answer label
@@ -55,7 +49,7 @@
     (document.head || document.documentElement).appendChild(style);
   })();
 
-  // === DICTIONARIES (moved verbatim from v2/assets/js/panels/patient/ai-diagnosis.js) ===
+  // === DICTIONARIES (moved verbatim from assets/js/panels/patient/ai-diagnosis.js) ===
 
   var DIMS = {
     qi_xu:     { enShort: 'Qi Level',          zhShort: '氣之盈虧', group: 'energy',   min: -2, max: 2, minLbl: '虧 Deficient',     maxLbl: '盈 Excess' },

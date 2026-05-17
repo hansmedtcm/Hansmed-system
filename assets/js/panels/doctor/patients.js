@@ -1284,7 +1284,7 @@
 
     // ── Constitution answers + dimensions + patterns + advice + tongue.
     //     Rendered via the shared HM.constitutionCard component
-    //     (v2/assets/js/components/constitution-card.js — see Brief #14a).
+    //     (assets/js/components/constitution-card.js — see Brief #14a).
     //     The component knows the q1-q10 question text, dimension labels,
     //     and herb/food/avoid mappings; previously this section dumped raw
     //     JSON because the doctor module couldn't reach those dictionaries
