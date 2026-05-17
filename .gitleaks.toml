@@ -76,6 +76,14 @@ regexes = [
     # historical token — they document it for audit purposes. Match
     # the prefix only so future real tokens still trip the rule.
     '''10\|1UxYnRE9RYWdHJiu1ome43oHr3zvzOcVFn3YU5ZH1f3466e7''',
+    # Cloudflare Web Analytics beacon token — public by design,
+    # embedded in client HTML per Cloudflare docs (data-cf-beacon
+    # attribute on <script src="beacon.min.js">). Same risk category
+    # as Sentry DSN / Stripe publishable key / OAuth client_id —
+    # designed to be served to visitors. Allowlist is scoped to the
+    # data-cf-beacon attribute context so any other 32-char hex
+    # string elsewhere in the tree still trips the rule.
+    '''data-cf-beacon=['"]\{["\s]*token["\s]*:\s*["][a-f0-9]{32}["]''',
 ]
 
 # ── Commits that historically contain the known leak ──
