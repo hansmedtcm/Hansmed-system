@@ -57,5 +57,18 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <!--
+            Force Sanctum out of stateful mode in tests. Without this,
+            Sanctum treats the default Laravel test domain 'localhost'
+            as stateful (it's in the default SANCTUM_STATEFUL_DOMAINS
+            list), which causes session-cookie bleed between requests
+            inside one test method. That bug was CI #18 — the doctor's
+            session cookie made the next Bearer-authed patient request
+            resolve as the doctor and 403 on role:patient. Empty value
+            here means "no stateful domains" — Sanctum falls through
+            to pure Bearer-header token auth, which is what the tests
+            (and the prod browser flow with cross-origin tokens) use.
+        -->
+        <env name="SANCTUM_STATEFUL_DOMAINS" value=""/>
     </php>
 </phpunit>
