@@ -9,8 +9,12 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- =========================================================
 -- 1. AUTH & PROFILES
 -- =========================================================
+-- users — reconciled with production 2026-05-18. Added google_id column
+-- (Brief #16f Google SSO — was applied to prod via the 2026_05_06 migration
+-- but never reflected back into schema.sql).
 CREATE TABLE users (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  google_id       VARCHAR(255) DEFAULT NULL,
   email           VARCHAR(190) NOT NULL UNIQUE,
   password_hash   VARCHAR(255) NOT NULL,
   role            ENUM('patient','doctor','pharmacy','admin') NOT NULL,
@@ -25,7 +29,8 @@ CREATE TABLE users (
   must_change_password TINYINT(1) NOT NULL DEFAULT 0,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY idx_users_role_status (role, status)
+  KEY idx_users_role_status (role, status),
+  KEY idx_users_google_id (google_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE personal_access_tokens (
@@ -42,17 +47,49 @@ CREATE TABLE personal_access_tokens (
   KEY idx_pat_tokenable (tokenable_type, tokenable_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- patient_profiles — reconciled with production 2026-05-18 via
+-- `SHOW CREATE TABLE patient_profiles` on Railway MySQL. Prior version
+-- of this CREATE TABLE was 22 columns behind production; the missing
+-- columns (notably `registration_completed`) were causing CI feature
+-- tests to fail because the EnsureRegistrationComplete middleware
+-- reads $profile->registration_completed and the test DB didn't have
+-- the column. PHI-bearing TEXT columns (address_*, emergency_*, etc.)
+-- are already encrypted-at-rest by the 2026_05_16 migration's
+-- application-layer `encrypted` casts on the model.
 CREATE TABLE patient_profiles (
-  user_id      BIGINT UNSIGNED PRIMARY KEY,
-  nickname     VARCHAR(80) NULL,
-  avatar_url   VARCHAR(500) NULL,
-  gender       ENUM('male','female','other') NULL,
-  birth_date   DATE NULL,
-  phone        VARCHAR(40) NULL,
-  height_cm    DECIMAL(5,2) NULL,
-  weight_kg    DECIMAL(5,2) NULL,
-  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  user_id                     BIGINT UNSIGNED NOT NULL,
+  registration_completed      TINYINT(1) NOT NULL DEFAULT 0,
+  nickname                    VARCHAR(80) DEFAULT NULL,
+  full_name                   VARCHAR(120) DEFAULT NULL,
+  avatar_url                  VARCHAR(500) DEFAULT NULL,
+  gender                      ENUM('male','female','other') DEFAULT NULL,
+  birth_date                  DATE DEFAULT NULL,
+  phone                       VARCHAR(40) DEFAULT NULL,
+  ic_number                   VARCHAR(40) DEFAULT NULL,
+  occupation                  VARCHAR(120) DEFAULT NULL,
+  address_line1               TEXT,
+  address_line2               TEXT,
+  city                        VARCHAR(80) DEFAULT NULL,
+  state                       VARCHAR(80) DEFAULT NULL,
+  postal_code                 VARCHAR(20) DEFAULT NULL,
+  country                     VARCHAR(80) DEFAULT NULL,
+  emergency_contact_name      TEXT,
+  emergency_contact_phone     TEXT,
+  emergency_contact_relation  TEXT,
+  blood_type                  VARCHAR(10) DEFAULT NULL,
+  allergies                   TEXT,
+  medical_history             TEXT,
+  current_medications         TEXT,
+  family_history              TEXT,
+  height_cm                   DECIMAL(5,2) DEFAULT NULL,
+  weight_kg                   DECIMAL(5,2) DEFAULT NULL,
+  created_at                  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at                  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  chronic_conditions          JSON DEFAULT NULL,
+  halal_only                  TINYINT(1) DEFAULT NULL,
+  pregnancy_status            ENUM('not_applicable','not_pregnant','pregnant_1st_tri','pregnant_2nd_tri','pregnant_3rd_tri','breastfeeding','trying_to_conceive') DEFAULT NULL,
+  pregnancy_status_updated_at DATETIME DEFAULT NULL,
+  PRIMARY KEY (user_id),
   CONSTRAINT fk_pp_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -80,6 +117,9 @@ CREATE TABLE doctor_profiles (
   consultation_count INT UNSIGNED NOT NULL DEFAULT 0,
   consultation_fee  DECIMAL(10,2) NOT NULL DEFAULT 0,
   accepting_appointments TINYINT(1) NOT NULL DEFAULT 1,
+  -- off_days: JSON array of dates the doctor is unavailable
+  -- (e.g. ["2026-06-01","2026-06-15"]). Reconciled with prod 2026-05-18.
+  off_days          JSON DEFAULT NULL,
   created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_dp_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -180,25 +220,37 @@ CREATE TABLE questionnaires (
 -- =========================================================
 -- 3. APPOINTMENTS & CONSULTATIONS
 -- =========================================================
+-- appointments — reconciled with production 2026-05-18. Added
+-- visit_type (online/in-person), is_pool (pool-booking flag), and the
+-- concern triad (concern, concern_label, recommended_specialty) used
+-- by the pool-booking flow when no specific doctor is selected.
+-- doctor_id now NULL so pool bookings can exist without a doctor
+-- (controller assigns one when the doctor accepts the case).
 CREATE TABLE appointments (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   patient_id      BIGINT UNSIGNED NOT NULL,
-  doctor_id       BIGINT UNSIGNED NOT NULL,
+  doctor_id       BIGINT UNSIGNED NULL,
   scheduled_start DATETIME NOT NULL,
   scheduled_end   DATETIME NOT NULL,
   status          ENUM('pending_payment','confirmed','in_progress','completed','cancelled','no_show') NOT NULL DEFAULT 'pending_payment',
+  visit_type      VARCHAR(20) NOT NULL DEFAULT 'online',
   fee             DECIMAL(10,2) NOT NULL,
   payment_id      BIGINT UNSIGNED NULL,
   tongue_assessment_id BIGINT UNSIGNED NULL,
   questionnaire_id BIGINT UNSIGNED NULL,
   notes           TEXT NULL,
+  concern         VARCHAR(60) NULL,
+  concern_label   VARCHAR(120) NULL,
+  recommended_specialty VARCHAR(120) NULL,
+  is_pool         TINYINT(1) NOT NULL DEFAULT 0,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_ap_patient FOREIGN KEY (patient_id) REFERENCES users(id),
   CONSTRAINT fk_ap_doctor  FOREIGN KEY (doctor_id)  REFERENCES users(id),
   KEY idx_ap_doctor_time (doctor_id, scheduled_start),
   KEY idx_ap_patient_time (patient_id, scheduled_start),
-  KEY idx_ap_status (status)
+  KEY idx_ap_status (status),
+  KEY idx_ap_pool (is_pool, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE consultations (
@@ -267,6 +319,11 @@ CREATE TABLE prescription_items (
 -- =========================================================
 -- Master TCM medicine catalogue (shared price list, not pharmacy-scoped).
 -- Seeded from Timing Herbs SDN. BHD. monthly price sheet (单方 + 复方).
+-- medicine_catalog — reconciled with production 2026-05-18. Added
+-- pack_grams, stock_grams, reorder_threshold, stock_updated_at —
+-- the inventory bookkeeping that the DoctorPrescriptionController
+-- stock-availability gate reads from. Without these columns, the
+-- stock check is undefined and the controller falls through.
 CREATE TABLE medicine_catalog (
   id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   code          VARCHAR(20) NOT NULL UNIQUE,          -- e.g. 5610 or B0206
@@ -275,7 +332,11 @@ CREATE TABLE medicine_catalog (
   type          ENUM('single','compound') NOT NULL,   -- 单方 / 复方
   category      VARCHAR(10) NULL,                     -- A / B / C (first letter of pinyin)
   unit          VARCHAR(20) NOT NULL DEFAULT 'per 100g',
+  pack_grams    DECIMAL(10,2) NOT NULL DEFAULT 100.00, -- grams per pack
   unit_price    DECIMAL(10,2) NULL,                   -- NULL = 询 (inquire)
+  stock_grams   DECIMAL(12,2) NOT NULL DEFAULT 0,     -- on-hand grams
+  reorder_threshold DECIMAL(12,2) NOT NULL DEFAULT 0,  -- low-stock alert level
+  stock_updated_at DATETIME NULL,
   source        VARCHAR(80) NOT NULL DEFAULT 'Timing Herbs',
   price_month   VARCHAR(20) NULL,                     -- e.g. 2026-03
   is_active     TINYINT(1) NOT NULL DEFAULT 1,
