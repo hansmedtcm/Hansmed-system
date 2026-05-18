@@ -568,3 +568,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/doctors/{id}/toggle', [DoctorManagementController::class, 'toggleStatus']);
     });
 });
+
+// ─── Error monitoring ────────────────────────────────────────────────────────
+// POST /api/errors — frontend JS error ingest. Public but rate-limited to
+// 30 hits/minute per IP to prevent flooding. No auth required (the JS snippet
+// runs before the user logs in). Fingerprinting deduplication is done
+// server-side in ErrorLogController and client-side in error-monitor.js.
+// PHI (NRIC / email / MY-phone) in `message`, `stack`, and `url` is
+// scrubbed by App\Support\PhiScrubber before the JSONL write.
+Route::middleware('throttle:30,1')
+    ->post('/errors', [\App\Http\Controllers\System\ErrorLogController::class, 'ingest']);
+
+// Two read paths for the error log, each behind its own auth:
+//
+//   GET /api/admin/system/errors  — admin dashboard (Sanctum + role:admin
+//     + 60/min throttle). The JS dashboard at
+//     assets/js/panels/admin/error-dashboard.js calls this.
+//
+//   GET /api/agent/errors         — IT agent machine-to-machine read.
+//     The 'agent.token' middleware checks HANSMED_AGENT_TOKEN via
+//     hash_equals; fail-closed if the env var is unset. 60/min throttle.
+//
+// Both reach the same ErrorLogController::index() method.
+Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])
+    ->get('/admin/system/errors', [\App\Http\Controllers\System\ErrorLogController::class, 'index']);
+
+Route::middleware(['agent.token', 'throttle:60,1'])
+    ->get('/agent/errors', [\App\Http\Controllers\System\ErrorLogController::class, 'index']);

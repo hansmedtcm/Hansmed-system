@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\PhiScrubber;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -26,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\EnsureRole::class,
             'registration.complete' => \App\Http\Middleware\EnsureRegistrationComplete::class,
             'permission' => \App\Http\Middleware\EnsurePermission::class,
+            // Machine-to-machine bearer auth for the in-house IT agent.
+            // See App\Http\Middleware\AgentTokenAuth for the contract.
+            'agent.token' => \App\Http\Middleware\AgentTokenAuth::class,
         ]);
         $middleware->statefulApi();
         // Defensive HTTP security headers on every API response —
@@ -74,5 +78,86 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => 'Unauthenticated.',
                 ], 401);
             }
+        });
+
+        // ERROR MONITOR — write structured JSONL for the IT agent and admin
+        // error dashboard. Skips expected HTTP noise (404, validation, auth,
+        // CSRF) and writes everything else to storage/logs/errors.jsonl.
+        // Format matches the ErrorEntry interface in error-log-tool.ts.
+        $exceptions->report(function (\Throwable $e) {
+            // Skip exceptions that are routine HTTP noise, not real bugs
+            $noiseClasses = [
+                \Illuminate\Auth\AuthenticationException::class,
+                \Illuminate\Auth\Access\AuthorizationException::class,
+                \Illuminate\Validation\ValidationException::class,
+                \Illuminate\Database\Eloquent\ModelNotFoundException::class,
+                \Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class,
+                \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException::class,
+                \Illuminate\Session\TokenMismatchException::class,
+            ];
+            foreach ($noiseClasses as $class) {
+                if ($e instanceof $class) {
+                    return false; // let Laravel handle normally, don't log
+                }
+            }
+
+            // Skip 4xx HTTP exceptions that weren't caught above
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                && $e->getStatusCode() < 500) {
+                return false;
+            }
+
+            // Determine severity level
+            $level = 'error';
+            $criticalKeywords = ['out of memory', 'maximum execution time', 'database connection'];
+            foreach ($criticalKeywords as $kw) {
+                if (stripos($e->getMessage(), $kw) !== false) {
+                    $level = 'critical';
+                    break;
+                }
+            }
+
+            $type        = get_class($e);
+            $file        = $e->getFile();
+            $line        = $e->getLine();
+            $fingerprint = hash('sha256', $type . '|' . $file . '|' . $line);
+
+            // PHI scrubbing — NRIC / email / MY-phone patterns can
+            // bleed into exception messages and stack traces (e.g.
+            // "Duplicate entry '950101-14-5678' for key
+            // users_ic_number_unique"). Scrub before write so the
+            // JSONL store and any downstream consumer (admin
+            // dashboard, IT agent) only sees redacted values.
+            $request    = request();
+            $requestUrl = $request ? PhiScrubber::scrub($request->fullUrl()) : null;
+            $userId     = $request && $request->user() ? $request->user()->id : null;
+
+            $entry = [
+                'id'          => (string) \Illuminate\Support\Str::uuid(),
+                'fingerprint' => $fingerprint,
+                'timestamp'   => now()->toIso8601String(),
+                'source'      => 'backend',
+                'level'       => $level,
+                'type'        => $type,
+                'message'     => PhiScrubber::scrub($e->getMessage()),
+                'file'        => $file,
+                'line'        => $line,
+                'stack'       => PhiScrubber::scrub(
+                                     collect(explode("\n", $e->getTraceAsString()))
+                                         ->take(10)
+                                         ->implode("\n")
+                                 ),
+                'url'         => $requestUrl,
+                'user_id'     => $userId,
+            ];
+
+            $logPath = storage_path('logs/errors.jsonl');
+            try {
+                file_put_contents($logPath, json_encode($entry) . "\n", FILE_APPEND | LOCK_EX);
+            } catch (\Throwable) {
+                // Never let error logging crash the app — silently absorb
+            }
+
+            return false; // still allow Laravel's default channel logging
         });
     })->create();
