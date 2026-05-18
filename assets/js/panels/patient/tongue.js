@@ -55,7 +55,7 @@
 
       // PDPA §6 consent block — must be ticked before we accept the
       // upload. Event is logged to audit_logs on submit.
-      '<div id="tongue-consent-box" style="background: var(--washi); padding: var(--s-3); border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: var(--s-4);">' +
+      '<div id="tongue-consent-box" style="background: var(--washi); padding: var(--s-3); border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: var(--s-3);">' +
         '<label style="display: flex; gap: var(--s-2); align-items: flex-start; cursor: pointer;">' +
           '<input type="checkbox" id="tongue-consent" style="margin-top: 4px; flex-shrink: 0; width: 16px; height: 16px;">' +
           '<div class="text-sm" style="line-height: 1.5;">' +
@@ -64,6 +64,24 @@
             '<br><span style="font-family: var(--font-zh);">' +
             '<strong>我同意將舌頭照片用於 TCM 健康分析，並由註冊中醫師審核。</strong>' +
             '照片安全儲存，僅用於此目的，可隨時於設定中要求刪除。' +
+            '</span>' +
+          '</div>' +
+        '</label>' +
+      '</div>' +
+
+      // AI training consent — separate, optional opt-in. Clearly distinct
+      // from the treatment consent above. Patient can tick neither, one, or
+      // both — the camera button only requires the first box.
+      '<div id="tongue-training-consent-box" style="background: rgba(74,144,184,0.06); padding: var(--s-3); border-radius: var(--r-sm); border-left: 3px solid #4a90b8; margin-bottom: var(--s-4);">' +
+        '<label style="display: flex; gap: var(--s-2); align-items: flex-start; cursor: pointer;">' +
+          '<input type="checkbox" id="tongue-training-consent" style="margin-top: 4px; flex-shrink: 0; width: 16px; height: 16px;">' +
+          '<div class="text-sm" style="line-height: 1.5;">' +
+            '<span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #4a90b8;">Optional · 可選</span><br>' +
+            '<strong>I also consent to my anonymised tongue image being used to improve HansMed\'s AI diagnostic accuracy.</strong> ' +
+            'Your name and personal details are never linked to training data. You may withdraw this consent any time from Settings — it does not affect your care. ' +
+            '<br><span style="font-family: var(--font-zh);">' +
+            '<strong>我另外同意將我的匿名舌診圖片用於改善 HansMed AI 診斷準確性。</strong>' +
+            '個人資料不會與訓練數據關聯。可隨時於設定中撤回，不影響您的診療服務。' +
             '</span>' +
           '</div>' +
         '</label>' +
@@ -80,10 +98,11 @@
       '<div class="text-label mb-3">Scan History · 舌診歷史記錄</div>' +
       '<div id="tongue-list"></div>';
 
-    // Gate the camera button on the consent checkbox so we never
-    // capture a photo without a recorded consent event.
-    var consentEl = document.getElementById('tongue-consent');
-    var openBtn = document.getElementById('tongue-open');
+    // Gate the camera button on the treatment consent checkbox — the AI
+    // training checkbox is separate and optional (does not block upload).
+    var consentEl  = document.getElementById('tongue-consent');
+    var trainingEl = document.getElementById('tongue-training-consent');
+    var openBtn    = document.getElementById('tongue-open');
     consentEl.addEventListener('change', function () {
       openBtn.disabled = ! consentEl.checked;
     });
@@ -92,22 +111,23 @@
         HM.ui.toast('Please tick the consent box first. · 請先勾選同意方塊。', 'warning');
         return;
       }
-      // Log consent once per session — prevents spamming the audit
-      // table if the user retakes multiple photos in one visit.
+      // Log treatment consent once per session — prevents spamming the
+      // audit table if the user retakes multiple photos in one visit.
       if (! window.__hmTongueConsentLogged) {
         try {
           await HM.api.recordConsent('consent.tongue_analysis');
           window.__hmTongueConsentLogged = true;
         } catch (_) {}
       }
+      var aiTraining = trainingEl ? trainingEl.checked : false;
       HM.tongueCapture.open({
-        onCapture: function (file) { handleUpload(file); },
+        onCapture: function (file) { handleUpload(file, { aiTraining: aiTraining }); },
       });
     });
     await loadHistory();
   }
 
-  async function handleUpload(file) {
+  async function handleUpload(file, opts) {
     if (!file) return;
 
     var box = document.getElementById('tongue-analyzing');
@@ -125,7 +145,7 @@
     reader.readAsDataURL(file);
 
     try {
-      var res = await HM.api.patient.uploadTongue(file);
+      var res = await HM.api.patient.uploadTongue(file, opts);
       var diag = res.diagnosis;
       // Backend now returns the completed diagnosis directly (sync analysis).
       // Skip the poll when we already have a terminal status.

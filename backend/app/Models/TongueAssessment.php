@@ -26,6 +26,7 @@ class TongueAssessment extends Model
         'review_status', 'doctor_comment', 'reviewed_by', 'reviewed_at',
         'medicine_suggestions',
         'r2_key', 'consent_text', 'consented_at',
+        'ai_training_consent',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class TongueAssessment extends Model
         'cracks'               => 'boolean',
         'reviewed_at'          => 'datetime',
         'consented_at'         => 'datetime',
+        'ai_training_consent'  => 'boolean',
     ];
 
     public function patient()  { return $this->belongsTo(User::class, 'patient_id'); }

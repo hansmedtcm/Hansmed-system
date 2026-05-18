@@ -316,7 +316,13 @@ class TongueAssessmentController extends Controller
             // Optional in this brief — Phase 8 makes it required and
             // wires the consent UI. We capture it now so any early
             // adopter testers who do tick a checkbox have it stored.
-            'consent_text' => ['nullable', 'string', 'max:2000'],
+            'consent_text'        => ['nullable', 'string', 'max:2000'],
+            // AI training consent — separate opt-in. Patient may consent
+            // to treatment analysis (consent_text) but decline training.
+            // Stored per-assessment so revocation of a later consent_grant
+            // does not retroactively alter historical records; the column
+            // reflects the patient's intent at upload time.
+            'ai_training_consent' => ['nullable', 'boolean'],
         ]);
 
         $patient = $request->user();
@@ -340,12 +346,13 @@ class TongueAssessmentController extends Controller
         $r2Key = sprintf('tongue/%d/%s.%s', $patient->id, (string) Str::uuid(), $ext);
 
         $assessment = TongueAssessment::create([
-            'patient_id'   => $patient->id,
-            'image_url'    => 'r2://pending',     // overwritten in completeUpload
-            'r2_key'       => $r2Key,
-            'status'       => 'uploaded',         // see comment above re: enum reuse
-            'consent_text' => $data['consent_text'] ?? null,
-            'consented_at' => isset($data['consent_text']) ? now() : null,
+            'patient_id'          => $patient->id,
+            'image_url'           => 'r2://pending',     // overwritten in completeUpload
+            'r2_key'              => $r2Key,
+            'status'              => 'uploaded',         // see comment above re: enum reuse
+            'consent_text'        => $data['consent_text'] ?? null,
+            'consented_at'        => isset($data['consent_text']) ? now() : null,
+            'ai_training_consent' => (bool) ($data['ai_training_consent'] ?? false),
         ]);
 
         // Build the presigned URL. We go through Storage::disk('r2')->getClient()

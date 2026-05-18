@@ -195,7 +195,7 @@
     listDiagnoses: function (page) { return api.get('/patient/tongue-assessments?page=' + (page || 1)); },
     getDiagnosis:  function (id) { return api.get('/patient/tongue-assessments/' + id); },
     deleteDiagnosis: function (id) { return api.delete('/patient/tongue-assessments/' + id); },
-    uploadTongue: async function (file) {
+    uploadTongue: async function (file, opts) {
       // Brief 1A Phase 6 — direct browser-to-R2 upload.
       // Three steps: (1) ask backend for a presigned R2 PUT URL,
       // (2) PUT the image bytes directly to R2 (bypasses Railway entirely),
@@ -227,10 +227,11 @@
       // Step 1 — request presigned URL. 10s timeout because the backend
       // does a tiny DB insert + a few crypto ops.
       var sign = await api.post('/patient/tongue-assessments/start-upload', {
-        filename:  file.name,
-        file_size: file.size,
+        filename:             file.name,
+        file_size:            file.size,
         // consent_text omitted in Phase 6 — Phase 8 wires the consent UI.
         // Backend column is nullable; it'll just store NULL for these uploads.
+        ai_training_consent:  (opts && opts.aiTraining) ? true : false,
       }, { timeout: 10000 });
 
       if (!sign || !sign.upload_url || !sign.assessment_id) {

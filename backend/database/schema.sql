@@ -139,6 +139,10 @@ CREATE TABLE tongue_assessments (
   -- captured verbatim at upload time. Consented_at marks when ticked.
   consent_text    TEXT NULL,
   consented_at    TIMESTAMP NULL,
+  -- Separate opt-in for AI model training dataset (PDPA — distinct purpose
+  -- from treatment consent above). 0 = not consented / legacy rows.
+  -- Stored per-assessment so we know exactly which images are training-eligible.
+  ai_training_consent TINYINT(1) NOT NULL DEFAULT 0,
   thumbnail_url   VARCHAR(500) NULL,
   third_party_request_id VARCHAR(120) NULL,
   status          ENUM('uploaded','processing','completed','failed') NOT NULL DEFAULT 'uploaded',
