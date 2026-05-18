@@ -196,13 +196,27 @@ CREATE TABLE tongue_assessments (
   raw_response    JSON NULL,
   constitution_report JSON NULL,
   health_score    SMALLINT NULL,
+  -- Practitioner review (Brief #20 — MDA 2012 §6 makes a licensed
+  -- practitioner the only entity that may diagnose, so the patient-
+  -- facing constitution_report is treated as "AI-assisted assessment"
+  -- until a doctor sets review_status = approved). doctor_comment is
+  -- the practitioner's free-text annotation. reviewed_by + reviewed_at
+  -- record audit trail. medicine_suggestions is the practitioner's
+  -- recommended herbs (separate from the AI's constitution_report).
+  review_status        VARCHAR(20) NOT NULL DEFAULT 'pending',
+  doctor_comment       TEXT NULL,
+  reviewed_by          BIGINT UNSIGNED NULL,
+  reviewed_at          DATETIME NULL,
+  medicine_suggestions JSON NULL,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   -- Brief 1A Phase 2 — SoftDeletes for PDPA right-of-erasure flow.
   deleted_at      TIMESTAMP NULL,
-  CONSTRAINT fk_ta_patient FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ta_patient  FOREIGN KEY (patient_id)  REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ta_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
   KEY idx_ta_patient_created (patient_id, created_at),
-  KEY idx_ta_r2_key (r2_key)
+  KEY idx_ta_r2_key (r2_key),
+  KEY idx_ta_review_status (review_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE questionnaires (
@@ -253,6 +267,10 @@ CREATE TABLE appointments (
   KEY idx_ap_pool (is_pool, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- consultations — reconciled with production 2026-05-19. Added
+-- case_record + treatments JSON columns the doctor-side consult UI
+-- writes after the call (structured case summary + recommended
+-- treatment plan, distinct from the freeform doctor_notes above).
 CREATE TABLE consultations (
   id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   appointment_id  BIGINT UNSIGNED NOT NULL UNIQUE,
@@ -262,6 +280,8 @@ CREATE TABLE consultations (
   duration_seconds INT UNSIGNED NULL,
   transcript      MEDIUMTEXT NULL,
   doctor_notes    TEXT NULL,
+  case_record     JSON NULL,
+  treatments      JSON NULL,
   CONSTRAINT fk_co_ap FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -685,5 +705,246 @@ CREATE TABLE email_verification_codes (
   created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =========================================================
+-- DAY 7 SCHEMA DRIFT PHASE 2 — 10 tables reconciled with prod
+-- =========================================================
+-- All 10 below existed in production but were missing from schema.sql.
+-- DDL captured 2026-05-19 from Railway MySQL via `SHOW CREATE TABLE`
+-- (Chrome MCP + DevTools innerText scrape, same workflow as Day 6).
+-- Collations are PRESERVED per-table: tables created by Laravel
+-- migrations use `utf8mb4_unicode_ci` (the Laravel default), tables
+-- created by the original schema.sql use `utf8mb4_0900_ai_ci` (the
+-- MySQL 8 default). Mixing per-table is intentional — preserves
+-- byte-equivalence with prod for future mysqldump diffs.
+
+-- ─── Laravel framework defaults ───────────────────────────────────────────
+-- migrations: Laravel's migration tracker. Auto-created by the first
+-- `php artisan migrate` run. Listed here so a fresh schema.sql load
+-- leaves the test DB in the same shape as a freshly-deployed prod.
+CREATE TABLE migrations (
+  id        INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  migration VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  batch     INT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- password_resets: Laravel default password-reset token store. Only
+-- used by older flows; the modern flow uses email_verification_codes.
+-- Kept because production has it.
+CREATE TABLE password_resets (
+  email      VARCHAR(190) NOT NULL,
+  token      VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ─── Patient-doctor messaging (Brief C-14) ────────────────────────────────
+-- chat_threads: per-(patient, doctor) conversation. Optional
+-- appointment_id links the thread to a specific consultation. Status
+-- closes when either side ends the thread.
+CREATE TABLE chat_threads (
+  id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  patient_id      BIGINT UNSIGNED NOT NULL,
+  doctor_id       BIGINT UNSIGNED NOT NULL,
+  appointment_id  BIGINT UNSIGNED DEFAULT NULL,
+  status          ENUM('active','closed') NOT NULL DEFAULT 'active',
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_ct_patient (patient_id),
+  KEY idx_ct_doctor (doctor_id),
+  CONSTRAINT fk_ct_patient FOREIGN KEY (patient_id) REFERENCES users (id),
+  CONSTRAINT fk_ct_doctor  FOREIGN KEY (doctor_id)  REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- chat_messages: individual messages inside a thread. read_at NULL
+-- until the other party views the message. image_url for chat-attached
+-- images (patient sending a photo of a rash, etc.).
+CREATE TABLE chat_messages (
+  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  thread_id  BIGINT UNSIGNED NOT NULL,
+  sender_id  BIGINT UNSIGNED NOT NULL,
+  message    TEXT NOT NULL,
+  image_url  VARCHAR(500) DEFAULT NULL,
+  read_at    DATETIME DEFAULT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY fk_cm_sender (sender_id),
+  KEY idx_cm_thread_created (thread_id, created_at),
+  CONSTRAINT fk_cm_thread  FOREIGN KEY (thread_id) REFERENCES chat_threads (id) ON DELETE CASCADE,
+  CONSTRAINT fk_cm_sender  FOREIGN KEY (sender_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ─── Pharmacy operations ──────────────────────────────────────────────────
+-- medicine_purchases: pharmacy purchase order ledger. Tracks supplier
+-- invoices feeding stock into medicine_catalog.stock_grams.
+CREATE TABLE medicine_purchases (
+  id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  medicine_id         BIGINT UNSIGNED NOT NULL,
+  invoice_no          VARCHAR(80) DEFAULT NULL,
+  supplier_name       VARCHAR(160) NOT NULL,
+  purchase_date       DATE NOT NULL,
+  quantity_grams      DECIMAL(12,2) NOT NULL,
+  pack_grams          DECIMAL(10,2) DEFAULT NULL,
+  pack_count          DECIMAL(10,2) DEFAULT NULL,
+  total_cost          DECIMAL(12,2) DEFAULT NULL,
+  unit_cost_per_gram  DECIMAL(12,4) DEFAULT NULL,
+  notes               TEXT,
+  created_by          BIGINT UNSIGNED DEFAULT NULL,
+  created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_mp_med (medicine_id, purchase_date),
+  KEY idx_mp_inv (invoice_no),
+  KEY idx_mp_sup (supplier_name),
+  CONSTRAINT fk_mp_med FOREIGN KEY (medicine_id) REFERENCES medicine_catalog (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- pos_sales: pharmacy point-of-sale walk-in / OTC / prescription
+-- counter sales. items is a JSON array of line-items (drug_name,
+-- quantity, unit_price). Separate from `orders` which handles online
+-- order flow; pos_sales is for physical-counter transactions.
+CREATE TABLE pos_sales (
+  id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  sale_no         VARCHAR(40) NOT NULL,
+  pharmacy_id     BIGINT UNSIGNED NOT NULL,
+  cashier_id      BIGINT UNSIGNED NOT NULL,
+  patient_name    VARCHAR(120) DEFAULT NULL,
+  patient_id      BIGINT UNSIGNED DEFAULT NULL,
+  prescription_id BIGINT UNSIGNED DEFAULT NULL,
+  sale_type       ENUM('walk_in','otc','prescription') NOT NULL DEFAULT 'walk_in',
+  payment_method  ENUM('cash','card','ewallet_tng','ewallet_grab','ewallet_shopee','fpx') NOT NULL,
+  subtotal        DECIMAL(10,2) NOT NULL,
+  tax             DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+  total           DECIMAL(10,2) NOT NULL,
+  amount_received DECIMAL(10,2) NOT NULL,
+  change_amount   DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+  notes           VARCHAR(500) DEFAULT NULL,
+  items           JSON NOT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY sale_no (sale_no),
+  KEY idx_pos_pharm_date (pharmacy_id, created_at),
+  CONSTRAINT fk_pos_pharm FOREIGN KEY (pharmacy_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ─── Marketing / promotions ───────────────────────────────────────────────
+-- vouchers: discount codes. applies_to limits the eligible context;
+-- max_redemptions / per_user_limit cap usage. valid_until enforces
+-- expiry.
+CREATE TABLE vouchers (
+  id                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  code              VARCHAR(40) NOT NULL,
+  description       VARCHAR(255) DEFAULT NULL,
+  discount_pct      DECIMAL(5,2) NOT NULL,
+  max_redemptions   INT UNSIGNED DEFAULT NULL,
+  per_user_limit    SMALLINT UNSIGNED DEFAULT '1',
+  redemption_count  INT UNSIGNED NOT NULL DEFAULT '0',
+  valid_from        DATE DEFAULT NULL,
+  valid_until       DATE DEFAULT NULL,
+  applies_to        ENUM('all','appointment','order') NOT NULL DEFAULT 'all',
+  is_active         TINYINT(1) NOT NULL DEFAULT '1',
+  created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY code (code),
+  KEY idx_v_code (code),
+  KEY idx_v_active (is_active, valid_until)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- voucher_redemptions: audit row per redemption. ref_type / ref_id
+-- point at the appointment or order the discount was applied to.
+CREATE TABLE voucher_redemptions (
+  id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  voucher_id      BIGINT UNSIGNED NOT NULL,
+  user_id         BIGINT UNSIGNED NOT NULL,
+  ref_type        VARCHAR(32) DEFAULT NULL,
+  ref_id          BIGINT UNSIGNED DEFAULT NULL,
+  discount_amount DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+  redeemed_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY fk_vr_user (user_id),
+  KEY idx_vr_voucher_user (voucher_id, user_id),
+  KEY idx_vr_voucher_when (voucher_id, redeemed_at),
+  CONSTRAINT fk_vr_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers (id) ON DELETE CASCADE,
+  CONSTRAINT fk_vr_user    FOREIGN KEY (user_id)    REFERENCES users    (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ─── Clinical workflow (Phase 9.5) ────────────────────────────────────────
+-- pre_assessments: structured pre-consultation intake. The patient
+-- (or the AI assist) populates Western history + TCM screening JSON
+-- blobs; the doctor reviews and either confirms / amends / overrides.
+-- Migration-created table — uses utf8mb4_unicode_ci collation per
+-- Laravel default.
+CREATE TABLE pre_assessments (
+  id                       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  appointment_id           BIGINT UNSIGNED DEFAULT NULL,
+  patient_id               BIGINT UNSIGNED NOT NULL,
+  tongue_assessment_id     BIGINT UNSIGNED DEFAULT NULL,
+  chief_complaint          TEXT COLLATE utf8mb4_unicode_ci NOT NULL,
+  symptom_timeline         TEXT COLLATE utf8mb4_unicode_ci,
+  western_history_answers  JSON DEFAULT NULL,
+  clinical_assist_output   JSON DEFAULT NULL,
+  vitals                   JSON DEFAULT NULL,
+  tcm_top_patterns         JSON DEFAULT NULL,
+  tcm_selected_questions   JSON DEFAULT NULL,
+  tcm_answers              JSON DEFAULT NULL,
+  safety_screen_answers    JSON DEFAULT NULL,
+  red_flags_detected       JSON DEFAULT NULL,
+  suggested_treatments     JSON DEFAULT NULL,
+  doctor_decision          ENUM('pending','confirmed','amended','overridden') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  doctor_decision_notes    TEXT COLLATE utf8mb4_unicode_ci,
+  doctor_decided_by        BIGINT UNSIGNED DEFAULT NULL,
+  doctor_decided_at        DATETIME DEFAULT NULL,
+  status                   ENUM('in_progress','complete','abandoned') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'in_progress',
+  completed_at             DATETIME DEFAULT NULL,
+  current_stage            TINYINT UNSIGNED NOT NULL DEFAULT '1',
+  created_at               TIMESTAMP NULL DEFAULT NULL,
+  updated_at               TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_pa_patient_status (patient_id, status),
+  KEY idx_pa_appointment (appointment_id),
+  KEY pre_assessments_tongue_assessment_id_foreign (tongue_assessment_id),
+  KEY pre_assessments_doctor_decided_by_foreign (doctor_decided_by),
+  CONSTRAINT pre_assessments_appointment_id_foreign        FOREIGN KEY (appointment_id)       REFERENCES appointments       (id) ON DELETE SET NULL,
+  CONSTRAINT pre_assessments_doctor_decided_by_foreign     FOREIGN KEY (doctor_decided_by)    REFERENCES users              (id) ON DELETE SET NULL,
+  CONSTRAINT pre_assessments_patient_id_foreign            FOREIGN KEY (patient_id)           REFERENCES users              (id) ON DELETE CASCADE,
+  CONSTRAINT pre_assessments_tongue_assessment_id_foreign  FOREIGN KEY (tongue_assessment_id) REFERENCES tongue_assessments (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ─── Audit / observability ────────────────────────────────────────────────
+-- notification_dispatch_log: audit row per outbound notification email.
+-- Created by the 2026_05_17 Day 3 i18n migration; refined by the
+-- 2026_05_18 audit-compliance fix migration. Tracks who dispatched,
+-- how, success/failure, and a SHA-256 digest of the rendered payload
+-- for tamper detection. Migration-created — utf8mb4_unicode_ci.
+CREATE TABLE notification_dispatch_log (
+  id                       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  notification_kind        VARCHAR(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  user_id                  BIGINT UNSIGNED DEFAULT NULL,
+  recipient_email_at_send  VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  status                   VARCHAR(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'queued',
+  locale                   VARCHAR(8) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en',
+  mailer_message_id        VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  dispatched_at            TIMESTAMP NULL DEFAULT NULL,
+  payload_digest           CHAR(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  failure_reason           TEXT COLLATE utf8mb4_unicode_ci,
+  triggered_by_user_id     BIGINT UNSIGNED DEFAULT NULL,
+  triggered_by_os_user     VARCHAR(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  triggered_via            VARCHAR(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'artisan',
+  created_at               TIMESTAMP NULL DEFAULT NULL,
+  updated_at               TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_notification_per_user (notification_kind, user_id),
+  KEY notification_dispatch_log_triggered_by_user_id_foreign (triggered_by_user_id),
+  KEY notification_dispatch_log_notification_kind_status_index (notification_kind, status),
+  KEY notification_dispatch_log_dispatched_at_index (dispatched_at),
+  KEY notification_dispatch_log_notification_kind_index (notification_kind),
+  KEY notification_dispatch_log_user_id_foreign (user_id),
+  CONSTRAINT notification_dispatch_log_triggered_by_user_id_foreign FOREIGN KEY (triggered_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT notification_dispatch_log_user_id_foreign              FOREIGN KEY (user_id)              REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
