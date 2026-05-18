@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -58,37 +59,22 @@ class PrescriptionOrderFlowTest extends TestCase
             'scheduled_end'   => now()->addHour()->addMinutes(30),
             'status' => 'completed', 'fee' => 100,
         ]);
-        $doctorToken = $doctor->createToken('api')->plainTextToken;
-
-        // Sanity check before the real assertion: verify the doctor is
-        // authenticated and the role:doctor middleware lets them past.
-        // If this fails, the 403 we've been seeing on /prescriptions is
-        // an auth/role issue, not a controller-internal issue.
-        $me = $this->withHeader('Authorization', "Bearer {$doctorToken}")
-            ->getJson('/api/auth/me');
-        $this->assertSame(200, $me->status(), 'auth/me failed: ' . $me->getContent());
-        $this->assertSame('doctor', $me->json('user.role'), 'doctor role missing on /auth/me');
-
-        $res = $this->withHeader('Authorization', "Bearer {$doctorToken}")
-            ->postJson('/api/doctor/prescriptions', [
-                'appointment_id' => $appt->id,
-                'diagnosis'      => 'Qi deficiency',
-                'items' => [
-                    ['drug_name' => 'Astragalus', 'quantity' => 30, 'unit' => 'g'],
-                ],
-            ]);
-
-        // Diagnostic — if not 201, surface the actual response body so
-        // the next CI run shows us exactly which middleware or controller
-        // path is rejecting.
-        if ($res->status() !== 201) {
-            $this->fail(
-                "Prescription POST returned {$res->status()} (expected 201). " .
-                "Body: " . $res->getContent() . " | " .
-                "Doctor user: " . json_encode($doctor->fresh()->only(['id','role','status','email_verified_at'])) . " | " .
-                "Appointment: " . json_encode($appt->fresh()->only(['id','doctor_id','patient_id','status']))
-            );
-        }
+        // Use Sanctum::actingAs() rather than Bearer-header tokens so
+        // each role context is set explicitly per request. Laravel's
+        // test client persists session cookies between requests, and
+        // Sanctum's stateful middleware prefers session auth over the
+        // Bearer header — which means once one request authenticates,
+        // the NEXT request (with a different role's Bearer token)
+        // would still resolve to the prior user via session. That was
+        // CI #17's root cause for the patient-orders 403.
+        Sanctum::actingAs($doctor);
+        $res = $this->postJson('/api/doctor/prescriptions', [
+            'appointment_id' => $appt->id,
+            'diagnosis'      => 'Qi deficiency',
+            'items' => [
+                ['drug_name' => 'Astragalus', 'quantity' => 30, 'unit' => 'g'],
+            ],
+        ]);
         $res->assertCreated();
 
         $rxId = $res->json('prescription.id');
@@ -99,14 +85,13 @@ class PrescriptionOrderFlowTest extends TestCase
             'user_id' => $patient->id, 'recipient' => 'P', 'phone' => '1',
             'country' => 'MY', 'city' => 'KL', 'line1' => 'x', 'is_default' => true,
         ]);
-        $patientToken = $patient->createToken('api')->plainTextToken;
 
-        $order = $this->withHeader('Authorization', "Bearer {$patientToken}")
-            ->postJson('/api/patient/orders', [
-                'prescription_id' => $rxId,
-                'pharmacy_id'     => $pharm->id,
-                'address_id'      => $address->id,
-            ])->assertCreated()->json('order');
+        Sanctum::actingAs($patient);
+        $order = $this->postJson('/api/patient/orders', [
+            'prescription_id' => $rxId,
+            'pharmacy_id'     => $pharm->id,
+            'address_id'      => $address->id,
+        ])->assertCreated()->json('order');
 
         $this->assertEquals(30.0, $order['subtotal']);
         $this->assertSame('pending_payment', $order['status']);
