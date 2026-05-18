@@ -12,9 +12,15 @@
          beStrictAboutOutputDuringTests="true"
          cacheDirectory=".phpunit.cache">
     <testsuites>
-        <testsuite name="Unit">
-            <directory suffix="Test.php">./tests/Unit</directory>
-        </testsuite>
+        <!--
+            2026-05-18 — Removed the empty "Unit" testsuite block. The
+            tests/Unit directory was never created, and PHPUnit 11.5 with
+            failOnEmptyTestSuite="true" hard-errors at startup with
+            "Test directory ... not found", which is what kept CI #10-#14
+            red despite the actual feature tests being fine. Re-add this
+            block (and create backend/tests/Unit/SomethingTest.php first)
+            when there's an actual unit test to host.
+        -->
         <testsuite name="Feature">
             <directory suffix="Test.php">./tests/Feature</directory>
         </testsuite>
