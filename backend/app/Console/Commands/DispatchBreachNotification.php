@@ -25,7 +25,9 @@ use Throwable;
  *   - Idempotent via uq_notification_per_user — re-runs skip already-sent
  *     rows rather than double-sending.
  *   - Writes one row to notification_dispatch_log per recipient with the
- *     SHA-256 digest of the rendered body.
+ *     SHA-256 digest of the rendered body + subject line, the Resend
+ *     message-id (if available), the OS user that ran the command, and
+ *     the recipient email captured at send time.
  *   - Excludes internal accounts (admin@hansmed.com, pharma@hansmed.com,
  *     audit-dr-*@test.com) on the same basis as the s.12B Q13 count.
  */
@@ -99,7 +101,9 @@ class DispatchBreachNotification extends Command
         $sent      = 0;
         $skipped   = 0;
         $failed    = 0;
-        $triggerId = optional(auth()->user())->id;  // null when run unauthenticated (CLI)
+        // Web context — null in CLI. OS user — populated whether web or CLI.
+        $triggerWebId = optional(auth()->user())->id;
+        $triggerOsUser = $this->captureOsUser();
 
         foreach ($recipients as $user) {
             // Idempotency check
@@ -132,9 +136,21 @@ class DispatchBreachNotification extends Command
             // Real send + log
             try {
                 $rendered = $mailable->render();
-                $digest   = hash('sha256', $rendered);
+                $subject  = $mailable->envelope()->subject;
+                // SHA-256 of subject + body. Including the subject in the
+                // hash answers the auditor's "prove the subject we sent
+                // matches counsel's wording" question, which the body
+                // alone cannot.
+                $digest = hash('sha256', $subject . "\n" . $rendered);
 
-                Mail::to($user->email)->send($mailable);
+                $sentMessage = Mail::to($user->email)->send($mailable);
+
+                // Capture mailer message-id when available. Laravel's
+                // Mail::send() returns a SentMessage wrapping a Symfony
+                // SentMessage. For Resend (the configured driver per
+                // composer.json) this includes the Resend message-id
+                // in the response headers.
+                $messageId = $this->extractMessageId($sentMessage);
 
                 DB::table('notification_dispatch_log')->insert([
                     'notification_kind'       => $kind,
@@ -142,16 +158,17 @@ class DispatchBreachNotification extends Command
                     'recipient_email_at_send' => $user->email,
                     'status'                  => 'sent',
                     'locale'                  => 'en',  // bilingual stacked; EN canonical
-                    'mailer_message_id'       => null,  // SMTP message-id capture: future enhancement
+                    'mailer_message_id'       => $messageId,
                     'dispatched_at'           => now(),
                     'payload_digest'          => $digest,
-                    'triggered_by_user_id'    => $triggerId,
+                    'triggered_by_user_id'    => $triggerWebId,
+                    'triggered_by_os_user'    => $triggerOsUser,
                     'triggered_via'           => 'artisan',
                     'created_at'              => now(),
                     'updated_at'              => now(),
                 ]);
                 $sent++;
-                $this->line(sprintf('  sent: %s', $user->email));
+                $this->line(sprintf('  sent: %s%s', $user->email, $messageId ? " (mid=$messageId)" : ''));
             } catch (Throwable $e) {
                 $failed++;
                 DB::table('notification_dispatch_log')->insert([
@@ -160,7 +177,8 @@ class DispatchBreachNotification extends Command
                     'recipient_email_at_send' => $user->email,
                     'status'                  => 'failed',
                     'failure_reason'          => substr($e->getMessage(), 0, 1000),
-                    'triggered_by_user_id'    => $triggerId,
+                    'triggered_by_user_id'    => $triggerWebId,
+                    'triggered_by_os_user'    => $triggerOsUser,
                     'triggered_via'           => 'artisan',
                     'created_at'              => now(),
                     'updated_at'              => now(),
@@ -181,23 +199,25 @@ class DispatchBreachNotification extends Command
     /**
      * Refuse to dispatch if en/zh files for $langFile disagree on key set.
      * Translation drift between EN and ZH is the most common pre-dispatch bug.
+     *
+     * Simplified vs original: the original had early `trans()`-based guards
+     * that didn't actually catch missing zh keys (Laravel falls back to en
+     * silently), so they gave false confidence. The array_diff against
+     * the file contents is the real check.
      */
     private function verifyLangFileParity(string $langFile): bool
     {
-        $en = trans($langFile . '.subject', [], 'en');
-        if ($en === $langFile . '.subject') {
-            $this->error("lang/en/{$langFile}.php missing or empty");
-            return false;
-        }
-        $zh = trans($langFile . '.subject', [], 'zh');
-        if ($zh === $langFile . '.subject') {
-            $this->error("lang/zh/{$langFile}.php missing or empty");
-            return false;
-        }
-
-        // Compare key sets directly from the files
         $enFile = base_path('lang/en/' . $langFile . '.php');
         $zhFile = base_path('lang/zh/' . $langFile . '.php');
+
+        if (!file_exists($enFile)) {
+            $this->error("lang/en/{$langFile}.php missing");
+            return false;
+        }
+        if (!file_exists($zhFile)) {
+            $this->error("lang/zh/{$langFile}.php missing");
+            return false;
+        }
 
         $enKeys = array_keys(require $enFile);
         $zhKeys = array_keys(require $zhFile);
@@ -219,5 +239,61 @@ class DispatchBreachNotification extends Command
 
         $this->info(sprintf('Lang parity OK: %d keys across en/zh', count($enKeys)));
         return true;
+    }
+
+    /**
+     * Capture the OS user that owns the PHP process running this command.
+     * For Railway deploys this'll be the container user (typically 'www-data'
+     * or similar); for local dev it's the developer's username. Either is
+     * meaningful audit data for "who ran the dispatch" — which auth()->user()
+     * cannot answer in CLI context.
+     */
+    private function captureOsUser(): ?string
+    {
+        // get_current_user() is the cleanest cross-platform option. May
+        // return false on some restricted environments; treat null as fine.
+        $os = @get_current_user();
+        if ($os === false || $os === '') {
+            // Fallback to environment variables (set on most Linux systems
+            // and on Windows). Returns whichever is set first.
+            $os = $_SERVER['USER'] ?? $_SERVER['USERNAME'] ?? null;
+        }
+        return $os ? substr((string) $os, 0, 64) : null;
+    }
+
+    /**
+     * Pull the mailer's message-id from a SentMessage instance when present.
+     * For Resend this is the Resend-assigned id; for other drivers it's the
+     * RFC-822 Message-ID header. Returns null when unavailable (some drivers
+     * — array, log — don't issue one).
+     */
+    private function extractMessageId($sentMessage): ?string
+    {
+        if ($sentMessage === null) {
+            return null;
+        }
+
+        try {
+            // Laravel's PendingMail::send() returns Illuminate\Mail\SentMessage
+            // which wraps Symfony\Component\Mailer\SentMessage. The Symfony
+            // SentMessage exposes getMessageId() on getOriginalMessage() but
+            // the cleaner accessor is on the wrapper itself.
+            if (method_exists($sentMessage, 'getMessageId')) {
+                return $sentMessage->getMessageId();
+            }
+            if (method_exists($sentMessage, 'getSymfonySentMessage')) {
+                $sym = $sentMessage->getSymfonySentMessage();
+                if ($sym && method_exists($sym, 'getMessageId')) {
+                    return $sym->getMessageId();
+                }
+            }
+        } catch (Throwable $e) {
+            // Best-effort; never let message-id capture failure interrupt
+            // the dispatch path. Log for later diagnosis.
+            Log::info('breach:notify could not capture message-id', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+        return null;
     }
 }
