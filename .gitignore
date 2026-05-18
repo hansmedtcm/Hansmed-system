@@ -19,5 +19,10 @@ Thumbs.db
 .design-pkg/
 _internal/
 v2/index.pre-v4-backup.html
-# Agent runtime — separate project, own repo when ready
+# Agent runtime — separate project, own repo when ready.
+# Both names are in transit: `agents/` was accidentally tracked on
+# master; `hansmed-agents/` is the in-progress replacement. Day 6
+# cleanup (2026-05-18) `git rm --cached`'s `agents/` to stop the
+# public repo from carrying the runtime code.
+/agents/
 /hansmed-agents/
