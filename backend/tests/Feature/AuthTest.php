@@ -80,15 +80,24 @@ class AuthTest extends TestCase
      * already set, which is what the verify-email endpoint does in
      * the real flow.
      */
+    /**
+     * Login uses the standard Sanctum flow. email_verified_at must be
+     * set directly (not via User::create fillable — it's not on the
+     * fillable list since the verify-email endpoint owns that field)
+     * because login() re-issues a verification code if it sees the
+     * user as unverified, which means it writes to
+     * email_verification_codes and breaks if that table is missing
+     * its row pattern.
+     */
     public function test_verified_patient_can_login(): void
     {
-        User::create([
-            'email'             => 'verified@test.com',
-            'password_hash'     => Hash::make('Password123!'),
-            'role'              => 'patient',
-            'status'            => 'active',
-            'email_verified_at' => now(),
+        $user = User::create([
+            'email'         => 'verified@test.com',
+            'password_hash' => Hash::make('Password123!'),
+            'role'          => 'patient',
+            'status'        => 'active',
         ]);
+        $user->forceFill(['email_verified_at' => now()])->save();
 
         $res = $this->postJson('/api/auth/login', [
             'email'    => 'verified@test.com',

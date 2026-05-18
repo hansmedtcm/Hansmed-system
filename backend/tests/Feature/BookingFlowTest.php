@@ -88,13 +88,17 @@ class BookingFlowTest extends TestCase
         $patient = $this->makePatient('p2@t.com');
         $token   = $patient->createToken('api')->plainTextToken;
 
-        $start = now()->addDay()->setTime(10, 0);
-        $end   = $start->copy()->addMinutes(30);
+        // Use Y-m-d H:i:s format (no timezone offset) to avoid the
+        // controller's `where(scheduled_start, '<', $iso_with_tz)`
+        // string comparison treating MYT vs UTC as non-overlapping.
+        // Pin a fixed future date so both POSTs send identical bytes.
+        $start = now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s');
+        $end   = now()->addDay()->setTime(10, 30)->format('Y-m-d H:i:s');
 
         $payload = [
             'doctor_id'       => $doctor->id,
-            'scheduled_start' => $start->toIso8601String(),
-            'scheduled_end'   => $end->toIso8601String(),
+            'scheduled_start' => $start,
+            'scheduled_end'   => $end,
         ];
 
         $this->withHeader('Authorization', "Bearer {$token}")

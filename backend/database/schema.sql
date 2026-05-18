@@ -669,4 +669,21 @@ CREATE TABLE blog_posts (
   KEY idx_bp_category (category_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- =========================================================
+-- email_verification_codes — Brief #16e
+-- =========================================================
+-- 6-digit code emailed to a registering user. They POST it back to
+-- /auth/verify-email to flip users.email_verified_at and receive their
+-- first Sanctum token. Created by the 2026_05_07 migration on prod;
+-- reconciled into schema.sql 2026-05-18 so CI tests that touch the
+-- AuthController register/login flow don't hit "table doesn't exist".
+CREATE TABLE email_verification_codes (
+  email       VARCHAR(190) NOT NULL,
+  code_hash   VARCHAR(255) NOT NULL,
+  attempts    TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  expires_at  DATETIME NOT NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

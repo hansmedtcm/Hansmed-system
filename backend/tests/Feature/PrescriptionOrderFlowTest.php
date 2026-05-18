@@ -60,6 +60,15 @@ class PrescriptionOrderFlowTest extends TestCase
         ]);
         $doctorToken = $doctor->createToken('api')->plainTextToken;
 
+        // Sanity check before the real assertion: verify the doctor is
+        // authenticated and the role:doctor middleware lets them past.
+        // If this fails, the 403 we've been seeing on /prescriptions is
+        // an auth/role issue, not a controller-internal issue.
+        $me = $this->withHeader('Authorization', "Bearer {$doctorToken}")
+            ->getJson('/api/auth/me');
+        $this->assertSame(200, $me->status(), 'auth/me failed: ' . $me->getContent());
+        $this->assertSame('doctor', $me->json('user.role'), 'doctor role missing on /auth/me');
+
         $res = $this->withHeader('Authorization', "Bearer {$doctorToken}")
             ->postJson('/api/doctor/prescriptions', [
                 'appointment_id' => $appt->id,
@@ -67,7 +76,20 @@ class PrescriptionOrderFlowTest extends TestCase
                 'items' => [
                     ['drug_name' => 'Astragalus', 'quantity' => 30, 'unit' => 'g'],
                 ],
-            ])->assertCreated();
+            ]);
+
+        // Diagnostic — if not 201, surface the actual response body so
+        // the next CI run shows us exactly which middleware or controller
+        // path is rejecting.
+        if ($res->status() !== 201) {
+            $this->fail(
+                "Prescription POST returned {$res->status()} (expected 201). " .
+                "Body: " . $res->getContent() . " | " .
+                "Doctor user: " . json_encode($doctor->fresh()->only(['id','role','status','email_verified_at'])) . " | " .
+                "Appointment: " . json_encode($appt->fresh()->only(['id','doctor_id','patient_id','status']))
+            );
+        }
+        $res->assertCreated();
 
         $rxId = $res->json('prescription.id');
         $this->assertSame('issued', Prescription::find($rxId)->status);
