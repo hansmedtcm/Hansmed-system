@@ -35,6 +35,7 @@
   HM.router.on('#/tongue-config', function () { HM.adminPanels.tongueConfig.render(panel()); });
   HM.router.on('#/permissions', function () { HM.adminPanels.permissions.render(panel()); });
   HM.router.on('#/audit', function () { HM.adminPanels.audit.render(panel()); });
+  HM.router.on('#/errors', function () { HM.adminPanels.errorDashboard.render(panel()); });
   HM.router.on('#/security', function () { HM.adminPanels.security.render(panel()); });
   HM.router.on('#/config', function () { HM.adminPanels.config.render(panel()); });
   HM.router.on('#/vouchers', function () { HM.adminPanels.vouchers.render(panel()); });

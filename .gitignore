@@ -19,3 +19,5 @@ Thumbs.db
 .design-pkg/
 _internal/
 v2/index.pre-v4-backup.html
+# Agent runtime — separate project, own repo when ready
+/hansmed-agents/
