@@ -29,8 +29,24 @@
         <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!--
+            Test DB is real MySQL loaded from backend/database/schema.sql.
+            In CI this points at the mysql:8.0 service container declared
+            in .github/workflows/ci.yml. Locally, run `docker run -d
+            -p 3306:3306 -e MYSQL_ROOT_PASSWORD=testroot
+            -e MYSQL_DATABASE=hansmed_test mysql:8.0` and then
+            `mysql -h127.0.0.1 -uroot -ptestroot hansmed_test < database/schema.sql`
+            before running PHPUnit. RefreshDatabase is NOT used (would
+            re-run only the 5 Laravel migrations, leaving the ~25
+            schema.sql tables missing); tests use DatabaseTransactions
+            instead — see backend/tests/TestCase.php.
+        -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="hansmed_test"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value="testroot"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
