@@ -14,7 +14,6 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -59,15 +58,19 @@ class PrescriptionOrderFlowTest extends TestCase
             'scheduled_end'   => now()->addHour()->addMinutes(30),
             'status' => 'completed', 'fee' => 100,
         ]);
-        // Use Sanctum::actingAs() rather than Bearer-header tokens so
-        // each role context is set explicitly per request. Laravel's
-        // test client persists session cookies between requests, and
-        // Sanctum's stateful middleware prefers session auth over the
-        // Bearer header — which means once one request authenticates,
+        // Use $this->actingAs(..., 'sanctum') rather than Bearer-header
+        // tokens so each role context is set explicitly per request.
+        // Laravel's test client persists session cookies between
+        // requests; Sanctum's stateful middleware prefers session auth
+        // over the Bearer header, so once one request authenticates,
         // the NEXT request (with a different role's Bearer token)
         // would still resolve to the prior user via session. That was
         // CI #17's root cause for the patient-orders 403.
-        Sanctum::actingAs($doctor);
+        //
+        // Using $this->actingAs (Laravel core) instead of
+        // Sanctum::actingAs (Sanctum facade) avoids the Mockery dev
+        // dependency which isn't in composer.json's require-dev.
+        $this->actingAs($doctor, 'sanctum');
         $res = $this->postJson('/api/doctor/prescriptions', [
             'appointment_id' => $appt->id,
             'diagnosis'      => 'Qi deficiency',
@@ -86,7 +89,7 @@ class PrescriptionOrderFlowTest extends TestCase
             'country' => 'MY', 'city' => 'KL', 'line1' => 'x', 'is_default' => true,
         ]);
 
-        Sanctum::actingAs($patient);
+        $this->actingAs($patient, 'sanctum');
         $order = $this->postJson('/api/patient/orders', [
             'prescription_id' => $rxId,
             'pharmacy_id'     => $pharm->id,
