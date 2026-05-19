@@ -70,5 +70,15 @@
             (and the prod browser flow with cross-origin tokens) use.
         -->
         <env name="SANCTUM_STATEFUL_DOMAINS" value=""/>
+        <!--
+            HMAC secret for the audit_logs tamper-evident chain
+            (App\Services\AuditLogger). Tests must have a non-empty key
+            or the service refuses to compute hashes. This fixed test
+            value is FINE because the test DB is wiped between runs.
+            On Railway prod, set HANSMED_AUDIT_LOG_HMAC_KEY to a 32+
+            byte random value generated once and rotated never (key
+            rotation is a v2 feature — see Day 7 #2 design notes).
+        -->
+        <env name="HANSMED_AUDIT_LOG_HMAC_KEY" value="test-audit-hmac-key-not-for-prod-use"/>
     </php>
 </phpunit>

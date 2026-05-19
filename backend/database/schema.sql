@@ -560,6 +560,22 @@ CREATE TABLE system_configs (
   updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- audit_logs — tamper-evident HMAC chain added 2026-05-19 (Day 7 #2).
+-- Each row's row_hash = HMAC-SHA256(secret, prev_hash || canonical_payload)
+-- where canonical_payload is a deterministically-encoded JSON of the
+-- row's fields. prev_hash links to the previous row's row_hash,
+-- forming a chain. Tampering with any past row breaks verification
+-- for every subsequent row.
+--
+-- prev_hash + row_hash are NULL during the transition window (before
+-- the AuditLogger::log() refactor lands at all call sites and the
+-- one-shot backfill is run). After backfill, row_hash is NEVER NULL
+-- for committed rows — the AuditLogger guarantees both columns are
+-- populated atomically inside the same transaction as the INSERT.
+--
+-- See App\Services\AuditLogger for the write path, audit_chain_head
+-- below for the serialization point, App\Console\Commands\AuditVerifyChain
+-- for verification.
 CREATE TABLE audit_logs (
   id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id      BIGINT UNSIGNED NULL,
@@ -569,10 +585,43 @@ CREATE TABLE audit_logs (
   ip_address   VARCHAR(45) NULL,
   user_agent   VARCHAR(255) NULL,
   payload      JSON NULL,
+  prev_hash    CHAR(64) NULL,
+  row_hash     CHAR(64) NULL,
   created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_al_user (user_id),
-  KEY idx_al_target (target_type, target_id)
+  KEY idx_al_target (target_type, target_id),
+  KEY idx_al_row_hash (row_hash),
+  KEY idx_al_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- audit_chain_head — serialization point for the HMAC chain.
+-- Single-row table (id locked to 1). Holds the most recent committed
+-- row's id + hash. Every AuditLogger::log() call:
+--   1. BEGIN
+--   2. SELECT * FROM audit_chain_head WHERE id=1 FOR UPDATE
+--      (acquires row lock — concurrent writers block here)
+--   3. Reads last_hash, computes row_hash for new row
+--   4. INSERT audit_logs row
+--   5. UPDATE audit_chain_head SET last_id=NEW.id, last_hash=NEW.row_hash
+--   6. COMMIT
+-- The FOR UPDATE on a fixed PK is what serializes concurrent writers —
+-- not the audit_logs table itself. If a transaction rolls back after
+-- step 4, the head doesn't advance (step 5 never runs), so the chain
+-- has no dangling references. See agent review notes in
+-- _internal/CLAUDE_OPS.md Day 7 #2 for the rationale.
+CREATE TABLE audit_chain_head (
+  id          TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  last_id     BIGINT UNSIGNED NULL,
+  last_hash   CHAR(64) NULL,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  CONSTRAINT chk_audit_chain_head_singleton CHECK (id = 1)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Seed the single head row so SELECT ... FOR UPDATE always finds it.
+-- INSERT IGNORE so re-running schema.sql in tests doesn't duplicate.
+INSERT IGNORE INTO audit_chain_head (id, last_id, last_hash)
+VALUES (1, NULL, NULL);
 
 -- ─────────────────────────────────────────────────────────
 -- consent_grants — PDPA 2010 § 6 / § 7 / § 38 consent audit
