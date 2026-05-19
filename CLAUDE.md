@@ -70,6 +70,8 @@
 
 **H7 — Favour small surgical commits over big restructures.** Speculative changes tend to get reverted. Small commits ship; big restructures revert.
 
+**H8 — Cowork sandbox views are unreliable; trust Windows-side git.** Both the bash workspace (FUSE-mounted) and the Read tool have been observed showing stale or truncated content for files that are actually intact on disk (seen multiple times Day 6 and at Day 7 start on `schema.sql`, `bootstrap/app.php`, `admin.html`, `index.html`, `routes/api.php`). Whenever a sandbox-side check disagrees with a Windows-side `git status` / `git diff`, the Windows side wins. Cheap verification at session start: ask the user to run `git status` from Claude Code (PowerShell) and trust that as ground truth before believing any sandbox-side diff. Same rule applies mid-session whenever truncation or "missing content" is suspected — the recovery recipe in H3's working-tree-truncation section is good to keep handy but most "truncation" sightings turn out to be cache illusions.
+
 ---
 
 ## Recurring Failure Patterns (generic)
