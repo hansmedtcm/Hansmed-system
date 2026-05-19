@@ -83,9 +83,24 @@ class AuditBackfillChain extends Command
             // Anchor prev_hash from the last already-chained row (if any).
             $prevHash = AuditLog::whereNotNull('row_hash')->orderByDesc('id')->value('row_hash');
 
-            $done = 0;
+            // Use a moving `$lastId` cursor instead of re-querying
+            // `whereNull('row_hash')` each batch. In --dry-run mode
+            // the UPDATE is skipped, so a re-filter by row_hash IS NULL
+            // returns the same rows every loop and never terminates
+            // (caught against Railway prod 2026-05-19 — the dry-run
+            // looped to ~6860 iterations against a 70-row target
+            // before being SIGKILLed). The id cursor advances
+            // regardless of whether UPDATE fires.
+            $lastId = 0;
+            $done   = 0;
+            $verb   = $dryRun ? '(dry-run) would chain' : 'backfilled';
+
             while (true) {
-                $rows = AuditLog::whereNull('row_hash')->orderBy('id')->limit($batch)->get();
+                $rows = AuditLog::where('id', '>', $lastId)
+                    ->whereNull('row_hash')
+                    ->orderBy('id')
+                    ->limit($batch)
+                    ->get();
                 if ($rows->isEmpty()) break;
 
                 DB::transaction(function () use ($rows, &$prevHash, $dryRun) {
@@ -114,8 +129,9 @@ class AuditBackfillChain extends Command
                     }
                 });
 
-                $done += $rows->count();
-                $this->line("  backfilled {$done} / {$remaining}");
+                $done  += $rows->count();
+                $lastId = $rows->last()->id; // advance regardless of UPDATE
+                $this->line("  {$verb} {$done} / {$remaining}");
             }
 
             if (! $dryRun) {

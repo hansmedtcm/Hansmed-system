@@ -94,6 +94,40 @@ class AuditChainTest extends TestCase
         $this->assertStringContainsString((string) $b->id, $output, 'First break should reference the tampered row id');
     }
 
+    /**
+     * Regression test for the Day 7 backfill --dry-run infinite loop.
+     * The original implementation filtered by whereNull('row_hash')
+     * each batch; in dry-run mode the UPDATE was skipped so the same
+     * rows were re-selected forever. Fixed by switching to a moving
+     * id cursor. Caught against Railway prod (~6860 iterations against
+     * 70 rows) before being SIGKILLed.
+     */
+    public function test_backfill_dry_run_terminates_without_writing(): void
+    {
+        $now = now();
+        DB::table('audit_logs')->insert([
+            ['action' => 'legacy.dr.a', 'payload' => json_encode(['n' => 1]), 'created_at' => $now],
+            ['action' => 'legacy.dr.b', 'payload' => json_encode(['n' => 2]), 'created_at' => $now->copy()->addSecond()],
+            ['action' => 'legacy.dr.c', 'payload' => json_encode(['n' => 3]), 'created_at' => $now->copy()->addSeconds(2)],
+        ]);
+
+        $before = AuditLog::whereNull('row_hash')->count();
+        $this->assertSame(3, $before, 'Three legacy rows should need backfill before dry-run');
+
+        // If the dry-run infinite-loop regresses, this Artisan::call
+        // never returns and PHPUnit kills the test with a timeout.
+        $exit   = Artisan::call('audit:backfill-chain', ['--dry-run' => true]);
+        $output = Artisan::output();
+
+        $this->assertSame(0, $exit, 'Dry-run should exit 0. Output: ' . $output);
+        $this->assertStringContainsString('(dry-run) would chain', $output);
+
+        // Crucially: dry-run must NOT actually write. Same 3 rows still
+        // need backfill afterward.
+        $after = AuditLog::whereNull('row_hash')->count();
+        $this->assertSame(3, $after, 'Dry-run must not write — rows should still need backfill');
+    }
+
     public function test_backfill_chains_legacy_unchained_rows(): void
     {
         // Simulate legacy direct-insert path that bypasses AuditLogger.
