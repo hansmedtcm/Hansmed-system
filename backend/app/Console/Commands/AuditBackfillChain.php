@@ -90,8 +90,9 @@ class AuditBackfillChain extends Command
 
                 DB::transaction(function () use ($rows, &$prevHash, $dryRun) {
                     foreach ($rows as $row) {
+                        // MUST match AuditLogger::log()'s hash material
+                        // exactly — id is deliberately excluded.
                         $expectedHash = AuditLogger::computeRowHash($prevHash, [
-                            'id'          => $row->id,
                             'user_id'     => $row->user_id,
                             'action'      => $row->action,
                             'target_type' => $row->target_type,

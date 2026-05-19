@@ -46,10 +46,11 @@ class AuditLog extends Model
      */
     public function recomputeRowHash(): string
     {
+        // MUST match AuditLogger::log()'s hash material exactly.
+        // `id` is intentionally excluded — see comment there for why.
         return \App\Services\AuditLogger::computeRowHash(
             $this->prev_hash,
             [
-                'id'          => $this->id,
                 'user_id'     => $this->user_id,
                 'action'      => $this->action,
                 'target_type' => $this->target_type,

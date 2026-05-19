@@ -94,8 +94,14 @@ class AuditLogger
             }
 
             $prevHash = $head->last_hash ?? null;
+            // NOTE: `id` is deliberately NOT in the hash material.
+            // At insert time, AUTO_INCREMENT hasn't fired yet, so we
+            // can't include the row's own id. At verify time we'd have
+            // the real id. Mixing those would always mismatch. The
+            // chain's ordering integrity is enforced by prev_hash
+            // linkage — including id would add zero forensic value
+            // and just create a verifier inconsistency.
             $rowHash  = self::computeRowHash($prevHash, [
-                'id'          => null, // not yet assigned; canonicalizer must drop nulls deterministically
                 'user_id'     => $row['user_id'],
                 'action'      => $row['action'],
                 'target_type' => $row['target_type'],

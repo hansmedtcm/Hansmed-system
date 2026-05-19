@@ -86,10 +86,10 @@ class AuditChainTest extends TestCase
             ->where('id', $b->id)
             ->update(['payload' => json_encode(['note' => 'tampered'])]);
 
-        $exit = Artisan::call('audit:verify-chain', ['--first-only' => true]);
-        $this->assertSame(1, $exit, 'verify-chain should exit 1 on tampering. Output: ' . Artisan::output());
-
+        $exit   = Artisan::call('audit:verify-chain', ['--first-only' => true]);
+        // Artisan::output() consumes the buffer; capture ONCE.
         $output = Artisan::output();
+        $this->assertSame(1, $exit, 'verify-chain should exit 1 on tampering. Output: ' . $output);
         $this->assertStringContainsString('Broken rows:', $output);
         $this->assertStringContainsString((string) $b->id, $output, 'First break should reference the tampered row id');
     }
