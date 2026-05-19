@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Blog;
 use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
 use App\Models\BlogCategory;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -155,15 +156,12 @@ class BlogSeedController extends Controller
 
     private function audit(int $userId, string $action, int $postId, array $payload): void
     {
-        try {
-            DB::table('audit_logs')->insert([
-                'user_id'     => $userId,
-                'action'      => $action,
-                'target_type' => 'blog_post',
-                'target_id'   => $postId,
-                'payload'     => json_encode($payload),
-                'created_at'  => now(),
-            ]);
-        } catch (\Throwable $e) { /* ignore */ }
+        AuditLogger::log([
+            'user_id'     => $userId,
+            'action'      => $action,
+            'target_type' => 'blog_post',
+            'target_id'   => $postId,
+            'payload'     => $payload,
+        ]);
     }
 }

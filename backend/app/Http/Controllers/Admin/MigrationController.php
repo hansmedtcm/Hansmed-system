@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -53,17 +54,14 @@ class MigrationController extends Controller
 
         // ── Step 1: INTENT audit row ──
         try {
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $admin ? $admin->id : null,
                 'action'      => 'security.migrate.initiated',
                 'target_type' => 'migrations',
                 'target_id'   => null,
-                'ip_address'  => $ip,
-                'user_agent'  => $userAgent,
-                'payload'     => json_encode([
+                'payload'     => [
                     'command' => 'migrate --force',
-                ]),
-                'created_at'  => now(),
+                ],
             ]);
         } catch (\Throwable $e) {
             Log::warning('MigrationController::runPendingMigrations intent audit failed: ' . $e->getMessage());
@@ -76,17 +74,14 @@ class MigrationController extends Controller
         } catch (\Throwable $e) {
             // Failure-audit row, then rethrow.
             try {
-                DB::table('audit_logs')->insert([
+                AuditLogger::log([
                     'user_id'     => $admin ? $admin->id : null,
                     'action'      => 'security.migrate.failed',
                     'target_type' => 'migrations',
                     'target_id'   => null,
-                    'ip_address'  => $ip,
-                    'user_agent'  => $userAgent,
-                    'payload'     => json_encode([
+                    'payload'     => [
                         'error' => $e->getMessage(),
-                    ]),
-                    'created_at'  => now(),
+                    ],
                 ]);
             } catch (\Throwable $auditErr) {
                 Log::warning('MigrationController::runPendingMigrations failure-audit insert failed: ' . $auditErr->getMessage());
@@ -100,18 +95,15 @@ class MigrationController extends Controller
 
         // ── Step 3: RESULT audit row ──
         try {
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $admin ? $admin->id : null,
                 'action'      => 'security.migrate.completed',
                 'target_type' => 'migrations',
                 'target_id'   => null,
-                'ip_address'  => $ip,
-                'user_agent'  => $userAgent,
-                'payload'     => json_encode([
+                'payload'     => [
                     'exit_code'      => $exitCode,
                     'output_excerpt' => substr($output, 0, 4000),
-                ]),
-                'created_at'  => now(),
+                ],
             ]);
         } catch (\Throwable $e) {
             Log::warning('MigrationController::runPendingMigrations result audit failed: ' . $e->getMessage());

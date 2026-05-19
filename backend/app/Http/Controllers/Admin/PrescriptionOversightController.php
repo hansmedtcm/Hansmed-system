@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Prescription;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -50,13 +51,12 @@ class PrescriptionOversightController extends Controller
 
         return DB::transaction(function () use ($rx, $data, $request) {
             $rx->update(['status' => 'revoked']);
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'prescription.force_revoke',
                 'target_type' => 'prescription',
                 'target_id'   => $rx->id,
-                'payload'     => json_encode(['reason' => $data['reason']]),
-                'created_at'  => now(),
+                'payload'     => ['reason' => $data['reason']],
             ]);
             return response()->json(['prescription' => $rx->fresh()]);
         });

@@ -163,22 +163,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // PDPA §6 consent capture — patient signals consent before a
     // processing activity. We persist the event to audit_logs so
-    // we can demonstrate compliance on request.
+    // we can demonstrate compliance on request. The chain ensures
+    // a consent grant can't be retroactively edited or removed.
     Route::post('/consent', function (\Illuminate\Http\Request $r) {
         $data = $r->validate([
             'action' => ['required', 'regex:/^consent\.[a-z0-9_\.]+$/i'],
         ]);
-        \Illuminate\Support\Facades\DB::table('audit_logs')->insert([
-            'user_id'    => $r->user()->id,
-            'action'     => $data['action'],
-            'target_type'=> 'user',
-            'target_id'  => $r->user()->id,
-            'payload'    => json_encode([
-                'ip'          => $r->ip(),
-                'user_agent'  => substr($r->userAgent() ?? '', 0, 255),
-                'consented_at'=> now()->toIso8601String(),
-            ]),
-            'created_at' => now(),
+        // AuditLogger captures ip + user_agent + created_at automatically
+        // from the current request. consented_at is preserved explicitly
+        // in the payload for downstream consent-reporting queries.
+        \App\Services\AuditLogger::log([
+            'user_id'     => $r->user()->id,
+            'action'      => $data['action'],
+            'target_type' => 'user',
+            'target_id'   => $r->user()->id,
+            'payload'     => [
+                'consented_at' => now()->toIso8601String(),
+            ],
         ]);
         return response()->json(['ok' => true]);
     });

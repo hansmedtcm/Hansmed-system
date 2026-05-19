@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PatientProfile;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -75,13 +76,12 @@ class PatientController extends Controller
             $data
         );
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'patient.profile.update',
             'target_type' => 'patient',
             'target_id'   => $id,
-            'payload'     => json_encode(array_keys($data)),
-            'created_at'  => now(),
+            'payload'     => array_keys($data),
         ]);
 
         // Brief #20 — admin context, expose contact info on the

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DoctorProfile;
 use App\Models\PharmacyProfile;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -102,12 +103,11 @@ class AccountController extends Controller
                 ]);
             }
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'account.create.' . $data['role'],
                 'target_type' => 'user',
                 'target_id'   => $user->id,
-                'created_at'  => now(),
             ]);
 
             return response()->json([
@@ -193,17 +193,16 @@ class AccountController extends Controller
         }
 
         /* Write audit log BEFORE delete so the trail survives. */
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $actor->id,
             'action'      => 'account.delete',
             'target_type' => 'user',
             'target_id'   => $target->id,
-            'payload'     => json_encode([
+            'payload'     => [
                 'deleted_email' => $target->email,
                 'deleted_role'  => $target->role,
                 'deleted_status'=> $target->status,
-            ]),
-            'created_at'  => now(),
+            ],
         ]);
 
         /* Revoke any live Sanctum tokens so session dies instantly. */
@@ -262,12 +261,11 @@ class AccountController extends Controller
         // Kick all of this user's API tokens so the old password stops working.
         try { $user->tokens()->delete(); } catch (\Throwable $e) { /* Sanctum not set up? ignore */ }
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $actor->id,
             'action'      => 'account.password_reset',
             'target_type' => 'user',
             'target_id'   => $user->id,
-            'created_at'  => now(),
         ]);
 
         return response()->json([
@@ -376,12 +374,11 @@ class AccountController extends Controller
                 ], fn($v) => $v !== null))->save();
             }
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'account.update.' . $user->role,
                 'target_type' => 'user',
                 'target_id'   => $user->id,
-                'created_at'  => now(),
             ]);
 
             $fresh = $user->fresh()->load(['doctorProfile', 'pharmacyProfile', 'patientProfile']);

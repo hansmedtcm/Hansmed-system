@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DoctorProfile;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -68,12 +69,11 @@ class DoctorManagementController extends Controller
                 'accepting_appointments' => true,
             ]);
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'doctor.create',
                 'target_type' => 'doctor',
                 'target_id'   => $user->id,
-                'created_at'  => now(),
             ]);
 
             return response()->json([
@@ -109,13 +109,12 @@ class DoctorManagementController extends Controller
             $data
         );
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'doctor.update',
             'target_type' => 'doctor',
             'target_id'   => $user->id,
-            'payload'     => json_encode(array_keys($data)),
-            'created_at'  => now(),
+            'payload'     => array_keys($data),
         ]);
 
         return response()->json(['user' => $user->fresh('doctorProfile')]);

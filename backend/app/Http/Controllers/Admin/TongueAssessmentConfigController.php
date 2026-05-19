@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use App\Services\TongueAssessment\KnowledgeBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -61,12 +62,11 @@ class TongueAssessmentConfigController extends Controller
             }
         }
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'tongue_config.update',
             'target_type' => 'system_config',
-            'payload'     => json_encode(array_keys($data)),
-            'created_at'  => now(),
+            'payload'     => array_keys($data),
         ]);
 
         return response()->json(['message' => 'Configuration updated']);

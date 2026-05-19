@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -86,19 +87,16 @@ class SecurityController extends Controller
         // forensic trail. The result row below will still attempt
         // to write a record.
         try {
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $admin ? $admin->id : null,
                 'action'      => 'security.revoke_all_tokens.initiated',
                 'target_type' => 'personal_access_tokens',
                 'target_id'   => null,
-                'ip_address'  => $ip,
-                'user_agent'  => $userAgent,
-                'payload'     => json_encode([
+                'payload'     => [
                     'exclude_self'     => $excludeSelf,
                     'total_before'     => $totalBefore,
                     'current_token_id' => $currentTokenId,
-                ]),
-                'created_at'  => now(),
+                ],
             ]);
         } catch (\Throwable $e) {
             Log::warning('SecurityController::revokeAllTokens intent audit failed: ' . $e->getMessage(), [
@@ -121,18 +119,15 @@ class SecurityController extends Controller
             // Write a failure audit row BEFORE re-throwing so the
             // partial event is forensically visible.
             try {
-                DB::table('audit_logs')->insert([
+                AuditLogger::log([
                     'user_id'     => $admin ? $admin->id : null,
                     'action'      => 'security.revoke_all_tokens.failed',
                     'target_type' => 'personal_access_tokens',
                     'target_id'   => null,
-                    'ip_address'  => $ip,
-                    'user_agent'  => $userAgent,
-                    'payload'     => json_encode([
+                    'payload'     => [
                         'error'        => $e->getMessage(),
                         'total_before' => $totalBefore,
-                    ]),
-                    'created_at'  => now(),
+                    ],
                 ]);
             } catch (\Throwable $auditErr) {
                 Log::warning('SecurityController::revokeAllTokens failure-audit insert failed: ' . $auditErr->getMessage());
@@ -142,20 +137,17 @@ class SecurityController extends Controller
 
         // ── Step 3: RESULT audit row (AFTER the destructive op) ──
         try {
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $admin ? $admin->id : null,
                 'action'      => 'security.revoke_all_tokens.completed',
                 'target_type' => 'personal_access_tokens',
                 'target_id'   => null,
-                'ip_address'  => $ip,
-                'user_agent'  => $userAgent,
-                'payload'     => json_encode([
+                'payload'     => [
                     'outcome'         => 'success',
                     'revoked'         => (int) $deleted,
                     'total_before'    => $totalBefore,
                     'kept_self_token' => $currentTokenId !== null,
-                ]),
-                'created_at'  => now(),
+                ],
             ]);
         } catch (\Throwable $e) {
             Log::warning('SecurityController::revokeAllTokens result audit failed: ' . $e->getMessage(), [

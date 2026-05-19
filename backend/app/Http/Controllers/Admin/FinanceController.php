@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Withdrawal;
+use App\Services\AuditLogger;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -209,13 +210,12 @@ class FinanceController extends Controller
                 'reviewed_at' => now(),
             ]);
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'withdrawal.' . $data['decision'],
                 'target_type' => 'withdrawal',
                 'target_id'   => $w->id,
-                'payload'     => json_encode(['note' => $data['note'] ?? null]),
-                'created_at'  => now(),
+                'payload'     => ['note' => $data['note'] ?? null],
             ]);
 
             $notifier->withdrawalReviewed($w->user_id, $w->id, $data['decision']);

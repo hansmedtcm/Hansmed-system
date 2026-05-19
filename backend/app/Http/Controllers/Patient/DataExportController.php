@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Order;
 use App\Models\Prescription;
 use App\Models\TongueAssessment;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -31,13 +32,12 @@ class DataExportController extends Controller
 
         // Also log the access itself so we can prove the patient
         // retrieved their own copy (PDPA audit trail).
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $userId,
             'action'      => 'data_export.requested',
             'target_type' => 'user',
             'target_id'   => $userId,
-            'payload'     => json_encode(['ip' => $request->ip()]),
-            'created_at'  => now(),
+            'payload'     => ['ip' => $request->ip()],
         ]);
 
         // Profile — omit password_hash, remember_token, etc.

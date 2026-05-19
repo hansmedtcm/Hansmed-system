@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -33,10 +34,9 @@ class SecurityController extends Controller
             'must_change_password' => 0,
         ]);
 
-        DB::table('audit_logs')->insert([
-            'user_id'    => $user->id,
-            'action'     => 'password.changed',
-            'created_at' => now(),
+        AuditLogger::log([
+            'user_id' => $user->id,
+            'action'  => 'password.changed',
         ]);
 
         return response()->json(['message' => 'Password changed successfully. · 密碼已更改。']);
@@ -54,12 +54,11 @@ class SecurityController extends Controller
             return response()->json(['message' => 'Password incorrect. · 密碼不正確。'], 422);
         }
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $user->id,
             'action'      => 'account.deleted',
             'target_type' => 'user',
             'target_id'   => $user->id,
-            'created_at'  => now(),
         ]);
 
         // Soft delete — mark as deleted, don't actually remove data

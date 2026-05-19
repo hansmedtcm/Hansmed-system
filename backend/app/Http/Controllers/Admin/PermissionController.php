@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -38,12 +39,11 @@ class PermissionController extends Controller
             ['config_value' => json_encode($data['permissions']), 'updated_at' => now()]
         );
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'permissions.update_role',
             'target_type' => 'system_config',
-            'payload'     => json_encode($data['permissions']),
-            'created_at'  => now(),
+            'payload'     => $data['permissions'],
         ]);
 
         return response()->json(['message' => 'Role permissions updated']);
@@ -161,13 +161,12 @@ class PermissionController extends Controller
             $applied[$key] = $granted ? 'allow' : 'deny';
         }
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'permissions.update_user',
             'target_type' => 'user',
             'target_id'   => $id,
-            'payload'     => json_encode(['applied' => $applied]),
-            'created_at'  => $now,
+            'payload'     => ['applied' => $applied],
         ]);
 
         return response()->json(['message' => 'User permissions updated', 'applied' => $applied]);

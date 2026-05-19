@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -50,12 +51,11 @@ class ContentController extends Controller
             DB::table('content_pages')->insert($row);
         }
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'content.upsert',
             'target_type' => 'content_page',
-            'payload'     => json_encode(['slug' => $data['slug']]),
-            'created_at'  => now(),
+            'payload'     => ['slug' => $data['slug']],
         ]);
 
         return response()->json(['message' => 'Page saved']);
@@ -116,12 +116,11 @@ class ContentController extends Controller
             }
         }
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'content.seed.compliance',
             'target_type' => 'content_page',
-            'payload'     => json_encode(['slugs' => ['privacy', 'retention']]),
-            'created_at'  => now(),
+            'payload'     => ['slugs' => ['privacy', 'retention']],
         ]);
 
         return response()->json(['ok' => true, 'seeded' => ['privacy', 'retention']]);

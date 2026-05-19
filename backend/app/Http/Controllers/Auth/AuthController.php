@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -203,15 +204,14 @@ class AuthController extends Controller
 
         $token = $user->createToken('api', [$user->role])->plainTextToken;
 
-        try {
-            DB::table('audit_logs')->insert([
-                'user_id'     => $user->id,
-                'action'      => 'auth.email_verified',
-                'target_type' => 'user',
-                'target_id'   => $user->id,
-                'created_at'  => now(),
-            ]);
-        } catch (\Throwable $e) { /* audit_logs missing? ignore */ }
+        // Day 7 #2 — chained audit write. No try/catch swallower:
+        // an audit failure is now load-bearing, not optional.
+        AuditLogger::log([
+            'user_id'     => $user->id,
+            'action'      => 'auth.email_verified',
+            'target_type' => 'user',
+            'target_id'   => $user->id,
+        ]);
 
         $relation = $user->role . 'Profile';
         if (method_exists($user, $relation)) {
@@ -312,20 +312,17 @@ class AuthController extends Controller
                 'user_agent' => substr((string) $request->userAgent(), 0, 200),
                 'attempt'    => $attempts + 1,
             ]);
-            try {
-                DB::table('audit_logs')->insert([
-                    'user_id'     => $user?->id,
-                    'action'      => 'auth.login.failed',
-                    'target_type' => 'user',
-                    'target_id'   => $user?->id,
-                    'payload'     => json_encode([
-                        'identifier' => $identifier,
-                        'ip'         => $request->ip(),
-                        'attempt'    => $attempts + 1,
-                    ]),
-                    'created_at'  => now(),
-                ]);
-            } catch (\Throwable $e) { /* audit_logs missing? ignore */ }
+            AuditLogger::log([
+                'user_id'     => $user?->id,
+                'action'      => 'auth.login.failed',
+                'target_type' => 'user',
+                'target_id'   => $user?->id,
+                'payload'     => [
+                    'identifier' => $identifier,
+                    'ip'         => $request->ip(),
+                    'attempt'    => $attempts + 1,
+                ],
+            ]);
 
             throw ValidationException::withMessages([
                 'identifier' => ['Invalid credentials.'],
@@ -416,15 +413,12 @@ class AuthController extends Controller
                 Log::warning('password_reset_email_failed', ['email' => $user->email, 'err' => $e->getMessage()]);
             }
 
-            try {
-                DB::table('audit_logs')->insert([
-                    'user_id'     => $user->id,
-                    'action'      => 'auth.forgot_password.requested',
-                    'target_type' => 'user',
-                    'target_id'   => $user->id,
-                    'created_at'  => now(),
-                ]);
-            } catch (\Throwable $e) { /* fine */ }
+            AuditLogger::log([
+                'user_id'     => $user->id,
+                'action'      => 'auth.forgot_password.requested',
+                'target_type' => 'user',
+                'target_id'   => $user->id,
+            ]);
         }
 
         return response()->json([
@@ -487,15 +481,12 @@ class AuthController extends Controller
         try { $user->tokens()->delete(); } catch (\Throwable $e) { /* fine */ }
 
         DB::table('password_resets')->where('email', $data['email'])->delete();
-        try {
-            DB::table('audit_logs')->insert([
-                'user_id'     => $user->id,
-                'action'      => 'auth.password_reset.completed',
-                'target_type' => 'user',
-                'target_id'   => $user->id,
-                'created_at'  => now(),
-            ]);
-        } catch (\Throwable $e) { /* fine */ }
+        AuditLogger::log([
+            'user_id'     => $user->id,
+            'action'      => 'auth.password_reset.completed',
+            'target_type' => 'user',
+            'target_id'   => $user->id,
+        ]);
 
         return response()->json([
             'message' => 'Password reset. You can now sign in with your new password. · 密碼已重設，現在可使用新密碼登入。',

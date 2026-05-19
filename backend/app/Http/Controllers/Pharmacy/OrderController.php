@@ -7,6 +7,7 @@ use App\Models\Inventory;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Shipment;
+use App\Services\AuditLogger;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -174,21 +175,18 @@ class OrderController extends Controller
 
                     // Audit trail so admin can reconcile warehouse-level
                     // movement when a patient order is dispensed.
-                    if (Schema::hasTable('audit_logs')) {
-                        DB::table('audit_logs')->insert([
-                            'user_id'     => $request->user()->id,
-                            'action'      => 'medicine.stock.decrement',
-                            'target_type' => 'medicine_catalog',
-                            'target_id'   => $row->id,
-                            'payload'     => json_encode([
-                                'reason'     => 'order_dispensed',
-                                'order_id'   => $order->id,
-                                'drug_name'  => $name,
-                                'qty_grams'  => $qty,
-                            ]),
-                            'created_at'  => now(),
-                        ]);
-                    }
+                    AuditLogger::log([
+                        'user_id'     => $request->user()->id,
+                        'action'      => 'medicine.stock.decrement',
+                        'target_type' => 'medicine_catalog',
+                        'target_id'   => $row->id,
+                        'payload'     => [
+                            'reason'     => 'order_dispensed',
+                            'order_id'   => $order->id,
+                            'drug_name'  => $name,
+                            'qty_grams'  => $qty,
+                        ],
+                    ]);
                 }
             }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DoctorProfile;
 use App\Models\PharmacyProfile;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -41,13 +42,12 @@ class VerificationController extends Controller
                 $user->update(['status' => 'suspended']);
             }
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'doctor.review.' . $data['decision'],
                 'target_type' => 'doctor',
                 'target_id'   => $doctorId,
-                'payload'     => json_encode(['reason' => $data['reason'] ?? null]),
-                'created_at'  => now(),
+                'payload'     => ['reason' => $data['reason'] ?? null],
             ]);
 
             return response()->json(['ok' => true, 'doctor' => $profile->fresh('user')]);
@@ -83,13 +83,12 @@ class VerificationController extends Controller
                 $user->update(['status' => 'suspended']);
             }
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'pharmacy.review.' . $data['decision'],
                 'target_type' => 'pharmacy',
                 'target_id'   => $pharmacyId,
-                'payload'     => json_encode(['reason' => $data['reason'] ?? null]),
-                'created_at'  => now(),
+                'payload'     => ['reason' => $data['reason'] ?? null],
             ]);
 
             return response()->json(['ok' => true, 'pharmacy' => $profile->fresh('user')]);

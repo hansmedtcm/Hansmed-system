@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -141,19 +142,18 @@ class MedicinePurchaseController extends Controller
             }
             DB::table('medicine_catalog')->where('id', $data['medicine_id'])->update($updates);
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'medicine.purchase.create',
                 'target_type' => 'medicine_purchase',
                 'target_id'   => $purchaseId,
-                'payload'     => json_encode([
+                'payload'     => [
                     'medicine_id'   => $data['medicine_id'],
                     'invoice'       => $data['invoice_no'] ?? null,
                     'supplier'      => $data['supplier_name'],
                     'qty_grams'     => $qtyGrams,
                     'cost'          => $data['total_cost'] ?? null,
-                ]),
-                'created_at'  => now(),
+                ],
             ]);
 
             return response()->json([
@@ -188,13 +188,12 @@ class MedicinePurchaseController extends Controller
             ]);
             DB::table('medicine_purchases')->where('id', $id)->delete();
 
-            DB::table('audit_logs')->insert([
+            AuditLogger::log([
                 'user_id'     => $request->user()->id,
                 'action'      => 'medicine.purchase.delete',
                 'target_type' => 'medicine_purchase',
                 'target_id'   => $id,
-                'payload'     => json_encode(['reversed_grams' => (float) $row->quantity_grams]),
-                'created_at'  => now(),
+                'payload'     => ['reversed_grams' => (float) $row->quantity_grams],
             ]);
 
             return response()->json(['deleted' => true, 'reversed_grams' => (float) $row->quantity_grams]);

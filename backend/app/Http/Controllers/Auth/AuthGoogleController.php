@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -236,16 +237,11 @@ class AuthGoogleController extends Controller
 
     private function auditLog(int $userId, string $action): void
     {
-        try {
-            DB::table('audit_logs')->insert([
-                'user_id'     => $userId,
-                'action'      => $action,
-                'target_type' => 'user',
-                'target_id'   => $userId,
-                'created_at'  => now(),
-            ]);
-        } catch (\Throwable $e) {
-            // audit_logs missing — fine, it's best-effort.
-        }
+        AuditLogger::log([
+            'user_id'     => $userId,
+            'action'      => $action,
+            'target_type' => 'user',
+            'target_id'   => $userId,
+        ]);
     }
 }

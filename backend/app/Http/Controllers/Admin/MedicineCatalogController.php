@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -154,18 +155,17 @@ class MedicineCatalogController extends Controller
             'updated_at'        => now(),
         ]);
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'medicine.stock_adjust.' . $data['mode'],
             'target_type' => 'medicine_catalog',
             'target_id'   => $id,
-            'payload'     => json_encode([
+            'payload'     => [
                 'previous' => $current,
                 'new'      => $new,
                 'amount'   => $delta,
                 'notes'    => $data['notes'] ?? null,
-            ]),
-            'created_at'  => now(),
+            ],
         ]);
 
         return response()->json([
@@ -271,18 +271,17 @@ class MedicineCatalogController extends Controller
                     ]);
                     $newStock = DB::table('medicine_catalog')->where('id', $row->id)->value('stock_grams');
 
-                    DB::table('audit_logs')->insert([
+                    AuditLogger::log([
                         'user_id'     => $request->user()->id,
                         'action'      => 'medicine.stock.decrement',
                         'target_type' => 'medicine_catalog',
                         'target_id'   => $row->id,
-                        'payload'     => json_encode([
+                        'payload'     => [
                             'reason'    => 'reconcile_backfill',
                             'order_id'  => $order->id,
                             'drug_name' => $name,
                             'qty_grams' => $qty,
-                        ]),
-                        'created_at'  => now(),
+                        ],
                     ]);
 
                     $report['items_applied']++;
@@ -676,12 +675,11 @@ class MedicineCatalogController extends Controller
         }
         fclose($handle);
 
-        DB::table('audit_logs')->insert([
+        AuditLogger::log([
             'user_id'     => $request->user()->id,
             'action'      => 'medicine.catalog.import_csv',
             'target_type' => 'medicine_catalog',
-            'payload'     => json_encode(['inserted' => $inserted, 'updated' => $updated, 'skipped' => $skipped]),
-            'created_at'  => now(),
+            'payload'     => ['inserted' => $inserted, 'updated' => $updated, 'skipped' => $skipped],
         ]);
 
         return response()->json([
